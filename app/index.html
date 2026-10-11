@@ -20,7 +20,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>OhGithubLost · Web</title>
   <meta name="theme-color" content="#171A21">
-  <link rel="icon" type="image/png" href="js/742/favicon.png">
+  <link rel="icon" type="image/png" href="js/743/favicon.png">
   <!-- WebAssembly 嗅探：必须在 iframe 拿到 src 之前同步执行完毕；
        dart2wasm 需要 Wasm GC（struct/array ref）提案，旧 Safari 不支持。 -->
   <script>
@@ -134,7 +134,7 @@
     <div class="bar"></div>
     <div class="hint">加载中…</div>
   </div>
-  <!-- ★ iframe 直接指向本版本的**默认目录**（`742/`），该目录已由 CI
+  <!-- ★ iframe 直接指向本版本的**默认目录**（`743/`），该目录已由 CI
        发布，**零 404、零额外探测请求**。
        为什么不在这里做 wasm/js 嗅探：iframe 即使加载到 404 页也只会触发
        `load`（不是 `error`），"嗅探失败再回退"在 iframe 上根本不可靠。
@@ -144,7 +144,7 @@
   <script>
     (function () {
       var f = document.getElementById('ogl-frame');
-      var version = '7.4.2';
+      var version = '7.4.3';
       // 版本号 → 纯数字目录名（与 version_dir_name() 规则一致）：'7.4.2' → '742'
       var dir = version.replace(/[^0-9]/g, '');
       // 头部同步嗅探已把结果写入 window.__OGL_VARIANT__（'wasm' | 'js'）；

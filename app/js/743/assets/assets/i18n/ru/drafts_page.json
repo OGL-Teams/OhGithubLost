@@ -1,0 +1,10 @@
+{
+  "copyContent": "Скопировать содержимое",
+  "delete": "Удалить",
+  "deleteDraft": "Удалить Draft",
+  "deleted": "Draft удалён",
+  "draft": "Draft",
+  "empty": "Несохранённых Draft нет",
+  "title": "Черновики",
+  "deleteDraftDesc": "Черновик будет удалён с этого устройства. Действие необратимо."
+}

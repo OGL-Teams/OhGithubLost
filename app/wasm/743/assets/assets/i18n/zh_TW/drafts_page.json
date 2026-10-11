@@ -1,0 +1,10 @@
+{
+  "copyContent": "複製內容",
+  "delete": "刪除",
+  "deleteDraft": "刪除草稿",
+  "deleted": "草稿已刪除",
+  "draft": "草稿",
+  "empty": "還沒有未提交的草稿",
+  "title": "草稿箱",
+  "deleteDraftDesc": "將從本機刪除這份草稿，操作不可撤銷。"
+}

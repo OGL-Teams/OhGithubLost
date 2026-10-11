@@ -1,0 +1,8 @@
+{
+  "linesCount": "{count} lignes",
+  "noLogs": "Aucun journal (tâche inachevée ou jeton sans permission Actions)",
+  "noMatchingJob": "Aucun job correspondant",
+  "reload": "Rafraîchir",
+  "searchJobHint": "Rechercher un nom de job",
+  "title": "Journaux d'exécution"
+}
