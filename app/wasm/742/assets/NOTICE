@@ -1,0 +1,27 @@
+OhGithubLost (OGL)
+Copyright 2026 yingo-server
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file for the full terms.
+
+────────────────────────────────────────────────────────────────────────
+
+Third-party components
+----------------------
+
+This product includes software developed by third parties. Each component
+remains under its own license; the full texts are available in-app under
+Settings → Open-source licences and dependencies.
+
+Principal dependencies:
+
+  * Flutter and the Dart SDK — BSD-3-Clause (Google LLC)
+  * path_provider, flutter_secure_storage, crypto, flutter_markdown,
+    url_launcher, saf_util, saf_stream, background_downloader,
+    flutter_local_notifications, flutter_lints — BSD-3-Clause
+  * cryptography — Apache-2.0
+  * re_editor, re_highlight, permission_handler, window_manager, archive,
+    yaml, flutter_svg — MIT
+
+No dependency in this product is licensed under a copyleft license
+(GPL / AGPL / LGPL); all are permissive and compatible with Apache-2.0.
