@@ -1,5 +1,15 @@
 [
   {
+    "version": "7.4.5",
+    "dir": "745",
+    "variant": "js"
+  },
+  {
+    "version": "7.4.5",
+    "dir": "745",
+    "variant": "wasm"
+  },
+  {
     "version": "7.4.4",
     "dir": "744",
     "variant": "js"

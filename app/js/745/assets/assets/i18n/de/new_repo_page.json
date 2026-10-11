@@ -1,0 +1,12 @@
+{
+  "create": "Repo erstellen",
+  "createFailed": "Erstellen fehlgeschlagen: {error}",
+  "created": "Erstellt",
+  "creating": "Wird erstellt…",
+  "description": "Beschreibung (optional)",
+  "nameLabel": "Repo-Name",
+  "nameRequired": "Bitte zuerst Repo-Name angeben",
+  "private": "Privates Repo",
+  "privateDesc": "Nur für Sie sichtbar",
+  "title": "Neues Repo"
+}

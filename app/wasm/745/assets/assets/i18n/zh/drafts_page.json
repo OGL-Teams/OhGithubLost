@@ -1,0 +1,10 @@
+{
+  "copyContent": "复制内容",
+  "delete": "删除",
+  "deleteDraft": "删除草稿",
+  "deleted": "草稿已删除",
+  "draft": "草稿",
+  "empty": "还没有未提交的草稿",
+  "title": "草稿箱",
+  "deleteDraftDesc": "将从本机删除这份草稿，操作不可撤销。"
+}
