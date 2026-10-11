@@ -1,0 +1,12 @@
+{
+  "create": "创建仓库",
+  "createFailed": "创建失败：{error}",
+  "created": "已创建",
+  "creating": "创建中…",
+  "description": "描述（可选）",
+  "nameLabel": "仓库名",
+  "nameRequired": "请先填写仓库名",
+  "private": "私有仓库",
+  "privateDesc": "仅自己可见",
+  "title": "新建仓库"
+}

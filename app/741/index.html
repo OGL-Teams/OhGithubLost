@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<!--
+  OGL Web 入口页（PWA）。
+
+  ## 为什么手写而不是用 flutter create 的模板
+  `flutter create` 生成的 index.html 只有最基本的一组标签。要让 Web 版可以
+  「添加到主屏幕 / 添加到程序坞」，还需要 PWA 清单与一组 apple-* 标签 ——
+  而这些**平台差异主要在 iOS Safari**：它不支持 `beforeinstallprompt`，
+  只能靠用户手动「共享 → 添加到主屏幕」，页面侧能做的是把那组标签写对
+  （apple-mobile-web-app-capable 决定全屏、apple-touch-icon 决定图标），
+  并在代码里给出对应指引。macOS 上 Safari 16+ 与 Chrome/Edge 行为一致，
+  走标准 beforeinstallprompt；Safari 也支持「添加到程序坞」。
+
+  ## 图标
+  与其他平台同源：`assets/icon/ogl_icon.svg` 经 tool/desktop_icon.py 光栅化。
+-->
+<html lang="zh">
+<head>
+  <base href="./">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>OhGithubLost</title>
+  <meta name="description" content="OGL · OhGithubLost — GitHub 仓库管理器（Web 版）">
+
+  <!-- ── PWA：让浏览器允许「安装 / 添加到主屏幕」 ───────────────────── -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#171A21">
+
+  <!-- ── iOS Safari：这些是 iOS 上「添加到主屏幕」的实际开关 ────────── -->
+  <!--   -capable=yes  → 以独立窗口打开（不带 Safari 地址栏）
+       -status-bar-style → 状态栏样式
+       -title         → 主屏图标下方显示的名字
+       apple-touch-icon → iOS **不读** manifest 里的 icons，只认这个标签 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OGL">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
+
+  <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+  <!-- Flutter 的引导脚本（构建期注入） -->
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
