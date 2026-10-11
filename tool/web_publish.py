@@ -7,21 +7,21 @@
 app/
   index.html          ← **入口**：一个 iframe 包裹当前版本（始终指向最新）
   versions.json       ← 已发布版本清单（新版本在前）
-  v650/               ← 某个版本的完整 Web 产物
+  740/                ← 某个版本的完整 Web 产物
     index.html …
-  v640/
+  722/
     …
 ```
 
 ## 为什么用 iframe 而不是把产物直接铺在 `app/` 根下
 版本目录并存时，根下只能放一份。用 iframe 包一层，好处是：
-- **旧版本继续可访问**（`app/v640/…`），便于对比与回退；
+- **旧版本继续可访问**（`app/740/…`），便于对比与回退；
 - 入口地址 `app/` 永远不变，外部链接不需要跟着版本改；
 - 版本切换只是改 iframe 的 `src`。
 
 ## 用法
     python3 tool/web_publish.py <构建产物目录> <版本号>
-例：  python3 tool/web_publish.py build/web 6.5.0
+例：  python3 tool/web_publish.py build/web 7.4.0
 """
 from __future__ import annotations
 
@@ -52,8 +52,8 @@ WRAPPER = """<!DOCTYPE html>
   OGL Web · 入口页（**自动生成，请勿手改** —— 见 tool/web_publish.py）。
 
   作用：把当前版本的应用包在 iframe 里，使根地址长期不变、各版本目录并存。
-  版式按屏幕自适应：iframe 占满可视区域（含移动端安全区），版本切换条在
-  窄屏上仍可点（触控目标不小于 32px），横屏与小屏都不会溢出。
+  版式按屏幕自适应：iframe 占满可视区域（含移动端安全区）。
+  加载期间显示进度条（loading → loaded 淡出）。
 -->
 <html lang="zh">
 <head>
@@ -65,7 +65,6 @@ WRAPPER = """<!DOCTYPE html>
   <link rel="icon" type="image/png" href="__CURRENT__/favicon.png">
   <style>
     :root {
-      /* 移动端安全区；桌面浏览器里 env() 取 0，不影响布局 */
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-right: env(safe-area-inset-right, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -82,8 +81,6 @@ WRAPPER = """<!DOCTYPE html>
       font: 13px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       overscroll-behavior: none;
     }
-    /* 用 dvh 而不是 vh：移动端地址栏收放时不会把底部内容顶出屏幕。
-       不支持的浏览器回退到 100%（由 html/body 的高度兜住）。 */
     #app {
       position: fixed;
       top: 0; right: 0; bottom: 0; left: 0;
@@ -93,111 +90,81 @@ WRAPPER = """<!DOCTYPE html>
       display: block;
       background: #171A21;
     }
-    /* 版本切换：默认贴右下角，避开安全区 */
-    #bar {
+    /* 加载进度条：iframe 加载中显示，onload 后淡出 */
+    #loader {
       position: fixed;
-      right: calc(10px + var(--safe-right));
-      bottom: calc(10px + var(--safe-bottom));
-      z-index: 9;
-      display: flex; flex-direction: column; align-items: flex-end;
-      gap: 6px;
-      max-width: min(60vw, 240px);
+      top: 0; right: 0; bottom: 0; left: 0;
+      z-index: 99;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 18px;
+      background: #171A21;
+      transition: opacity 0.4s ease;
     }
-    #toggle {
-      min-height: 32px; min-width: 32px;
-      padding: 6px 12px;
-      background: var(--panel); color: var(--ink);
-      border: 1px solid var(--line); border-radius: 8px;
-      font: inherit; cursor: pointer;
-      /* 触控反馈 */
-      -webkit-tap-highlight-color: transparent;
+    #loader.hidden { opacity: 0; pointer-events: none; }
+    #loader .logo {
+      font: 600 22px system-ui, sans-serif;
+      color: #E6EDF3;
+      letter-spacing: 1px;
     }
-    #toggle:active { background: #2F3441; }
-    #list {
-      display: none;
-      width: 100%;
-      max-height: min(40vh, 320px);
-      overflow: auto;
-      background: var(--panel);
-      border: 1px solid var(--line); border-radius: 8px;
-      padding: 4px 0;
-      -webkit-overflow-scrolling: touch;
+    #loader .bar {
+      width: min(240px, 60vw);
+      height: 3px;
+      background: #2F3441;
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
     }
-    #list a {
-      display: block;
-      padding: 8px 14px;
-      color: var(--ink); text-decoration: none;
-      white-space: nowrap;
-      min-height: 32px;
+    #loader .bar::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -60%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, #4B9FFF, transparent);
+      animation: slide 1.4s ease-in-out infinite;
     }
-    #list a:hover, #list a:focus { background: #2F3441; }
-    #list a.cur { color: #FFC93C; }
-    /* 横屏（高度很小）时把切换条压得更扁，避免挡住应用内容 */
-    @media (max-height: 420px) {
-      #bar { bottom: calc(6px + var(--safe-bottom)); }
-      #list { max-height: 60vh; }
+    @keyframes slide {
+      0% { left: -60%; }
+      100% { left: 100%; }
     }
-    /* 桌面：字号略大，切换条不贴着边缘 */
-    @media (min-width: 900px) {
-      #bar { right: calc(16px + var(--safe-right)); bottom: calc(16px + var(--safe-bottom)); }
+    #loader .hint {
+      font: 12px system-ui, sans-serif;
+      color: #454B5A;
     }
   </style>
 </head>
 <body>
-  <iframe id="app" src="__CURRENT__/" title="OhGithubLost" allow="clipboard-write; fullscreen"></iframe>
-  <div id="bar">
-    <div id="list" role="menu" aria-label="版本列表"></div>
-    <button id="toggle" type="button" aria-expanded="false" aria-controls="list">版本</button>
+  <div id="loader">
+    <div class="logo">OGL</div>
+    <div class="bar"></div>
+    <div class="hint">加载中…</div>
   </div>
+  <iframe id="app" src="__CURRENT__/" title="OhGithubLost" allow="clipboard-write; fullscreen"></iframe>
   <script>
     (function () {
-      var CUR = '__CURRENT__';
-      var list = document.getElementById('list');
-      var toggle = document.getElementById('toggle');
+      var loader = document.getElementById('loader');
       var frame = document.getElementById('app');
-
-      function setOpen(open) {
-        list.style.display = open ? 'block' : 'none';
-        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-      }
-      toggle.addEventListener('click', function () {
-        setOpen(list.style.display !== 'block');
+      // iframe onload = HTML 文档已加载完成（Flutter 引擎还在初始化，但基础资源没有 404）
+      frame.addEventListener('load', function () {
+        loader.classList.add('hidden');
+        setTimeout(function () { loader.style.display = 'none'; }, 500);
       });
-      // 点空白处收起（iframe 内点击收不到事件，故只在文档区域生效）
-      document.addEventListener('click', function (e) {
-        if (!document.getElementById('bar').contains(e.target)) setOpen(false);
-      });
-
-      // 版本清单：versions.json；切换只改 iframe 的 src，不刷新外层
-      fetch('versions.json', { cache: 'no-store' })
-        .then(function (r) { return r.ok ? r.json() : []; })
-        .then(function (items) {
-          (items || []).forEach(function (v) {
-            if (!v || !v.dir) return;
-            var a = document.createElement('a');
-            a.textContent = v.version || v.dir;
-            a.href = v.dir + '/';
-            if (v.dir === CUR) { a.className = 'cur'; a.setAttribute('aria-current', 'true'); }
-            a.addEventListener('click', function (ev) {
-              ev.preventDefault();
-              frame.src = v.dir + '/';
-              setOpen(false);
-            });
-            list.appendChild(a);
-          });
-          if (!list.childNodes.length) toggle.style.display = 'none';
-        })
-        .catch(function () { toggle.style.display = 'none'; });
+      // 超时兜底：20 秒后也淡出（不让进度条永远卡着）
+      setTimeout(function () {
+        loader.classList.add('hidden');
+        setTimeout(function () { loader.style.display = 'none'; }, 500);
+      }, 20000);
     })();
   </script>
 </body>
 </html>
 """
 
+
 def main() -> int:
     ap = argparse.ArgumentParser(description='把 Web 产物按版本发布到 app/')
     ap.add_argument('build_dir', help='构建产物目录（如 build/web）')
-    ap.add_argument('version', help='版本号（如 6.5.0）')
+    ap.add_argument('version', help='版本号（如 7.4.0）')
     ap.add_argument('--app-dir', default=os.path.join(ROOT, 'app'))
     args = ap.parse_args()
 
@@ -213,11 +180,7 @@ def main() -> int:
     dir_name = version_dir_name(args.version)
     target = os.path.join(app_dir, dir_name)
     os.makedirs(app_dir, exist_ok=True)
-    # ★ 版本目录策略（用户 2026-10-09 明确）：
-    #   · **历史版本一律保留**，不因发布新版本而删除 —— 旧版仍可访问，
-    #     入口页只改 iframe 指向，不动别人的目录；
-    #   · 唯一会清理的情况是**同一版本重发**（CI 重跑）：只重建它自己那一个
-    #     目录，避免上一轮的残留文件混在里面。
+    # ★ 版本目录策略：历史版本一律保留；同一版本重发只重建自己那一个目录。
     if os.path.isdir(target):
         shutil.rmtree(target)
     shutil.copytree(args.build_dir, target)
