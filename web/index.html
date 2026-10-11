@@ -82,6 +82,16 @@
       var CACHE_TTL = 6 * 3600 * 1000;
 
       function start(base) {
+        // ★ 先把「必须同源」的链接固化成绝对 URL（此刻 <base> 还是 ./，
+        //   所以 href 解析出来就是本站地址），再换 base。
+        //   否则它们会跟着 base 跑到镜像上 —— 而 jsDelivr 会把 `*.png`
+        //   与 `*.html` **301 到 raw.githubusercontent.com**（国内不可达），
+        //   结果图标/清单请求长时间挂起。
+        var keep = document.querySelectorAll(
+          'link[rel="manifest"],link[rel="icon"],link[rel="apple-touch-icon"]');
+        for (var i = 0; i < keep.length; i++) {
+          try { keep[i].href = keep[i].href; } catch (e) {}
+        }
         if (base !== './') {
           var b = document.querySelector('base');
           if (b) b.href = base + suffix;
