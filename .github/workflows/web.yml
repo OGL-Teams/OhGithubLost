@@ -5,15 +5,17 @@ name: Web
 # ## 目录约定（见 tool/web_publish.py）
 #   app/index.html     入口页：iframe 包裹**当前版本**，地址长期不变
 #   app/versions.json  已发布版本清单（新版本在前）
-#   app/v650/          某版本的完整产物（由本工作流生成并提交）
+#   app/740/           某版本的完整产物（由本工作流生成并提交）
 #
 # ## 与五平台发布的关系
 # 互不影响：本工作流的成败**不阻塞** build.yml 的五平台发布（两者无 needs 关系）。
 # 自 7.0 起 Web 是正式平台之一，因此在 main 与 web 两条分支上都会构建。
 #
-# ## 当前状态
-# 这个分支的 lib/ 正在做 Web 适配（`dart:io` 在浏览器里不存在）。适配完成前
-# 本工作流会失败 —— 那不是配置问题，就是待办本身。
+# ## 启动信任链（Ed25519 引导清单）
+# 与 build.yml 同款：CI 从 Secret `OGL_BOOT_KEY` 还原私钥 → 生成签名清单 →
+# `--dart-define-from-file` 注入 → `main.dart` 启动时校验签名。
+# 没有这一步，release 构建的 `kOgLBootManifestJson` 为空 → 拒绝启动
+# （`bootRejected: 引导清单缺失: boot/manifest.json`）。
 
 on:
   push:
@@ -38,6 +40,17 @@ jobs:
       - name: 拉取代码
         uses: actions/checkout@v4
 
+      - name: 安装签名依赖
+        run: python3 -m pip install --quiet --disable-pip-version-check cryptography
+
+      # ★ 私钥不随仓库保管：从 Secret `OGL_BOOT_KEY` 还原到 runner 临时目录。
+      - name: 还原签名私钥（Actions Secret）
+        env:
+          OGL_BOOT_KEY: ${{ secrets.OGL_BOOT_KEY }}
+        run: |
+          [ -n "$OGL_BOOT_KEY" ] || { echo '缺少 OGL_BOOT_KEY Secret（见 .github/signing/README.md）'; exit 1; }
+          printf '%s' "$OGL_BOOT_KEY" > "$RUNNER_TEMP/ogl-boot-ed25519.key"
+
       - name: 安装 Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -53,8 +66,20 @@ jobs:
       - name: 生成平台目录
         run: flutter create --platforms=web --org com.yingo --project-name ohgithublost .
 
+      - name: 生成并注入 .dart_define.json（Ed25519 签名引导清单）
+        env:
+          VERSION_INPUT: ${{ inputs.version_name }}
+        run: |
+          python3 tool/boot_manifest.py \
+            --version "${{ github.ref_name }}" \
+            --build-id "$GITHUB_SHA" \
+            --key "$RUNNER_TEMP/ogl-boot-ed25519.key" \
+            --out dart_define.json
+
       - name: 构建（release）
-        run: flutter build web --release
+        run: >-
+          flutter build web --release
+          --dart-define-from-file=dart_define.json
 
       - name: 读出版本号
         id: ver
