@@ -216,7 +216,7 @@ WRAPPER = """<!DOCTYPE html>
       font: 13px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       overscroll-behavior: none;
     }
-    #app {
+    #ogl-frame {
       position: fixed;
       top: 0; right: 0; bottom: 0; left: 0;
       width: 100%; height: 100%;
