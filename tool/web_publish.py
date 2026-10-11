@@ -112,6 +112,40 @@ def _dedupe(entries: list, *, dir_name: str, variant: str) -> list:
     return out
 
 
+# ── Netlify `_headers`（**必须放在发布根**）──────────────────────────────
+# 关键：Netlify 只读取**发布根**（本站为 `app/`）下的 `_headers`。
+# 把 `_headers` 放进各版本桶（`app/js/<v>/_headers`）**不会生效**——
+# 站点曾因此对所有资源返回 `max-age=0, must-revalidate`，每次访问都要
+# 回源校验（v7.4.3 上线时实测到的）。
+#
+# 策略：
+#   · 入口与清单（`/`、`/index.html`、`/versions.json`）→ 每次校验，
+#     保证发新版本后立刻可见；
+#   · 版本化产物（`/wasm/**`、`/js/**`、`/7xx/**`）→ 目录名带版本号、
+#     内容不随同名文件变化 → 一年 `immutable`，二次访问零请求。
+ROOT_HEADERS = """\
+# 入口与版本清单：始终回源校验（新版本要立刻可见）
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/versions.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+# 版本化产物桶：目录名含版本号 → 内容不可变 → 强缓存一年
+/wasm/*
+  Cache-Control: public, max-age=31536000, immutable
+/js/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 历史纯数字目录（7xx / v7xx）
+/7*
+  Cache-Control: public, max-age=31536000, immutable
+/v7*
+  Cache-Control: public, max-age=31536000, immutable
+"""
+
+
 WRAPPER = """<!DOCTYPE html>
 <!--
   OGL Web · 入口页（**自动生成，请勿手改** —— 见 tool/web_publish.py）。
@@ -368,6 +402,13 @@ def main() -> int:
     print('已重写 app/index.html → wasm 嗅探分流 → 版本 %s (variant=wasm|js)'
           % args.version)
     print('已更新 app/versions.json（共 %d 个版本）' % len(entries))
+
+    # ★ Netlify 缓存策略文件**必须写在发布根**（app/_headers），
+    #   写在版本桶里不生效（详见 ROOT_HEADERS 注释）。
+    headers_path = os.path.join(app_dir, '_headers')
+    with open(headers_path, 'w', encoding='utf-8') as fh:
+        fh.write(ROOT_HEADERS)
+    print('已写入 app/_headers（Netlify 发布根缓存策略）')
     return 0
 
 
