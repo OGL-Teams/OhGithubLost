@@ -1,0 +1,10 @@
+{
+  "copyContent": "Inhalt kopieren",
+  "delete": "Löschen",
+  "deleteDraft": "Entwurf löschen",
+  "deleted": "Entwurf gelöscht",
+  "draft": "Entwurf",
+  "empty": "Keine nicht eingereichten Entwürfe",
+  "title": "Entwürfe",
+  "deleteDraftDesc": "Dieser Entwurf wird von diesem Gerät gelöscht. Dies kann nicht rückgängig gemacht werden."
+}

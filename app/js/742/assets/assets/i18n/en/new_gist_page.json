@@ -1,0 +1,16 @@
+{
+  "content": "Content",
+  "contentHint": "Paste or type code / text",
+  "contentRequired": "Content cannot be empty",
+  "create": "Create",
+  "createFailed": "Creation failed: {error}",
+  "created": "Created",
+  "creating": "Creating…",
+  "description": "Description (optional)",
+  "fileName": "Filename (include extension to determine highlight language)",
+  "fileNameHint": "Note: Filename extension affects syntax highlighting (e.g., main.dart / app.py).",
+  "fileNameRequired": "Please provide a filename",
+  "isPublic": "Public Gist",
+  "isPublicDesc": "Anyone can access via link when public",
+  "title": "New Gist"
+}
