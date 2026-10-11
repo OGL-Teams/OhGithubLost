@@ -1,0 +1,17 @@
+{
+  "cancel": "取消",
+  "copiedEvent": "已複製該筆事件",
+  "copy": "複製",
+  "empty": "沒有符合條件的事件",
+  "filterAll": "全部",
+  "filterError": "錯誤",
+  "filterWarning": "警告",
+  "markAllRead": "全部已讀",
+  "markRead": "標記已讀",
+  "reset": "重設",
+  "resetDesc": "將清空目前記憶體中的全部事件（磁碟日誌保留）。",
+  "resetTitle": "重設通知中心",
+  "title": "通知中心",
+  "unread": "未讀",
+  "toggleNotification": "切換通知"
+}

@@ -1,0 +1,10 @@
+{
+  "copyContent": "Copier le contenu",
+  "delete": "Supprimer",
+  "deleteDraft": "Supprimer le brouillon",
+  "deleted": "Brouillon supprimé",
+  "draft": "Brouillon",
+  "empty": "Aucun brouillon non committé",
+  "title": "Brouillons",
+  "deleteDraftDesc": "Ce brouillon sera supprimé de cet appareil. Cette action est irréversible."
+}
