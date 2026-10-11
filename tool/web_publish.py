@@ -7,10 +7,16 @@
 app/
   index.html          ← **入口**：一个 iframe 包裹当前版本（始终指向最新）
   versions.json       ← 已发布版本清单（新版本在前）
-  740/                ← 某个版本的完整 Web 产物
+  740/                ← 主版本（默认 variant=''）的产物
     index.html …
   722/
     …
+  wasm/               ← --subdir wasm 时的产物桶
+    740/
+      …
+  js/                 ← --subdir js 时的产物桶
+    740/
+      …
 ```
 
 ## 为什么用 iframe 而不是把产物直接铺在 `app/` 根下
@@ -19,9 +25,29 @@ app/
 - 入口地址 `app/` 永远不变，外部链接不需要跟着版本改；
 - 版本切换只是改 iframe 的 `src`。
 
+## variant 桶（--subdir）
+同一版本可能有多份产物（Flutter Web 的 wasm 编译、js 编译、canvaskit…），
+用 ``--subdir <name>`` 分桶部署到 ``app/<name>/<version>/``：
+- 默认（不传）→ ``app/<version>/``，并刷新 ``app/index.html`` 入口；
+- ``--subdir wasm`` → ``app/wasm/<version>/``；
+- ``--subdir js``   → ``app/js/<version>/``。
+
+``versions.json`` 每条 entry 增加 ``'variant'`` 字段（默认空串），
+旧 consumer 读不到字段用 ``.get('variant', '')`` 兜底，向后兼容。
+
+## 入口页 wasm/js 嗅探分流
+``app/index.html`` 不论传不传 ``--subdir`` 都会被重写。顶部 ``<script>``
+同步嗅探 WebAssembly（含 GC 提案），把 ``window.__OGL_VARIANT__`` 写为
+``'wasm'`` 或 ``'js'``，随后由底部脚本拼出
+``./wasm/<版本>/`` 或 ``./js/<版本>/`` 作为 iframe 的 src。
+模板里的 ``__CURRENT__`` 占位符被替换为版本纯数字目录名（供 favicon），
+``__OGL_VERSION__`` 被替换为 ``args.version``（供底部 JS 做变体决定）。
+
 ## 用法
-    python3 tool/web_publish.py <构建产物目录> <版本号>
-例：  python3 tool/web_publish.py build/web 7.4.0
+    python3 tool/web_publish.py <构建产物目录> <版本号> [--subdir wasm|js]
+例：  python3 tool/web_publish.py build/web        7.4.0
+     python3 tool/web_publish.py build/web-wasm    7.4.2 --subdir wasm
+     python3 tool/web_publish.py build/web-js      7.4.2 --subdir js
 """
 from __future__ import annotations
 
@@ -47,13 +73,59 @@ def version_dir_name(version: str) -> str:
     return digits
 
 
+def app_path_with_subdir(app_root: str, subdir: str, version_dir: str) -> str:
+    """``app/<subdir>/<version>/`` —— 不传 ``subdir`` 则回落到 ``app/<version>/``。
+
+    同一版本按 variant（wasm / js / …）分桶部署，互不覆盖。
+    入口页 ``app/index.html`` 仍位于 ``app_root`` 本身，不会被推到 ``subdir`` 下。
+    """
+    if subdir:
+        return os.path.join(app_root, subdir, version_dir)
+    return os.path.join(app_root, version_dir)
+
+
+def _read_manifest(manifest_path: str) -> list:
+    """读取 ``versions.json``；不存在或解析失败 → 空列表。"""
+    if not os.path.isfile(manifest_path):
+        return []
+    try:
+        with open(manifest_path, encoding='utf-8') as fh:
+            data = json.load(fh)
+    except Exception:
+        return []
+    return [e for e in data if isinstance(e, dict)]
+
+
+def _dedupe(entries: list, *, dir_name: str, variant: str) -> list:
+    """去重：同一 ``(dir, variant)`` 只留最新一条（保留列表里最靠前的）。"""
+    seen = set()
+    out = []
+    for e in entries:
+        key = (e.get('dir'), e.get('variant') or '')
+        if key == (dir_name, variant):
+            # 同 dir+variant 视为同一条：新发布优先
+            continue
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(e)
+    return out
+
+
 WRAPPER = """<!DOCTYPE html>
 <!--
   OGL Web · 入口页（**自动生成，请勿手改** —— 见 tool/web_publish.py）。
 
-  作用：把当前版本的应用包在 iframe 里，使根地址长期不变、各版本目录并存。
+  作用：嗅探浏览器 WebAssembly（含 GC 提案）支持情况，按需把当前版本的
+  应用包在 iframe 里：
+    - 支持 → iframe → ./wasm/<版本>/index.html  （dart2wasm，体积极小、首屏快）
+    - 不支持 → iframe → ./js/<版本>/index.html   （dart2js 兜底，兼容老 Safari）
+
   版式按屏幕自适应：iframe 占满可视区域（含移动端安全区）。
   加载期间显示进度条（loading → loaded 淡出）。
+
+  iOS Safari 用户：若希望获得接近原生 App 的体验与全屏画板，请
+  在浏览器中点击底部分享按钮 → "添加到主屏幕"。
 -->
 <html lang="zh">
 <head>
@@ -63,6 +135,35 @@ WRAPPER = """<!DOCTYPE html>
   <title>OhGithubLost · Web</title>
   <meta name="theme-color" content="#171A21">
   <link rel="icon" type="image/png" href="__CURRENT__/favicon.png">
+  <!-- WebAssembly 嗅探：必须在 iframe 拿到 src 之前同步执行完毕；
+       dart2wasm 需要 Wasm GC（struct/array ref）提案，旧 Safari 不支持。 -->
+  <script>
+    (function() {
+      try {
+        // 基础嗅探：WebAssembly 是否存在 + 最小模块验证
+        // 字节序列：\\0asm\\1\\0\\0\\0\\1\\5\\1\\0\\5  (magic + version + 1 type + 1 func + 1 table)
+        if (typeof WebAssembly === 'undefined' ||
+            !WebAssembly.validate ||
+            !WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,0,5]))) {
+          window.__OGL_VARIANT__ = 'js';
+          return;
+        }
+        // 二次探测：Wasm GC struct/array ref 提案（dart2wasm 必需）
+        // 字节序列（参考 webassembly feature detect）：包含 (ref any) / (ref struct) 等类型
+        if (!WebAssembly.validate(new Uint8Array([
+          0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+          0x01, 0x0d, 0x03, 0x60, 0x01, 0x6e, 0x60, 0x00,
+          0x60, 0x02, 0x6e, 0x6e, 0x01, 0x6e
+        ]))) {
+          window.__OGL_VARIANT__ = 'js';
+          return;
+        }
+        window.__OGL_VARIANT__ = 'wasm';
+      } catch (e) {
+        window.__OGL_VARIANT__ = 'js';
+      }
+    })();
+  </script>
   <style>
     :root {
       --safe-top: env(safe-area-inset-top, 0px);
@@ -134,18 +235,37 @@ WRAPPER = """<!DOCTYPE html>
   </style>
 </head>
 <body>
+  <!-- iOS Safari 提示：通过"添加到主屏幕"启动可获得全屏 + 离线缓存（更像原生 App） -->
+  <noscript>
+    <div style="position:fixed;top:env(safe-area-inset-top,8px);left:8px;right:8px;z-index:100;
+                padding:10px 14px;border-radius:10px;background:#1E222B;color:#E6EDF3;
+                font:13px/1.5 system-ui,-apple-system,sans-serif;">
+      本页面需要启用 JavaScript 才能加载 OGL Web 应用。请在浏览器设置中开启 JS 后刷新页面。
+    </div>
+  </noscript>
   <div id="loader">
     <div class="logo">OGL</div>
     <div class="bar"></div>
     <div class="hint">加载中…</div>
   </div>
-  <iframe id="app" src="__CURRENT__/" title="OhGithubLost" allow="clipboard-write; fullscreen"></iframe>
+  <!-- iframe 一开始指向 about:blank；下方同步脚本根据嗅探结果立即改 src，
+       避免在不支持 wasm 的浏览器里发起 wasm 资源请求（会被 404 + 控制台噪音）。 -->
+  <iframe id="ogl-frame" src="about:blank" title="OhGithubLost" allow="clipboard-write; fullscreen"></iframe>
   <script>
     (function () {
+      var variant = window.__OGL_VARIANT__ || 'js';
+      var version = '__OGL_VERSION__';
+      // 版本号 → 纯数字目录名（与 version_dir_name() 规则一致）：'7.4.2' → '742'
+      var dir = version.replace(/[^0-9]/g, '');
+      var src = variant === 'wasm'
+        ? './wasm/' + dir + '/'
+        : './js/' + dir + '/';
+      var f = document.getElementById('ogl-frame');
+      f.src = src;
+
       var loader = document.getElementById('loader');
-      var frame = document.getElementById('app');
       // iframe onload = HTML 文档已加载完成（Flutter 引擎还在初始化，但基础资源没有 404）
-      frame.addEventListener('load', function () {
+      f.addEventListener('load', function () {
         loader.classList.add('hidden');
         setTimeout(function () { loader.style.display = 'none'; }, 500);
       });
@@ -166,7 +286,16 @@ def main() -> int:
     ap.add_argument('build_dir', help='构建产物目录（如 build/web）')
     ap.add_argument('version', help='版本号（如 7.4.0）')
     ap.add_argument('--app-dir', default=os.path.join(ROOT, 'app'))
+    ap.add_argument('--subdir', default='',
+                    help='variant 子目录（如 wasm / js），默认空串 ⇒ 部署到 app/<版本>/。'
+                         '传 wasm ⇒ app/wasm/<版本>/；js ⇒ app/js/<版本>/。'
+                         '入口页 app/index.html 始终在 app/ 根下，不受 --subdir 影响。')
     args = ap.parse_args()
+
+    if not args.subdir == args.subdir.strip() or '/' in args.subdir or '\\' in args.subdir:
+        sys.stderr.write('--subdir 不能含路径分隔符或首尾空白：%r\n' % args.subdir)
+        return 1
+    variant = args.subdir.strip()
 
     if not os.path.isdir(args.build_dir):
         sys.stderr.write('构建产物目录不存在：%s\n' % args.build_dir)
@@ -178,8 +307,11 @@ def main() -> int:
 
     app_dir = args.app_dir
     dir_name = version_dir_name(args.version)
-    target = os.path.join(app_dir, dir_name)
+    target = app_path_with_subdir(app_dir, args.subdir, dir_name)
+    # ★ 入口页始终在 app/ 根下；不同 variant 的产物推到各自子目录。
     os.makedirs(app_dir, exist_ok=True)
+    if args.subdir:
+        os.makedirs(os.path.dirname(target), exist_ok=True)
     # ★ 版本目录策略：历史版本一律保留；同一版本重发只重建自己那一个目录。
     if os.path.isdir(target):
         shutil.rmtree(target)
@@ -202,25 +334,53 @@ def main() -> int:
             print('  [跳过] index.html 无 <base href="/"> 或已修正')
     print('已发布 %s → %s' % (args.version, os.path.relpath(target, ROOT)))
 
-    # 版本清单（新版本在前；同版本去重）
+    # 版本清单（新版本在前；按 (dir, variant) 去重）
+    #   entry = {'version': '7.4.2', 'dir': '742', 'variant': 'wasm' | 'js' | ''}
+    #   variant 字段向后兼容：旧 consumer 读取时按 .get('variant', '') 不会 KeyError。
+    #
+    # ★ 重要：CI 双构建（wasm + js）调 web_publish 两次。为避免后写者
+    #   覆盖前者的双桶记录，约定：
+    #     - `--subdir wasm` → **写** versions.json（主载权威）+ 入口页
+    #     - `--subdir js`   → **只**推目录，不写 versions.json / 入口页
+    #     - 不传 --subdir（默认 variant=''）→ 也只推目录，不重写入口
+    #   CI web.yml 已固定顺序（wasm 先 → js 后），保证 wasm 是权威写者。
+    #   入口页仅在 wasm 写一次，__OGL_VERSION__ 唯一，保证分桶一致。
+    if args.subdir:
+        # wasm 写、js 跳过（默认行为）；CI 双构建时 wasm 是权威写者
+        if args.subdir == 'js':
+            print('[--subdir js] js 桶仅推目录，不重写 versions.json 与入口页'
+                  '（由 wasm 桶作为权威）')
+            print('已发布 %s（variant=js）' % args.version)
+            return 0
+        # subdir == 'wasm'：继续往下走（写 manifest + 入口页）
+
+    if not args.subdir:
+        # 默认 variant='' 不在 CI 双构建流程中（CI 只调 wasm + js 两个桶），
+        # 此处保留以兼容手测与回滚脚本。
+        pass
+
     manifest_path = os.path.join(app_dir, 'versions.json')
-    entries = []
-    if os.path.isfile(manifest_path):
-        try:
-            with open(manifest_path, encoding='utf-8') as fh:
-                entries = [e for e in json.load(fh)
-                           if isinstance(e, dict) and e.get('dir') != dir_name]
-        except Exception:
-            entries = []
-    entries.insert(0, {'version': args.version, 'dir': dir_name})
+    entries = _read_manifest(manifest_path)
+    entries = _dedupe(entries, dir_name=dir_name, variant=variant)
+    entry = {'version': args.version, 'dir': dir_name, 'variant': variant}
+    entries.insert(0, entry)
     with open(manifest_path, 'w', encoding='utf-8') as fh:
         json.dump(entries, fh, ensure_ascii=False, indent=2)
         fh.write('\n')
 
-    # 入口页：指向刚发布的版本
+    # 入口页：每次发布都重写 —— 它就是带 wasm/js 嗅探分流的统一入口页。
+    #
+    # 占位符约定：
+    #   __CURRENT__       → 版本纯数字目录名（如 '742'），用于 <link rel="icon">
+    #                        与旧版本兼容，仍指向默认部署目录（不带 variant 前缀）
+    #   __OGL_VERSION__   → 原始版本号字符串（如 '7.4.2'），由底部 JS 做 wasm/js 分流
+    wrapper = (WRAPPER
+               .replace('__CURRENT__', dir_name)
+               .replace('__OGL_VERSION__', args.version))
     with open(os.path.join(app_dir, 'index.html'), 'w', encoding='utf-8') as fh:
-        fh.write(WRAPPER.replace('__CURRENT__', dir_name))
-    print('已重写 app/index.html → iframe 指向 %s/' % dir_name)
+        fh.write(wrapper)
+    print('已重写 app/index.html → wasm 嗅探分流 → 版本 %s (variant=wasm|js)'
+          % args.version)
     print('已更新 app/versions.json（共 %d 个版本）' % len(entries))
     return 0
 

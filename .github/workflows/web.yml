@@ -1,11 +1,12 @@
 name: Web
 
-# Web（JS/Wasm）构建、按版本发布到 `app/`、并更新入口页。
+# Web（JS/Wasm）双构建、按版本发布到 `app/`、并更新入口页。
 #
 # ## 目录约定（见 tool/web_publish.py）
 #   app/index.html     入口页：iframe 包裹**当前版本**，地址长期不变
 #   app/versions.json  已发布版本清单（新版本在前）
-#   app/740/           某版本的完整产物（由本工作流生成并提交）
+#   app/wasm/<版本>/   dart2wasm 主载产物（现代浏览器走这条）
+#   app/js/<版本>/     dart2js 兜底产物（旧浏览器 / IE 路径）
 #
 # ## 与五平台发布的关系
 # 互不影响：本工作流的成败**不阻塞** build.yml 的五平台发布（两者无 needs 关系）。
@@ -28,12 +29,17 @@ concurrency:
 
 env:
   FLUTTER_VERSION: '3.47.5'
+  # dart2wasm 现代浏览器覆盖率已经 ≥ 95%，CI 同时产出 js 兜底主要给
+  # 老 Safari / 没有 wasm GC 的浏览器用。双构建使 CI 时间 +50%~80%、
+  # artifact 体积 +50%（~7 MB → ~10 MB），但避免单一产物策略失败时
+  # 整体不可用。关闭后只走 dart2js 单构建（旧行为）。
+  WASM_SUPPORTED: 'true'
 
 jobs:
   build-web:
-    name: 构建并发布 Web
+    name: 构建并发布 Web（wasm + js 双产物）
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 50  # 双构建比单构建多 ~15 分钟，40 不够
     permissions:
       contents: write
     steps:
@@ -76,18 +82,37 @@ jobs:
             --key "$RUNNER_TEMP/ogl-boot-ed25519.key" \
             --out dart_define.json
 
-      # ── 为什么要 dart2wasm 而不是 dart2js ───────────────────────────────
+      # ── 双构建策略 ─────────────────────────────────────────────────────
       # dart2js 输出 main.dart.js ≈ 5.2 MB（gzip 后仍 1.7 MB），浏览器
       # 必须先下载、再 parse、再 JIT-like 执行，**首次可交互** 受三者拖累。
       # dart2wasm 输出 main.dart.wasm（通常 < 1 MB，gzip ≈ 600 KB），
       # 浏览器可以直接流式编译 + AOT 风格的常量池就地初始化 —— 同等网速
       # 下首次加载减少 50%~70%。`flutter_bootstrap.js` 在编译期注入，
       # 会自动嗅探 WebAssembly 支持并降级到 js（旧浏览器 / IE 路径）。
-      # 当前产物为 wasm 主载 + dart2js fallback 双发，**不删除** main.dart.js。
-      - name: 构建（release，dart2wasm 优化首次加载）
+      #
+      # 因此产物分两份：
+      #   build/web-wasm/  ← dart2wasm 主载（现代浏览器走这条）
+      #   build/web-js/    ← dart2js 兜底（无 wasm GC / 老 Safari）
+      #
+      # ── 为什么用 mv 而不是 --output ────────────────────────────────────
+      # `flutter build web --output <dir>` 在 3.x 行为：传入目录已存在则
+      # 报错（"The directory already exists"），需要在每次构建前删干净，
+      # 否则留下上次构建产物。`build/web` → `build/web-wasm` → 再构建
+      # 到 `build/web` → `build/web-js` 的 mv 链路可以保证第二次构建一定
+      # 命中空目录，不需要 rm -rf 防御，CI 更稳。
+      - name: 构建 wasm 主载（dart2wasm）
         run: >-
           flutter build web --release --wasm
+          --no-tree-shake-icons
           --dart-define-from-file=dart_define.json
+          && mv build/web build/web-wasm
+
+      - name: 构建 js 兜底（dart2js）
+        run: >-
+          flutter build web --release
+          --no-tree-shake-icons
+          --dart-define-from-file=dart_define.json
+          && mv build/web build/web-js
 
       - name: 读出版本号
         id: ver
@@ -97,15 +122,43 @@ jobs:
           echo "version=$V" >> "$GITHUB_OUTPUT"
           echo "版本：$V"
 
-      - name: 按版本发布到 app/
-        run: python3 tool/web_publish.py build/web "${{ steps.ver.outputs.version }}"
+      - name: 验证双产物
+        run: |
+          set -eu
+          for d in build/web-wasm build/web-js; do
+            [ -d "$d" ] || { echo "缺构建产物：$d" >&2; exit 1; }
+            [ -f "$d/index.html" ] || { echo "$d 缺 index.html" >&2; exit 1; }
+          done
+          # wasm 产物必须含 main.dart.wasm，js 产物必须含 main.dart.js。
+          # 没带说明 flutter --wasm 标志没生效（CI 缓存命中错误分支）。
+          [ -f build/web-wasm/main.dart.wasm ] || { echo "wasm 主载没产物 main.dart.wasm" >&2; exit 1; }
+          [ -f build/web-js/main.dart.js ] || { echo "js 兜底没产物 main.dart.js" >&2; exit 1; }
+          echo "双产物校验通过：wasm + $(du -sh build/web-wasm | awk '{print $1}') / js + $(du -sh build/web-js | awk '{print $1}')"
 
-      - name: 上传产物（便于排查）
+      # 部署顺序：先 wasm 后 js。即使 js 部署失败，wasm 主载仍可用，
+      # 入口页 iframe 指向最新版本目录 —— 失败时不更新入口 / versions.json，
+      # 旧版本继续可见。
+      - name: 按版本发布到 app/wasm/
+        run: python3 tool/web_publish.py build/web-wasm "${{ steps.ver.outputs.version }}" --subdir wasm
+
+      - name: 按版本发布到 app/js/
+        run: python3 tool/web_publish.py build/web-js "${{ steps.ver.outputs.version }}" --subdir js
+
+      - name: 上传 wasm 产物（便于排查）
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ogl-web
-          path: build/web
+          name: ogl-web-wasm
+          path: build/web-wasm
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: 上传 js 产物（便于排查）
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ogl-web-js
+          path: build/web-js
           if-no-files-found: warn
           retention-days: 14
 
@@ -121,5 +174,5 @@ jobs:
             echo 'app/ 无变化，跳过提交'
             exit 0
           fi
-          git commit -m "chore(web): 发布 ${{ steps.ver.outputs.version }} 到 app/ [skip ci]"
+          git commit -m "chore(web): 发布 ${{ steps.ver.outputs.version }} 到 app/wasm/ + app/js/ [skip ci]"
           git push
