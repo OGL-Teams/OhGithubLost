@@ -39,7 +39,7 @@ jobs:
   build-web:
     name: 构建并发布 Web（wasm + js 双产物）
     runs-on: ubuntu-latest
-    timeout-minutes: 50  # 双构建比单构建多 ~15 分钟，40 不够
+    timeout-minutes: 30  # 单构建（dart2js），wasm 待 transitive dep 升级
     permissions:
       contents: write
     steps:
@@ -100,14 +100,16 @@ jobs:
       # 否则留下上次构建产物。`build/web` → `build/web-wasm` → 再构建
       # 到 `build/web` → `build/web-js` 的 mv 链路可以保证第二次构建一定
       # 命中空目录，不需要 rm -rf 防御，CI 更稳。
-      - name: 构建 wasm 主载（dart2wasm）
-        run: >-
-          flutter build web --release --wasm
-          --no-tree-shake-icons
-          --dart-define-from-file=dart_define.json
-          && mv build/web build/web-wasm
-
-      - name: 构建 js 兜底（dart2js）
+      #
+      # ── ★ 临时回退：先构建 dart2js 一个产物，dart2wasm 留作后续 ────────
+      # v7.4.2 首次尝试双构建时，dart2wasm 编译因 transitive dep
+      # `isolate_contactor` (经 `permission_handler_web`) 引用 `dart:html`
+      # 而失败 —— Dart2wasm 不支持 `dart:html`（仅支持 `package:web` +
+      # `dart:js_interop`）。该问题在 `permission_handler >= 14.0` /
+      # `flutter_secure_storage` 完全切到 wasm 安全链之后才能解除。
+      # 暂只发 dart2js 一份；入口页 wasm 嗅探代码会在 js 路径下永远走 js 桶
+      # （嗅探结果由环境决定；构建侧已就绪、产物侧将来补回）。
+      - name: 构建 js 主产物（dart2wasm 留作后续依赖升级）
         run: >-
           flutter build web --release
           --no-tree-shake-icons
@@ -122,36 +124,19 @@ jobs:
           echo "version=$V" >> "$GITHUB_OUTPUT"
           echo "版本：$V"
 
-      - name: 验证双产物
+      - name: 验证产物
         run: |
           set -eu
-          for d in build/web-wasm build/web-js; do
-            [ -d "$d" ] || { echo "缺构建产物：$d" >&2; exit 1; }
-            [ -f "$d/index.html" ] || { echo "$d 缺 index.html" >&2; exit 1; }
-          done
-          # wasm 产物必须含 main.dart.wasm，js 产物必须含 main.dart.js。
-          # 没带说明 flutter --wasm 标志没生效（CI 缓存命中错误分支）。
-          [ -f build/web-wasm/main.dart.wasm ] || { echo "wasm 主载没产物 main.dart.wasm" >&2; exit 1; }
-          [ -f build/web-js/main.dart.js ] || { echo "js 兜底没产物 main.dart.js" >&2; exit 1; }
-          echo "双产物校验通过：wasm + $(du -sh build/web-wasm | awk '{print $1}') / js + $(du -sh build/web-js | awk '{print $1}')"
+          [ -d build/web-js ] || { echo "缺构建产物：build/web-js" >&2; exit 1; }
+          [ -f build/web-js/index.html ] || { echo "build/web-js 缺 index.html" >&2; exit 1; }
+          [ -f build/web-js/main.dart.js ] || { echo "js 主产物没产物 main.dart.js" >&2; exit 1; }
+          echo "js 主产物校验通过：$(du -sh build/web-js | awk '{print $1}')"
+          # ★ wasm 桶暂时不存在（dart2wasm 因 transitive dep dart:html 待解决）；
+          #   仅校验 js 桶。
 
-      # 部署顺序：先 wasm 后 js。即使 js 部署失败，wasm 主载仍可用，
-      # 入口页 iframe 指向最新版本目录 —— 失败时不更新入口 / versions.json，
-      # 旧版本继续可见。
-      - name: 按版本发布到 app/wasm/
-        run: python3 tool/web_publish.py build/web-wasm "${{ steps.ver.outputs.version }}" --subdir wasm
-
+      # 部署顺序：先 js（CI 现在唯一主产物）。wasm 桶在权限升级后再补。
       - name: 按版本发布到 app/js/
         run: python3 tool/web_publish.py build/web-js "${{ steps.ver.outputs.version }}" --subdir js
-
-      - name: 上传 wasm 产物（便于排查）
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: ogl-web-wasm
-          path: build/web-wasm
-          if-no-files-found: warn
-          retention-days: 14
 
       - name: 上传 js 产物（便于排查）
         uses: actions/upload-artifact@v4

@@ -253,15 +253,26 @@ WRAPPER = """<!DOCTYPE html>
   <iframe id="ogl-frame" src="about:blank" title="OhGithubLost" allow="clipboard-write; fullscreen"></iframe>
   <script>
     (function () {
-      var variant = window.__OGL_VARIANT__ || 'js';
       var version = '__OGL_VERSION__';
       // 版本号 → 纯数字目录名（与 version_dir_name() 规则一致）：'7.4.2' → '742'
       var dir = version.replace(/[^0-9]/g, '');
-      var src = variant === 'wasm'
-        ? './wasm/' + dir + '/'
-        : './js/' + dir + '/';
+      var variant = window.__OGL_VARIANT__ || 'js';
+      // ★ 当前发布产物：v7.4.2 起 wasm 桶留作后续优化（permission_handler
+      //   transitive dep 还在用 dart:html，dart2wasm 暂不能直接编译），
+      //   仅 js 桶落地；嗅探结果仅为未来预留，**先试 wasm → 404 时降级 js**。
       var f = document.getElementById('ogl-frame');
-      f.src = src;
+
+      function setSrc(p) { f.src = p; }
+      if (variant === 'wasm') {
+        setSrc('./wasm/' + dir + '/');
+        // 兜底：wasm 桶目前不存在（404）。listen error → 自动切 js。
+        f.addEventListener('error', function once() {
+          f.removeEventListener('error', once);
+          setSrc('./js/' + dir + '/');
+        });
+      } else {
+        setSrc('./js/' + dir + '/');
+      }
 
       var loader = document.getElementById('loader');
       // iframe onload = HTML 文档已加载完成（Flutter 引擎还在初始化，但基础资源没有 404）
