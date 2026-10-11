@@ -171,7 +171,13 @@ void main() async {
 
   // ★ 组合根：装配 L1 —— 解析平台存储（登录 / 设置 / 缓存真正落盘）；
   // 失败退回内存并把错误原样带上来（下面大声上报，绝不静默）。
-  final bootstrap = await baseLayerModulesOnPlatform();
+  // 把 localStorage 失败注入到 OgLAppLog：保持 base → surface 反转，
+  //   不破坏分层。
+  final bootstrap = await baseLayerModulesOnPlatform(
+    onStorageFailure: (String message) {
+      OgLAppLog.instance.add('存储', message, severity: OgLNoticeSeverity.warning);
+    },
+  );
 
   final List<OgLModule> modules = <OgLModule>[
     ...bootstrap.modules,

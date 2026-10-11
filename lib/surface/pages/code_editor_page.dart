@@ -75,6 +75,11 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   bool _saving = false;
   bool _saved = false;
 
+  /// dispose 进行中：编辑监听回调（`_onEdit`）在 `dispose` 之后还可能被
+  /// 残余事件触发，会重新 schedule 落盘 / setState；显式守住，省掉
+  /// "Page dismissed but timer still pending" 的竞态。
+  bool _disposed = false;
+
   /// 「放弃修改」已确认：真正丢弃（dispose 时不再回写草稿，并删除草稿）。
   bool _abandon = false;
   bool _wrap = false;
@@ -91,6 +96,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
 
   @override
   void dispose() {
+    _disposed = true;
     _draftTimer?.cancel();
     // 只在「未保存且未放弃」时回写草稿：
     // - 保存成功后再回写会把**已提交内容**残留成草稿；
@@ -106,6 +112,10 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
 
   /// 内容变化：草稿落盘防抖 + 重建（撤销 / 重做可用态与"未保存"标记）。
   void _onEdit() {
+    // dispose 之后的残余回调：不再 schedule 落盘 / setState（页面已经卸）。
+    if (_disposed) {
+      return;
+    }
     _draftTimer?.cancel();
     _draftTimer = Timer(const Duration(milliseconds: 900), _persistDraft);
     if (mounted) {

@@ -12,13 +12,21 @@
 /// - **KV 走 `localStorage`**：`IoDiskKv` 把值写进浏览器 `localStorage`
 ///   （键按应用根前缀隔离），因此键值在刷新后仍在。若 `localStorage`
 ///   不可用（隐私模式 / 禁用存储），自动降级为进程内存，绝不抛。
+///   但**绝不静默吞** —— 配额满（`QuotaExceededError`）或被禁用
+///   （`SecurityError`）必须上报到用户可见的层（实现见
+///   `base_bootstrap.dart` 的 `storageError`，由组合根转给
+///   `OgLNoticeCenter`，详见 `surface/app/error_surface.dart`）。
 /// - **安全保险库无系统密钥库**：浏览器没有 Keystore / DPAPI / libsecret。
 ///   为避免把长期令牌**明文**留在 `localStorage`，Web 端保险库**仅内存持有**
 ///   （刷新后需重新登录）。这是一处**如实的能力缺失**，不是静默降级。
 library;
 
+import 'dart:async';
 import 'dart:js_interop';
 
+import 'package:flutter/foundation.dart';
+
+import '../../surface/app/error_surface.dart';
 import 'disk_bridge.dart';
 import 'disk_cache.dart';
 import 'disk_draft.dart';
@@ -37,6 +45,43 @@ extension type _WebStorage._(JSObject _) implements JSObject {
   external String? getItem(String key);
   external void setItem(String key, String value);
   external void removeItem(String key);
+}
+
+/// 浏览器 `Navigator.storage`（仅实现 [persist] 与 [estimate] 两个用到的成员）。
+///
+/// `persist()` 返回 `Promise<bool>` —— `true` 表示浏览器愿意把数据当作
+/// "持久"（不在配额压力下清空）；`false` 表示会按普通规则清。
+extension type _WebStorageManager._(JSObject _) implements JSObject {
+  external JSPromise<JSBoolean> persist();
+  external JSPromise<_StorageEstimate> estimate();
+}
+
+/// 全局 `navigator.storage`（Navigator Storage API）。
+@JS('navigator.storage')
+external _WebStorageManager get _navigatorStorage;
+
+/// 请求浏览器把本地存储标记为"持久"。
+///
+/// Web 平台独有：返回 `'granted'` / `'denied'` / `'unsupported'` /
+/// `'error: …'`；非 Web 平台调用方保证不会调到这里（`base_bootstrap.dart`
+/// 已在 web 分支内才 await 本函数）。
+///
+/// 浏览器里默认存储是"尽力而为"（best-effort）—— 配额压力下浏览器可以
+/// 直接清掉 `localStorage`。调用 `navigator.storage.persist()` 请求浏览器
+/// 把用户当前 origin 标记为"持久"，清空优先级会大幅下降。
+Future<String> ogLRequestPersistentStorage() async {
+  try {
+    final JSBoolean granted = await _navigatorStorage.persist().toDart;
+    return granted.toDart ? 'granted' : 'denied';
+  } catch (error) {
+    return 'error: $error';
+  }
+}
+
+/// `navigator.storage.estimate()` 的结果结构（只用到两个字段）。
+extension type _StorageEstimate._(JSObject _) implements JSObject {
+  external JSNumber? get quota;
+  external JSNumber? get usage;
 }
 
 /// 基于内存文件表 + `localStorage` KV 的存储（浏览器）。
@@ -133,18 +178,37 @@ class IoDiskFileStore implements DiskFileStore {
       (removed: 0, failed: const <String>[]);
 }
 
+/// 错误回调：把 localStorage 故障上报到 surface 层的 OgLAppLog。
+///
+/// 由组合根（`base_bootstrap.dart` → `PlatformStorage.open()` → 装配根 main）
+/// 注入；L1（base 层）**不直接** import surface 层（违反分层），
+/// 通过回调反转依赖：`surface` 知道 `base`，`base` 不知道 `surface`。
+typedef OgLStorageFailureCallback = void Function(String message);
+
 /// 基于 `localStorage` 的键值存储（浏览器）。
 ///
 /// 键按应用根前缀隔离（`ogl.kv.<root>.<key>`），因此刷新后仍在；
 /// `localStorage` 不可用时自动降级为进程内存（绝不抛）。
+///
+/// ## 失败**绝不静默**
+/// 配额满（`QuotaExceededError`）与被禁用（`SecurityError`）是浏览器
+/// 通知用户的两大典型场景 —— 旧代码 `catch (_)` 一吞了之，用户重启发现
+/// 设置全没了也找不到原因。
+/// 现在：失败时把异常对象**逐条**追加到 [lastFailure]（给上层展示），
+/// 同时通过 [onFailure] 回调（注入式）派发到 surface 层
+/// `OgLAppLog.instance.add('存储', message, severity: warning)`；
+/// 如果没注入回调（测试 / 早期启动），仅保留 [lastFailure] 与 `debugPrint`。
+/// 注入方由 `base_bootstrap.dart` 的装配根完成（不破坏分层）。
 class IoDiskKv implements DiskKv {
   /// 创建键值存储。
-  IoDiskKv({required String root})
+  IoDiskKv({required String root, OgLStorageFailureCallback? onFailure})
       : _prefix = 'ogl.kv.${IoDiskFileStore._normalizeRoot(root)}.',
-        _store = IoDiskFileStore(root: '$root/kv');
+        _store = IoDiskFileStore(root: '$root/kv'),
+        _onFailure = onFailure;
 
   final String _prefix;
   final IoDiskFileStore _store;
+  final OgLStorageFailureCallback? _onFailure;
 
   /// 底层文件存储（诊断用；浏览器下为内存文件表，不参与 KV 读写）。
   IoDiskFileStore get store => _store;
@@ -152,12 +216,35 @@ class IoDiskKv implements DiskKv {
   /// 降级镜像：`localStorage` 写入失败时的兜底，同时作为读取的第二来源。
   static final Map<String, String> _mirror = <String, String>{};
 
+  /// 最近一次失败原因（供上层展示用）。
+  ///
+  /// **保留最近一次**，不堆栈 —— 浏览器环境下 localStorage 不可用基本是
+  /// "整会话不可用"，重复上报只会刷屏；上层重置/重建本对象即可清零。
+  /// `null` = 这次会话内没有失败。
+  String? _lastFailure;
+
+  /// 最近一次失败的可读描述（`QuotaExceededError` / `SecurityError` /
+  /// `Disabled`）。组合根据此决定要不要弹"存储失败"横幅。
+  String? get lastFailure => _lastFailure;
+
+  /// 清零失败标记（消费完成调用方手动清）。
+  void clearLastFailure() {
+    _lastFailure = null;
+  }
+
   @override
   Future<String?> read(String key) async {
     final String name = '$_prefix$key';
     try {
       return _localStorage.getItem(name) ?? _mirror[name];
-    } catch (_) {
+    } catch (error) {
+      // ★ 读失败也要上报** —— 之前只看返静默返 _mirror，用户连"我读不到
+      //   我刚写的设置"这种真相都不知道；现在落 lastFailure + 回调注入。
+      _lastFailure = 'localStorage 读失败：${error.runtimeType}（键 $name）';
+      debugPrint('OGL 存储：$_lastFailure / $error');
+      OgLAppLog.instance.add('存储', 'localStorage 操作失败：$error',
+          severity: OgLNoticeSeverity.warning);
+      _onFailure?.call(_lastFailure!);
       return _mirror[name];
     }
   }
@@ -168,8 +255,13 @@ class IoDiskKv implements DiskKv {
     _mirror[name] = value;
     try {
       _localStorage.setItem(name, value);
-    } catch (_) {
-      // 存储不可用：保留在内存镜像里，不抛。
+    } catch (error) {
+      // 存储不可用：保留在内存镜像里，不抛 —— 但要告诉上层"没真存上"。
+      _lastFailure = 'localStorage 写失败：${error.runtimeType}（键 $name）';
+      debugPrint('OGL 存储：$_lastFailure / $error');
+      OgLAppLog.instance.add('存储', 'localStorage 操作失败：$error',
+          severity: OgLNoticeSeverity.warning);
+      _onFailure?.call(_lastFailure!);
     }
   }
 
@@ -179,8 +271,12 @@ class IoDiskKv implements DiskKv {
     _mirror.remove(name);
     try {
       _localStorage.removeItem(name);
-    } catch (_) {
-      // 同上。
+    } catch (error) {
+      _lastFailure = 'localStorage 删失败：${error.runtimeType}（键 $name）';
+      debugPrint('OGL 存储：$_lastFailure / $error');
+      OgLAppLog.instance.add('存储', 'localStorage 操作失败：$error',
+          severity: OgLNoticeSeverity.warning);
+      _onFailure?.call(_lastFailure!);
     }
   }
 
@@ -191,8 +287,11 @@ class IoDiskKv implements DiskKv {
       if (_localStorage.getItem(name) != null) {
         return true;
       }
-    } catch (_) {
-      // 落到镜像判断。
+    } catch (error) {
+      // 落到镜像判断。失败原因已在 setItem / removeItem 时上报，这里无须重报。
+      debugPrint('OGL 存储：localStorage has 失败：$error');
+      OgLAppLog.instance.add('存储', 'localStorage 操作失败：$error',
+          severity: OgLNoticeSeverity.warning);
     }
     return _mirror.containsKey(name);
   }
@@ -208,8 +307,11 @@ class IoDiskKv implements DiskKv {
           names.add(name.substring(_prefix.length));
         }
       }
-    } catch (_) {
-      // 存储不可用：只从镜像取。
+    } catch (error) {
+      // 存储不可用：只从镜像取。失败原因已在 setItem / removeItem 时上报。
+      debugPrint('OGL 存储：localStorage keys 失败：$error');
+      OgLAppLog.instance.add('存储', 'localStorage 操作失败：$error',
+          severity: OgLNoticeSeverity.warning);
     }
     for (final String name in _mirror.keys) {
       if (name.startsWith(_prefix)) {
@@ -298,9 +400,12 @@ class PlatformStorage {
   ///
   /// [folder] 在 Web 端**不参与**目录解析（浏览器只有一档虚拟根），
   /// 仅为与 io 实现签名一致而保留；[rootOverride] 可覆盖虚拟根（测试 / 预览）。
+  /// [onFailure] 由装配根注入，用于把 localStorage 故障上报到 surface 层
+  /// `OgLAppLog` —— `base` 不直接 import `surface`（违反分层），通过回调反转。
   static Future<PlatformStorage> open({
     String folder = 'ohgithublost',
     String? rootOverride,
+    OgLStorageFailureCallback? onFailure,
   }) async {
     final root = IoDiskFileStore._normalizeRoot(rootOverride ?? 'web');
 
@@ -312,7 +417,7 @@ class PlatformStorage {
       root: root,
       paths: PlatformDiskPaths(root: root),
       files: files,
-      kv: IoDiskKv(root: root),
+      kv: IoDiskKv(root: root, onFailure: onFailure),
       vault: SecureDiskVault(),
     );
   }

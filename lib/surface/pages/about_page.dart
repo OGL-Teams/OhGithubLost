@@ -50,7 +50,10 @@ class AboutPage extends StatelessWidget {
   }
 
   Future<void> _copy(BuildContext context, String text, String label) async {
-    await Clipboard.setData(ClipboardData(text: text));
+    if (!await ogLCopyText(text, tag: 'About')) {
+      // 已写通知中心 + 日志；UI 不重复弹"已复制"。
+      return;
+    }
     if (!context.mounted) {
       return;
     }

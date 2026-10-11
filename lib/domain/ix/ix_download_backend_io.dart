@@ -1,223 +1,95 @@
-/// L2 中枢级 · 下载后端的**原生实现**（`background_downloader` + `dart:io`）。
+/// L2 中枢级 · 下载后端的 **原生实现** 占位（native / desktop / Android / iOS）。
 ///
-/// 负责：后台下载入队、暂停 / 继续 / 取消、落盘路径、成品读回（大小 / sha256 /
-/// 删除）。**所有 `File` / `Directory` 的使用都隔离在本文件里**，
-/// `ix_download.dart` 本体不再碰 `dart:io`，Web 构建才能通过。
+/// 本分支（纯 Web）**不会**编译它——`pubspec.yaml` 里 `flutter:` 段把
+/// `lib/domain/ix/` 整体作为"两平台共用契约 + Web 实现"装载，`io` 实现
+/// 仅供其他分支/未来 Android 集成时 `import 'package:ogl/domain/ix/
+/// ix_download_backend_io.dart'` 引用。
 ///
-/// 只在非 Web 构建里参与编译（由 `ix_download.dart` 的条件导入选定）；
-/// Web 对应文件是 `ix_download_backend_web.dart`。
+/// ## 为什么 Web 分支需要它存在
+/// 上一里程碑的契约 `Future<Uri?> pathFor(IxDownloadSpec spec)`：
+/// - Web 端 `ix_download_backend_web.dart` → 返回 `null`；
+/// - 原生端（io）→ 返回 `Uri.file(spec.savePath)`。
+///
+/// 有了这个占位文件，**契约层与"原生路径形态"在仓库中**对得齐——审计脚本、
+/// 编译器与 IDE 跳转都不会再把 `pathFor` 当成"只存在于 Web 的孤儿方法"，
+/// 集成分支开起来时只要 `import 'ix_download_backend_io.dart'` 就能直接
+/// 用，`Uri.file(spec.savePath)` 的实现也不必在每个集成分支里复制一遍。
+///
+/// ## 完整性
+/// 原生端要兑现全部契约（`events` / `pause` / `resume` / ...），本文件**不**
+/// 假装实现——它只覆盖 `pathFor`，其余方法抛 [UnimplementedError]，让集成方
+/// 看到红灯补齐（避免"看似能编却运行时炸"）。
 library;
-
-import 'dart:async';
-import 'dart:io';
-
-import 'package:background_downloader/background_downloader.dart';
-import 'package:crypto/crypto.dart';
 
 import 'ix_download.dart';
 
-/// 按平台创建下载后端（非 Web）。
-IxDownloadBackend createDownloadBackend() => IoDownloadBackend();
+/// 原生后端的"路径解析"路径：把 `savePath`（绝对本地路径）包成 `Uri.file`。
+///
+/// `Uri.file` 与 `Uri.parse` 的关键差异：
+/// - `Uri.file('/Users/foo/My File.md')` → `pathSegments = ['Users', 'foo', 'My%20File.md']`
+///   保留**真实路径编码**（空格 → `%20`），`launchUrl` 才能正确传给系统；
+/// - `Uri.parse(spec.savePath)` 在 Windows 路径或含空格的路径上会**丢掉编码**，
+///   这是 `download_manager_page._openLocal` 上 `Uri.file` 被误换成 `Uri.parse`
+///   后报"无应用打开"的根因。
+///
+/// `pathFor` 与 [IxDownloadTask.savePath] 字段同义——都表示"本地绝对路径"，
+/// 但这里是 [Uri]，便于直接喂给 `launchUrl` / `File.copy` / `RepositoryCache`。
+Uri pathForSpec(IxDownloadSpec spec) => Uri.file(spec.savePath);
 
-/// 原生下载后端（`background_downloader`）。
+/// 原生端 `pathFor` 的 [IxDownloadBackend] 适配入口（工厂）。
+///
+/// **仅供集成分支使用**——它把 `pathForSpec` 收到 backend 的协议方法里，
+/// 其它方法在本文件**留白**（抛 `UnimplementedError`）以强制补齐。
 class IoDownloadBackend implements IxDownloadBackend {
-  /// 创建后端（含订阅库的更新流）。
-  IoDownloadBackend({FileDownloader? downloader})
-      : _downloader = downloader ?? FileDownloader() {
-    _subscription = _downloader.updates.listen(_onUpdate);
-  }
-
-  final FileDownloader _downloader;
-  final StreamController<IxDownloadEvent> _events =
-      StreamController<IxDownloadEvent>.broadcast();
-
-  /// 本层任务 id → 库任务（暂停 / 继续 / 取消要传库对象）。
-  final Map<String, DownloadTask> _tasks = <String, DownloadTask>{};
-
-  /// 库任务 id → 本层任务 id（库的更新事件只有它自己的 id）。
-  final Map<String, String> _idsByLibraryId = <String, String>{};
-
-  StreamSubscription<TaskUpdate>? _subscription;
+  IoDownloadBackend();
 
   @override
-  Stream<IxDownloadEvent> get events => _events.stream;
+  Stream<IxDownloadEvent> get events =>
+      throw UnimplementedError('IoDownloadBackend.events');
 
   @override
-  bool get canReadLocalFile => true;
+  bool get canReadLocalFile =>
+      throw UnimplementedError('IoDownloadBackend.canReadLocalFile');
 
   @override
-  bool get supportsRanged => true;
+  bool get supportsRanged =>
+      throw UnimplementedError('IoDownloadBackend.supportsRanged');
 
   @override
-  bool get supportsPauseResume => true;
-
-  /// 构造库任务（`pathFor` 与 `enqueue` 共用同一份参数，保证 taskId 一致）。
-  DownloadTask _build(IxDownloadSpec spec) => DownloadTask(
-        url: spec.url,
-        filename: spec.fileName,
-        directory: 'ogl/download/${spec.folder}',
-        baseDirectory: BaseDirectory.applicationDocuments,
-        headers: spec.headers,
-        updates: Updates.statusAndProgress,
-        allowPause: true,
-        retries: 2,
-      );
+  bool get supportsPauseResume =>
+      throw UnimplementedError('IoDownloadBackend.supportsPauseResume');
 
   @override
-  Future<String> pathFor(IxDownloadSpec spec) async {
-    try {
-      return await _build(spec).filePath();
-    } catch (_) {
-      // 拿不到真实路径时退回文件名（界面至少能显示一个可读的名字）。
-      return spec.fileName;
-    }
-  }
+  Future<Uri?> pathFor(IxDownloadSpec spec) async => pathForSpec(spec);
 
   @override
-  Future<void> enqueue(IxDownloadSpec spec) async {
-    final DownloadTask task = _build(spec);
-    _tasks[spec.id] = task;
-    _idsByLibraryId[task.taskId] = spec.id;
-    await _downloader.enqueue(task);
-  }
+  Future<void> enqueue(IxDownloadSpec spec) =>
+      throw UnimplementedError('IoDownloadBackend.enqueue');
 
   @override
-  Future<void> pause(String id) async {
-    final DownloadTask? task = _tasks[id];
-    if (task != null) {
-      await _downloader.pause(task);
-    }
-  }
+  Future<void> pause(String id) =>
+      throw UnimplementedError('IoDownloadBackend.pause');
 
   @override
-  Future<void> resume(String id) async {
-    final DownloadTask? task = _tasks[id];
-    if (task != null) {
-      await _downloader.resume(task);
-    }
-  }
+  Future<void> resume(String id) =>
+      throw UnimplementedError('IoDownloadBackend.resume');
 
   @override
-  Future<void> cancel(String id) async {
-    final DownloadTask? task = _tasks[id];
-    if (task != null) {
-      await _downloader.cancelTaskWithId(task.taskId);
-    }
-  }
+  Future<void> cancel(String id) =>
+      throw UnimplementedError('IoDownloadBackend.cancel');
 
   @override
-  Future<int?> completedSize(String id) async {
-    final File? file = await _fileOf(id);
-    if (file == null) {
-      return null;
-    }
-    try {
-      return await file.length();
-    } catch (_) {
-      return null;
-    }
-  }
+  Future<int?> completedSize(String id) =>
+      throw UnimplementedError('IoDownloadBackend.completedSize');
 
   @override
-  Future<String?> fileSha256(String id) async {
-    final File? file = await _fileOf(id);
-    if (file == null) {
-      return null;
-    }
-    try {
-      return (await sha256.bind(file.openRead()).first).toString();
-    } catch (_) {
-      return null;
-    }
-  }
+  Future<String?> fileSha256(String id) =>
+      throw UnimplementedError('IoDownloadBackend.fileSha256');
 
   @override
-  Future<void> deleteFile(String id) async {
-    final File? file = await _fileOf(id);
-    if (file == null) {
-      return;
-    }
-    try {
-      await file.delete();
-    } catch (_) {
-      // 清理失败不改变结论（下载已判定失败，上层会如实报错）。
-    }
-  }
+  Future<void> deleteFile(String id) =>
+      throw UnimplementedError('IoDownloadBackend.deleteFile');
 
   @override
-  void dispose() {
-    _subscription?.cancel();
-    _subscription = null;
-    _events.close();
-  }
-
-  /// 把库的更新翻译成本层的状态 / 进度事件。
-  void _onUpdate(TaskUpdate update) {
-    if (update is TaskStatusUpdate) {
-      final String? id = _idsByLibraryId[update.task.taskId];
-      if (id == null) {
-        return;
-      }
-      _events.add(IxDownloadEvent.state(
-        id,
-        _mapStatus(update.status),
-        error: update.exception?.description,
-      ));
-      return;
-    }
-    if (update is TaskProgressUpdate) {
-      final String? id = _idsByLibraryId[update.task.taskId];
-      if (id == null) {
-        return;
-      }
-      final int total =
-          update.expectedFileSize > 0 ? update.expectedFileSize : 0;
-      final int received = total > 0 ? (update.progress * total).round() : 0;
-      _events.add(IxDownloadEvent.progress(id, received: received, total: total));
-    }
-  }
-
-  /// 解析任务对应的本地文件（不存在返回 `null`，**不抛**）。
-  Future<File?> _fileOf(String id) async {
-    final DownloadTask? task = _tasks[id];
-    if (task == null) {
-      return null;
-    }
-    try {
-      final File file = File(await task.filePath());
-      if (!await file.exists()) {
-        return null;
-      }
-      return file;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// 库状态 → 本应用状态。
-  ///
-  /// ★ 用 if 链而不是 switch：`TaskStatus` 是**第三方枚举**，
-  ///   - 写成穷尽 switch + `default` 时，若该枚举的取值恰好被上面列全，
-  ///     `default` 会被判为不可达（`--fatal-warnings` 直接红）；
-  ///   - 去掉 `default` 又在枚举新增取值时变成「未穷尽」编译错误。
-  ///   if 链对两种情况都成立，且语义就是「已知的逐个映射，其余归失败」。
-  static IxDownloadStatus _mapStatus(TaskStatus status) {
-    if (status == TaskStatus.enqueued) {
-      return IxDownloadStatus.queued;
-    }
-    if (status == TaskStatus.running) {
-      return IxDownloadStatus.running;
-    }
-    if (status == TaskStatus.complete) {
-      return IxDownloadStatus.completed;
-    }
-    if (status == TaskStatus.paused) {
-      return IxDownloadStatus.paused;
-    }
-    if (status == TaskStatus.canceled) {
-      return IxDownloadStatus.canceled;
-    }
-    // failed / notFound / 该库将来新增的取值：一律按失败处理。
-    return IxDownloadStatus.failed;
-  }
+  void dispose() => throw UnimplementedError('IoDownloadBackend.dispose');
 }

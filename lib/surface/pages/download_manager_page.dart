@@ -7,14 +7,15 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/animations.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 
 /// 取 `download_manager_page` 分片文案。
@@ -168,11 +169,15 @@ class DownloadManagerPage extends StatelessWidget {
                 ),
               ],
             ),
-            if (task.error != null)
+            // 显示下载失败原因：
+            // 1) 强类型（Web 后端）走 `_t('downloadFailed.${reason.name}')`；
+            // 2) 兜底走 `task.error`（自由文本，如 `'integrityMismatch'`）
+            //    —— 但不再"直接打印 String"，而是查 `failure.<key>`，缺则回退。
+            if (task.failureReason != null || task.error != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  task.error!,
+                  _failureText(task),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall
@@ -210,11 +215,12 @@ class DownloadManagerPage extends StatelessWidget {
                     onPressed: () => unawaited(surface.cancelDownload(task.id)),
                   ),
                 if (done) ...<Widget>[
-                  IconButton(
-                    tooltip: _t('open'),
-                    icon: const Icon(Icons.open_in_new),
-                    onPressed: () => unawaited(_openLocal(context, task)),
-                  ),
+                  if (!kIsWeb)
+                    IconButton(
+                      tooltip: _t('open'),
+                      icon: const Icon(Icons.open_in_new),
+                      onPressed: () => unawaited(_openLocal(context, task)),
+                    ),
                   IconButton(
                     tooltip: _t('copyPath'),
                     icon: const Icon(Icons.content_copy),
@@ -284,27 +290,68 @@ class DownloadManagerPage extends StatelessWidget {
     return '${_categoryLabel(task.category)} · $size$speed';
   }
 
+  /// 失败原因 → 本地化文案。
+  ///
+  /// 优先枚举（Web 后端），缺键时回退到 `task.error` 的 i18n 映射，
+  /// 再缺就回退到键名（**绝不返回空串**）。
+  static String _failureText(IxDownloadTask task) {
+    final IxDownloadFailureReason? reason = task.failureReason;
+    if (reason != null && reason != IxDownloadFailureReason.ok) {
+      // `_t` 的兜底链：当前语言 → en → 键名；键名不会空。
+      final String localized = _t('downloadFailed.${reason.name}');
+      // 兜底：如果键尚未翻译，至少把"开发期英文"也算上。
+      if (localized != 'downloadFailed.${reason.name}') {
+        return localized;
+      }
+      return IX_DOWNLOAD_FAILURE_FALLBACK;
+    }
+    final String? raw = task.error;
+    if (raw == null || raw.isEmpty) {
+      return _t('statusFailed');
+    }
+    // `task.error` 不是域枚举而是自由文本：用 `failure.<error>` 查 i18n，
+    // 没有就回退到自由文本（仍是有用信息，而不是把英文键名丢给用户）。
+    final String localized = _t('failure.$raw');
+    if (localized != 'failure.$raw') {
+      return localized;
+    }
+    return raw;
+  }
+
   Future<void> _openLocal(BuildContext context, IxDownloadTask task) async {
+    // Web 上的「打开」只是导航到下载 URL（成品由浏览器接管）；
+    // 非 Web 上传的是真实本地路径，必须走 `Uri.file`，否则 `launchUrl` 解析
+    // 不了 `C:\…` / 空格，转头向用户报"无应用打开"——实际上路径根本没读对。
+    final Uri target = kIsWeb
+        ? (Uri.tryParse(task.savePath) ?? Uri.parse(task.url))
+        : Uri.file(task.savePath);
     try {
       final bool ok = await launchUrl(
-        Uri.file(task.savePath),
+        target,
         mode: LaunchMode.externalApplication,
       );
       if (!ok) {
         throw StateError(_t('noAppForFile'));
       }
-    } catch (_) {
-      await Clipboard.setData(ClipboardData(text: task.savePath));
+    } catch (error) {
+      // 失败兜底：复制路径给用户，并显示带 i18n 键的失败原因（不再吞）。
+      if (!await ogLCopyText(task.savePath, tag: 'Download')) {
+        return;
+      }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(_t('cannotOpenCopied'))),
+          SnackBar(content: Text(_t('downloadOpenFailed', <String, Object?>{
+            'reason': error.toString(),
+          }))),
         );
       }
     }
   }
 
   Future<void> _copyPath(BuildContext context, IxDownloadTask task) async {
-    await Clipboard.setData(ClipboardData(text: task.savePath));
+    if (!await ogLCopyText(task.savePath, tag: 'Download')) {
+      return;
+    }
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
          SnackBar(content: Text(_t('pathCopied'))),

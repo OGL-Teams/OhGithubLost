@@ -3,7 +3,7 @@
 /// ## 浏览器能拿到什么、拿不到什么（如实区分）
 /// | 项 | Web 上 |
 /// |----|--------|
-/// | 区域设置 | **可拿**：`PlatformDispatcher.instance.locale` |
+/// | 区域设置 | **可拿**：`navigator.language` |
 /// | 平台名 | **可拿**：固定 `web` |
 /// | 系统版本串 | **拿不到**：浏览器不向页面暴露内核版本 → 返回「未知」 |
 /// | CPU 逻辑核数 | **拿不到**（本层不引入 `dart:js_interop` 去读
@@ -15,7 +15,15 @@
 /// 绝不为了填满界面而编造数值（这是本文件的唯一纪律）。
 library;
 
-import 'dart:ui' as ui;
+import 'dart:js_interop';
+
+/// 浏览器 `Navigator.language`（BCP-47 标签，如 `zh-CN`）。
+///
+/// 直接走 `navigator.language`（运行时单值），比走 `PlatformDispatcher` 更轻；
+/// 浏览器场景下用户语言并不像 Flutter 那样按"区域 + 脚本"细化，
+/// 单值足够覆盖 `OgLI18n` 的"主语言码 / 简体繁体分流"。
+@JS('navigator.language')
+external String get _navigatorLanguage;
 
 /// 平台原语（Web）。
 class SysPlatform {
@@ -27,9 +35,8 @@ class SysPlatform {
   /// 系统版本串：浏览器不暴露内核版本 —— **如实返回「未知」**。
   static String get operatingSystemVersion => '未知';
 
-  /// 区域设置：由 Flutter 引擎给出的浏览器语言标签（如 `zh-Hans-CN`）。
-  static String get localeName =>
-      ui.PlatformDispatcher.instance.locale.toLanguageTag();
+  /// 区域设置：由浏览器 `navigator.language` 给出的语言标签（如 `zh-CN`）。
+  static String get localeName => _navigatorLanguage;
 
   /// CPU 逻辑核数：本层不引入浏览器专属互操作 —— **如实返回 `null`（未知）**。
   static int? get numberOfProcessors => null;

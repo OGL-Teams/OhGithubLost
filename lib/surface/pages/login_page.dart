@@ -138,9 +138,13 @@ class _LoginPageState extends State<LoginPage> {
       OgLAppLog.instance.add(_t('signIn'), '完成：@${me.login}');
       await widget.onLoggedIn();
     } catch (error, stackTrace) {
+      // ★ 第一件事：把失败写到通知中心（与 UI mounted 无关）。
+      //   设 `_error`/`_phase` 是界面层的事，页面被销毁就没必要（也不该）
+      //   setState；但"用户能不能在通知中心看到登录失败"必须独立成立——
+      //   切到其它页面也照样是 critical 横幅 / 弹窗。
       OgLAppLog.instance.add(
-        _t('signIn'),
-        '失败（原始异常）：$error\n$stackTrace',
+        'signIn',
+        '登录失败：$error\n$stackTrace',
         severity: OgLNoticeSeverity.critical,
       );
       // ★ 清理"待验证"半成品：若失败时激活的仍是占位账户，
@@ -152,11 +156,13 @@ class _LoginPageState extends State<LoginPage> {
         }
       } catch (cleanupError) {
         OgLAppLog.instance.add(
-          _t('signIn'),
+          'signIn',
           '清理待验证账户失败：$cleanupError',
           severity: OgLNoticeSeverity.warning,
         );
       }
+      // 下面的 setState 是「当前页面」上的错误反馈；如果状态已 unmounted
+      // （用户在 await 期间点了返回），就让通知中心那条 critical 兜底。
       if (mounted) {
         setState(() {
           _error = OgLI18n.instance.t('login', 'verifyFailed', args: <String, String>{'error': '$error'});

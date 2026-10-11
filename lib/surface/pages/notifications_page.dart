@@ -13,11 +13,11 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
+import '../util/clipboard_x.dart';
 
 /// 取 `notifications_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) =>
@@ -211,6 +211,20 @@ class _NotificationTile extends StatelessWidget {
   final VoidCallback onToggle;
   final VoidCallback onMarkRead;
 
+  Future<void> _copyEntryText(
+    BuildContext context,
+    OgLAppLogEntry entry,
+  ) async {
+    if (!await ogLCopyText(entry.toDisplay(), tag: 'Notifications')) {
+      return;
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_t('copiedEvent'))),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -289,15 +303,7 @@ class _NotificationTile extends StatelessWidget {
                                 children: <Widget>[
                                   TextButton.icon(
                                     onPressed: () {
-                                      unawaited(Clipboard.setData(
-                                        ClipboardData(text: entry.toDisplay()),
-                                      ));
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                         SnackBar(
-                                            content: Text(_t('copiedEvent')),
-                                          ),
-                                      );
+                                      unawaited(_copyEntryText(context, entry));
                                     },
                                     icon: const Icon(Icons.content_copy,
                                         size: 16),

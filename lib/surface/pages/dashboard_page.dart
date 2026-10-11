@@ -353,6 +353,12 @@ class _RepoPaged extends ChangeNotifier {
   }
 
   Future<void> refresh() async {
+    // ★ 入口守卫：刷新是 `Future`，可能在 `_disposed` 之后才被调度到这里
+    //   （比如页面已 push 走、`p.refresh` 还被 ListenableBuilder 串着触发）；
+    //   不守住就直接 `_generation++` / 走 `loadMore`，留下"幽灵请求"。
+    if (_disposed) {
+      return Future<void>.value();
+    }
     // 先作废在途请求：它的响应属于"上一代"数据（旧筛选 / 旧快照）。
     _generation++;
     if (loading) {

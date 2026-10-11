@@ -23,7 +23,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../kernel/kernel.dart';
 import '../../kernel/log/og_l_log_file.dart';
@@ -37,6 +36,7 @@ import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
 import '../util/accel.dart';
+import '../util/clipboard_x.dart';
 import '../widgets/code_editor_field.dart';
 import 'about_page.dart';
 import 'legal_text_page.dart';
@@ -406,7 +406,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// 复制全部日志到剪贴板。
   Future<void> _copyLogs(List<String> lines) async {
-    await Clipboard.setData(ClipboardData(text: lines.join('\n')));
+    if (!await ogLCopyText(lines.join('\n'), tag: 'Settings')) {
+      return;
+    }
     if (!mounted) {
       return;
     }

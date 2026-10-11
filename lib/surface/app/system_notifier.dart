@@ -100,15 +100,24 @@ class OgLSystemNotifier {
     _initialized = true;
     // ★ Web：浏览器通知没有"初始化"这一步，只判断浏览器给不给这个能力。
     //   不给就**如实降级为不通知**（而不是假装初始化成功）。
+    //   优先走 `navigator.permissions.query`（Permissions API），失败时
+    //   回退到 `Notification.permission`，两条路径结果对齐（见
+    //   `browser_notify_web.dart` 的 `ogLBrowserNotifyPermissionAsync`）。
     if (kIsWeb) {
-      if (ogLBrowserNotifySupported()) {
+      final String permission = await ogLBrowserNotifyPermissionAsync();
+      if (permission != 'unsupported' && permission != 'denied') {
         return true;
       }
-      _unavailable = true;
-      _unavailableReason = '浏览器不提供 Notification API';
+      if (permission == 'denied') {
+        _unavailable = true;
+        _unavailableReason = '浏览器通知已被用户拒绝';
+      } else {
+        _unavailable = true;
+        _unavailableReason = '浏览器不提供 Notification API';
+      }
       OgLAppLog.instance.add(
         _t('notification'),
-        '系统通知不可用：浏览器不提供 Notification API（本次会话不发送系统通知）',
+        '系统通知不可用：$permission（本次会话不发送系统通知）',
         severity: OgLNoticeSeverity.warning,
       );
       return false;

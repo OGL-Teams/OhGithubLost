@@ -16,7 +16,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../app/animations.dart';
 import '../app/error_surface.dart';
@@ -25,6 +24,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/accel.dart';
+import '../util/clipboard_x.dart';
 import '../util/file_icons.dart';
 import '../util/file_preview.dart';
 import '../util/gh_format.dart';
@@ -216,7 +216,10 @@ class _RepoPageState extends State<RepoPage> {
   }
 
   Future<void> _copyCloneUrl() async {
-    await Clipboard.setData(ClipboardData(text: 'https://github.com/$_full.git'));
+    if (!await ogLCopyText('https://github.com/$_full.git',
+        tag: 'Repo')) {
+      return;
+    }
     _toast(_t('cloneUrlCopied'));
   }
 
@@ -1515,7 +1518,9 @@ class _CodeTabState extends State<_CodeTab> {
         actions: <Widget>[
           TextButton(
             onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: entry.path));
+              if (!await ogLCopyText(entry.path, tag: 'Repo')) {
+                return;
+              }
               if (dialogContext.mounted) {
                 Navigator.of(dialogContext).pop();
                 _toast(_t('pathCopied'));
@@ -1841,7 +1846,9 @@ class _CodeTabState extends State<_CodeTab> {
   Future<void> _deleteFromFile(GhContent file) => _deleteEntry(file);
 
   Future<void> _copyPath(String path) async {
-    await Clipboard.setData(ClipboardData(text: path));
+    if (!await ogLCopyText(path, tag: 'Repo')) {
+      return;
+    }
     _toast(_t('pathCopied'));
   }
 

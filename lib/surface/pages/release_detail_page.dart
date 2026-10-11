@@ -20,6 +20,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/accel.dart';
+import '../util/clipboard_x.dart';
 import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
@@ -386,8 +387,9 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
       _toast(_t('assetNoUrl'));
       return;
     }
-    await Clipboard.setData(ClipboardData(text: url));
-    _toast(_t('copiedDownloadLink'));
+    if (await ogLCopyText(url, tag: 'Release')) {
+      _toast(_t('copiedDownloadLink'));
+    }
   }
 
   Widget _assetKeyRow(String key, String value) => Padding(
@@ -403,9 +405,10 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
 
   Future<void> _copyNotes() async {
     final String text = _release.body ?? '';
-    await Clipboard.setData(ClipboardData(text: text));
-    if (mounted) {
-      _toast(_t('copiedNotes'));
+    if (await ogLCopyText(text, tag: 'Release')) {
+      if (mounted) {
+        _toast(_t('copiedNotes'));
+      }
     }
   }
 

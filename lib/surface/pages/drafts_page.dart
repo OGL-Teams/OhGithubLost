@@ -9,13 +9,13 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../app/animations.dart';
 import '../app/async.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/clipboard_x.dart';
 
 /// 取 `drafts_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) =>
@@ -121,6 +121,16 @@ class _DraftsPageState extends State<DraftsPage> {
     }
   }
 
+  /// 复制草稿内容到剪贴板；复制成功后才关闭对话框（失败可见）。
+  Future<void> _copyDraft(GhDraft draft, BuildContext dialogContext) async {
+    if (!await ogLCopyText(draft.content, tag: 'Drafts')) {
+      return;
+    }
+    if (dialogContext.mounted) {
+      Navigator.of(dialogContext).pop();
+    }
+  }
+
   void _view(GhDraft draft) {
     showDialog<void>(
       context: context,
@@ -138,8 +148,7 @@ class _DraftsPageState extends State<DraftsPage> {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              unawaited(Clipboard.setData(ClipboardData(text: draft.content)));
-              Navigator.of(dialogContext).pop();
+              unawaited(_copyDraft(draft, dialogContext));
             },
             child:  Text(_t('copyContent')),
           ),

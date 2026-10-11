@@ -71,7 +71,7 @@ class DraftRecord {
         'updatedAt': updatedAt.toIso8601String(),
       };
 
-  /// 反序列化；结构不合法返回 `null`。
+  /// 反序列化；结构不合法时记录日志后返回 `null`（宁可丢弃，也不猜）。
   static DraftRecord? fromJson(Map<String, dynamic> json) {
     try {
       final key = CacheKey.decode(json['key'] as String);
@@ -85,7 +85,17 @@ class DraftRecord {
         revision: json['revision'] as int? ?? 0,
         updatedAt: DateTime.parse(json['updatedAt'] as String),
       );
-    } catch (_) {
+    } catch (error) {
+      // 静态上下文（fromJson）：不接受注入；用 KernelDiagnostics 上报，
+      // 与 base 分层保持一致（base 不可 import surface；同 disk_cache /
+      // net_dns 等同层落点）。
+      // 关于页日志通过 base_bootstrap 把 KernelDiagnostics 落盘后能被 grep。
+      KernelDiagnostics().warn(
+        'DRAFT',
+        '记录损坏，已丢弃',
+        code: 'OGL-DRAFT-401',
+        data: <String, Object?>{'error': error.toString()},
+      );
       return null;
     }
   }

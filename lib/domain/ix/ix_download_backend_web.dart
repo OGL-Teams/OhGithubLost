@@ -53,31 +53,37 @@ class WebDownloadBackend implements IxDownloadBackend {
   @override
   bool get supportsPauseResume => false;
 
-  /// Web 上没有本地落盘路径：返回**下载地址**本身。
+  /// Web 上没有本地落盘路径：返回 `null`（页面拿不到、也不编造）。
   ///
-  /// 界面拿它展示"文件在哪"——成品实际由浏览器写进它自己的下载目录，
-  /// 位置由浏览器的设置决定，页面无从得知（也不编造一个假路径）。
+  /// 之前 `localUri` 返回 `Uri.tryParse(spec.url)` 把"下载地址"塞进 `savePath`，
+  /// 让 `Uri.file(savePath)` 在 `download_manager_page` 的"打开"按钮里走
+  /// 错路（Windows 路径 / 含空格的本地文件解析不开）。
+  /// 现在返回 `null`：调用方据此展示"成品在浏览器下载目录"，外加
+  /// `task.url` 作为去复制的入口（修改 `IxDownloadTask` 的字段由 UI 层处理）。
+  /// `Uri.file(...)` 不会再被错误地以 URL 去解析。
   @override
-  Future<String> pathFor(IxDownloadSpec spec) async => spec.url;
+  Future<Uri?> pathFor(IxDownloadSpec spec) async => null;
 
   @override
   Future<void> enqueue(IxDownloadSpec spec) async {
-    final String? failure = await _handOffToBrowser(spec);
+    final IxDownloadFailureReason reason = await _handOffToBrowser(spec);
     // 用微任务派发终态：`enqueue` 返回之前，调用方（管理器）还没把快照登记好，
     // 同步发事件会因查不到 id 而被丢弃。
     scheduleMicrotask(() {
       if (_events.isClosed) {
         return;
       }
-      _events.add(
-        failure == null
-            ? IxDownloadEvent.state(spec.id, IxDownloadStatus.completed)
-            : IxDownloadEvent.state(
-                spec.id,
-                IxDownloadStatus.failed,
-                error: failure,
-              ),
-      );
+      if (reason == IxDownloadFailureReason.ok) {
+        _events.add(IxDownloadEvent.state(spec.id, IxDownloadStatus.completed));
+      } else {
+        _events.add(
+          IxDownloadEvent.state(
+            spec.id,
+            IxDownloadStatus.failed,
+            errorReason: reason,
+          ),
+        );
+      }
     });
   }
 
@@ -108,17 +114,28 @@ class WebDownloadBackend implements IxDownloadBackend {
     _events.close();
   }
 
-  /// 把下载地址交给浏览器；返回 `null` 表示已成功触发，否则返回失败原因。
-  Future<String?> _handOffToBrowser(IxDownloadSpec spec) async {
+  /// 把下载地址交给浏览器；返回 [IxDownloadFailureReason]（`ok` = 已触发）。
+  ///
+  /// 仅枚举化以下原因（UI 用 `_t('downloadFailed.${reason.name}')` 直接显示）：
+  /// - [IxDownloadFailureReason.authHeaderNotAllowed]：浏览器不允许页面设
+  ///   置跨域鉴权头；
+  /// - [IxDownloadFailureReason.popupBlocked]：触发了浏览器弹窗拦截；
+  /// - [IxDownloadFailureReason.browserLaunchFailed]：`launchUrl` 抛 / 返 false。
+  ///
+  /// 未在枚举里的"合法仍失败"状况（例如解析 URL 失败）走
+  /// [IxDownloadFailureReason.browserLaunchFailed]——它对用户体验与"打开
+  /// 失败"是一类，由 UI 走同一提示文案。
+  Future<IxDownloadFailureReason> _handOffToBrowser(
+    IxDownloadSpec spec,
+  ) async {
     final Uri? uri = Uri.tryParse(spec.url);
     if (uri == null) {
-      return '下载地址非法';
+      return IxDownloadFailureReason.browserLaunchFailed;
     }
     final bool needsAuth = spec.headers.keys
         .any((String key) => key.toLowerCase() == 'authorization');
     if (needsAuth) {
-      return 'Web 无法携带 Authorization 头下载（浏览器不允许页面设置跨域鉴权头）：'
-          '请改用公开地址，或在浏览器里直接打开原始链接';
+      return IxDownloadFailureReason.authHeaderNotAllowed;
     }
     try {
       final bool launched = await launchUrl(
@@ -126,11 +143,11 @@ class WebDownloadBackend implements IxDownloadBackend {
         mode: LaunchMode.externalApplication,
       );
       if (!launched) {
-        return '浏览器拒绝了下载（可能被弹窗拦截）';
+        return IxDownloadFailureReason.popupBlocked;
       }
-      return null;
-    } catch (error) {
-      return '触发浏览器下载失败：$error';
+      return IxDownloadFailureReason.ok;
+    } catch (_) {
+      return IxDownloadFailureReason.browserLaunchFailed;
     }
   }
 }

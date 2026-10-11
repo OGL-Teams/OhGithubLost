@@ -148,9 +148,18 @@ class IxDownloadSpec {
 @immutable
 class IxDownloadEvent {
   /// 状态事件。
-  const IxDownloadEvent.state(this.id, this.status, {this.error})
-      : received = 0,
-        total = 0;
+  ///
+  /// [errorReason] 仅在 [status] 为 [IxDownloadStatus.failed] 时非 null；
+  /// 它是**强类型**失败原因（见 [IxDownloadFailureReason]），由 UI 层
+  /// 通过 `_t('downloadFailed.${reason.name}')` 映射为本地化文案——
+  /// 比传原始 String 更安全（不可注入、不可拼写错误、自动 lint）。
+  const IxDownloadEvent.state(
+    this.id,
+    this.status, {
+    this.errorReason,
+  })  : received = 0,
+        total = 0,
+        error = null;
 
   /// 进度事件。
   const IxDownloadEvent.progress(
@@ -158,7 +167,8 @@ class IxDownloadEvent {
     required this.received,
     required this.total,
   })  : status = null,
-        error = null;
+        error = null,
+        errorReason = null;
 
   /// 任务 id。
   final String id;
@@ -172,9 +182,48 @@ class IxDownloadEvent {
   /// 总字节（进度事件；0 = 未知）。
   final int total;
 
-  /// 失败原因（状态事件）。
+  /// 失败原因（已弃用：见 [errorReason]）。保留字段仅为兼容旧实现，
+  /// 新代码请走 [errorReason]（i18n 强类型）。
+  @Deprecated('Use errorReason for new code; this is the untranslated string.')
   final String? error;
+
+  /// 强类型失败原因（仅状态事件为 `failed` 时非 null）。
+  ///
+  /// UI 层：`_t('downloadFailed.${reason.name}')`；
+  /// 缺该键时兜底走 [IX_DOWNLOAD_FAILURE_FALLBACK]。
+  final IxDownloadFailureReason? errorReason;
 }
+
+/// 下载失败的强类型原因（用于事件 + UI 本地化）。
+///
+/// ## 为什么是枚举而不是 String
+/// - UI 层要 `_t('downloadFailed.${reason.name}')` 拿本地化文案；
+///   String 没有 `.name`，且允许任意拼写（typo）→ 不能 lint。
+/// - 后端（`ix_download_backend_web.dart`）只暴露这几个有限原因；
+///   加上 `ok` 是为了"成功也走枚举、不混用类型"。
+/// - 增删原因必须改这个枚举 + 同步更新 i18n 键 + 跑 `i18n_scan --check`。
+enum IxDownloadFailureReason {
+  /// 占位：成功（事件不为失败时也会用到，便于 UI 无脑 switch）。
+  ok,
+
+  /// 浏览器不允许页面为跨域请求设置 Authorization 头。
+  authHeaderNotAllowed,
+
+  /// 触发了浏览器的弹窗拦截（`window.open` 被拦）。
+  popupBlocked,
+
+  /// 浏览器未给出可用的应用去"打开外部链接"（无浏览器 / launchUrl 抛）。
+  browserLaunchFailed,
+
+  /// 平台不支持该操作（暂停 / 继续 / 分片）。Web 后端 `_rejectUnsupported`
+  /// 走诊断通道（`OGL-DL-501`），不返回失败原因——保留枚举以便未来需要时
+  /// 接入 UI 而不破坏 `.name` 拼写。
+  notSupported,
+}
+
+/// 当 `downloadFailed.<reason.name>` 缺失时的兜底文案（i18n 扫描兜底链之外的
+/// 终端兜底：开发期忘了加键也能展示出"是哪个原因"）。
+const String IX_DOWNLOAD_FAILURE_FALLBACK = 'Download failed';
 
 /// 平台下载后端（原生 = `background_downloader`；Web = 浏览器下载）。
 abstract class IxDownloadBackend {
@@ -192,10 +241,12 @@ abstract class IxDownloadBackend {
   /// 本平台是否支持**暂停 / 继续**（Web = `false`：浏览器下载不可被页面控制）。
   bool get supportsPauseResume;
 
-  /// 计算落盘路径，**不入队**（分片路径需要先知道目标文件位置）。
+  /// 计算落盘位置，**不入队**（分片路径需要先知道目标文件 URI）。
   ///
-  /// Web 上返回下载地址本身（页面没有本地路径可用）。
-  Future<String> pathFor(IxDownloadSpec spec);
+  /// 原生上返回 `Uri.file(spec.savePath)`（本地真实路径）；
+  /// Web 上返回 `null` —— 浏览器写进它自己的下载目录，页面拿不到路径，
+  /// 接口里**绝不**返回下载地址（与"`savePath` 等于本地路径"语义冲突）。
+  Future<Uri?> pathFor(IxDownloadSpec spec);
 
   /// 真正开始下载。
   Future<void> enqueue(IxDownloadSpec spec);
@@ -303,6 +354,7 @@ class IxDownloadTask {
     required this.bytesPerSecond,
     required this.createdAt,
     this.error,
+    this.failureReason,
     this.verified,
   });
 
@@ -339,8 +391,16 @@ class IxDownloadTask {
   /// 创建时间。
   final DateTime createdAt;
 
-  /// 失败原因。
+  /// 失败原因（**自由文本**，给"非 Web / 非固定原因"用，例如校验不匹配
+  /// `'integrityMismatch'`、多连接下载异常 `$error`）。Web 后端的枚举化失败
+  /// 用下方的 [failureReason] 字段；UI 层优先渲染 [failureReason]。
   final String? error;
+
+  /// 强类型失败原因（Web 后端专用，UI 渲染本地化文案）。
+  ///
+  /// 与 [error] 同时只能有一个非 null：Web 走 [failureReason]；
+  /// 原生（非枚举化原因）走 [error]。详情见 [IxDownloadEvent.errorReason]。
+  final IxDownloadFailureReason? failureReason;
 
   /// 完整性校验结果（三态，**不谎称验过**）：
   /// - `true`：已按期望摘要校验**通过**；
@@ -370,6 +430,7 @@ class IxDownloadTask {
     int? total,
     double? bytesPerSecond,
     String? error,
+    IxDownloadFailureReason? failureReason,
     String? savePath,
     bool? verified,
   }) =>
@@ -385,6 +446,7 @@ class IxDownloadTask {
         bytesPerSecond: bytesPerSecond ?? this.bytesPerSecond,
         createdAt: createdAt,
         error: error ?? this.error,
+        failureReason: failureReason ?? this.failureReason,
         verified: verified ?? this.verified,
       );
 }
@@ -514,7 +576,11 @@ class IxDownloadManager extends ChangeNotifier {
       for (final String alt in fallbackUrls)
         if (alt.isNotEmpty && alt != url) alt,
     ];
-    final String savePath = await _backend.pathFor(spec);
+    // 原生：`Uri.file(savePath).toFilePath()` 真正本地路径；
+    // Web：返回 `null`，界面据此知道"成品在浏览器下载目录"，
+    //   与之前把 URL 塞进 savePath（导致 `Uri.file(url)` 解析错）彻底切割。
+    final Uri? localUri = await _backend.pathFor(spec);
+    final String savePath = localUri?.toFilePath() ?? '';
     _snapshots[id] = IxDownloadTask(
       id: id,
       url: url,
@@ -605,7 +671,8 @@ class IxDownloadManager extends ChangeNotifier {
       );
       final String target = reachable ?? candidates.first;
       final IxDownloadSpec fallback = spec.copyWith(url: target);
-      final String path = await _backend.pathFor(fallback);
+      final String path =
+          (await _backend.pathFor(fallback))?.toFilePath() ?? '';
       final IxDownloadTask? current = _snapshots[id];
       if (current != null) {
         _snapshots[id] = current.copyWith(savePath: path);
@@ -919,10 +986,16 @@ class IxDownloadManager extends ChangeNotifier {
   /// 顺序很重要：校验不通过时必须**跳过 SAF 导出**，否则被替换的文件会落到
   /// 用户可见的目录里。
   Future<void> _finishTask(String id) async {
+    // ★ 与 `_runRanged` 同样的入口守卫：分片任务是 fire-and-forget，
+    //   在它跑完之前用户可能已 dispose 管理器或移除任务；这时再动
+    //   `_snapshots[id]` 会把条目复活（"任务走了又回来"）。
+    if (_disposed || !_snapshots.containsKey(id)) {
+      return;
+    }
     final bool ok = await _verifyIntegrity(id);
     if (!ok) {
       final IxDownloadTask? snap = _snapshots[id];
-      if (snap != null) {
+      if (!_disposed && snap != null) {
         // ★ 校验不匹配的成品必须**删掉**：留着它，用户点「重试」只会把同一份
         //   坏字节再校验一遍，永远失败。删掉后重试才会真正重新下载。
         await _backend.deleteFile(id);
@@ -992,7 +1065,16 @@ class IxDownloadManager extends ChangeNotifier {
     }
     final IxDownloadStatus? status = event.status;
     if (status != null) {
-      _snapshots[id] = snap.copyWith(status: status, error: event.error);
+      // 失败事件：优先把强类型原因写到 `failureReason`，方便 UI 走 `_t`。
+      // `event.error`（已弃用 String）保留兼容老路径（仅原生端可能给）。
+      final String? legacy =
+          // ignore: deprecated_member_use_from_same_package
+          event.error;
+      _snapshots[id] = snap.copyWith(
+        status: status,
+        error: legacy,
+        failureReason: event.errorReason,
+      );
       notifyListeners();
       if (status == IxDownloadStatus.completed) {
         // 先校验完整性，再回填大小与导出 SAF（校验不过则判失败、不导出）。
@@ -1041,10 +1123,15 @@ class IxDownloadManager extends ChangeNotifier {
   /// 库对小文件可能一次进度事件都不发 → 界面会一直显示 "0 B"（截图实证）。
   /// Web：后端返回 `null`（拿不到），保持未知——**不编造**。
   Future<void> _fillCompletedSize(String id) async {
+    // ★ 入口守卫：与 _finishTask 同一来源——任务可能在后台完成回填到来时
+    //   已被用户移除/管理器已 dispose，再写 _snapshots[id] 会把条目复活。
+    if (_disposed || !_snapshots.containsKey(id)) {
+      return;
+    }
     try {
       final int? size = await _backend.completedSize(id);
       final IxDownloadTask? snap = _snapshots[id];
-      if (size == null || snap == null) {
+      if (_disposed || size == null || snap == null) {
         return;
       }
       _snapshots[id] = snap.copyWith(received: size, total: size);

@@ -3,6 +3,13 @@
   "cannotOpenCopied": "无法直接打开，已复制文件路径",
   "clearFinished": "清理已结束",
   "copyPath": "复制路径",
+  "downloadFailed": {
+    "authHeaderNotAllowed": "浏览器不允许为跨域请求设置 Authorization 头",
+    "popupBlocked": "浏览器拦截了下载弹窗",
+    "browserLaunchFailed": "没有可用的应用打开下载链接",
+    "notSupported": "当前平台不支持该操作"
+  },
+  "downloadOpenFailed": "打开下载文件失败：{reason}",
   "empty": "还没有下载任务",
   "emptyHint": "在 Release 附件或仓库文件上点「下载」即可加入",
   "multiConnection": "多连接",
