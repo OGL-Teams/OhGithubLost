@@ -10,7 +10,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../kernel/kernel.dart';
@@ -19,6 +18,7 @@ import '../app/permission_selftest.dart';
 import '../app/permissions.dart';
 import '../app/project_info.dart';
 import '../i18n/og_l_i18n.dart';
+import '../util/clipboard_x.dart';
 
 /// 取 `about_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) =>
