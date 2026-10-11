@@ -180,3 +180,39 @@ jobs:
           fi
           git commit -m "chore(web): 发布 ${{ steps.ver.outputs.version }} 到 app/wasm/ + app/js/"
           git push
+
+      # ── 预热 jsDelivr ──────────────────────────────────────────────────
+      # 站点运行时会在「fastly.jsdelivr / 同源 / cdn.jsdelivr」里挑最快的源。
+      # jsDelivr 对**没被请求过**的文件要回源 GitHub，首次要 6~19s
+      # （v7.4.4 上线实测）；一旦边缘缓存命中就只有 1.6~2.3s。
+      # 所以这里由 CI 主动拉一遍关键文件，把边缘缓存"焐热"，
+      # 真实用户直接走命中路径。
+      #
+      # 用 curl 自带的 --retry 做等待（GitHub raw 对新提交有几十秒可见性延迟），
+      # 不额外写 sleep。
+      - name: 预热 jsDelivr（让 CDN 边缘先回源一遍）
+        if: success()
+        run: |
+          set -u
+          V='${{ steps.ver.outputs.version }}'
+          D=$(printf '%s' "$V" | tr -cd '0-9')
+          GB='https://fastly.jsdelivr.net/gh/yingo-server/OhGithubLost@web/app'
+          echo "预热版本 $V（目录 $D）"
+          # 先确认 jsDelivr 已能看到这次提交（version.json 只有 js 桶有）
+          curl -sL -o /dev/null \
+            --retry 8 --retry-delay 20 --retry-all-errors --max-time 60 \
+            "$GB/js/$D/version.json" || true
+          for f in \
+            "wasm/$D/flutter_bootstrap.js" \
+            "wasm/$D/main.dart.mjs" \
+            "wasm/$D/main.dart.wasm" \
+            "wasm/$D/canvaskit/skwasm.wasm" \
+            "wasm/$D/canvaskit/canvaskit.wasm" \
+            "js/$D/main.dart.js" \
+            "js/$D/canvaskit/canvaskit.wasm" \
+            "js/$D/canvaskit/chromium/canvaskit.wasm"
+          do
+            code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 240 "$GB/$f" || echo ERR)
+            echo "  预热 $f → $code"
+          done
+          echo '预热完成（失败不影响发布，运行时会自动回退同源）'
