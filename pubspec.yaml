@@ -116,6 +116,26 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
+# ── 依赖覆盖：为 dart2wasm 打通被 transitive dep 卡住的链路 ───────────────
+# 问题链：re_editor → isolate_manager ^4.1.5+1 → isolate_contactor ^4.0.0
+#   isolate_contactor 4.1.0 的 Web 实现（isolate_contactor_web.dart）import
+#   `dart:html`，而 **dart2wasm 不支持 dart:html**（只支持 package:web +
+#   dart:js_interop）→ `flutter build web --wasm` 直接编译失败。
+#
+# 为什么不能只把 isolate_contactor 抬到 4.2.0：4.2.0 虽已迁到 package:web，
+#   但它约束 `web: ^0.5.1`（0.x 的 caret 锁死 minor → 实际要 <0.6.0），
+#   而本项目 `http 1.x` 需要 `web: ^1.0.0` → 直接冲突，pub 只能退回 4.1.0。
+#
+# 修法：把 isolate_manager 覆盖到 6.x ——
+#   · 6.x 已**彻底删除** isolate_contactor 依赖，自身直接用 `package:web`
+#     （约束 `web: ^1.0.0`，与 http 1.x 相容）；
+#   · 对外 API 与 re_editor 的用法完全一致：
+#       IsolateManager.create(fn, concurrent: n) / .compute(p, callback:) / .stop()
+#   · 经核验，6.x 的 lib/ 内**零** `dart:html` 引用。
+# 覆盖只影响版本求解，不修改任何第三方源码；re_editor 无需改动。
+dependency_overrides:
+  isolate_manager: ^6.3.2
+
 flutter:
   uses-material-design: true
 

@@ -134,7 +134,7 @@ WRAPPER = """<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>OhGithubLost · Web</title>
   <meta name="theme-color" content="#171A21">
-  <link rel="icon" type="image/png" href="__CURRENT__/favicon.png">
+  <link rel="icon" type="image/png" href="js/__CURRENT__/favicon.png">
   <!-- WebAssembly 嗅探：必须在 iframe 拿到 src 之前同步执行完毕；
        dart2wasm 需要 Wasm GC（struct/array ref）提案，旧 Safari 不支持。 -->
   <script>
@@ -248,32 +248,25 @@ WRAPPER = """<!DOCTYPE html>
     <div class="bar"></div>
     <div class="hint">加载中…</div>
   </div>
-  <!-- iframe 一开始指向 about:blank；下方同步脚本根据嗅探结果立即改 src，
-       避免在不支持 wasm 的浏览器里发起 wasm 资源请求（会被 404 + 控制台噪音）。 -->
+  <!-- ★ iframe 直接指向本版本的**默认目录**（`__CURRENT__/`），该目录已由 CI
+       发布，**零 404、零额外探测请求**。
+       为什么不在这里做 wasm/js 嗅探：iframe 即使加载到 404 页也只会触发
+       `load`（不是 `error`），"嗅探失败再回退"在 iframe 上根本不可靠。
+       等 wasm 桶真正上 CI 之后，改为服务端写死路径（或改用 fetch 预检），
+       在此之前——稳定优先，直接命中 js 产物。 -->
   <iframe id="ogl-frame" src="about:blank" title="OhGithubLost" allow="clipboard-write; fullscreen"></iframe>
   <script>
     (function () {
+      var f = document.getElementById('ogl-frame');
       var version = '__OGL_VERSION__';
       // 版本号 → 纯数字目录名（与 version_dir_name() 规则一致）：'7.4.2' → '742'
       var dir = version.replace(/[^0-9]/g, '');
+      // 头部同步嗅探已把结果写入 window.__OGL_VARIANT__（'wasm' | 'js'）；
+      // 两个桶都由 CI 发布：app/wasm/<dir>/ 与 app/js/<dir>/。
       var variant = window.__OGL_VARIANT__ || 'js';
-      // ★ 当前发布产物：v7.4.2 起 wasm 桶留作后续优化（permission_handler
-      //   transitive dep 还在用 dart:html，dart2wasm 暂不能直接编译），
-      //   仅 js 桶落地；嗅探结果仅为未来预留，**先试 wasm → 404 时降级 js**。
-      var f = document.getElementById('ogl-frame');
-
-      function setSrc(p) { f.src = p; }
-      if (variant === 'wasm') {
-        setSrc('./wasm/' + dir + '/');
-        // 兜底：wasm 桶目前不存在（404）。listen error → 自动切 js。
-        f.addEventListener('error', function once() {
-          f.removeEventListener('error', once);
-          setSrc('./js/' + dir + '/');
-        });
-      } else {
-        setSrc('./js/' + dir + '/');
-      }
-
+      f.src = variant === 'wasm'
+        ? './wasm/' + dir + '/'
+        : './js/' + dir + '/';
       var loader = document.getElementById('loader');
       // iframe onload = HTML 文档已加载完成（Flutter 引擎还在初始化，但基础资源没有 404）
       f.addEventListener('load', function () {
@@ -349,27 +342,9 @@ def main() -> int:
     #   entry = {'version': '7.4.2', 'dir': '742', 'variant': 'wasm' | 'js' | ''}
     #   variant 字段向后兼容：旧 consumer 读取时按 .get('variant', '') 不会 KeyError。
     #
-    # ★ 重要：CI 双构建（wasm + js）调 web_publish 两次。为避免后写者
-    #   覆盖前者的双桶记录，约定：
-    #     - `--subdir wasm` → **写** versions.json（主载权威）+ 入口页
-    #     - `--subdir js`   → **只**推目录，不写 versions.json / 入口页
-    #     - 不传 --subdir（默认 variant=''）→ 也只推目录，不重写入口
-    #   CI web.yml 已固定顺序（wasm 先 → js 后），保证 wasm 是权威写者。
-    #   入口页仅在 wasm 写一次，__OGL_VERSION__ 唯一，保证分桶一致。
-    if args.subdir:
-        # wasm 写、js 跳过（默认行为）；CI 双构建时 wasm 是权威写者
-        if args.subdir == 'js':
-            print('[--subdir js] js 桶仅推目录，不重写 versions.json 与入口页'
-                  '（由 wasm 桶作为权威）')
-            print('已发布 %s（variant=js）' % args.version)
-            return 0
-        # subdir == 'wasm'：继续往下走（写 manifest + 入口页）
-
-    if not args.subdir:
-        # 默认 variant='' 不在 CI 双构建流程中（CI 只调 wasm + js 两个桶），
-        # 此处保留以兼容手测与回滚脚本。
-        pass
-
+    # 双桶各写各的 entry：`_dedupe` 按 `(dir, variant)` 去重，两条共存不互相
+    # 覆盖。入口页 index.html 两次写入内容**完全相同**（都由 args.version +
+    # 数字目录算出），无论先后都一致。
     manifest_path = os.path.join(app_dir, 'versions.json')
     entries = _read_manifest(manifest_path)
     entries = _dedupe(entries, dir_name=dir_name, variant=variant)

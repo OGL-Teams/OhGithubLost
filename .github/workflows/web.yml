@@ -101,17 +101,22 @@ jobs:
       # 到 `build/web` → `build/web-js` 的 mv 链路可以保证第二次构建一定
       # 命中空目录，不需要 rm -rf 防御，CI 更稳。
       #
-      # ── ★ 临时回退：先构建 dart2js 一个产物，dart2wasm 留作后续 ────────
-      # v7.4.2 首次尝试双构建时，dart2wasm 编译因 transitive dep
-      # `isolate_contactor` (经 `permission_handler_web`) 引用 `dart:html`
-      # 而失败 —— Dart2wasm 不支持 `dart:html`（仅支持 `package:web` +
-      # `dart:js_interop`）。该问题在 `permission_handler >= 14.0` /
-      # `flutter_secure_storage` 完全切到 wasm 安全链之后才能解除。
-      # 暂只发 dart2js 一份；入口页 wasm 嗅探代码会在 js 路径下永远走 js 桶
-      # （嗅探结果由环境决定；构建侧已就绪、产物侧将来补回）。
-      - name: 构建 js 主产物（dart2wasm 留作后续依赖升级）
+      # ── 双构建：wasm 主载 + js 兜底 ─────────────────────────────────────
+      # dart2wasm → main.dart.wasm（<1MB），现代浏览器直取；
+      # dart2js  → main.dart.js（~5MB），无 wasm GC 的老浏览器兜底。
+      # 入口页 app/index.html 用双层嗅探（基础 wasm + GC 提案）决定 iframe 指向。
+      - name: 构建 wasm 主载（dart2wasm）
+        run: >-
+          flutter build web --release --wasm
+          --no-web-resources-cdn
+          --no-tree-shake-icons
+          --dart-define-from-file=dart_define.json
+          && mv build/web build/web-wasm
+
+      - name: 构建 js 兜底（dart2js）
         run: >-
           flutter build web --release
+          --no-web-resources-cdn
           --no-tree-shake-icons
           --dart-define-from-file=dart_define.json
           && mv build/web build/web-js
@@ -124,17 +129,22 @@ jobs:
           echo "version=$V" >> "$GITHUB_OUTPUT"
           echo "版本：$V"
 
-      - name: 验证产物
+      - name: 验证双产物
         run: |
           set -eu
-          [ -d build/web-js ] || { echo "缺构建产物：build/web-js" >&2; exit 1; }
-          [ -f build/web-js/index.html ] || { echo "build/web-js 缺 index.html" >&2; exit 1; }
-          [ -f build/web-js/main.dart.js ] || { echo "js 主产物没产物 main.dart.js" >&2; exit 1; }
-          echo "js 主产物校验通过：$(du -sh build/web-js | awk '{print $1}')"
-          # ★ wasm 桶暂时不存在（dart2wasm 因 transitive dep dart:html 待解决）；
-          #   仅校验 js 桶。
+          for d in build/web-wasm build/web-js; do
+            [ -d "$d" ] || { echo "缺构建产物：$d" >&2; exit 1; }
+            [ -f "$d/index.html" ] || { echo "$d 缺 index.html" >&2; exit 1; }
+            [ -d "$d/canvaskit" ] || { echo "$d 缺 canvaskit/（--no-web-resources-cdn 未生效）" >&2; exit 1; }
+          done
+          [ -f build/web-wasm/main.dart.wasm ] || { echo "wasm 主载缺 main.dart.wasm" >&2; exit 1; }
+          [ -f build/web-js/main.dart.js ] || { echo "js 兜底缺 main.dart.js" >&2; exit 1; }
+          echo "双产物校验通过：wasm $(du -sh build/web-wasm | awk '{print $1}') / js $(du -sh build/web-js | awk '{print $1}')"
 
-      # 部署顺序：先 js（CI 现在唯一主产物）。wasm 桶在权限升级后再补。
+      # 双桶发布：wasm 先（权威写者，负责 versions.json + 入口页），js 后。
+      - name: 按版本发布到 app/wasm/
+        run: python3 tool/web_publish.py build/web-wasm "${{ steps.ver.outputs.version }}" --subdir wasm
+
       - name: 按版本发布到 app/js/
         run: python3 tool/web_publish.py build/web-js "${{ steps.ver.outputs.version }}" --subdir js
 
