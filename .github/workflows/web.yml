@@ -21,6 +21,14 @@ name: Web
 on:
   push:
     branches: [web, main]
+    # ★ 忽略 CI 自己提交的 app/ 产物 —— 避免"构建→提交→再构建"的自触发。
+    #   注意：**不能**靠提交信息里的 `[skip ci]` 来防自触发 ——
+    #   Netlify 同样会跳过带 `[skip ci]` 的提交，导致 app/ 产物永远
+    #   部署不到站点（v7.4.2 上线时踩过这个坑）。
+    #   这里改用 paths-ignore；另外用 GITHUB_TOKEN 推送本身也不会
+    #   触发新的 Actions 运行。
+    paths-ignore:
+      - 'app/**'
   workflow_dispatch:
 
 concurrency:
@@ -158,7 +166,8 @@ jobs:
           retention-days: 14
 
       # 提交回分支：app/ 下的版本目录与入口页需要长期可访问。
-      # 提交信息带 [skip ci]，避免本工作流自己触发自己。
+      # ★ 提交信息里**不要**加 `[skip ci]` —— Netlify 会连带跳过部署，
+      #   导致产物永远上不了站点。防自触发改用 workflow 的 `paths-ignore`。
       - name: 提交 app/
         run: |
           set -eu
@@ -169,5 +178,5 @@ jobs:
             echo 'app/ 无变化，跳过提交'
             exit 0
           fi
-          git commit -m "chore(web): 发布 ${{ steps.ver.outputs.version }} 到 app/wasm/ + app/js/ [skip ci]"
+          git commit -m "chore(web): 发布 ${{ steps.ver.outputs.version }} 到 app/wasm/ + app/js/"
           git push
