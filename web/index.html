@@ -11,6 +11,14 @@
   并在代码里给出对应指引。macOS 上 Safari 16+ 与 Chrome/Edge 行为一致，
   走标准 beforeinstallprompt；Safari 也支持「添加到程序坞」。
 
+  ## CanvasKit 延迟加载
+  Flutter 3.x（≥3.22）默认 CanvasKit 渲染器在首次有 Canvas 需要绘制时
+  才下载 canvaskit.wasm / canvaskit.js（~3 MB），首屏 HTML 不再同步加载，
+  这一行为由 flutter_bootstrap.js 控制（Flutter 构建时生成，不在源码树里）。
+  本文件不引入任何 canvaskit_*.js 同步脚本，避免与上述默认行为冲突。
+  老的 Flutter 2.x 模板里直接 <script src="canvaskit_web.js"> 的写法在这里
+  不再适用（那个文件本身在 Flutter 3.x 已不存在）。
+
   ## 图标
   与其他平台同源：`assets/icon/ogl_icon.svg` 经 tool/desktop_icon.py 光栅化。
 -->

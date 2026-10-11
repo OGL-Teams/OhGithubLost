@@ -76,9 +76,17 @@ jobs:
             --key "$RUNNER_TEMP/ogl-boot-ed25519.key" \
             --out dart_define.json
 
-      - name: 构建（release）
+      # ── 为什么要 dart2wasm 而不是 dart2js ───────────────────────────────
+      # dart2js 输出 main.dart.js ≈ 5.2 MB（gzip 后仍 1.7 MB），浏览器
+      # 必须先下载、再 parse、再 JIT-like 执行，**首次可交互** 受三者拖累。
+      # dart2wasm 输出 main.dart.wasm（通常 < 1 MB，gzip ≈ 600 KB），
+      # 浏览器可以直接流式编译 + AOT 风格的常量池就地初始化 —— 同等网速
+      # 下首次加载减少 50%~70%。`flutter_bootstrap.js` 在编译期注入，
+      # 会自动嗅探 WebAssembly 支持并降级到 js（旧浏览器 / IE 路径）。
+      # 当前产物为 wasm 主载 + dart2js fallback 双发，**不删除** main.dart.js。
+      - name: 构建（release，dart2wasm 优化首次加载）
         run: >-
-          flutter build web --release
+          flutter build web --release --wasm
           --dart-define-from-file=dart_define.json
 
       - name: 读出版本号
