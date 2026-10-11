@@ -370,6 +370,28 @@ def main() -> int:
             print('  [修正] index.html base href: / → ./')
         else:
             print('  [跳过] index.html 无 <base href="/"> 或已修正')
+
+    # ★ 关闭 Flutter 的 service worker 注册。
+    #   资源可能从镜像（fastly.jsdelivr.net 等）加载，而 Service Worker
+    #   **必须是同源**才能注册 —— 跨源注册会抛错，Flutter 虽会捕获，但
+    #   控制台噪音大、部分版本还会等它超时，拖慢启动。
+    #   替代方案是强缓存：发布根 `_headers` 对 `/wasm/*`、`/js/*` 写了一年
+    #   `immutable`，二次访问零请求，效果不比 SW 差。
+    #   另外 Flutter 自己在生成代码里就标注了：
+    #     "Flutter's service worker is deprecated and will be removed…"
+    bs_path = os.path.join(target, 'flutter_bootstrap.js')
+    if os.path.isfile(bs_path):
+        with open(bs_path, encoding='utf-8') as fh:
+            bs = fh.read()
+        new_bs = re.sub(r'serviceWorkerSettings:\s*\{[^{}]*\}',
+                        'serviceWorkerSettings: undefined', bs)
+        if new_bs != bs:
+            with open(bs_path, 'w', encoding='utf-8') as fh:
+                fh.write(new_bs)
+            print('  [修正] flutter_bootstrap.js 关闭 service worker（跨源注册必失败）')
+        else:
+            print('  [跳过] flutter_bootstrap.js 未找到 serviceWorkerSettings')
+
     print('已发布 %s → %s' % (args.version, os.path.relpath(target, ROOT)))
 
     # 版本清单（新版本在前；按 (dir, variant) 去重）

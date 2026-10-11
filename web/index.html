@@ -51,7 +51,98 @@
   <link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
-  <!-- Flutter 的引导脚本（构建期注入） -->
-  <script src="flutter_bootstrap.js" async></script>
+  <!-- ── 资源源选择：运行时按实测速度挑镜像，失败依次降级 ──────────────
+       文档（本 index.html）**始终由当前站点提供**；Flutter 的静态资源
+       （flutter_bootstrap.js / main.dart.js|wasm / canvaskit / assets）
+       改为从**实测最快的镜像**加载。
+
+       为什么只换资源、不换整站：jsDelivr 的 gh 端点**不直出 HTML**
+       （`*.html` 会 301 到 raw.githubusercontent.com，国内不可达；
+        目录 URL 也是 404），所以页面只能留在本站。
+
+       候选（按实测排序，2026-10 在移动网络下测 1.4MB 主包：
+         fastly.jsdelivr 1.57s < netlify 3.27s < cdn.jsdelivr 3.96s）
+       选择方式：并行拉 13KB 的 flutter_bootstrap.js 取最快者；
+       结果写 localStorage 缓存 6 小时，之后不再探测（零额外延迟）。
+       全部失败 → 回退同源，行为与改动前完全一致。 -->
+  <script>
+    (function () {
+      var CANDIDATES = [
+        'https://fastly.jsdelivr.net/gh/yingo-server/OhGithubLost@web/app/',
+        './',
+        'https://cdn.jsdelivr.net/gh/yingo-server/OhGithubLost@web/app/'
+      ];
+      // 当前桶路径（如 'wasm/743/'）—— 从 location 推导，模板里不写死版本。
+      // 兼容两种部署根：站点发布 `app/`（路径 /wasm/743/）或仓库根（/app/wasm/743/）。
+      var suffix = location.pathname.replace(/^\/+/, '');
+      if (suffix.indexOf('app/') === 0) suffix = suffix.slice(4);
+      if (suffix.slice(-1) !== '/') suffix = suffix.replace(/[^/]*$/, '');
+      var PROBE_MS = 1000;
+      var CACHE_KEY = 'ogl.cdn.v1';
+      var CACHE_TTL = 6 * 3600 * 1000;
+
+      function start(base) {
+        if (base !== './') {
+          var b = document.querySelector('base');
+          if (b) b.href = base + suffix;
+        }
+        var s = document.createElement('script');
+        s.src = 'flutter_bootstrap.js';
+        s.async = true;
+        document.body.appendChild(s);
+      }
+
+      function cached() {
+        try {
+          var raw = localStorage.getItem(CACHE_KEY);
+          if (!raw) return null;
+          var o = JSON.parse(raw);
+          if (!o || !o.base || (Date.now() - o.ts) > CACHE_TTL) return null;
+          if (CANDIDATES.indexOf(o.base) < 0) return null;
+          return o.base;
+        } catch (e) { return null; }
+      }
+
+      function probe(base) {
+        return new Promise(function (resolve) {
+          var t0 = Date.now();
+          var ctl = ('AbortController' in window) ? new AbortController() : null;
+          var done = false;
+          var timer = setTimeout(function () {
+            if (done) return;
+            done = true;
+            if (ctl) ctl.abort();
+            resolve(null);
+          }, PROBE_MS);
+          fetch(base + suffix + 'flutter_bootstrap.js', ctl ? { signal: ctl.signal } : undefined)
+            .then(function (r) {
+              if (!r.ok) throw new Error('HTTP ' + r.status);
+              return r.arrayBuffer();
+            })
+            .then(function () {
+              if (done) return;
+              done = true; clearTimeout(timer); resolve(Date.now() - t0);
+            })
+            .catch(function () {
+              if (done) return;
+              done = true; clearTimeout(timer); resolve(null);
+            });
+        });
+      }
+
+      var hit = cached();
+      if (hit) { start(hit); return; }
+
+      Promise.all(CANDIDATES.map(probe)).then(function (times) {
+        var best = null, bestMs = Infinity;
+        for (var i = 0; i < CANDIDATES.length; i++) {
+          if (times[i] !== null && times[i] < bestMs) { bestMs = times[i]; best = CANDIDATES[i]; }
+        }
+        if (!best) best = './';
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ base: best, ts: Date.now() })); } catch (e) {}
+        start(best);
+      });
+    })();
+  </script>
 </body>
 </html>
