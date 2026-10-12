@@ -26,7 +26,6 @@ import '../app/overlays.dart';
 import '../app/paged_controller.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
-import 'download_manager_page.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/file_icons.dart';
@@ -41,6 +40,7 @@ import '../widgets/scroll_aware_action.dart';
 import 'action_run_page.dart';
 import 'code_editor_page.dart';
 import 'commit_page.dart';
+import 'download_manager_page.dart';
 import 'file_preview_page.dart';
 import 'issue_page.dart';
 import 'new_issue_page.dart';
@@ -1636,6 +1636,9 @@ class _CodeTabState extends State<_CodeTab> {
         category: IxDownloadCategory.repo,
         connections: widget.surface.settings.settings.downloadConnections,
       );
+      if (!mounted) {
+        return;
+      }
       ogLShowDownloadQueued(
         context,
         widget.surface,

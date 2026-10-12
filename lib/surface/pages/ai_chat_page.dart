@@ -13,6 +13,7 @@ import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import 'ai_settings_page.dart';
 
 /// 取 `ai` 分片文案。
 String _t(String key, [Map<String, String>? args]) => OgLI18n.instance.t('ai', key, args: args);
@@ -252,7 +253,7 @@ class _AiChatPageState extends State<AiChatPage> {
           borderRadius: BorderRadius.circular(12),
         ),
         child: SelectableText(
-          m.content.isEmpty ? text : m.content,
+          m.content,
           style: theme.textTheme.bodyMedium,
         ),
       ),

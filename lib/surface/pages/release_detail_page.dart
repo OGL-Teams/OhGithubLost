@@ -19,13 +19,13 @@ import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
-import 'download_manager_page.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../widgets/readme_view.dart';
+import 'download_manager_page.dart';
 
 /// 取 `release_detail_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) =>

@@ -21,7 +21,6 @@ library;
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -44,8 +43,8 @@ import 'about_page.dart';
 import 'ai_settings_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
-import 'settings_section_page.dart';
 import 'onboarding_page.dart';
+import 'settings_section_page.dart';
 
 /// 设置页。
 class SettingsPage extends StatefulWidget {

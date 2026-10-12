@@ -7,7 +7,6 @@
 /// 时这里重建、重新执行 builder，`OgLSettingsGroup` 的 `expanded` 随之更新。
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// 设置分区页。

@@ -27,9 +27,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ohgithublost/base/disk/disk_store.dart';
+import 'package:ohgithublost/base/net/ai_http_client_io.dart';
 import 'package:ohgithublost/base/net/net_bridge.dart';
 import 'package:ohgithublost/base/net/net_transport.dart';
 import 'package:ohgithublost/base/net/net_types.dart';
+import 'package:ohgithublost/domain/ai/ai_service.dart';
 import 'package:ohgithublost/domain/domain_bridge.dart';
 import 'package:ohgithublost/domain/gh/gh_api.dart';
 import 'package:ohgithublost/domain/gh/gh_auth.dart';
@@ -257,6 +259,8 @@ Future<SurfaceBridge> _buildBridge() async {
   final IxNotificationCenter notifications = IxNotificationCenter();
   final SysInfoService sysInfo = SysInfoService();
   final SysAccessGuard sysAccess = SysAccessGuard(store: kv);
+  final AiService ai =
+      AiService(store: kv, vault: vault, http: const AiHttpClientIo(), tools: const []);
   final DomainBridge domain = DomainBridge(
     auth: auth,
     api: api,
@@ -266,6 +270,7 @@ Future<SurfaceBridge> _buildBridge() async {
     notifications: notifications,
     sysInfo: sysInfo,
     sysAccess: sysAccess,
+    ai: ai,
   );
   final OgLSettingsController settings = OgLSettingsController(
     persistence: OgLInMemorySettingsPersistence(),

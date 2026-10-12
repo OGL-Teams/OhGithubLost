@@ -21,7 +21,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../app/async.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
-import 'download_manager_page.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/download_proxy.dart';
@@ -29,6 +28,7 @@ import '../util/file_preview.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../widgets/code_editor_field.dart';
+import 'download_manager_page.dart';
 import 'settings_page.dart';
 
 /// 取 `common` 分片文案。
