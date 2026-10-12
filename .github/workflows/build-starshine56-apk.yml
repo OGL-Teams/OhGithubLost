@@ -35,15 +35,15 @@ jobs:
           flutter create --platforms=android --project-name ohgithublost .
           rm -f test/widget_test.dart
           python3 <<'PYEOF'
-          import re
           p = 'android/app/build.gradle.kts'
           s = open(p).read()
-          # compileSdk 37
           s = s.replace('compileSdk = flutter.compileSdkVersion', 'compileSdk = 37')
-          # enable desugaring
-          s = s.replace('isCoreLibraryDesugaringEnabled = false', 'isCoreLibraryDesugaringEnabled = true')
-          # add desugar dependency inside dependencies block
-          s = s.replace('dependencies {', 'dependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")')
+          if 'isCoreLibraryDesugaringEnabled' not in s:
+              s = s.replace('compileOptions {', 'compileOptions {\n        isCoreLibraryDesugaringEnabled = true')
+          else:
+              s = s.replace('isCoreLibraryDesugaringEnabled = false', 'isCoreLibraryDesugaringEnabled = true')
+          if 'desugar_jdk_libs' not in s:
+              s = s.replace('dependencies {', 'dependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")')
           open(p,'w').write(s)
           print(open(p).read())
           PYEOF
