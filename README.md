@@ -1,103 +1,120 @@
-# OhGithubLost（OGL）
+<div align="center">
 
-**一个 GitHub 仓库管理客户端** —— 手机 / 平板 / 桌面可用。
-用它浏览与编辑仓库、处理 Issues 与 Pull Requests、查看 Releases 与 Actions、管理 Gist，不必打开浏览器。
+# OhGithubLost
 
-> 名称由来：GitHub 官方没有适合移动端的仓库管理客户端，OGL 就是要"把丢失的 GitHub 找回来"。
+**GitHub 仓库管理客户端**
 
-## 功能特性 / Features
+Android · Windows · Linux · Web
 
-- **仓库浏览**：目录树、文件预览、README 渲染（图片经 Contents API 加载，避开 DNS 污染）
-- **编辑**：在线编辑 / 新建 / 删除文件，提交与冲突处理（七道防线 D1–D7 + 持久化 D8–D10）
-- **协作**：Issues / Pull Requests / Releases / Actions / Gist
-- **多账号**：自由切换，Token 安全存储
-- **下载**：多连接分片下载 + 断点续传 + **自备加速通道**（默认关闭；本应用不预置任何通道，
-  要加速请自行添加前缀式代理地址）
-- **网络韧性**：内置 DoH、重试与限流避让。**不做静默降级**：加速开着就走通道，失败如实报错
-- **动效分级**：静默 / 保守 / 标准 / 拉满四档，降档降开销、不删效果
-- **6 种语言**：界面文案零硬编码，CI 强制校验（v6.4.0 由 15 种收敛，保留的 6 种均为逐句真译文）
-- **桌面自绘窗口**：自研标题栏（拖拽 / 双击最大化 / 最小化·最大化·关闭），可在设置菜单回退系统窗口管理器
+浏览与编辑仓库、处理 Issues / Pull Requests / Releases / Actions、管理 Gist —— 不必打开浏览器。
 
-## 平台支持 / Platform support
+[![Release](https://img.shields.io/github/v/release/yingo-server/OhGithubLost?label=release&color=blue)](https://github.com/yingo-server/OhGithubLost/releases)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Windows%20%7C%20Linux%20%7C%20Web-informational)](#平台支持)
+[![i18n](https://img.shields.io/badge/i18n-6%20languages-informational)](docs/I18N.md)
 
-| 平台 | 状态 | 说明 |
-| --- | --- | --- |
-| Android | ✅ 支持 | 4 架构 APK + AAB；arm64-v8a / armeabi-v7a / x86_64 / universal |
-| Windows | ✅ 支持 | x64 / arm64；建议开启长路径支持（非必须，超限有收纳回退） |
-| Linux | ✅ 支持 | x64 / arm64；deb / rpm / AppImage；**glibc ≥ 2.35**（Ubuntu 22.04 一代及以上） |
-| macOS / iOS | ❌ 弃用 | 最后支持版本 v5.3.0 |
+<br>
 
-**不要做无用尝试**：桌面 32 位、musl-libc、Windows 7 / 8.1 均不支持。
+<img width="49%" alt="Star history" src="https://fastly.jsdelivr.net/gh/yingo-server/OhGithubLost@stats/stats/star-history.png">
+<img width="49%" alt="Commit history" src="https://fastly.jsdelivr.net/gh/yingo-server/OhGithubLost@stats/stats/commit-history.png">
 
-## 安装 / Install
+<sub>图表由 `stats` 分支每小时自动更新</sub>
 
-每个版本在 **Releases** 发布，产物仅压缩包（zip + 7z 极限压缩），Linux 额外裸放 deb / rpm / AppImage。
+</div>
 
-| 平台 | 产物名（`<version>` 取版本号，如 `v6.0.0`） |
+---
+
+## 功能
+
+| | |
 | --- | --- |
-| Android | `OGL-<version>-Android.arm64-v8a.zip` / `.armeabi-v7a` / `.x86_64` / `.universal-APK` / `.AAB` |
-| Windows | `OGL-<version>-Windows.x64.zip` / `.arm64.zip` |
-| Linux | `OGL-<version>-Linux.x64.deb` / `.rpm` / `.AppImage`（`.arm64` 同理） |
+| **仓库** | 目录树、文件预览、README 渲染；新建 / 编辑 / 删除 / 重命名（含目录递归）；提交与冲突处理 |
+| **协作** | Issues、Pull Requests、Releases、Actions、Gist |
+| **账号** | 多账号自由切换；令牌本地安全存储 |
+| **下载** | 多连接分片 + 断点续传；加速通道**自备**（默认关闭，应用不预置任何代理） |
+| **网络** | 内置 DoH、重试与限流避让；**不做静默降级** —— 失败如实报错 |
+| **动效** | 四档（静默 / 保守 / 标准 / 拉满），降档降开销、不删效果；按档位分级预加载 |
+| **语言** | 6 种（简体中文 / 繁體中文 / English / Deutsch / Français / Русский）；文案零硬编码，CI 强制校验 |
 
-每个压缩包都有 **zip 与 7z 两份**（极限压缩），按需选一种即可。
+## 平台支持
 
-解压后：
-- **Android**：直接安装 APK；
-- **Windows**：运行解压目录下的 `oghl.exe`（`ohgithublost.exe`）；
-- **Linux**：`sudo dpkg -i *.deb` 或 `sudo rpm -i *.rpm`，或直接运行 `.AppImage`（已内置 `--appimage-extract-and-run`，无需 FUSE）。
+| 平台 | 状态 | 产物 |
+| --- | --- | --- |
+| Android | 支持 | 4 架构 APK（arm64-v8a / armeabi-v7a / x86_64 / universal）+ AAB |
+| Windows | 支持 | x64 / arm64 |
+| Linux | 支持 | x64 / arm64；deb / rpm / AppImage；**glibc ≥ 2.35** |
+| Web | 支持 | <https://oghapp.344977.xyz/>（dart2wasm 主载，dart2js 兜底） |
+| macOS / iOS | 弃用 | 最后支持版本 v5.3.0 |
 
-## 从源码构建 / Build from source
+不支持：桌面 32 位、musl-libc、Windows 7 / 8.1。
 
-要求：Flutter **3.47.5**（Dart 3.13.4），Android / Windows / Linux 相应工具链。
+## 安装
+
+从 [**Releases**](https://github.com/yingo-server/OhGithubLost/releases) 下载。每个产物同时提供 `.zip` 与 `.7z`（极限压缩），任选其一。
+
+| 平台 | 文件 | 安装 |
+| --- | --- | --- |
+| Android | `OGL-<version>-Android.<abi>.zip` / `.AAB.zip` | 解压后安装 APK |
+| Windows | `OGL-<version>-Windows.<arch>.zip` | 运行解压目录下的 `oghl.exe` |
+| Linux | `OGL-<version>-Linux.<arch>.deb` / `.rpm` / `.AppImage` | `sudo dpkg -i *.deb` 或 `sudo rpm -i *.rpm`；AppImage 直接运行（无需 FUSE） |
+
+`<version>` 形如 `v8.0.0`，`<arch>` 形如 `x64` / `arm64`。
+
+## 从源码构建
+
+需要 Flutter **3.47.5**（Dart 3.13）及目标平台工具链。
 
 ```bash
 flutter pub get
-flutter run              # 开发
-flutter build apk        # Android
-flutter build windows    # Windows
-flutter build linux      # Linux（宿主直编，glibc 下限见 CI）
+flutter run                    # 开发调试
+flutter build apk              # Android
+flutter build windows          # Windows
+flutter build linux            # Linux（宿主直编，glibc 下限见 CI）
+flutter build web --release --wasm --no-web-resources-cdn   # Web
 ```
 
-## 目录结构 / Repository layout
+## 架构
 
 ```
-.github/workflows/   CI：质量门（5 项审计 + analyze + test）、构建矩阵（9 条腿）、发布
-assets/              资源：icon（唯一事实来源 SVG → 三端派生）/ i18n（6 语言）/ boot / mods / theme_packs
-docs/                文档：使用说明 USAGE.md、多语言维护手册 I18N.md
-lib/                 源码（四层架构）
-  kernel/            启动层：引导清单 / 签名 / 信任根
-  base/              硬件层：网络（DoH / 镜像 / 重试）+ 磁盘（原子写 / 长路径 / 缓存）
-  domain/            逻辑层：GitHub API、本地深层信息
-  surface/           交互层：UI、设置、i18n
-changed/             更新日志站点（Jekyll 源，同时发布到 GitHub Pages 与 Netlify）
-release_notes/       发布说明（每版本一个 .md，中英对照）
-test/                测试（base / domain / kernel / surface / screenshots）
-tool/                工具（SVG→矢量/光栅图标 / 平台规格注入 / Linux 打包 / 审计门禁）
+lib/
+  kernel/    启动层  引导清单、Ed25519 签名、信任根
+  base/      硬件层  网络（DoH / 重试 / 限流）、磁盘（原子写 / 缓存）
+  domain/    逻辑层  GitHub API、本地深层信息
+  surface/   交互层  UI、设置、i18n
 ```
 
-## 架构纪律 / Architecture
+依赖只能向下：`surface → domain → base → kernel`（装配根与类型门面为白名单例外）。
+CI 由 `tool/layer_audit.py --fatal` 强制；另有 i18n、动效分级、性能反模式三道门禁。
 
-依赖只能向下：`surface → domain → base → kernel`；装配根与类型门面为白名单例外。
-CI 用 `tool/layer_audit.py --fatal` 强制。
+## 仓库结构
 
-## 文档索引 / Docs
+```
+.github/workflows/   CI：质量门、构建矩阵、发布、统计
+assets/              icon（SVG 为唯一事实来源 → 三端派生）、i18n、boot、mods、theme_packs
+docs/                USAGE.md、I18N.md
+lib/                 源码（四层架构，见上）
+changed/             更新日志站点源（同时发布到 GitHub Pages 与 Netlify）
+release_notes/       逐版本发布说明（中英对照）
+test/                测试
+tool/                图标派生、平台规格注入、打包、审计门禁、统计图表
+```
+
+## 文档
 
 | 文档 | 内容 |
 | --- | --- |
-| `docs/USAGE.md` | 使用说明（安装 / 登录 / 主要功能） |
-| `docs/I18N.md` | 多语言维护手册（新增文案 / 翻译流程） |
-| `release_notes/v6.0.0.md` | 本版本发布说明（中英对照） |
-| `CHANGELOG.md` | 完整版本历史（含未发布 / 跳过版本的事实标注） |
+| [`docs/USAGE.md`](docs/USAGE.md) | 使用说明 |
+| [`docs/I18N.md`](docs/I18N.md) | 多语言维护手册 |
+| [`CHANGELOG.md`](CHANGELOG.md) | 完整版本历史 |
+| [`release_notes/`](release_notes/) | 逐版本发布说明 |
+| <https://yingo-server.github.io/OhGithubLost/> | 更新日志站点（逐版本中英对照） |
 
-**更新日志站点**：<https://yingo-server.github.io/OhGithubLost/>
-逐版本的中英对照说明都在这里，比翻 Releases 列表更快；Netlify 镜像同源同内容。
+## 版本与发布
 
-## 发布节奏 / Release cadence
+- 语义化版本 `vX.Y.Z`；跳过的版本在 `CHANGELOG.md` 中标注；
+- 发布说明**中英逐条对照**，包含 新增 / 变更 / 修复 / 已知限制 / 产物；
+- 星标与提交历史见页首图表，数据源为 `stats` 分支的 `history.json`。
 
-- 版本号语义：`vX.Y.Z`，跳过即标注（如 `v5.7.0（未发布 · 跳过）`）；
-- 未单独发版的开发迭代会**并入下一个正式版**并标注来源版本号；
-- 发布说明规范：**中英逐条对照**，含 新增 / 变更 / 修复 / 已知限制 / 产物，不写空话。
+## 许可
 
-## 许可证 / License
-
-**Apache-2.0**（见 `LICENSE` 与 `NOTICE`）。第三方依赖许可见应用内「许可」页面。
+[Apache-2.0](LICENSE)。第三方依赖许可见应用内「许可」页面与 [`NOTICE`](NOTICE)。
