@@ -157,5 +157,13 @@
   "accelScopeActionArtifact": "Artefacts d’Action",
   "accelScopeRepoFile": "Fichiers du dépôt (téléchargement et aperçu)",
   "accelScopeReadmeImage": "Images dans le README",
-  "storageAllFilesGranted": "Accès à tous les fichiers accordé"
+  "storageAllFilesGranted": "Accès à tous les fichiers accordé",
+  "groupInterface": "Interface",
+  "groupStorageNetwork": "Stockage et réseau",
+  "groupAboutHelp": "À propos et aide",
+  "dangerZone": "Zone sensible",
+  "expandGroup": "Développer",
+  "collapseGroup": "Réduire",
+  "logsSaving": "Écriture sur disque active",
+  "logsLineCount": "{count} lignes"
 }

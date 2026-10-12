@@ -157,5 +157,13 @@
   "accelScopeActionArtifact": "Action artifacts",
   "accelScopeRepoFile": "Repository files (download & preview)",
   "accelScopeReadmeImage": "Images inside README",
-  "storageAllFilesGranted": "All-files access granted"
+  "storageAllFilesGranted": "All-files access granted",
+  "groupInterface": "Interface",
+  "groupStorageNetwork": "Storage & network",
+  "groupAboutHelp": "About & help",
+  "dangerZone": "Danger zone",
+  "expandGroup": "Expand",
+  "collapseGroup": "Collapse",
+  "logsSaving": "Saving to disk",
+  "logsLineCount": "{count} lines"
 }

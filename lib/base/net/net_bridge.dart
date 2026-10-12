@@ -53,6 +53,10 @@ class NetBridge {
       };
 
   /// 设置页：应用 DNS 选择（策略对象为可变设计——即时生效）。
+  ///
+  /// ★ 真正的写入点是 [DnsService.applySelection]（它会**作废旧解析缓存**）。
+  ///   早先这里直接改字段，缓存里的旧答案会照旧返回最多 TTL（5 分钟）——
+  ///   用户看到的就是"设置改了却没生效"。
   void applyDnsSelection({
     required bool custom,
     required String serverId,
@@ -62,17 +66,11 @@ class NetBridge {
     if (service == null) {
       return;
     }
-    final policy = service.policy;
-    policy.mode = custom ? NetDnsMode.custom : NetDnsMode.system;
-    policy.preferDoh = preferDoh;
-    final picked = builtinDnsServers
-        .where((server) => server.id == serverId)
-        .toList();
-    if (picked.isNotEmpty) {
-      policy.servers
-        ..clear()
-        ..addAll(picked);
-    }
+    service.applySelection(
+      custom: custom,
+      serverId: serverId,
+      preferDoh: preferDoh,
+    );
   }
 
   /// 发送请求。
@@ -108,6 +106,13 @@ class NetModule extends OgLModule {
   /// [dns] 为 `null` 时会自动建一个**默认策略**的 [DnsService]
   /// （模式 = `system`，内置五家 DNS 已就绪，等用户在设置里选择）。
   /// 这样"内置 DNS"始终可用，而**默认行为与不加 DNS 完全一致**。
+  ///
+  /// ## 为什么默认就把 DoH 的 HTTP 能力装上
+  /// 底座本体不 `import 'dart:io'`（它要能在任何平台编译），DoH 所需的
+  /// HTTP 能力必须由装配层注入。此前没人注入 —— 于是设置里的
+  /// 「DoH 优先」开着也**永远不会真的走 DoH**（默认工厂写死明文 UDP，
+  /// `IoDnsHttpClient` 全项目没有任何使用点）。这里把它接上：
+  /// 用户选的自定义 DNS + DoH 优先，才是它字面上的意思。
   NetModule({
     NetTransport? transport,
     NetObserver? observer,
@@ -116,7 +121,7 @@ class NetModule extends OgLModule {
     NetTransport Function()? transportFactory,
     DnsService? dns,
   })  : _observer = observer ?? NetObserver(),
-        _dns = dns ?? DnsService(),
+        _dns = dns ?? DnsService(dohClient: IoDnsHttpClient()),
         _explicit = transport {
     _policy = policy;
     _mirrors = mirrors ?? MirrorSelector();

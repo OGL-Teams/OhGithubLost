@@ -43,6 +43,7 @@ class SurfaceBridge {
     this.net,
     this.cache,
     this.storageProbe,
+    this.uiPrefs,
   });
 
   /// 从内核桥表解析（展示层的标准取用方式）。
@@ -65,6 +66,32 @@ class SurfaceBridge {
   ///
   /// 展示层不直接依赖底座，因此以函数形式注入。
   final Future<bool> Function()? storageProbe;
+
+  /// 界面偏好 KV（**纯展示层状态**：分组展开状态等）。
+  ///
+  /// 为什么不塞进 [settings]：`OgLSettings` 是"用户设置"，
+  /// 「哪个分组是展开的」不是设置、也不该被"重置设置"清掉
+  /// （重置后分组开合保持原样，用户不会突然找不到刚才那一组）。
+  final DiskKv? uiPrefs;
+
+  /// 读一条界面偏好（无记录 / 未接线 / 读失败一律 `null`）。
+  Future<String?> readUiPref(String key) async {
+    try {
+      return await uiPrefs?.read(key);
+    } catch (_) {
+      // 读不到就用默认值：界面偏好缺失不影响任何功能。
+      return null;
+    }
+  }
+
+  /// 写一条界面偏好（写失败只留诊断日志，不打扰用户）。
+  Future<void> writeUiPref(String key, String value) async {
+    try {
+      await uiPrefs?.write(key, value);
+    } catch (error) {
+      debugPrint('OGL 界面偏好写入失败：$key -> $error');
+    }
+  }
 
   /// 探测存储是否可用（无探针时按可用处理）。
   Future<bool> ensureStorage() async {
@@ -530,6 +557,9 @@ class SurfaceLayerModule extends OgLModule {
       net: base.net,
       cache: base.disk.cache,
       storageProbe: _probeStorage,
+      // 界面偏好（分组展开状态）走同一套 KV：与设置数据分开存，
+      // 但共用"底座可替换"的唯一入口。
+      uiPrefs: base.disk.kv,
     );
     context.bridges.register(ModuleLayer.surface.key, bridge);
 

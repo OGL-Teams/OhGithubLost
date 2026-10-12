@@ -37,6 +37,88 @@ enum NetDnsMode {
   custom,
 }
 
+/// DoH 端点是否**真的可用**：必须是 `https://` 且带主机名。
+///
+/// ## 为什么在底座层收口
+/// 明文 HTTP 的 DoH 等于不设防——中间人既能改答、也能看到全部查询，
+/// 用户以为换上了可信解析器，实际是被更彻底地劫持。所以这里只认 `https`：
+/// `http://…`、空串、相对地址、没有协议的裸地址（`1.1.1.1`）一律判为**不可用**，
+/// 由调用方回退到明文 UDP 或系统解析（**不谎称已启用 DoH**）。
+bool ogLIsUsableDohEndpoint(String? url) {
+  if (url == null) {
+    return false;
+  }
+  final String trimmed = url.trim();
+  if (trimmed.isEmpty) {
+    return false;
+  }
+  final Uri? parsed = Uri.tryParse(trimmed);
+  if (parsed == null || !parsed.isAbsolute) {
+    return false;
+  }
+  if (parsed.scheme.toLowerCase() != 'https') {
+    return false;
+  }
+  return parsed.host.isNotEmpty;
+}
+
+/// 把"用户填写的 DNS 地址"规格化成**明文 UDP 用的裸 IP 字面量**。
+///
+/// ## 为什么需要它
+/// [DnsServer.ip] 最终会被交给平台的 socket 层（`InternetAddress(...)`）。
+/// 而它的来源不可信（粘贴、手误、从网页抄来的 `https://1.1.1.1/dns-query`），
+/// 若不规格化，`https://…`、`1.1.1.1:53`、`[2606:4700::1111]` 这类字符串会在
+/// socket 层抛出 `ArgumentError`，被上一层归类成"网络失败"——
+/// 用户永远看不出是自己填错了地址。
+///
+/// 处理：剥协议前缀 → 去路径 / 查询 → 去 IPv6 方括号 → 去 IPv4 的 `:port`。
+/// 返回 `null` = 不是合法 IP 字面量（空串也返回 `null`），调用方据此报
+/// "地址不合法"并跳过该家（继续下一家 / 回退系统解析）。
+String? ogLNormalizeDnsAddress(String raw) {
+  String value = raw.trim();
+  if (value.isEmpty) {
+    return null;
+  }
+  // ① 协议前缀：`https://` / `udp://` / `dns://` …（任何 `xxx://` 都剥掉）。
+  final int scheme = value.indexOf('://');
+  if (scheme >= 0) {
+    value = value.substring(scheme + 3);
+  }
+  // ② 路径 / 查询 / 片段：`1.1.1.1/dns-query?x=1` → `1.1.1.1`。
+  for (final String cut in const <String>['/', '?', '#']) {
+    final int at = value.indexOf(cut);
+    if (at >= 0) {
+      value = value.substring(0, at);
+    }
+  }
+  value = value.trim();
+  if (value.isEmpty) {
+    return null;
+  }
+  // ③ IPv6 方括号（`[::1]`）与 `[::1]:53`。
+  if (value.startsWith('[')) {
+    final int close = value.indexOf(']');
+    if (close <= 1) {
+      return null;
+    }
+    value = value.substring(1, close);
+    return DnsPlatform.isIpLiteral(value) ? value : null;
+  }
+  // ④ 裸字面量（IPv4 / IPv6）直接通过。
+  if (DnsPlatform.isIpLiteral(value)) {
+    return value;
+  }
+  // ⑤ IPv4 带端口（`1.1.1.1:53`）：端口由实现固定为 53，这里只取地址部分。
+  //    **不能**对含冒号的字符串泛化切分——IPv6 本身就含冒号。
+  final RegExpMatch? withPort =
+      RegExp(r'^(\d{1,3}(?:\.\d{1,3}){3}):(\d{1,5})$').firstMatch(value);
+  if (withPort != null) {
+    final String host = withPort.group(1)!;
+    return DnsPlatform.isIpLiteral(host) ? host : null;
+  }
+  return null;
+}
+
 /// 一家 DNS 服务商。
 class DnsServer {
   /// 创建服务商。
@@ -63,8 +145,11 @@ class DnsServer {
   /// 归属地分组（`cn` / `global`），用于界面分组与默认排序。
   final String region;
 
-  /// 是否支持 DoH。
-  bool get supportsDoh => dohUrl != null;
+  /// 是否支持 DoH（**必须是合法的 `https://` 端点**，明文 HTTP 不算）。
+  ///
+  /// ★ 曾经是 `dohUrl != null`：`http://…` 这种"明文的 DoH 端点"也会被
+  ///   当作支持——用起来等于把全部查询明文交给中间人。
+  bool get supportsDoh => ogLIsUsableDohEndpoint(dohUrl);
 
   @override
   String toString() => 'DnsServer($id, $ip${dohUrl == null ? '' : ', doh'})';
@@ -212,10 +297,13 @@ class DnsWireCodec {
       } else if (type == typeAaaa && dataLength == 16) {
         final parts = <String>[];
         for (var group = 0; group < 8; group++) {
+          // ★ 每组补足 4 位十六进制：不补的话 `0abc` 会变成 `abc`，
+          //   拼出来的字符串**不是**那个地址（`2001:abc::` ≠ `2001:0abc::`）。
           parts.add(
             ((packet[dataStart + group * 2] << 8) |
                     packet[dataStart + group * 2 + 1])
-                .toRadixString(16),
+                .toRadixString(16)
+                .padLeft(4, '0'),
           );
         }
         addresses.add(parts.join(':'));
@@ -326,9 +414,19 @@ class UdpDnsResolver implements DnsResolver {
 
   @override
   Future<List<String>> resolve(String host) async {
+    // 地址合法性在**发查询之前**收口：非法地址（空串 / 带协议 / 带端口 /
+    // 非 IP 文本）在这里报"地址不合法"，而不是让 socket 层抛
+    // ArgumentError 被归类成"网络失败"。
+    final String? serverIp = ogLNormalizeDnsAddress(server.ip);
+    if (serverIp == null) {
+      throw DnsException(
+        '${server.label} 的 DNS 地址不合法（应为 IPv4 / IPv6 字面量）：'
+        '"${server.ip}"',
+      );
+    }
     final queryId = nextQueryId();
     final query = DnsWireCodec.buildQuery(host, id: queryId);
-    final response = await channel.exchange(server.ip, query, timeout: timeout);
+    final response = await channel.exchange(serverIp, query, timeout: timeout);
     if (response == null) {
       throw DnsException('${server.label} 无响应（超时）');
     }
@@ -477,7 +575,8 @@ class DnsCache {
     if (_entries.length <= maxEntries) {
       return;
     }
-    // 先清过期项，再按插入顺序淘汰最老者。
+    // 先清过期项，再按**最接近过期**的顺序淘汰（与注释里的承诺一致：
+    // 腾位置时先丢"马上就要过期"的，最耐用的那些留下）。
     final now = DateTime.now();
     final expired = _entries.entries
         .where((MapEntry<String, DnsAnswer> entry) =>
@@ -488,7 +587,19 @@ class DnsCache {
       _entries.remove(key);
     }
     while (_entries.length > maxEntries) {
-      _entries.remove(_entries.keys.first);
+      String? soonest;
+      DateTime? soonestAt;
+      for (final MapEntry<String, DnsAnswer> entry in _entries.entries) {
+        final DateTime at = entry.value.expiresAt;
+        if (soonestAt == null || at.isBefore(soonestAt)) {
+          soonest = entry.key;
+          soonestAt = at;
+        }
+      }
+      if (soonest == null) {
+        return;
+      }
+      _entries.remove(soonest);
     }
   }
 
@@ -551,13 +662,15 @@ class DnsService {
     DnsPolicy? policy,
     DnsResolver? systemResolver,
     DnsResolver Function(DnsServer server)? resolverFactory,
+    DnsHttpClient? dohClient,
     DnsCache? cache,
     KernelDiagnostics? diagnostics,
   })  : policy = policy ?? DnsPolicy(),
         systemResolver = systemResolver ?? SystemDnsResolver(),
         cache = cache ?? DnsCache(),
         _diagnostics = diagnostics,
-        _resolverFactory = resolverFactory ?? _defaultResolverFactory;
+        _dohClient = dohClient,
+        _resolverFactory = resolverFactory;
 
   /// 策略。
   final DnsPolicy policy;
@@ -568,9 +681,30 @@ class DnsService {
   /// 结果缓存。
   final DnsCache cache;
 
-  final DnsResolver Function(DnsServer server) _resolverFactory;
+  /// 注入的解析器工厂（`null` = 用本文件的默认工厂 `_defaultResolver`）。
+  ///
+  /// 默认工厂**会长出 DoH**（见 `_defaultResolver`）：这正是 `preferDoh`
+  /// 设置的落点。此前的"默认工厂"写死为明文 UDP，于是设置里的
+  /// 「DoH 优先」只是一个被存下来、又被策略摘要打印出来的字段，
+  /// 对真实解析**毫无影响**（`IoDnsHttpClient` 因而也从未被使用过）。
+  final DnsResolver Function(DnsServer server)? _resolverFactory;
+
+  /// DoH 所需的 HTTP 能力（装配根注入 `IoDnsHttpClient`）。
+  ///
+  /// 为 `null` 时 DoH **无法进行**——底座本体不 import `dart:io`，
+  /// 此时按明文 UDP 走，且**不谎称"已启用 DoH"**。
+  final DnsHttpClient? _dohClient;
+
   KernelDiagnostics? _diagnostics;
   bool _warnedCustomUnsupported = false;
+
+  /// 最近一次解析**实际由谁完成**（服务商 id，或 `system` /
+  /// `system(fallback)`）。
+  ///
+  /// 自检报告据此如实呈现"到底是自定义解析成功的，还是已经悄悄回退到
+  /// 系统解析了"——摘要里只说"解析成功"会把回退这件事藏起来。
+  String? get lastResolvedVia => _lastVia;
+  String? _lastVia;
 
   /// 本平台是否支持自定义 DNS（明文 UDP / DoH）。
   ///
@@ -585,8 +719,93 @@ class DnsService {
     _diagnostics = diagnostics;
   }
 
-  static DnsResolver _defaultResolverFactory(DnsServer server) =>
-      UdpDnsResolver(server: server, channel: RawDnsUdpChannel());
+  /// 应用一次设置变更（模式 / 服务商 / 是否优先 DoH）。
+  ///
+  /// 与"直接改 [DnsPolicy] 的字段"的区别只有一个，但很关键：**旧缓存会被作废**。
+  ///
+  /// ## 为什么必须作废
+  /// 缓存里的每一条答案都记着"是哪家给的"（[DnsAnswer.serverId]）。
+  /// 用户把 DNS 从阿里换到 Cloudflare，若还继续返回阿里的答案，
+  /// 表现在界面上就是**"设置改了却毫无变化"**——偏偏换 DNS 的动机
+  /// 常常是"当前解析被污染"，于是用户会以为"这功能是假的"。
+  /// 缓存默认 TTL 5 分钟，用户等不起这 5 分钟。
+  ///
+  /// 返回**是否真的发生了变化**（没变就不清缓存，避免无谓抖动 / 无谓日志）。
+  bool applySelection({
+    required bool custom,
+    required String serverId,
+    required bool preferDoh,
+  }) {
+    final NetDnsMode mode = custom ? NetDnsMode.custom : NetDnsMode.system;
+    final List<DnsServer> picked = builtinDnsServers
+        .where((DnsServer server) => server.id == serverId)
+        .toList();
+    // 没选到内置服务商（id 拼错 / 已下线）→ 保留原列表，**不静默清空**：
+    // 清空会让"自定义 DNS"变成一句空话（`_resolveCustom` 直接抛"未配置"）。
+    final bool changed = policy.mode != mode ||
+        policy.preferDoh != preferDoh ||
+        (picked.isNotEmpty && !_sameServers(policy.servers, picked));
+    policy.mode = mode;
+    policy.preferDoh = preferDoh;
+    if (picked.isNotEmpty) {
+      policy.servers
+        ..clear()
+        ..addAll(picked);
+    }
+    if (changed) {
+      cache.clear();
+      _lastVia = null;
+      _diagnostics?.info(
+        'DNS',
+        'DNS 策略已更新，旧的解析缓存已作废：'
+            '${mode.name}${picked.isEmpty ? '' : ' · ${picked.first.id}'}'
+            '${preferDoh ? ' · DoH 优先' : ' · 明文'}',
+        code: 'OGL-DNS-104',
+        data: <String, Object?>{'servers': policy.servers.length},
+      );
+    }
+    return changed;
+  }
+
+  static bool _sameServers(List<DnsServer> a, List<DnsServer> b) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (int i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// 默认解析器：**DoH 优先**，否则明文 UDP。
+  ///
+  /// 判定顺序（少一条都会让设置的开关"看起来生效、实际不动"）：
+  /// 1. `policy.preferDoh`（用户在设置里的"DoH 优先"）；
+  /// 2. 该家有**合法**的 `https://` 端点（明文 HTTP 的端点不算，见
+  ///    [ogLIsUsableDohEndpoint]）；
+  /// 3. 装配根注入了 HTTP 能力（[DnsHttpClient]；底座本体不 import `dart:io`）。
+  ///
+  /// 三条都满足才用 [DohDnsResolver]，否则明文 UDP —— 而明文通道的失败
+  /// 由 [_attemptServer] 按"同一家先 DoH 后明文"的顺序接住。
+  DnsResolver _defaultResolver(DnsServer server) {
+    final DnsHttpClient? client = _dohClient;
+    if (policy.preferDoh &&
+        client != null &&
+        ogLIsUsableDohEndpoint(server.dohUrl)) {
+      return DohDnsResolver(
+        server: server,
+        client: client,
+        timeout: policy.timeout,
+      );
+    }
+    return UdpDnsResolver(
+      server: server,
+      channel: RawDnsUdpChannel(),
+      timeout: policy.timeout,
+    );
+  }
 
   /// 解析主机名。
   ///
@@ -609,6 +828,7 @@ class DnsService {
 
     final cached = cache.get(host);
     if (cached != null) {
+      _lastVia = cached.serverId;
       _diagnostics?.debug(
         'DNS',
         '缓存命中 $host',
@@ -663,6 +883,7 @@ class DnsService {
       DnsProbe(service: this, sampleHost: sampleHost);
 
   void _remember(String host, List<String> addresses, String serverId) {
+    _lastVia = serverId;
     cache.put(
       host,
       DnsAnswer(
@@ -710,9 +931,39 @@ class DnsService {
     DnsServer server,
     String host,
   ) async {
-    final resolver = _resolverFactory(server);
-    final addresses = await _attempt(resolver, host);
-    return (addresses: addresses, serverId: server.id);
+    final DnsResolver Function(DnsServer server)? factory = _resolverFactory;
+    if (factory != null) {
+      // 注入的工厂（测试 / 定制）：语义完全由调用方决定，本层不再插手。
+      final addresses = await _attempt(factory(server), host);
+      return (addresses: addresses, serverId: server.id);
+    }
+    final DnsResolver resolver = _defaultResolver(server);
+    try {
+      final addresses = await _attempt(resolver, host);
+      return (addresses: addresses, serverId: server.id);
+    } catch (error) {
+      // DoH 不通（443 被阻断、端点 502…）→ **同一家的明文通道**再试一次。
+      // 只对 DoH 解析器做这件事：明文 UDP 刚失败过，再试一遍毫无意义。
+      // 跨家优先级不受影响（顺序仍由 [DnsPolicy.servers] 决定）。
+      if (resolver is! DohDnsResolver) {
+        rethrow;
+      }
+      _diagnostics?.info(
+        'DNS',
+        'DoH 失败，改用同一家的明文 DNS：${server.label}（$error）',
+        code: 'OGL-DNS-103',
+        data: <String, Object?>{'server': server.id, 'error': '$error'},
+      );
+      final addresses = await _attempt(
+        UdpDnsResolver(
+          server: server,
+          channel: RawDnsUdpChannel(),
+          timeout: policy.timeout,
+        ),
+        host,
+      );
+      return (addresses: addresses, serverId: server.id);
+    }
   }
 
   Future<List<String>> _attempt(DnsResolver resolver, String host) async {
@@ -786,12 +1037,19 @@ class DnsProbe implements KernelEnvironmentProbe {
       final addresses = await service.resolve(sampleHost);
       stopwatch.stop();
       detail['addresses'] = addresses.take(3).toList();
+      // 如实呈现"这一份结果是谁给的"：自定义解析成功、缓存命中、
+      // 还是**已悄悄回退到系统解析**——摘要只说"解析成功"会把回退藏起来。
+      final String? via = service.lastResolvedVia;
+      final bool fellBack = via?.contains('fallback') ?? false;
+      detail['via'] = via;
+      detail['fallback'] = fellBack;
       detail['ms'] = stopwatch.elapsedMilliseconds;
       return KernelProbeResult(
         ok: addresses.isNotEmpty,
         summary: addresses.isEmpty
             ? '解析 $sampleHost 无结果'
-            : '解析 $sampleHost → ${addresses.take(3).join(', ')}',
+            : '解析 $sampleHost → ${addresses.take(3).join(', ')}'
+                '${fellBack ? '（自定义 DNS 全部失败，已回退系统解析）' : ''}',
         detail: detail,
       );
     } catch (error) {

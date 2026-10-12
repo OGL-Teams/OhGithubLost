@@ -33,8 +33,10 @@ import '../util/file_preview.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/path_rules.dart';
+import '../widgets/anim/anim_preload.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/readme_view.dart';
+import '../widgets/scroll_aware_action.dart';
 import 'action_run_page.dart';
 import 'code_editor_page.dart';
 import 'commit_page.dart';
@@ -59,6 +61,42 @@ const int _kPageSize = 30;
 /// 这两类响应**单条就很大**（发布含全部附件、Actions 含全部作业），
 /// 按 30 条一次拉取会产出数百 KB 到数 MB 的响应体——既慢，又容易在弱网下中断。
 const int _kHeavyPageSize = 10;
+
+// ── 分级预加载（页面级登记）─────────────────────────────────────────────
+// 本页是 **push 出来的路由**（首页 / 搜索页），所以作用域用 `route:repo:<fullName>`：
+// push 方会用**同名**的 `OgLAnimPreloadBoundary` 把本页包起来 —— pop 即整组取消、
+// 归还额度（见 `dashboard_page._openRepo` / `search_page._open`）。
+// 档位口径全在 `widgets/anim/anim_preload.dart` 的策略表里；这里只登记。
+
+/// 本页的路由作用域（`route:repo:<fullName>`）。
+///
+/// ★ 跨文件约定：`dashboard_page` / `search_page` 的 push 侧用**同一条**字符串 ——
+/// 只有逐字一致，父子两层才是同一个作用域。
+String _preloadGroupOf(String fullName) => 'route:repo:$fullName';
+
+/// owner 头像的幂等键（同一资源同一 id）。
+///
+/// ★ 跨文件约定：push 方在跳转前会用 `childLevel` 先登记**同一个 id**
+///（档位 3 时抢在本页首帧之前解码）—— 所以这里的重复登记是安全的、无成本的。
+String _ownerAvatarId(String fullName) => 'avatar:repo:$fullName';
+
+/// 头像的**估算**内存（GitHub 头像 10–40 KB 量级）。
+///
+/// 图片项的默认估算是 2 MiB；按默认给会让几项就吃掉大半内存额度。
+const int _kAvatarBytes = 96 * 1024;
+
+/// README 图片的**估算**内存：渲染侧把它压到 320 高，但解码出来的是原图，
+/// 按截图量级估 512 KiB。
+const int _kReadmeImageBytes = 512 * 1024;
+
+/// **子层级**预登记的 README 图片张数。
+///
+/// 一篇 README 动辄几十张图：整篇登记会瞬间打满数量 / 内存额度，所以只取头两张。
+const int _kReadmeImageLeads = 2;
+
+/// README 图片地址的提取正则（形状与渲染层解析 `![alt](url "title")` 一致）。
+final RegExp _kReadmeImageSource =
+    RegExp(r'!\[[^\]]*\]\(([^)\s]*)(?:\s+"[^"]*")?\)');
 
 /// 仓库详情页。
 class RepoPage extends StatefulWidget {
@@ -106,6 +144,33 @@ class _RepoPageState extends State<RepoPage> {
     _codeInitialPath = widget.initialPath;
     unawaited(_loadStarred());
     unawaited(_loadRepoPermissions());
+    // 分级预加载：本页主视觉的图片资源 = 仓库 owner 头像（`currentPage`：档位 ≥1）。
+    // 只登记**一项** —— 目录 / 列表里的图片交给 `OgLReveal` 的视口驱动，
+    // 逐项登记既会打满上限，也和视口驱动重复。
+    _preloadOwnerAvatar();
+  }
+
+  /// 登记 owner 头像（幂等：同一个 id 只跑一次）。
+  ///
+  /// 与 push 侧的关系：首页 / 搜索页在跳转前会先按 `childLevel` 登记**同一个 id**。
+  /// 档位 3 下那条先跑（本页首帧前就已经在解码）；档位 1 / 2 下那条被策略表拒收，
+  /// 于是由本条按 `currentPage` 登记 —— 两种档位各走各的路，且永远不会解两遍。
+  void _preloadOwnerAvatar() {
+    final String? url = _repo.owner.avatarUrl;
+    if (url == null || url.isEmpty) {
+      return;
+    }
+    if (OgLAnimPreload.register(
+      OgLAnimPreloadJob.image(
+        id: _ownerAvatarId(_full),
+        group: _preloadGroupOf(_full),
+        kind: OgLAnimPreloadKind.currentPage,
+        image: NetworkImage(url),
+        weightBytes: _kAvatarBytes,
+      ),
+    )) {
+      OgLAnimPreload.schedule();
+    }
   }
 
   /// 拉取**单仓库详情**（`GET /repos/{owner}/{repo}`）。
@@ -546,6 +611,9 @@ void clearOgLRepoPageCaches() => PagedController.clearCaches();
 ///
 /// [items] 为空时渲染 `paged.items` 全量；给了则只渲染该子集
 /// （用于**客户端筛选**：筛选只影响展示，不影响分页状态）。
+///
+/// [controller] 由接入 `ScrollAwareAction` 的标签页传入：收边判定需要读
+/// 同一个滚动视图的位置（`pixels` / `maxScrollExtent` / `viewportDimension`）。
 Widget _pagedBody<T>(
   BuildContext context,
   PagedController<T> paged,
@@ -554,6 +622,7 @@ Widget _pagedBody<T>(
   IconData emptyIcon = Icons.inbox_outlined,
   Widget? emptyAction,
   List<T>? items,
+  ScrollController? controller,
 }) {
   final List<T> list = items ?? paged.items;
   if (paged.items.isEmpty && paged.loading) {
@@ -573,6 +642,7 @@ Widget _pagedBody<T>(
   return RefreshIndicator(
     onRefresh: paged.refresh,
     child: ListView.separated(
+      controller: controller,
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: list.length + (paged.done ? 0 : 1),
       separatorBuilder: (BuildContext context, int index) =>
@@ -656,6 +726,9 @@ class _CodeTabState extends State<_CodeTab> {
   final TextEditingController _filter = TextEditingController();
   final TextEditingController _newPath = TextEditingController();
 
+  /// 文件列表滚动位置：`ScrollAwareAction` 读它判定「收边 / 弹回 / 近底部」。
+  final ScrollController _scroll = ScrollController();
+
   GhContent? _file;
   bool _busy = false;
 
@@ -684,6 +757,7 @@ class _CodeTabState extends State<_CodeTab> {
     _entries.dispose();
     _filter.dispose();
     _newPath.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -793,11 +867,114 @@ class _CodeTabState extends State<_CodeTab> {
       if (mounted) {
         setState(() => _readme = text);
       }
+      if (mounted && text != null && text.isNotEmpty) {
+        // README 正文到手才知道里面有哪些图 —— 于是就在这里做**子层级**登记。
+        unawaited(_preloadReadmeImages(text));
+      }
     } catch (_) {
       // README 缺失不是错误。
     }
   }
 
+  /// **子层级**预登记：README 面板（`ExpansionTile`，**展开前不构建**子项）里的
+  /// 头几张图。
+  ///
+  /// 为什么按 [OgLAnimPreloadKind.childLevel] 登记：这块内容要用户点开 README 才
+  /// 出现 —— 正是库文档里"即将展开的**子层级**"的口径（**仅档位 3** 准入；
+  /// 档位 1 / 2 会被策略表拒收，不在这里判档位）。
+  ///
+  /// 只登记**渲染路径真的会走 `Image.network` 的地址**：
+  /// - 第三方绝对地址（`https://…`）本来就直连；
+  /// - 仓库内相对路径**只有在加速通道给出代理前缀时**才走 `raw + 代理`
+  ///  （见 [_readmeImagePlan]）；否则渲染层退回"API 取字节"（`Image.memory`），
+  ///   那条路预加载**命中不了** —— 登记它只是白花钱，所以这里跳过。
+  Future<void> _preloadReadmeImages(String markdown) async {
+    final List<String> sources = _readmeImageSources(markdown);
+    if (sources.isEmpty) {
+      return;
+    }
+    // 与渲染层**同一套**取法参数（基址 / 代理前缀 / 认证头）。
+    final ({Uri? base, String? proxy, Future<Map<String, String>>? headers}) plan =
+        _readmeImagePlan('');
+    final String proxy = plan.proxy ?? '';
+    final Uri? base = plan.base;
+    Map<String, String> headers = const <String, String>{};
+    final Future<Map<String, String>>? headerFuture = plan.headers;
+    if (headerFuture != null) {
+      try {
+        headers = await headerFuture;
+      } catch (_) {
+        headers = const <String, String>{};
+      }
+    }
+    if (!mounted) {
+      // 页面已经离开：不为"人已经走了"的页面占额度。
+      return;
+    }
+    bool registered = false;
+    int taken = 0;
+    for (final String src in sources) {
+      if (taken >= _kReadmeImageLeads) {
+        break;
+      }
+      final Uri? direct = Uri.tryParse(src);
+      Uri? url;
+      if (direct != null && direct.hasScheme) {
+        url = resolveReadmeImageUri(src);
+      } else if (proxy.isNotEmpty) {
+        final Uri? raw = resolveReadmeImageUri(src, base: base);
+        if (raw != null) {
+          url = Uri.parse('$proxy$raw');
+        }
+      }
+      if (url == null) {
+        continue;
+      }
+      taken++;
+      registered = OgLAnimPreload.register(
+            OgLAnimPreloadJob.image(
+              // 幂等键 = 真正要取的那张图：同一个地址（同一资源）只会登记一次。
+              id: 'readme-img:${widget.fullName}:$url',
+              group: _preloadGroupOf(widget.fullName),
+              kind: OgLAnimPreloadKind.childLevel,
+              image: NetworkImage(
+                url.toString(),
+                // 与渲染层同一口径：**空 map 等同不带任何头**，空就传 null
+                //（`NetworkImage` 的相等性含 headers —— 传空 map 会变成另一个
+                //  缓存条目，等于白解一遍）。
+                headers: headers.isEmpty ? null : headers,
+              ),
+              weightBytes: _kReadmeImageBytes,
+            ),
+          ) ||
+          registered;
+    }
+    if (registered) {
+      OgLAnimPreload.schedule();
+    }
+  }
+
+  /// 从 README 原文里取头几个图片地址。
+  ///
+  /// 先跑一次与渲染层**完全相同**的净化 [simplifyReadme]：HTML `<img>` 会被规范成
+  /// Markdown 图、**徽章行整行删除**（shields.io 之类的装饰图不该占预加载额度）、
+  /// 超长按行截断 —— 于是这里取到的地址就是渲染层真会加载的那些。
+  List<String> _readmeImageSources(String markdown) {
+    final List<String> out = <String>[];
+    for (final RegExpMatch match
+        in _kReadmeImageSource.allMatches(simplifyReadme(markdown))) {
+      final String src = (match.group(1) ?? '').trim();
+      if (src.isEmpty || out.contains(src)) {
+        continue;
+      }
+      out.add(src);
+      // 多取几个候选：头几个可能落在"API 取字节"那条路上（见上文的跳过规则）。
+      if (out.length >= _kReadmeImageLeads * 2) {
+        break;
+      }
+    }
+    return out;
+  }
   Future<void> _goTo(String path) async {
     setState(() => _file = null);
     // 目录写回页面（标签页重建后仍是这个目录）。
@@ -1960,11 +2137,15 @@ class _CodeTabState extends State<_CodeTab> {
     }
     return Scaffold(
       backgroundColor: Colors.transparent,
+      // 「新建文件 / 目录」悬浮按钮：下滑收边（只露 1/4，点击弹出）、上滑弹回、近底部收起。
       floatingActionButton: widget.canWrite
-          ? FloatingActionButton(
-              tooltip: _t('newFileOrDir'),
-              onPressed: _createFile,
-              child: const Icon(Icons.add),
+          ? ScrollAwareAction(
+              controller: _scroll,
+              child: FloatingActionButton(
+                tooltip: _t('newFileOrDir'),
+                onPressed: _createFile,
+                child: const Icon(Icons.add),
+              ),
             )
           : null,
       body: Column(
@@ -2039,6 +2220,7 @@ class _CodeTabState extends State<_CodeTab> {
                 return RefreshIndicator(
                   onRefresh: () => _reload(),
                   child: CustomScrollView(
+                    controller: _scroll,
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: <Widget>[
                       // 头部（常量级）：父目录 / README / 空态提示。
@@ -2129,6 +2311,9 @@ class _IssuesTab extends StatefulWidget {
 
 class _IssuesTabState extends State<_IssuesTab> {
   String _state = 'open';
+
+  /// 列表滚动位置：`ScrollAwareAction` 读它判定「收边 / 弹回 / 近底部」。
+  final ScrollController _scroll = ScrollController();
   late final PagedController<Map<String, dynamic>> _paged =
       PagedController<Map<String, dynamic>>(
     loader: _load,
@@ -2151,6 +2336,7 @@ class _IssuesTabState extends State<_IssuesTab> {
   @override
   void dispose() {
     _paged.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -2222,10 +2408,14 @@ class _IssuesTabState extends State<_IssuesTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _create,
-        icon: const Icon(Icons.add_comment_outlined),
-        label:  Text(_t('newIssue')),
+      // 「新建议题」悬浮按钮：下滑收边、上滑弹回，近底部收起（不挡列表尾部）。
+      floatingActionButton: ScrollAwareAction(
+        controller: _scroll,
+        child: FloatingActionButton.extended(
+          onPressed: _create,
+          icon: const Icon(Icons.add_comment_outlined),
+          label:  Text(_t('newIssue')),
+        ),
       ),
       body: Column(
         children: <Widget>[
@@ -2279,6 +2469,7 @@ class _IssuesTabState extends State<_IssuesTab> {
                 },
                 emptyIcon: Icons.task_alt,
                 emptyText: _state == 'all' ? _t('noIssues') : _t('noIssuesFiltered'),
+                controller: _scroll,
                 emptyAction: FilledButton.tonal(
                   onPressed: _create,
                   child:  Text(_t('newIssue')),
@@ -2429,6 +2620,9 @@ class _ReleasesTabState extends State<_ReleasesTab> {
     onManualRefresh: () => widget.surface.domain.api.invalidateReadCache(),
   );
 
+  /// 列表滚动位置：`ScrollAwareAction` 读它判定「收边 / 弹回 / 近底部」。
+  final ScrollController _scroll = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -2438,6 +2632,7 @@ class _ReleasesTabState extends State<_ReleasesTab> {
   @override
   void dispose() {
     _paged.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -2478,11 +2673,15 @@ class _ReleasesTabState extends State<_ReleasesTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
+      // 「新建 Release」悬浮按钮：下滑收边、上滑弹回，近底部收起。
       floatingActionButton: widget.canWrite
-          ? FloatingActionButton.extended(
-              onPressed: _create,
-              icon: const Icon(Icons.new_releases_outlined),
-              label:  Text(_t('newRelease')),
+          ? ScrollAwareAction(
+              controller: _scroll,
+              child: FloatingActionButton.extended(
+                onPressed: _create,
+                icon: const Icon(Icons.new_releases_outlined),
+                label:  Text(_t('newRelease')),
+              ),
             )
           : null,
       body: ListenableBuilder(
@@ -2526,6 +2725,7 @@ class _ReleasesTabState extends State<_ReleasesTab> {
           },
           emptyIcon: Icons.new_releases_outlined,
           emptyText: _t('noReleases'),
+          controller: _scroll,
           emptyAction: widget.canWrite
               ? FilledButton.tonal(
                   onPressed: _create,
@@ -2574,6 +2774,9 @@ class _BranchesTabState extends State<_BranchesTab> {
   final TextEditingController _createName = TextEditingController();
   final TextEditingController _renameName = TextEditingController();
 
+  /// 列表滚动位置：`ScrollAwareAction` 读它判定「收边 / 弹回 / 近底部」。
+  final ScrollController _scroll = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -2585,6 +2788,7 @@ class _BranchesTabState extends State<_BranchesTab> {
     _paged.dispose();
     _createName.dispose();
     _renameName.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -2718,11 +2922,15 @@ class _BranchesTabState extends State<_BranchesTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
+      // 「新建分支」悬浮按钮：下滑收边、上滑弹回，近底部收起。
       floatingActionButton: widget.canWrite
-          ? FloatingActionButton.extended(
-              onPressed: _create,
-              icon: const Icon(Icons.alt_route),
-              label:  Text(_t('newBranch')),
+          ? ScrollAwareAction(
+              controller: _scroll,
+              child: FloatingActionButton.extended(
+                onPressed: _create,
+                icon: const Icon(Icons.alt_route),
+                label:  Text(_t('newBranch')),
+              ),
             )
           : null,
       body: ListenableBuilder(
@@ -2769,6 +2977,7 @@ class _BranchesTabState extends State<_BranchesTab> {
           },
           emptyIcon: Icons.account_tree_outlined,
           emptyText: _t('noBranches'),
+          controller: _scroll,
           emptyAction: FilledButton.tonal(
             onPressed: _create,
             child:  Text(_t('newBranch')),

@@ -103,8 +103,8 @@ class IoDownloadBackend implements IxDownloadBackend {
   }
 
   @override
-  Future<int?> completedSize(String id) async {
-    final File? file = await _fileOf(id);
+  Future<int?> completedSize(String id, {String? path}) async {
+    final File? file = await _fileOf(id, path);
     if (file == null) {
       return null;
     }
@@ -116,8 +116,8 @@ class IoDownloadBackend implements IxDownloadBackend {
   }
 
   @override
-  Future<String?> fileSha256(String id) async {
-    final File? file = await _fileOf(id);
+  Future<String?> fileSha256(String id, {String? path}) async {
+    final File? file = await _fileOf(id, path);
     if (file == null) {
       return null;
     }
@@ -129,8 +129,8 @@ class IoDownloadBackend implements IxDownloadBackend {
   }
 
   @override
-  Future<void> deleteFile(String id) async {
-    final File? file = await _fileOf(id);
+  Future<void> deleteFile(String id, {String? path}) async {
+    final File? file = await _fileOf(id, path);
     if (file == null) {
       return;
     }
@@ -178,12 +178,21 @@ class IoDownloadBackend implements IxDownloadBackend {
   }
 
   /// 解析任务对应的本地文件（不存在返回 `null`，**不抛**）。
-  Future<File?> _fileOf(String id) async {
-    final DownloadTask? task = _tasks[id];
-    if (task == null) {
-      return null;
-    }
+  ///
+  /// [path] 为调用方给出的落盘路径（`savePath`）时**优先使用它**：
+  /// 分片引擎自己写盘的任务从未进过库队列（`_tasks[id] == null`），
+  /// 只按 id 查库表会一律返回 `null`，于是刚下好的成品被读成"不存在"。
+  Future<File?> _fileOf(String id, String? path) async {
+    final String? explicit = (path == null || path.isEmpty) ? null : path;
     try {
+      if (explicit != null) {
+        final File file = File(explicit);
+        return await file.exists() ? file : null;
+      }
+      final DownloadTask? task = _tasks[id];
+      if (task == null) {
+        return null;
+      }
       final File file = File(await task.filePath());
       if (!await file.exists()) {
         return null;

@@ -201,6 +201,20 @@ class OgLRangeDownloader implements DownloadEngine {
         statusCode: response.statusCode,
       );
     }
+    // ★ 206 不等于"给的就是我要的那一段"：中间设备 / CDN 会回**错位**的区间。
+    //   必须把 `Content-Range` 与请求区间对齐（RFC 7233：两端都是**含**的），
+    //   否则各片会按错误顺序拼成一个"长度恰好正确"的坏文件 —— 长度校验
+    //   拦不住它（每片各自长度都对）。头部缺失时不猜，交给长度校验兜底。
+    final OgLByteRange? actual = _rangeOf(
+      response.headers.value(HttpHeaders.contentRangeHeader),
+    );
+    if (actual != null &&
+        (actual.start != range.start || actual.end != range.end)) {
+      throw DownloadHttpException(
+        '分片 $range 的 Content-Range 不符：${actual.start}-${actual.end}',
+        statusCode: response.statusCode,
+      );
+    }
     final IOSink sink = part.openWrite();
     int got = 0;
     try {
@@ -249,6 +263,29 @@ class OgLRangeDownloader implements DownloadEngine {
       return null;
     }
     return int.tryParse(value.substring(slash + 1).trim());
+  }
+
+  /// 解析 `Content-Range: bytes <start>-<end>/<total>` 的**区间**部分。
+  ///
+  /// 返回 `null` = 头部缺失或格式不符（**不猜**：调用方只在解析成功时才校验，
+  /// 免得把"服务端省略头部"误判成失败）。
+  static OgLByteRange? _rangeOf(String? value) {
+    if (value == null) {
+      return null;
+    }
+    final RegExpMatch? match = RegExp(
+      r'bytes\s+(\d+)\s*-\s*(\d+)',
+      caseSensitive: false,
+    ).firstMatch(value);
+    if (match == null) {
+      return null;
+    }
+    final int? start = int.tryParse(match.group(1)!);
+    final int? end = int.tryParse(match.group(2)!);
+    if (start == null || end == null) {
+      return null;
+    }
+    return OgLByteRange(start, end);
   }
 
   static String? _fileNameOf(HttpClientResponse response) {

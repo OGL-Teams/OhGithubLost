@@ -157,5 +157,13 @@
   "accelScopeActionArtifact": "Action 建置產物",
   "accelScopeRepoFile": "倉庫檔案（下載與預覽）",
   "accelScopeReadmeImage": "README 倉庫內圖片",
-  "storageAllFilesGranted": "已取得所有檔案存取權限"
+  "storageAllFilesGranted": "已取得所有檔案存取權限",
+  "groupInterface": "介面",
+  "groupStorageNetwork": "儲存與網路",
+  "groupAboutHelp": "關於與說明",
+  "dangerZone": "危險區",
+  "expandGroup": "展開",
+  "collapseGroup": "收合",
+  "logsSaving": "已寫入磁碟",
+  "logsLineCount": "{count} 行"
 }

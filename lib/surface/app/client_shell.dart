@@ -26,6 +26,7 @@ import '../pages/search_page.dart';
 import '../pages/settings_page.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../widgets/anim/anim_preload.dart';
 import 'animations.dart';
 import 'back_guard.dart';
 import 'error_surface.dart';
@@ -273,12 +274,21 @@ class _OgLClientShellState extends State<OgLClientShell> {
 
     // 隐藏页**停表**：`TickerMode(enabled: false)` 让不可见页面的动画不再推进
     //（下载进度条、入场动画等），避免"看不见的页面在偷偷烧帧"。
+    //
+    // 每页外面再套一层**分级预加载作用域**（透明、不改布局 / 不改动效语义）：
+    // - 可见时按当前档位把核心（档位质量表 / 过渡主题）预热，并交给页面一个
+    //   登记入口（页面自己 register 的项按 `group` 归组）；
+    // - 切走 / 卸载时**取消本组未完成的预加载并归还额度**（不留下可达对象）。
     final List<Widget> pages = <Widget>[
       for (final OgLShellTab tab in OgLShellTab.values)
         _visited.contains(tab)
             ? TickerMode(
                 enabled: tab == _tab,
-                child: _pageFor(tab),
+                child: OgLAnimPreloadBoundary(
+                  group: 'ogl-tab-${tab.name}',
+                  enabled: tab == _tab,
+                  child: _pageFor(tab),
+                ),
               )
             : const SizedBox.shrink(),
     ];
@@ -393,16 +403,27 @@ class _OgLShellSlideState extends State<_OgLShellSlide>
   ///
   /// 上下界特意放开到 `[-1, 2]`：欠阻尼弹簧会**轻微过冲**（回弹），
   /// 若仍锁在 `[0, 1]` 就会把回弹削掉，变成"没有回弹的弹簧"。
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: Duration.zero,
-    value: 1,
-    lowerBound: -1,
-    upperBound: 2,
-  );
+  ///
+  /// ★ 7.4.1：改成在 `initState` 里**提前建好**（而不是 `late final` 首次
+  /// 访问才建）——这就是切 tab 这条**全屏动画**的"预加载"：`Ticker` 的创建 /
+  /// 注册（以及控制器上的一整套监听列表初始化）成本被挪到页面挂载时，
+  /// 而不是挪到你按下 tab 的那一帧里去付。语义不变（初值仍是 1 = 已落位）。
+  late AnimationController _controller;
 
   /// 起始水平位移（正=从右进入，负=从左进入）。
   double _from = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration.zero,
+      value: 1,
+      lowerBound: -1,
+      upperBound: 2,
+    );
+  }
 
   @override
   void didUpdateWidget(covariant _OgLShellSlide oldWidget) {

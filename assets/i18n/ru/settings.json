@@ -157,5 +157,13 @@
   "accelScopeActionArtifact": "Артефакты Action",
   "accelScopeRepoFile": "Файлы репозитория (скачивание и просмотр)",
   "accelScopeReadmeImage": "Изображения внутри README",
-  "storageAllFilesGranted": "Доступ ко всем файлам предоставлен"
+  "storageAllFilesGranted": "Доступ ко всем файлам предоставлен",
+  "groupInterface": "Интерфейс",
+  "groupStorageNetwork": "Хранилище и сеть",
+  "groupAboutHelp": "О программе и справка",
+  "dangerZone": "Опасная зона",
+  "expandGroup": "Развернуть",
+  "collapseGroup": "Свернуть",
+  "logsSaving": "Запись в файл включена",
+  "logsLineCount": "Строк: {count}"
 }

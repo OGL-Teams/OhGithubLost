@@ -157,5 +157,13 @@
   "accelScopeActionArtifact": "Action 构建产物",
   "accelScopeRepoFile": "仓库文件（下载与预览）",
   "accelScopeReadmeImage": "README 仓库内图片",
-  "storageAllFilesGranted": "已获得所有文件访问权限"
+  "storageAllFilesGranted": "已获得所有文件访问权限",
+  "groupInterface": "界面",
+  "groupStorageNetwork": "存储与网络",
+  "groupAboutHelp": "关于与帮助",
+  "dangerZone": "危险区",
+  "expandGroup": "展开",
+  "collapseGroup": "收起",
+  "logsSaving": "已落盘",
+  "logsLineCount": "{count} 行"
 }
