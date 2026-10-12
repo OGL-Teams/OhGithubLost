@@ -120,5 +120,6 @@
   "writeConflictNotFound": "Target not found - it may have been deleted",
   "writeConflictForbidden": "You don't have permission to write",
   "writeConflictServer": "Server error - please try again later",
-  "writeConflictVerificationFailed": "Post-write verification failed - please try again"
+  "writeConflictVerificationFailed": "Post-write verification failed - please try again",
+  "viewDownloads": "View downloads"
 }

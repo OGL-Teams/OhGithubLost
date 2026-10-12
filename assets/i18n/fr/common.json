@@ -120,5 +120,6 @@
   "writeConflictNotFound": "Cible introuvable — elle a peut-être été supprimée",
   "writeConflictForbidden": "Vous n’avez pas la permission d’écrire",
   "writeConflictServer": "Erreur du serveur — veuillez réessayer plus tard",
-  "writeConflictVerificationFailed": "La vérification après écriture a échoué — veuillez réessayer"
+  "writeConflictVerificationFailed": "La vérification après écriture a échoué — veuillez réessayer",
+  "viewDownloads": "Voir les téléchargements"
 }

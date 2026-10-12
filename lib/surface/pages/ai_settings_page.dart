@@ -100,8 +100,15 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
   Future<void> _detectModels() async {
     setState(() => _saving = true);
     try {
-      final List<String> models = await widget.surface.domain.ai
-          .detectModels(key: _key.text.trim().isEmpty ? null : _key.text.trim());
+      final List<String> models = await widget.surface.domain.ai.detectModels(
+        key: _key.text.trim().isEmpty ? null : _key.text.trim(),
+        config: AiSettings(
+          enabled: true,
+          kind: _kind,
+          model: _model,
+          baseUrl: _baseUrl,
+        ),
+      );
       if (!mounted) {
         return;
       }

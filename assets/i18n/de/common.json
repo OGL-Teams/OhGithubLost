@@ -120,5 +120,6 @@
   "writeConflictNotFound": "Ziel nicht gefunden – möglicherweise wurde es gelöscht",
   "writeConflictForbidden": "Keine Schreibberechtigung",
   "writeConflictServer": "Serverfehler – bitte später erneut versuchen",
-  "writeConflictVerificationFailed": "Prüfung nach dem Schreiben fehlgeschlagen – bitte erneut versuchen"
+  "writeConflictVerificationFailed": "Prüfung nach dem Schreiben fehlgeschlagen – bitte erneut versuchen",
+  "viewDownloads": "Downloads anzeigen"
 }

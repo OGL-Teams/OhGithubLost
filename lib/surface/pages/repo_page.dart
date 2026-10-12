@@ -26,6 +26,7 @@ import '../app/overlays.dart';
 import '../app/paged_controller.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import 'download_manager_page.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/file_icons.dart';
@@ -1635,7 +1636,9 @@ class _CodeTabState extends State<_CodeTab> {
         category: IxDownloadCategory.repo,
         connections: widget.surface.settings.settings.downloadConnections,
       );
-      _notifier.success(
+      ogLShowDownloadQueued(
+        context,
+        widget.surface,
         _t('addedToDownload', {'name': ghPathName(entry.path)}),
       );
     } catch (error) {

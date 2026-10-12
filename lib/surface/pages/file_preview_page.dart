@@ -21,6 +21,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../app/async.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import 'download_manager_page.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/download_proxy.dart';
@@ -539,14 +540,12 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
       );
       if (mounted) {
         setState(() => _queued = true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _t('addedToDownload', <String, Object?>{
-                'name': ghPathName(widget.path),
-              }),
-            ),
-          ),
+        ogLShowDownloadQueued(
+          context,
+          widget.surface,
+          _t('addedToDownload', <String, Object?>{
+            'name': ghPathName(widget.path),
+          }),
         );
       }
     } catch (error) {

@@ -115,7 +115,7 @@ class OgLSettings {
   static const double maxCodeFontSize = 22;
 
   /// 允许的下载并发档位（设置页只给这几档，避免「随便填个大数」）。
-  static const List<int> downloadConnectionChoices = <int>[1, 2, 4, 8];
+  static const List<int> downloadConnectionChoices = <int>[1, 2, 4, 8, 16, 32];
 
   /// 由 JSON 构造（**永不抛**：坏数据回落默认）。
   factory OgLSettings.fromJson(Object? raw) {

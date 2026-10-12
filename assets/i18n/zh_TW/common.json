@@ -120,5 +120,6 @@
   "writeConflictNotFound": "目標不存在（可能已被刪除）",
   "writeConflictForbidden": "權限不足，無法寫入",
   "writeConflictServer": "伺服器錯誤，請稍後重試",
-  "writeConflictVerificationFailed": "寫入後校驗未通過，請重試"
+  "writeConflictVerificationFailed": "寫入後校驗未通過，請重試",
+  "viewDownloads": "查看下載"
 }

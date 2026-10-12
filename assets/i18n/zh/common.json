@@ -120,5 +120,6 @@
   "writeConflictNotFound": "目标不存在（可能已被删除）",
   "writeConflictForbidden": "权限不足，无法写入",
   "writeConflictServer": "服务端错误，请稍后重试",
-  "writeConflictVerificationFailed": "写入后校验未通过，请重试"
+  "writeConflictVerificationFailed": "写入后校验未通过，请重试",
+  "viewDownloads": "查看下载"
 }

@@ -13,6 +13,7 @@ import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import 'download_manager_page.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/download_proxy.dart';
@@ -271,7 +272,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
         connections: widget.surface.settings.settings.downloadConnections,
       );
       if (mounted) {
-        _notifier.success(_t('artifactAdded', <String, Object?>{'name': name}));
+        ogLShowDownloadQueued(context, widget.surface,
+            _t('artifactAdded', <String, Object?>{'name': name}));
       }
     } catch (error) {
       if (mounted) {
