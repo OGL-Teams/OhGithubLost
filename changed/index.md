@@ -31,8 +31,8 @@ OhGithubLost（简称 OGL）是一款 GitHub 仓库管理客户端，可在手�
 
 - 安装后无法启动：请先卸载同包名的旧版本，再安装新版本。
 - Linux 无法安装：请确认系统为 Ubuntu 22.04 或更新版本。
-- 其他问题：请到[项目 Issues](https://github.com/yingo-server/OhGithubLost/issues) 反馈。
+- 其他问题：请到[项目 Issues](https://github.com/OGL-Teams/OhGithubLost/issues) 反馈。
 
 ---
 
-需要了解更多，可查看[使用说明](https://github.com/yingo-server/OhGithubLost/blob/main/docs/USAGE.md)或[项目主页](https://github.com/yingo-server/OhGithubLost)。
+需要了解更多，可查看[使用说明](https://github.com/OGL-Teams/OhGithubLost/blob/main/docs/USAGE.md)或[项目主页](https://github.com/OGL-Teams/OhGithubLost)。

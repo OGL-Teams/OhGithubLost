@@ -6,7 +6,7 @@
 
 浏览与编辑仓库、处理 Issues / Pull Requests / Releases / Actions、管理 Gist —— 不必打开浏览器。
 
-[![Release](https://img.shields.io/github/v/release/yingo-server/OhGithubLost?label=release&color=blue)](https://github.com/yingo-server/OhGithubLost/releases)
+[![Release](https://img.shields.io/github/v/release/OGL-Teams/OhGithubLost?label=release&color=blue)](https://github.com/OGL-Teams/OhGithubLost/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Web-informational)](#平台支持)
 [![i18n](https://img.shields.io/badge/i18n-6%20languages-informational)](docs/I18N.md)
@@ -15,8 +15,8 @@
 
 <br>
 
-<img width="49%" alt="Star history" src="https://fastly.jsdelivr.net/gh/yingo-server/OhGithubLost@stats/stats/star-history.png">
-<img width="49%" alt="Commit history" src="https://fastly.jsdelivr.net/gh/yingo-server/OhGithubLost@stats/stats/commit-history.png">
+<img width="49%" alt="Star history" src="https://fastly.jsdelivr.net/gh/OGL-Teams/OhGithubLost@stats/stats/star-history.png">
+<img width="49%" alt="Commit history" src="https://fastly.jsdelivr.net/gh/OGL-Teams/OhGithubLost@stats/stats/commit-history.png">
 
 <sub>图表由 `stats` 分支每小时自动更新</sub>
 
@@ -50,7 +50,7 @@
 | 平台 | 状态 | 说明 |
 | --- | --- | --- |
 | Web | 支持 | Chrome / Edge / Firefox 89+，Safari 16.4+（dart2wasm 主载，dart2js 兜底） |
-| Android / Windows / Linux | 见 [`main` 分支](https://github.com/yingo-server/OhGithubLost/tree/main) | 本分支不构建原生产物 |
+| Android / Windows / Linux | 见 [`main` 分支](https://github.com/OGL-Teams/OhGithubLost/tree/main) | 本分支不构建原生产物 |
 | macOS / iOS | 弃用 | 最后支持版本 v5.3.0（原生分支） |
 
 浏览器基线取 **WebAssembly GC** 支持：更老的浏览器自动走 dart2js 兜底产物。
@@ -110,7 +110,7 @@ web/                 PWA 脚手架（入口模板、清单、图标）
 | [`docs/I18N.md`](docs/I18N.md) | 多语言维护手册 |
 | [`CHANGELOG.md`](CHANGELOG.md) | 完整版本历史 |
 | [`release_notes/`](release_notes/) | 逐版本发布说明 |
-| <https://yingo-server.github.io/OhGithubLost/> | 更新日志站点（逐版本中英对照） |
+| <https://oglb.344977.xyz/> | 更新日志站点（逐版本中英对照） |
 
 ## 版本与发布
 

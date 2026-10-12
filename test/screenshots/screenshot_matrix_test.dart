@@ -167,7 +167,7 @@ class _ScriptedTransport implements NetTransport {
           stars: 3,
         ),
         _repoJson(
-          fullName: 'yingo-server/OhGithubLost',
+          fullName: 'OGL-Teams/OhGithubLost',
           description: '全能 GitHub 仓库管理器（Flutter 全平台）',
           isPrivate: false,
           stars: 88,

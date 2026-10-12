@@ -19,9 +19,9 @@ description: "OGL · OhGithubLost — GitHub 仓库管理器（Flutter 多平台
 publish_to: 'none'
 version: 8.0.0+80000
 
-homepage: https://github.com/yingo-server/OhGithubLost
-repository: https://github.com/yingo-server/OhGithubLost
-issue_tracker: https://github.com/yingo-server/OhGithubLost/issues
+homepage: https://github.com/OGL-Teams/OhGithubLost
+repository: https://github.com/OGL-Teams/OhGithubLost
+issue_tracker: https://github.com/OGL-Teams/OhGithubLost/issues
 
 environment:
   sdk: '>=3.6.0 <4.0.0'

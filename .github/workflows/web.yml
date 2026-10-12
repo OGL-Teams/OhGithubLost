@@ -196,7 +196,7 @@ jobs:
           set -u
           V='${{ steps.ver.outputs.version }}'
           D=$(printf '%s' "$V" | tr -cd '0-9')
-          GB='https://fastly.jsdelivr.net/gh/yingo-server/OhGithubLost@web/app'
+          GB='https://fastly.jsdelivr.net/gh/OGL-Teams/OhGithubLost@web/app'
           echo "预热版本 $V（目录 $D）"
           # 先确认 jsDelivr 已能看到这次提交（version.json 只有 js 桶有）
           curl -sL -o /dev/null \

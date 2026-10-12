@@ -19,7 +19,7 @@ import os
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-API = 'https://api.github.com/repos/yingo-server/OhGithubLost/releases?per_page=50'
+API = 'https://api.github.com/repos/OGL-Teams/OhGithubLost/releases?per_page=50'
 
 
 def main() -> int:
