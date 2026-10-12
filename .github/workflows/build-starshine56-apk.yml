@@ -36,6 +36,9 @@ jobs:
           rm -f test/widget_test.dart
           # permission_handler_android requires compileSdk 37
           sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 37/' android/app/build.gradle.kts
+          # flutter_local_notifications requires core library desugaring
+          sed -i 's/isCoreLibraryDesugaringEnabled = false/isCoreLibraryDesugaringEnabled = true/' android/app/build.gradle.kts
+          echo '    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")' >> android/app/build.gradle.kts
 
       - name: Analyze
         run: flutter analyze
