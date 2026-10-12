@@ -35,7 +35,7 @@ jobs:
           flutter create --platforms=android --project-name ohgithublost .
           rm -f test/widget_test.dart
           # permission_handler_android requires compileSdk 37
-          sed -i 's/compileSdk = 36/compileSdk = 37/' android/app/build.gradle.kts
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 37/' android/app/build.gradle.kts
 
       - name: Analyze
         run: flutter analyze
