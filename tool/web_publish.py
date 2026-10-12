@@ -288,7 +288,7 @@ WRAPPER = """<!DOCTYPE html>
        `load`（不是 `error`），"嗅探失败再回退"在 iframe 上根本不可靠。
        等 wasm 桶真正上 CI 之后，改为服务端写死路径（或改用 fetch 预检），
        在此之前——稳定优先，直接命中 js 产物。 -->
-  <iframe id="ogl-frame" src="about:blank" title="OhGithubLost" allow="clipboard-write; fullscreen"></iframe>
+  <iframe id="ogl-frame" src="about:blank" title="OhGithubLost" allow="clipboard-write; fullscreen; notifications"></iframe>
   <script>
     (function () {
       var f = document.getElementById('ogl-frame');

@@ -315,7 +315,27 @@ abstract final class OgLMotion {
   /// - 位移距离逐档增大（`0.012 → 0.035 → 0.06`）；
   /// - **只有拉满档**允许 0.99 的轻微缩放，且同样包在 `RepaintBoundary` 里；
   /// - 过渡始终包 `RepaintBoundary`：过渡期间只重合成、不重绘页面内容。
+  ///
+  /// ## 7.4.1：**有界**记忆化
+  /// 档位只有 `0–3` 四个值，这里为它们各缓存一份过渡主题（**最多 4 项，
+  /// 只增到 4 就停**——它不是"随时间累积"的缓存）。这样 `ThemeData` 重建时
+  /// 不会每次都新造一批过渡构建器对象（`ThemeData` 比较过渡主题时也才能命中
+  /// 同一个实例）。**越界档位一律现算、不写缓存**：缓存规模与档位表的语义都
+  /// 不变（`OgLOAnimQuality.of(level)` 对越界值的处理保持原样）。
+  static final Map<int, PageTransitionsTheme> _transitionCache =
+      <int, PageTransitionsTheme>{};
+
+  /// 缓存规模上限（档位 `0–3`），仅用于自检与注释说明。
+  static const int transitionCacheLimit = 4;
+
   static PageTransitionsTheme pageTransitions(int level) {
+    final bool cacheable = level >= 0 && level < transitionCacheLimit;
+    if (cacheable) {
+      final PageTransitionsTheme? hit = _transitionCache[level];
+      if (hit != null) {
+        return hit;
+      }
+    }
     final OgLOAnimQuality quality = OgLOAnimQuality.of(level);
     final PageTransitionsBuilder builder = level <= 0
         ? const _OgLInstantTransitionsBuilder()
@@ -325,12 +345,16 @@ abstract final class OgLMotion {
             curve: quality.largeCurve,
             window: quality.transitionWindow,
           );
-    return PageTransitionsTheme(
+    final PageTransitionsTheme built = PageTransitionsTheme(
       builders: <TargetPlatform, PageTransitionsBuilder>{
         for (final TargetPlatform platform in TargetPlatform.values)
           platform: builder,
       },
     );
+    if (cacheable) {
+      _transitionCache[level] = built;
+    }
+    return built;
   }
 }
 
@@ -353,7 +377,11 @@ class _OgLInstantTransitionsBuilder extends PageTransitionsBuilder {
 /// 统一页面过渡：淡入（+ 可选轻微缩放）+ 可选轻位移，**强制 `RepaintBoundary`**。
 class _OgLSlideFadeTransitionsBuilder extends PageTransitionsBuilder {
   /// 创建。
-  const _OgLSlideFadeTransitionsBuilder({
+  ///
+  /// 注意：本类**不是** `const` 构造 —— 它缓存两条"被动曲线求值器"
+  ///（见 [_movedTween]）；实例本身由 [OgLMotion.pageTransitions] 的**有界**
+  /// 缓存在每个档位上复用一份。
+  _OgLSlideFadeTransitionsBuilder({
     required this.offset,
     required this.scaleFrom,
     required this.curve,
@@ -372,6 +400,25 @@ class _OgLSlideFadeTransitionsBuilder extends PageTransitionsBuilder {
   /// 视觉窗口（占路线时间线的比例）：运动在 `window` 处就已结束、随后保持。
   final double window;
 
+  /// 视觉窗口的终点（`window` 越界时按"整条时间线"处理）。
+  double get _windowEnd => window <= 0 || window > 1 ? 1.0 : window;
+
+  /// **被动**曲线求值器（`CurveTween`）。
+  ///
+  /// `CurveTween.animate(parent)` 返回 `_AnimatedEvaluation`：它只在 `value`
+  /// 上做一次求值转发，**不给 parent 注册任何监听**（`AnimationWithParentMixin`
+  /// 只是把 add/removeListener 转发出去）。因此它可以在多次
+  /// [buildTransitions] 之间安全复用——这正是**取代 `CurvedAnimation`** 的
+  /// 关键（原因见 [buildTransitions] 的注释）。
+  ///
+  /// 这两条曲线与"路线"无关（只由档位决定），所以在实例上算一次即可。
+  late final CurveTween _movedTween =
+      CurveTween(curve: Interval(0.0, _windowEnd, curve: curve));
+
+  /// 淡入比落位再早一点结束（"先亮起来、再落定"），观感更灵动。
+  late final CurveTween _fadedTween =
+      CurveTween(curve: Interval(0.0, _windowEnd * 0.8, curve: Curves.easeOut));
+
   @override
   Widget buildTransitions<T>(
     PageRoute<T> route,
@@ -382,16 +429,28 @@ class _OgLSlideFadeTransitionsBuilder extends PageTransitionsBuilder {
   ) {
     // 把"实际运动"压进路线时间线的前 window 段：观感快、但不改路由时长，
     // 也不影响系统返回手势的语义。
-    final double end = window <= 0 || window > 1 ? 1.0 : window;
-    final Animation<double> moved = CurvedAnimation(
-      parent: animation,
-      curve: Interval(0.0, end, curve: curve),
-    );
-    // 淡入比落位再早一点结束（"先亮起来、再落定"），观感更灵动。
-    final Animation<double> faded = CurvedAnimation(
-      parent: animation,
-      curve: Interval(0.0, end * 0.8, curve: Curves.easeOut),
-    );
+    //
+    // ★ 这里**刻意不用 `CurvedAnimation`**（7.4.1 资源修复）：
+    // `CurvedAnimation` 的构造函数会给 `parent` 注册一个 `statusListener`，
+    // 而**只有 `dispose()` 才会把它摘掉**（见 Flutter
+    // `packages/flutter/lib/src/animation/animations.dart`：构造函数里
+    // `parent.addStatusListener(_updateCurveDirection)`，`dispose()` 里
+    // `parent.removeStatusListener(...)`）。而 `buildTransitions` 会被框架
+    // **反复调用**——`_ModalScopeState.build` 把它放进路线动画的
+    // `ListenableBuilder`（见 Flutter `packages/flutter/lib/src/widgets/routes.dart`
+    // 的 `_buildFlexibleTransitions` 调用点），于是**过渡期间每帧重建一次**，
+    // 路线状态（canPop / offstage / userGestureInProgress…）变化时也会重建。
+    // 每帧新造两个从不 `dispose` 的 `CurvedAnimation`，等于给这条路由的
+    // `AnimationController` 每帧挂一个**永远不会摘除**的死监听者（一次翻页
+    // ≈ 18 帧 ≈ 36 个，翻得越多挂得越多；它们在每次状态变化时被逐个唤醒，
+    // 也让这一整条对象链迟迟无法回收）。这是"反复翻页后动画越来越卡、
+    // 而且不随时间回落"的一处**每帧分配 + 监听累积**来源。
+    //
+    // 换成 `CurveTween(...).animate(animation)`（见 [_movedTween]）后：不注册
+    // 监听、不留死对象；曲线取值与 `CurvedAnimation`（未传 `reverseCurve` 时）
+    // **逐点一致**，所以各档位的窗口 / 位移 / 缩放 / 曲线观感零变化。
+    final Animation<double> moved = _movedTween.animate(animation);
+    final Animation<double> faded = _fadedTween.animate(animation);
     Widget result = child;
     if (offset > 0) {
       result = SlideTransition(

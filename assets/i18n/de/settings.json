@@ -161,5 +161,13 @@
   "webSectionDesc": "Optionen, die es nur im Browser gibt",
   "webInstallPrompt": "Beim Start nach „Zum Startbildschirm hinzufügen“ fragen",
   "webInstallPromptDesc": "Wird bei jedem Öffnen der Seite einmal gefragt; entfällt, sobald die App installiert ist (Start über ihr eigenes Symbol).",
-  "storageAllFilesGranted": "Zugriff auf alle Dateien wurde erteilt"
+  "storageAllFilesGranted": "Zugriff auf alle Dateien wurde erteilt",
+  "groupInterface": "Oberfläche",
+  "groupStorageNetwork": "Speicher & Netzwerk",
+  "groupAboutHelp": "Über & Hilfe",
+  "dangerZone": "Gefahrenbereich",
+  "expandGroup": "Erweitern",
+  "collapseGroup": "Einklappen",
+  "logsSaving": "Wird protokolliert",
+  "logsLineCount": "{count} Zeilen"
 }

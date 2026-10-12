@@ -261,13 +261,23 @@ abstract class IxDownloadBackend {
   Future<void> cancel(String id);
 
   /// 已完成文件的大小（字节）；拿不到返回 `null`（**不编造**）。
-  Future<int?> completedSize(String id);
+  ///
+  /// [path] 为**调用方已知的落盘路径**（`savePath`），必须传：
+  /// 分片引擎自己写盘的任务**不在库的任务表里**（它从未 `enqueue`），
+  /// 只按 id 查库表会一律返回 `null` —— 于是好好的文件被当成"读不到"。
+  /// Web 后端拿不到成品字节，忽略该参数并返回 `null`（**不编造**）。
+  Future<int?> completedSize(String id, {String? path});
 
   /// 文件的 sha256（小写十六进制）；不可读返回 `null`。
-  Future<String?> fileSha256(String id);
+  ///
+  /// [path] 同 [completedSize]：**必须**把落盘路径传进来，否则分片下载
+  /// （不经过库队列）的成品读不到 → 校验必然判"不匹配" → 好文件被误杀。
+  Future<String?> fileSha256(String id, {String? path});
 
   /// 删除本地文件（完整性校验不通过时清理）。
-  Future<void> deleteFile(String id);
+  ///
+  /// [path] 同 [completedSize]：不传就会删不掉该删的坏文件。
+  Future<void> deleteFile(String id, {String? path});
 
   /// 释放资源。
   void dispose();
@@ -424,13 +434,18 @@ class IxDownloadTask {
   bool get done => status == IxDownloadStatus.completed;
 
   /// 复制并覆盖部分字段。
+  ///
+  /// ★ `error` / `failureReason` 用**哨兵**而不是可空参数：Dart 的分不清
+  ///   "没传"与"传了 `null`"，而这两件事对失败原因语义相反
+  ///   （保留旧原因 / 清空）。重试时必须能**显式清空**——否则一条已重试的任务
+  ///   会继续挂着上一次的失败文案（界面上就是"在下载中却显示上次为什么失败"）。
   IxDownloadTask copyWith({
     IxDownloadStatus? status,
     int? received,
     int? total,
     double? bytesPerSecond,
-    String? error,
-    IxDownloadFailureReason? failureReason,
+    Object? error = _kUnset,
+    Object? failureReason = _kUnset,
     String? savePath,
     bool? verified,
   }) =>
@@ -445,10 +460,23 @@ class IxDownloadTask {
         total: total ?? this.total,
         bytesPerSecond: bytesPerSecond ?? this.bytesPerSecond,
         createdAt: createdAt,
-        error: error ?? this.error,
-        failureReason: failureReason ?? this.failureReason,
+        error: identical(error, _kUnset) ? this.error : error as String?,
+        failureReason: identical(failureReason, _kUnset)
+            ? this.failureReason
+            : failureReason as IxDownloadFailureReason?,
         verified: verified ?? this.verified,
       );
+}
+
+/// [IxDownloadTask.copyWith] 里「**未传**字段」的哨兵。
+///
+/// Dart 的可选参数分不清"没传"与"传了 `null`"，而这两件事对失败原因语义相反
+/// （保留旧原因 / 清空），因此用私有实例做哨兵（`identical` 比较）。
+const Object _kUnset = _UnsetSentinel();
+
+/// 哨兵的私有类型（避免与外部任何 `const Object()` 撞车）。
+class _UnsetSentinel {
+  const _UnsetSentinel();
 }
 
 /// 下载管理器（展示层唯一入口；内部委托平台后端）。
@@ -576,28 +604,44 @@ class IxDownloadManager extends ChangeNotifier {
       for (final String alt in fallbackUrls)
         if (alt.isNotEmpty && alt != url) alt,
     ];
-    // 原生：`Uri.file(savePath).toFilePath()` 真正本地路径；
-    // Web：返回 `null`，界面据此知道"成品在浏览器下载目录"，
-    //   与之前把 URL 塞进 savePath（导致 `Uri.file(url)` 解析错）彻底切割。
-    final Uri? localUri = await _backend.pathFor(spec);
-    final String savePath = localUri?.toFilePath() ?? '';
-    _snapshots[id] = IxDownloadTask(
+    // ★ 先把"排队中"的快照登记好（**在 `pathFor` 之前**）：`pathFor` 是
+    //   async 的，等它回来的这段时间里页面就该看到这条任务——否则 await
+    //   窗口内到达的后端事件会被 `_onEvent` 当成"未知 id"丢掉，
+    //   `tasks` / `runningCount` 也是空的。
+    final IxDownloadTask queued = IxDownloadTask(
       id: id,
       url: url,
       fileName: safeName,
       category: category,
-      savePath: savePath,
+      savePath: '',
       status: IxDownloadStatus.queued,
       received: 0,
       total: 0,
       bytesPerSecond: 0,
       createdAt: DateTime.now(),
     );
+    _snapshots[id] = queued;
     // 期望摘要（sha256）；为空表示该资源没有可比对的摘要（如实标记未校验）。
     if (expectedSha256 != null && expectedSha256.isNotEmpty) {
       _expectedSha256[id] = expectedSha256;
     }
-    notifyListeners();
+    _safeNotify();
+
+    // 原生：`Uri.file(savePath).toFilePath()` 真正本地路径；
+    // Web：返回 `null`，界面据此知道"成品在浏览器下载目录"，
+    //   与之前把 URL 塞进 savePath（导致 `Uri.file(url)` 解析错）彻底切割。
+    final Uri? localUri = await _backend.pathFor(spec);
+    // ★ `pathFor` 是 async 的：这期间用户可能已把任务移除（`remove`）、
+    //   或管理器已回收。此时**既不写回、也不入队**——写回会让被移除的任务
+    //   "复活"，入队会给一条没人要的任务弹一次浏览器下载。
+    //   判据是"登记的那份快照还在原处"（同一个实例）：id 复用（同一条附件
+    //   重复点下载）时实例会换掉，那条旧 enqueue 同样应作废。
+    if (_disposed || !identical(_snapshots[id], queued)) {
+      return _snapshots[id] ?? queued;
+    }
+    final String savePath = localUri?.toFilePath() ?? '';
+    _snapshots[id] = queued.copyWith(savePath: savePath);
+    _safeNotify();
 
     // 并发 > 1 且装配层给了分片引擎、且后端支持分片 → 走**多连接分片**；
     // 不支持 Range 时自动回退到单连接（同一 taskId，页面无感）。
@@ -608,10 +652,10 @@ class IxDownloadManager extends ChangeNotifier {
         savePath.isNotEmpty) {
       _rangeConnections[id] = connections;
       unawaited(_runRanged(id: id, connections: connections));
-      return _snapshots[id]!;
+      return _snapshots[id] ?? queued;
     }
     await _backend.enqueue(spec);
-    return _snapshots[id]!;
+    return _snapshots[id] ?? queued;
   }
 
   /// 用分片引擎跑一个任务；不支持 / 失败则回退单连接。
@@ -662,30 +706,26 @@ class IxDownloadManager extends ChangeNotifier {
 
     if (uri == null) {
       // 没有一个地址可并发分片：回退单连接（优先用最后一个可达地址）。
-      _rangeTokens.remove(id);
-      _diagnostics?.info(
-        'DL',
-        '无可分片通道，回退单连接下载：${candidates.first}',
+      await _fallbackToSingle(
+        id,
+        spec,
+        url: reachable ?? candidates.first,
+        reason: '无可分片通道（探测结果 $probe）',
         code: 'OGL-DL-201',
-        data: probe.toJson(),
       );
-      final String target = reachable ?? candidates.first;
-      final IxDownloadSpec fallback = spec.copyWith(url: target);
-      final String path =
-          (await _backend.pathFor(fallback))?.toFilePath() ?? '';
-      final IxDownloadTask? current = _snapshots[id];
-      if (current != null) {
-        _snapshots[id] = current.copyWith(savePath: path);
-      }
-      await _backend.enqueue(fallback);
       return;
     }
 
     _snapshots[id] = snap.copyWith(
       status: IxDownloadStatus.running,
+      // ★ 分片引擎**每次都是从 0 重新拉**（暂停 / 失败后临时分片已被清掉），
+      //   所以这里必须把已收字节一起归零：留着上一轮的数字，界面会在
+      //   "重新下载"的头几秒里显示一个根本不属于本次下载的假进度。
+      received: 0,
       total: probe.total!,
+      bytesPerSecond: 0,
     );
-    notifyListeners();
+    _safeNotify();
 
     try {
       await engine.fetch(
@@ -710,13 +750,112 @@ class IxDownloadManager extends ChangeNotifier {
             ? IxDownloadStatus.paused
             : IxDownloadStatus.canceled,
       );
+    } on DownloadUnsupported catch (error) {
+      // ★ 引擎说"我不行"（**文件太小**开不出第二片 / 服务端不支持 Range）
+      //   —— 这**不是下载失败**。契约（`download_engine.dart`）写得很清楚：
+      //   「目标不支持（或暂时无法）分片下载：调用方应回退到普通单连接下载」。
+      //   把它当失败上报的后果：「多线程下载」一开，**所有小于 1 MB 的文件
+      //   必然"下载失败"**（文件与网络其实都没问题）。
+      await _fallbackToSingle(
+        id,
+        spec,
+        url: uri.toString(),
+        reason: '分片不可用（${error.reason}）',
+        code: 'OGL-DL-203',
+      );
     } catch (error) {
-      // 分片失败**不静默**：记事件码并置失败（可重试）。
+      // 服务端**忽略 Range**（回 200 而不是 206）：同属"不支持分片"，
+      // 一样回退单连接，而不是把用户这次下载判死。
+      if (error is DownloadHttpException && error.statusCode == 200) {
+        await _fallbackToSingle(
+          id,
+          spec,
+          url: uri.toString(),
+          reason: '服务端忽略 Range（HTTP 200 而非 206）',
+          code: 'OGL-DL-204',
+        );
+      } else {
+        // 分片失败**不静默**：记事件码并置失败（可重试）。
+        _diagnostics?.error(
+          'DL',
+          '多连接下载失败：$uri（$error）',
+          code: 'OGL-DL-202',
+          data: <String, Object?>{'connections': connections},
+        );
+        final IxDownloadTask? current = _snapshots[id];
+        if (current != null) {
+          _snapshots[id] = current.copyWith(
+            status: IxDownloadStatus.failed,
+            error: '$error',
+          );
+          _safeNotify();
+        }
+      }
+    } finally {
+      _rangeTokens.remove(id);
+      _pausedIds.remove(id);
+    }
+  }
+
+  /// 回退到**单连接**下载（同一 taskId，页面无感：状态回到"排队中"，
+  /// 随后由后端的更新事件继续推进）。
+  ///
+  /// ## 为什么必须回退，而不是判失败
+  /// 见 [DownloadUnsupported] 的契约语义：分片引擎在"文件太小 / 服务端不支持
+  /// Range"时会明确说"我不行"，这**不是**下载失败。回退用的是同一条
+  /// taskId，因此进度、暂停、重试、完整性校验都照旧。
+  /// Web 上这条路径同样重要：`WebDownloadBackend.supportsRanged` 为 `false`
+  /// （浏览器下载），而"分片不可用"的判定仍可能由注入的引擎给出
+  /// （测试 / 将来的原生后端），此时必须落到浏览器下载而不是报失败。
+  ///
+  /// ## 自己的失败也要兜住
+  /// 本方法是 `_runRanged` 的收尾，而 `_runRanged` 是 fire-and-forget
+  /// （`unawaited(_runRanged(...))`）——这里若抛出，会变成无人处理的异步错误。
+  Future<void> _fallbackToSingle(
+    String id,
+    IxDownloadSpec spec, {
+    required String url,
+    required String reason,
+    required String code,
+  }) async {
+    // 从分片路径上摘下来：此后 pause / resume / retry 都走后端那条路。
+    _rangeTokens.remove(id);
+    _rangeConnections.remove(id);
+    try {
+      final IxDownloadSpec fallback = spec.copyWith(url: url);
+      final IxDownloadTask? current = _snapshots[id];
+      if (current == null) {
+        // 任务已被移除：绝不写回（否则会把移除过的任务"复活"）。
+        return;
+      }
+      final String path = (await _backend.pathFor(fallback))?.toFilePath() ?? '';
+      final IxDownloadTask? fresh = _snapshots[id];
+      if (fresh == null) {
+        return; // await 期间被移除
+      }
+      _diagnostics?.info(
+        'DL',
+        '${spec.fileName}：$reason，已回退单连接下载',
+        code: code,
+        data: <String, Object?>{'taskId': id, 'url': url},
+      );
+      _snapshots[id] = fresh.copyWith(
+        savePath: path,
+        status: IxDownloadStatus.queued,
+        // ★ 单连接重来时进度从 0 起算：留着上一次分片的数字会显示成
+        //   "已经下了一半"的假进度（实际后端那边才刚开始）。
+        received: 0,
+        total: 0,
+        bytesPerSecond: 0,
+      );
+      _safeNotify();
+      await _backend.enqueue(fallback);
+    } catch (error) {
       _diagnostics?.error(
         'DL',
-        '多连接下载失败：$uri（$error）',
-        code: 'OGL-DL-202',
-        data: <String, Object?>{'connections': connections},
+        '回退单连接失败：${spec.fileName}（$error）',
+        code: 'OGL-DL-205',
+        data: <String, Object?>{'taskId': id, 'url': url},
       );
       final IxDownloadTask? current = _snapshots[id];
       if (current != null) {
@@ -724,11 +863,8 @@ class IxDownloadManager extends ChangeNotifier {
           status: IxDownloadStatus.failed,
           error: '$error',
         );
-        notifyListeners();
+        _safeNotify();
       }
-    } finally {
-      _rangeTokens.remove(id);
-      _pausedIds.remove(id);
     }
   }
 
@@ -843,8 +979,13 @@ class IxDownloadManager extends ChangeNotifier {
         received: 0,
         total: 0,
         bytesPerSecond: 0,
+        // ★ 显式清空上一次的失败原因（哨兵语义：只有显式 null 才清）。
+        //   不清的话，重试后的任务会继续挂着上一次"为什么失败"的文案
+        //   （本地化原因 + 自由文本两条路都要清）。
+        error: null,
+        failureReason: null,
       );
-      notifyListeners();
+      _safeNotify();
     }
     final int? connections = _rangeConnections[id];
     if (connections != null && _engine != null && _backend.supportsRanged) {
@@ -868,7 +1009,7 @@ class IxDownloadManager extends ChangeNotifier {
     _expectedSha256.remove(id);
     _urlCandidates.remove(id);
     _exportedToSaf.remove(id);
-    notifyListeners();
+    _safeNotify();
   }
 
   /// 清空已完成 / 已取消 / 失败的条目（不动磁盘文件）。
@@ -895,14 +1036,14 @@ class IxDownloadManager extends ChangeNotifier {
       _urlCandidates.remove(id);
       _exportedToSaf.remove(id);
     }
-    notifyListeners();
+    _safeNotify();
   }
 
   void _applyStatus(String id, IxDownloadStatus status) {
     final IxDownloadTask? snap = _snapshots[id];
     if (snap != null) {
       _snapshots[id] = snap.copyWith(status: status);
-      notifyListeners();
+      _safeNotify();
       if (status == IxDownloadStatus.completed) {
         unawaited(_maybeExportToSaf(id));
       }
@@ -949,7 +1090,9 @@ class IxDownloadManager extends ChangeNotifier {
       return true;
     }
     try {
-      final String? actual = await _backend.fileSha256(id);
+      // ★ 必须把**落盘路径**传下去：分片引擎自己写盘的任务从未进过后端队列，
+      //   只按 id 查表会一律拿不到成品 → 校验必然判"不匹配" → 好文件被误杀。
+      final String? actual = await _backend.fileSha256(id, path: snap.savePath);
       if (actual == null) {
         return false;
       }
@@ -969,7 +1112,7 @@ class IxDownloadManager extends ChangeNotifier {
           data: <String, Object?>{'expected': expected, 'actual': actual},
         );
       }
-      notifyListeners();
+      _safeNotify();
       return ok;
     } catch (error) {
       _diagnostics?.warn(
@@ -998,12 +1141,13 @@ class IxDownloadManager extends ChangeNotifier {
       if (!_disposed && snap != null) {
         // ★ 校验不匹配的成品必须**删掉**：留着它，用户点「重试」只会把同一份
         //   坏字节再校验一遍，永远失败。删掉后重试才会真正重新下载。
-        await _backend.deleteFile(id);
+        //   同样要带 `path`：不带就删不掉该删的那个文件。
+        await _backend.deleteFile(id, path: snap.savePath);
         _snapshots[id] = snap.copyWith(
           status: IxDownloadStatus.failed,
           error: 'integrityMismatch',
         );
-        notifyListeners();
+        _safeNotify();
       }
       return;
     }
@@ -1075,7 +1219,7 @@ class IxDownloadManager extends ChangeNotifier {
         error: legacy,
         failureReason: event.errorReason,
       );
-      notifyListeners();
+      _safeNotify();
       if (status == IxDownloadStatus.completed) {
         // 先校验完整性，再回填大小与导出 SAF（校验不过则判失败、不导出）。
         unawaited(_finishTask(id));
@@ -1106,6 +1250,19 @@ class IxDownloadManager extends ChangeNotifier {
     _notifyThrottled();
   }
 
+  /// 安全通知：`dispose()` 之后到达的回调（分片任务是 fire-and-forget、
+  /// 后端的终态事件也可能排在微任务里）**一律丢弃**——对已释放的
+  /// [ChangeNotifier] 调 `notifyListeners()` 在 debug 下直接断言失败。
+  ///
+  /// 这是 Web 侧的等价物：原生那边要防的是"dispose 后 SAF 导出仍在跑"，
+  /// Web 没有 SAF，但有同样的问题——**管理器回收后仍有异步回调在动状态**。
+  void _safeNotify() {
+    if (_disposed) {
+      return;
+    }
+    notifyListeners();
+  }
+
   void _notifyThrottled() {
     if (_disposed) {
       return;
@@ -1115,7 +1272,7 @@ class IxDownloadManager extends ChangeNotifier {
       return;
     }
     _lastNotify = now;
-    notifyListeners();
+    _safeNotify();
   }
 
   /// 完成后回填真实文件大小。
@@ -1129,13 +1286,22 @@ class IxDownloadManager extends ChangeNotifier {
       return;
     }
     try {
-      final int? size = await _backend.completedSize(id);
+      // ★ 必须先取快照再 await：`snap.savePath` 是"落盘路径"的唯一来源，
+      //   而后端（尤其分片下载的成品）不在它自己的队列里，只按 id 查不到。
       final IxDownloadTask? snap = _snapshots[id];
-      if (_disposed || size == null || snap == null) {
+      if (snap == null) {
         return;
       }
-      _snapshots[id] = snap.copyWith(received: size, total: size);
-      notifyListeners();
+      final int? size = await _backend.completedSize(id, path: snap.savePath);
+      if (_disposed || size == null) {
+        return;
+      }
+      final IxDownloadTask? fresh = _snapshots[id];
+      if (fresh == null) {
+        return;
+      }
+      _snapshots[id] = fresh.copyWith(received: size, total: size);
+      _safeNotify();
     } catch (error) {
       // 不允许静默：按事件码上报到通知中心。
       _diagnostics?.warn(
@@ -1149,14 +1315,17 @@ class IxDownloadManager extends ChangeNotifier {
 
   @override
   void dispose() {
-    // ★ 分片任务是 fire-and-forget（`unawaited(_runRanged(...))`）：不取消的话，
+    // ★ 先把 `_disposed` 立起来（**最开头**）：从这一刻起所有通知都走
+    //   `_safeNotify()` 被丢弃，后面的取消动作即使同步回调进来也不会写到
+    //   已释放的 ChangeNotifier 上。
+    //   分片任务是 fire-and-forget（`unawaited(_runRanged(...))`）：不取消的话，
     //   管理器回收后引擎仍在下载，并会调用已 dispose 的 ChangeNotifier
     //   （debug 下直接断言失败）。这里逐个取消，并用 _disposed 拦住后续通知。
+    _disposed = true;
     for (final DownloadCancelToken token in _rangeTokens.values) {
       token.cancel();
     }
     _rangeTokens.clear();
-    _disposed = true;
     _subscription?.cancel();
     _backend.dispose();
     super.dispose();

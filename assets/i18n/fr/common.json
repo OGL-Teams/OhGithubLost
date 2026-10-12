@@ -120,5 +120,6 @@
   "webInstallDialogBody": "Ajoutez cette application à l'écran d'accueil : elle s'ouvrira ensuite comme une application normale.\n\n« Confirmer » ouvre l’invite d’installation du navigateur.",
   "webInstallIosBody": "Les navigateurs iOS ne permettent pas l'ajout en un geste (limitation de la plateforme, pas un défaut de l'application).\n\nTouchez le bouton « Partager » en bas, puis choisissez « Sur l’écran d’accueil ».",
   "webInstallChromiumBody": "Ce navigateur n'a pas proposé cette fois d'installation en un geste (l'application est peut-être déjà installée, ou la page ne remplit pas encore les critères).\n\nVous pouvez toujours choisir « Installer l’application » ou « Ajouter à l’écran d’accueil » dans le menu du navigateur.",
-  "guide": "Voir le guide"
+  "guide": "Voir le guide",
+  "scrollAwareCollapsedHint": "Réduit sur le bord — appuyez pour développer"
 }

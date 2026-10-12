@@ -14,6 +14,8 @@ import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../widgets/anim/anim_preload.dart';
+import '../widgets/scroll_aware_action.dart';
 import 'download_manager_page.dart';
 import 'new_repo_page.dart';
 import 'notifications_page.dart';
@@ -26,6 +28,48 @@ String _t(String key, [Map<String, Object?>? args]) =>
 
 /// 每页条数。
 const int _kPageSize = 30;
+
+// ── 分级预加载（页面级登记）─────────────────────────────────────────────
+// 策略表在 `widgets/anim/anim_preload.dart`：档位 0 不预加载 / 档位 1 仅当前页面 /
+// 档位 2 追加"全屏动画"且额度最大 / 档位 3 再追加"下一子层级"。本页只**登记**，
+// 准入与拒收全由那张表决定（这里不写任何 `if (level >= n)`）。
+
+/// 首页预加载作用域：**与壳里的 group 逐字一致**（`client_shell.dart` 用
+/// `'ogl-tab-${tab.name}'` 包住每个 tab 页）。
+///
+/// 一致才有意义：切走 tab 时壳会整组取消本页未完成的预加载并归还额度 ——
+/// 预加载因此不会"人走了还在偷偷烧"。本页不自己再套一层 boundary。
+const String _kPreloadGroup = 'ogl-tab-home';
+
+/// 预登记"列表前几项"的条数。
+///
+/// **不能逐项登记**：一屏 30 条会在登记时把数量 / 内存额度瞬间打满，
+/// 而且和 `OgLReveal` 的**视口驱动**重复（没进视口的行本来就不该提前解码）。
+const int _kPreloadLeads = 3;
+
+/// 头像的**估算**内存（GitHub 头像 10–40 KB 量级）。
+///
+/// 图片项的默认估算是 2 MiB；照默认给，4 项就预扣 8 MiB —— 档位 1 的总额度只有
+/// 4 MiB，等于把别的页面的额度挤没了。估算按实际量级给才是"不要过了"。
+const int _kAvatarBytes = 96 * 1024;
+
+/// 账号头像的幂等键（同一资源同一 id）。
+String _accountAvatarId(String login) => 'avatar:account:$login';
+
+/// 仓库 owner 头像的幂等键。
+///
+/// ★ 跨文件约定：`repo_page`（子页自己）与 `search_page`（结果行 / push 侧）
+/// 用的是**同一个** id —— 同一张头像在整条链路上只解一次。
+String _repoAvatarId(String fullName) => 'avatar:repo:$fullName';
+
+/// 子页（仓库页）的路由作用域：`route:repo:<fullName>`。
+///
+/// ★ 跨文件约定：`repo_page` 的自身登记用同一条规则，push 出来的子页也会被包上
+/// **同名**的 `OgLAnimPreloadBoundary`（pop = 整组取消，不留下的在途项）。
+String _repoRouteGroup(String fullName) => 'route:repo:$fullName';
+
+/// 通知中心的路由作用域（本页是它的 push 方；`notifications_page` 用同一条）。
+const String _kNotificationsRouteGroup = 'route:notifications';
 
 /// 首页。
 class DashboardPage extends StatefulWidget {
@@ -41,6 +85,9 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   int _segment = 0;
+
+  /// 列表滚动位置：交给 [ScrollAwareAction] 判定"下滑收边 / 上滑弹回 / 近底部收起"。
+  final ScrollController _scroll = ScrollController();
   late final _RepoPaged _mine = _RepoPaged(
     loader: (int page) => widget.surface.domain.api
         .myRepos(perPage: _kPageSize, page: page, sort: 'updated'),
@@ -55,27 +102,152 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_mine.refresh()));
+    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_bootstrap()));
+    // 分级预加载：本页主视觉的图片资源 = 身份头像。
+    // - 账号头像 → `currentPage`（档位 ≥1）；
+    // - 列表前几项的 owner 头像 → 数据落地后才登记（见 [_preloadRepoAvatars]）。
+    // 登记动作本身不碰 UI、不持有 context；档位不够时被策略表**拒收**（不排队）。
+    unawaited(_preloadAccountAvatar());
+  }
+
+  /// 首帧后拉第一页；数据落地即登记（列表前几项的）owner 头像。
+  Future<void> _bootstrap() async {
+    await _mine.refresh();
+    _preloadRepoAvatars();
   }
 
   @override
   void dispose() {
     _mine.dispose();
     _starred.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
   void _segmentChanged(int value) {
     setState(() => _segment = value);
-    unawaited(_active.refresh());
+    unawaited(_refreshActive());
+  }
+
+  /// 刷新当前分段，并按新数据重新登记头像（同 id 幂等，重复调用无成本）。
+  Future<void> _refreshActive() async {
+    await _active.refresh();
+    _preloadRepoAvatars();
+  }
+
+  /// 登记当前账号头像（`currentPage`：档位 ≥1 准入，否则被策略表拒收）。
+  ///
+  /// 头像是本页身份区**唯一的网络图片资源**（`GhAccount.avatarUrl`）；解码结果进
+  /// Flutter 自己的 `ImageCache`，键 = 图片地址 —— 与之后真正绘制头像的控件共用
+  /// 同一条缓存项。取不到账号（未登录 / 保险库读失败）时**安静跳过**：
+  /// 预加载是可选优化，不该反过来打扰用户。
+  Future<void> _preloadAccountAvatar() async {
+    final GhAccount? account = await _activeAccountOrNull();
+    if (account == null) {
+      return;
+    }
+    final String? url = account.avatarUrl;
+    if (url == null || url.isEmpty) {
+      return;
+    }
+    if (OgLAnimPreload.register(
+      OgLAnimPreloadJob.image(
+        id: _accountAvatarId(account.login),
+        group: _kPreloadGroup,
+        kind: OgLAnimPreloadKind.currentPage,
+        image: NetworkImage(url),
+        weightBytes: _kAvatarBytes,
+      ),
+    )) {
+      OgLAnimPreload.schedule();
+    }
+  }
+
+  /// 当前账号；取不到就是 `null`（未登录 / 安全保险库读取失败都算"没有头像可预热"）。
+  Future<GhAccount?> _activeAccountOrNull() async {
+    try {
+      return await widget.surface.domain.auth.activeAccount();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 登记列表**前 [_kPreloadLeads] 项**仓库的 owner 头像。
+  ///
+  /// 档位口径（照抄库文档的判定）：
+  /// - 第 1 项是"整页 loading → data"替换完成后首帧里的**第一张图** →
+  ///   `fullScreen`（档位 ≥2，本档额度最大，正是为它准备的）；
+  /// - 其余项是**列表单项入场**（`OgLReveal`，视口驱动）→ `currentPage`（档位 ≥1）。
+  void _preloadRepoAvatars() {
+    final List<GhRepo> items = _active.items;
+    final int take = items.length < _kPreloadLeads ? items.length : _kPreloadLeads;
+    bool registered = false;
+    for (int i = 0; i < take; i++) {
+      final GhRepo repo = items[i];
+      final String? url = repo.owner.avatarUrl;
+      if (url == null || url.isEmpty) {
+        continue;
+      }
+      registered = OgLAnimPreload.register(
+            OgLAnimPreloadJob.image(
+              id: _repoAvatarId(repo.fullName),
+              group: _kPreloadGroup,
+              kind: i == 0
+                  ? OgLAnimPreloadKind.fullScreen
+                  : OgLAnimPreloadKind.currentPage,
+              image: NetworkImage(url),
+              weightBytes: _kAvatarBytes,
+              // 首屏首图先跑（优先级小的先跑）。
+              priority: i == 0 ? -1 : 0,
+            ),
+          ) ||
+          registered;
+    }
+    if (registered) {
+      OgLAnimPreload.schedule();
+    }
+  }
+
+  /// 为**即将 push** 的子页登记它首帧要用的图（`childLevel`：**仅档位 3** 准入）。
+  ///
+  /// 用 [OgLAnimPreloadBoundary] 把子页包成 `route:repo:<fullName>` 作用域：
+  /// 子页自己（`repo_page`）会用**同一个 group + 同一个 id** 再登记一次 ——
+  /// 档位 3 下这一条先跑（子页首帧前就已解码），档位 1 / 2 下它被拒收，
+  /// 子页仍会按 `currentPage` 自行登记。**幂等键相同**，所以不会重复解码。
+  void _preloadChildRepoRoute(GhRepo repo) {
+    final String? url = repo.owner.avatarUrl;
+    if (url == null || url.isEmpty) {
+      return;
+    }
+    if (OgLAnimPreload.register(
+      OgLAnimPreloadJob.image(
+        id: _repoAvatarId(repo.fullName),
+        group: _repoRouteGroup(repo.fullName),
+        kind: OgLAnimPreloadKind.childLevel,
+        image: NetworkImage(url),
+        weightBytes: _kAvatarBytes,
+        priority: -1,
+      ),
+    )) {
+      OgLAnimPreload.schedule();
+    }
   }
 
   /// 打开仓库页；返回 `true` 表示该仓库**已被删除**，此时刷新当前列表。
   Future<void> _openRepo(GhRepo repo) async {
+    _preloadChildRepoRoute(repo);
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) =>
-            RepoPage(surface: widget.surface, repo: repo),
+        builder: (BuildContext context) => OgLAnimPreloadBoundary(
+          group: _repoRouteGroup(repo.fullName),
+          // 声明本作用域要参与的两类（子页自己登记 currentPage，父页替它登记
+          // childLevel）；真正准入仍由档位策略表决定。
+          kinds: const <OgLAnimPreloadKind>[
+            OgLAnimPreloadKind.currentPage,
+            OgLAnimPreloadKind.childLevel,
+          ],
+          child: RepoPage(surface: widget.surface, repo: repo),
+        ),
       ),
     );
     // 返回后无条件刷新（不再依赖 pop 返回值：sheet 的 pop 可能是非 bool 类型）。
@@ -94,7 +266,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _openNotifications() {
     Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(builder: (BuildContext context) => const NotificationsPage()),
+      MaterialPageRoute<void>(
+        // 子页是 push 出来的路由：包一层路由作用域 `route:notifications`
+        //（`notifications_page` 自己也按这条登记），pop 时整组取消未完成项。
+        builder: (BuildContext context) => const OgLAnimPreloadBoundary(
+          group: _kNotificationsRouteGroup,
+          kinds: <OgLAnimPreloadKind>[OgLAnimPreloadKind.currentPage],
+          child: NotificationsPage(),
+        ),
+      ),
     );
   }
 
@@ -159,10 +339,14 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _createRepo,
-        icon: const Icon(Icons.add),
-        label:  Text(_t('newRepo')),
+      // 首页「新建仓库」：下滑收边（只露 1/4，点击弹出）、上滑弹回、近底部收起。
+      floatingActionButton: ScrollAwareAction(
+        controller: _scroll,
+        child: FloatingActionButton.extended(
+          onPressed: _createRepo,
+          icon: const Icon(Icons.add),
+          label:  Text(_t('newRepo')),
+        ),
       ),
       body: Column(
         children: <Widget>[
@@ -215,6 +399,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 return RefreshIndicator(
                   onRefresh: p.refresh,
                   child: ListView.separated(
+                    controller: _scroll,
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: p.items.length + (p.done ? 0 : 1),
                     separatorBuilder: (BuildContext context, int index) =>

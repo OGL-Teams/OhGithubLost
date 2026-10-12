@@ -12,9 +12,17 @@
 /// ## Web（浏览器）
 /// 浏览器里没有 `flutter_local_notifications` 那条路可走（页面一刷新、标签页
 /// 一关闭，通知渠道就没了），因此：
-/// - 浏览器**提供** `Notification` → 直接用它发（见 `browser_notify.dart`）；
-/// - 浏览器**不提供**（例如 iOS Safari 16.4 之前）→ **如实降级为"不通知"**，
-///   把原因写进日志与通知中心，**绝不假装已发送**。
+/// - 浏览器**已授权** `Notification`（`granted`）→ 直接用它发（见
+///   `browser_notify.dart`）；
+/// - 浏览器**不提供** `Notification`（例如 iOS Safari 16.4 之前）→
+///   **如实降级为"不通知"**，把原因写进日志与通知中心，**绝不假装已发送**；
+/// - 浏览器**提供但尚未授权**（`default`）/ 读取或申请失败（`error`）→
+///   同样如实报"不可用"并写明原因（可用时**不是**这个状态），
+///   而且这类状态**会话内可恢复**：下次发送会重新实测，用户刚在站点设置或
+///   设置页授权后立刻生效；
+/// - **本模块从不申请权限**：`Notification.requestPermission()` 必须在用户
+///   手势里调用（启动期自动申请会被浏览器静默拒绝），因此它也**不会**重复
+///   弹授权条——申请只由引导页 / 设置页的按钮触发。
 ///
 /// 平台识别全程只用 `kIsWeb` + `defaultTargetPlatform`，**不 import `dart:io`**
 /// （Web 上它不存在，见 `lib/platform/platform.dart` 的说明）。
@@ -48,11 +56,27 @@ class OgLSystemNotifier {
   String? _unavailableReason;
   int _nextId = 1;
 
+  /// Web：最近一次实测到的浏览器通知授权状态
+  /// （`granted` / `default` / `denied` / `unsupported` / `error`）。
+  String? _webPermission;
+
   /// 是否可用（初始化成功且平台支持）。
+  ///
+  /// Web 上语义收窄为"**真的发得出去**"：只有授权为 `granted` 才算可用。
+  /// 浏览器支持通知但还没授权（`default`）时如实报不可用 + 原因，
+  /// 而不是"报可用、发送时才失败"。
   bool get available => _initialized && !_unavailable;
 
   /// 不可用原因（可用时为 `null`）。
   String? get unavailableReason => _unavailableReason;
+
+  /// Web：上次判定的"不可用"是否属于**会话内可恢复**的状态。
+  ///
+  /// `default`（尚未授权）/ `error`（读取或申请失败）都会随用户在站点设置里
+  /// 改授权、或在应用内点"申请"而变化 —— 一旦缓存到底，就会出现"明明刚授权
+  /// 成功，应用还一直说不支持"。`denied` / `unsupported` 才一票否决。
+  bool get _webRecoverable =>
+      kIsWeb && (_webPermission == 'default' || _webPermission == 'error');
 
   /// Windows 用的是 AppUserModelID + GUID（固定值即可，需全局唯一）。
   static const String _kWindowsAppUserModelId = 'com.ohgithublost.ogl';
@@ -93,8 +117,14 @@ class OgLSystemNotifier {
   }
 
   /// 初始化（幂等）。返回是否可用。
+  ///
+  /// Web：**只读取**授权状态，从不申请权限（申请必须在用户手势里，
+  /// 启动期自动申请会被浏览器静默拒绝 —— 这正是"权限网关异常"的典型成因）。
+  /// 因此重复初始化**不会**重复弹授权条。
   Future<bool> _ensureInit() async {
-    if (_initialized) {
+    // `denied` / `unsupported` 一票否决；`default` / `error` 可恢复，
+    // 每次重新实测（用户可能刚授权）。
+    if (_initialized && !_webRecoverable) {
       return !_unavailable;
     }
     _initialized = true;
@@ -105,21 +135,35 @@ class OgLSystemNotifier {
     //   `browser_notify_web.dart` 的 `ogLBrowserNotifyPermissionAsync`）。
     if (kIsWeb) {
       final String permission = await ogLBrowserNotifyPermissionAsync();
-      if (permission != 'unsupported' && permission != 'denied') {
+      _webPermission = permission;
+      if (permission == 'granted') {
+        _unavailable = false;
+        _unavailableReason = null;
         return true;
       }
+      _unavailable = true;
+      // 五种状态必须分开报：`default`（还没问过）与 `unsupported`（没这个 API）
+      // 是**两件事**，`error`（读取/申请失败）又是第三件 —— 混报会让用户
+      // 得到一个错误的结论（例如"换浏览器"）。文案走 i18n（`shell` 分片）。
+      final String nextReason;
       if (permission == 'denied') {
-        _unavailable = true;
-        _unavailableReason = '浏览器通知已被用户拒绝';
+        nextReason = _t('notifWebDenied');
+      } else if (permission == 'default') {
+        nextReason = _t('notifWebNotGranted');
+      } else if (permission == 'unsupported') {
+        nextReason = _t('notifWebUnsupported');
       } else {
-        _unavailable = true;
-        _unavailableReason = '浏览器不提供 Notification API';
+        nextReason = _t('notifWebUnknown');
       }
-      OgLAppLog.instance.add(
-        _t('notification'),
-        '系统通知不可用：$permission（本次会话不发送系统通知）',
-        severity: OgLNoticeSeverity.warning,
-      );
+      // 可恢复状态会被反复实测 —— 只在原因**变化**时记一条，避免刷屏。
+      if (_unavailableReason != nextReason) {
+        _unavailableReason = nextReason;
+        OgLAppLog.instance.add(
+          _t('notification'),
+          '系统通知不可用：$nextReason（本次会话不发送系统通知）',
+          severity: OgLNoticeSeverity.warning,
+        );
+      }
       return false;
     }
     try {

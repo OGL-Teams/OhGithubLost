@@ -161,5 +161,13 @@
   "webSectionDesc": "Options disponibles uniquement dans le navigateur",
   "webInstallPrompt": "Demander l'ajout à l'écran d'accueil au démarrage",
   "webInstallPromptDesc": "Demandé une fois à chaque ouverture de la page ; ignoré une fois l'application installée (ouverte depuis sa propre icône).",
-  "storageAllFilesGranted": "Accès à tous les fichiers accordé"
+  "storageAllFilesGranted": "Accès à tous les fichiers accordé",
+  "groupInterface": "Interface",
+  "groupStorageNetwork": "Stockage et réseau",
+  "groupAboutHelp": "À propos et aide",
+  "dangerZone": "Zone sensible",
+  "expandGroup": "Développer",
+  "collapseGroup": "Réduire",
+  "logsSaving": "Écriture sur disque active",
+  "logsLineCount": "{count} lignes"
 }

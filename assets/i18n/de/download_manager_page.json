@@ -3,12 +3,10 @@
   "cannotOpenCopied": "Kann nicht direkt geöffnet werden; Dateipfad kopiert",
   "clearFinished": "Abgeschlossene aufräumen",
   "copyPath": "Pfad kopieren",
-  "downloadFailed": {
-    "authHeaderNotAllowed": "Browser erlaubt keinen Authorization-Header für Cross-Origin-Anfragen",
-    "popupBlocked": "Browser hat das Download-Pop-up blockiert",
-    "browserLaunchFailed": "Keine App zum Öffnen des Download-Links verfügbar",
-    "notSupported": "Diese Aktion wird auf der aktuellen Plattform nicht unterstützt"
-  },
+  "downloadFailed.authHeaderNotAllowed": "Browser erlaubt keinen Authorization-Header für Cross-Origin-Anfragen",
+  "downloadFailed.popupBlocked": "Browser hat das Download-Pop-up blockiert",
+  "downloadFailed.browserLaunchFailed": "Keine App zum Öffnen des Download-Links verfügbar",
+  "downloadFailed.notSupported": "Diese Aktion wird auf der aktuellen Plattform nicht unterstützt",
   "downloadOpenFailed": "Öffnen der heruntergeladenen Datei fehlgeschlagen: {reason}",
   "empty": "Keine Download-Aufgaben",
   "emptyHint": "Klicken Sie auf \"Herunterladen\" bei Release-Attachements oder Repo-Dateien, um hinzuzufügen",

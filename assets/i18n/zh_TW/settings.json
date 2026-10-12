@@ -161,5 +161,13 @@
   "webSectionDesc": "只有瀏覽器裡才有的選項",
   "webInstallPrompt": "開啟時詢問加入主畫面",
   "webInstallPromptDesc": "每次開啟網頁時詢問一次；已安裝（從主畫面圖示開啟）後不再詢問。",
-  "storageAllFilesGranted": "已取得所有檔案存取權限"
+  "storageAllFilesGranted": "已取得所有檔案存取權限",
+  "groupInterface": "介面",
+  "groupStorageNetwork": "儲存與網路",
+  "groupAboutHelp": "關於與說明",
+  "dangerZone": "危險區",
+  "expandGroup": "展開",
+  "collapseGroup": "收合",
+  "logsSaving": "已寫入磁碟",
+  "logsLineCount": "{count} 行"
 }

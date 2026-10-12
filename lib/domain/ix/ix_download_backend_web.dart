@@ -100,14 +100,20 @@ class WebDownloadBackend implements IxDownloadBackend {
   @override
   Future<void> cancel(String id) async {}
 
+  /// 已完成文件的大小 / 摘要 / 删除：
+  ///
+  /// Web 上**拿不到成品字节**（浏览器写进它自己的下载目录，页面不参与），
+  /// 因此一律返回 `null` / 空操作——**不编造**。契约里的 `path` 参数在 Web 上
+  /// 无意义（`pathFor` 返回 `null`，`savePath` 恒为空串），保留它是为了让
+  /// 两个平台的契约完全一致（原生端靠它读回分片引擎写盘的成品）。
   @override
-  Future<int?> completedSize(String id) async => null;
+  Future<int?> completedSize(String id, {String? path}) async => null;
 
   @override
-  Future<String?> fileSha256(String id) async => null;
+  Future<String?> fileSha256(String id, {String? path}) async => null;
 
   @override
-  Future<void> deleteFile(String id) async {}
+  Future<void> deleteFile(String id, {String? path}) async {}
 
   @override
   void dispose() {

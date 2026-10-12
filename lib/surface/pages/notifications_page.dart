@@ -18,11 +18,59 @@ import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../util/clipboard_x.dart';
+import '../widgets/anim/anim_preload.dart';
 
 /// 取 `notifications_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) =>
     OgLI18n.instance.t('notifications_page', key,
         args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+
+// ── 分级预加载（页面级登记）─────────────────────────────────────────────
+// 本页是**push 出来的路由**（首页右上角铃铛），因此作用域用 `route:<id>`，
+// 由 push 方（`dashboard_page`）用同名的 `OgLAnimPreloadBoundary` 包起来：
+// pop 即整组取消、归还额度。
+
+/// 本页的路由作用域。
+///
+/// ★ 跨文件约定：`dashboard_page._openNotifications` 用的是**同一条**字符串 ——
+/// 只有逐字一致，父子两层才是同一个作用域。
+const String _kPreloadGroup = 'route:notifications';
+
+/// 字形预热的**估算**内存（三个段落对象，量级很小）。
+const int _kGlyphBytes = 32 * 1024;
+
+/// 本页列表行要画的三枚级别图标（与 `_iconOf` 一一对应）。
+const List<IconData> _kSeverityIcons = <IconData>[
+  Icons.error_outline,
+  Icons.warning_amber_rounded,
+  Icons.check_circle_outline,
+];
+
+/// 预热级别图标的字形（MaterialIcons 的某个字形**首次**排版时要装配字体 / 走一次
+/// shaping）。
+///
+/// 本页**没有任何网络图片**（列表 = 纯文本 + 图标），字形是这页唯一属于它自己的
+/// 一次性成本 —— 收益有限（字体多半已被壳层图标装好），所以只登记一条、权重按实际
+/// 量级给（32 KiB），不去占别的页面的额度。
+///
+/// `TextPainter` 只碰 `dart:ui` 段落：**不持有 context / Element**，因此符合
+/// 库文档对 `task` 类预加载的要求（"回调里不要持有 `BuildContext`"）。
+void _warmSeverityGlyphs() {
+  for (final IconData icon in _kSeverityIcons) {
+    final TextPainter painter = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          fontFamily: icon.fontFamily,
+          package: icon.fontPackage,
+          fontSize: 20,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.dispose();
+  }
+}
 
 /// 通知中心页。
 class NotificationsPage extends StatefulWidget {
@@ -39,6 +87,24 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   /// 已展开详情的条目（按标识去重）。
   final Set<String> _expanded = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    // 分级预加载：本页登记的唯一一项是 `currentPage`（档位 ≥1 准入）。
+    // 档位 0 / 系统"减少动效"时策略表直接拒收 —— 这里不需要判断档位。
+    if (OgLAnimPreload.register(
+      OgLAnimPreloadJob.task(
+        id: 'notifications:severity-glyphs',
+        group: _kPreloadGroup,
+        kind: OgLAnimPreloadKind.currentPage,
+        weightBytes: _kGlyphBytes,
+        run: _warmSeverityGlyphs,
+      ),
+    )) {
+      OgLAnimPreload.schedule();
+    }
+  }
 
   static String _idOf(OgLAppLogEntry entry) =>
       '${entry.at.microsecondsSinceEpoch}|${entry.area}|${entry.message}';

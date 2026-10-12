@@ -24,6 +24,7 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart' as http;
@@ -147,5 +148,59 @@ class WebNetTransport implements NetTransport {
       result[name.toLowerCase()] = value;
     });
     return result;
+  }
+}
+
+/// DoH 所需的**最小** HTTP 能力：基于 `package:http` 的 [BrowserClient]。
+///
+/// ## 为什么必须有它（以及它解决什么、不解决什么）
+/// `DohDnsResolver` 只会调 [DnsHttpClient]；**没人注入**它就等于没有 DoH ——
+/// 设置里的「DoH 优先」会变成一个存下来、又被摘要打印、却对真实解析毫无影响
+/// 的字段（原生侧曾经就是这样：`IoDnsHttpClient` 全项目 0 使用点）。
+/// Web 侧同样必须把这条线接上，否则 `DohDnsResolver` 是纯死代码。
+///
+/// 在浏览器里，DoH 能做成的是**查询**：走 443（HTTPS + CORS），中间设备既
+/// 改不了应答也看不到内容，因此它能回答"这个名字的真地址是什么"。
+/// 它**做不到**的是**接管**连接：页面拿到的 IP 无法回灌给浏览器自己的
+/// 网络栈（既不能指定目标 IP，也不能伪造 SNI / Host）。所以 Web 上
+/// 自定义 DNS 的定位是"诊断 / 展示 + 可信查询"，`DnsService` 会在日志里
+/// 如实说明这一点（`OGL-DNS-105`），绝不谎称已接管。
+///
+/// ## 端点的域名用谁解析？
+/// 交给**浏览器**（[BrowserClient] 的 fetch 自己解析）——否则就成了
+/// "要用自定义解析才能连上自定义解析器"的先有鸡还是先有蛋。
+///
+/// ## CORS 不是我们能决定的事
+/// DoH 端点必须回 `Access-Control-Allow-Origin`，否则浏览器在把响应交给页面
+/// 之前就拦下（页面只看到一次网络错误）。实测（2026-10-12）：
+/// `dns.alidns.com/resolve` 回 `ACAO: *`；`doh.pub/dns-query` **不回** ACAO
+/// （浏览器里会被 CORS 拦下）；端点不可用时解析失败会被如实上报并回退系统解析。
+class WebDohHttpClient implements DnsHttpClient {
+  /// 创建客户端。[client] 仅供测试注入。
+  WebDohHttpClient({http.Client? client})
+      : _client = client ?? BrowserClient();
+
+  static const Duration _timeout = Duration(seconds: 8);
+
+  final http.Client _client;
+
+  @override
+  Future<String> get(
+    String url, {
+    Map<String, String> headers = const <String, String>{},
+  }) async {
+    final Uri uri = Uri.parse(url);
+    final http.Response response = await _client
+        .get(uri, headers: headers)
+        .timeout(_timeout);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw NetException(
+        NetErrorKind.connection,
+        'DoH 端点返回 HTTP ${response.statusCode}（$url）',
+      );
+    }
+    // DoH 的 JSON 是 UTF-8，而响应头常不带 charset（此时 `body` 会按
+    // latin1 解码）——因此显式按 UTF-8 解字节。
+    return utf8.decode(response.bodyBytes, allowMalformed: true);
   }
 }

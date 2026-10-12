@@ -12,6 +12,7 @@ import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../widgets/scroll_aware_action.dart';
 
 /// 取 `new_repo_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) =>
@@ -33,6 +34,9 @@ class NewRepoPage extends StatefulWidget {
 class _NewRepoPageState extends State<NewRepoPage> {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _description = TextEditingController();
+
+  /// 表单一滚动位置：提交按钮（页面主操作）靠它做"下滑收边 / 上滑弹回"。
+  final ScrollController _scroll = ScrollController();
   bool _private = false;
   bool _busy = false;
   String? _error;
@@ -67,10 +71,28 @@ class _NewRepoPageState extends State<NewRepoPage> {
         },
       );
 
+  /// 任一字段变化 → 重建：`PopScope` 的 `canPop` 依赖文本内容，
+  /// 否则输入后返回键仍按「未修改」直接放行（静默丢失输入）。
+  void _onFieldChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _name.addListener(_onFieldChanged);
+    _description.addListener(_onFieldChanged);
+  }
+
   @override
   void dispose() {
+    _name.removeListener(_onFieldChanged);
+    _description.removeListener(_onFieldChanged);
     _name.dispose();
     _description.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -131,6 +153,7 @@ class _NewRepoPageState extends State<NewRepoPage> {
       child: Scaffold(
       appBar: AppBar(title:  Text(_t('title'))),
       body: OgLReveal(delay: Duration.zero, child: ListView(
+        controller: _scroll,
         padding: const EdgeInsets.all(16),
         children: <Widget>[
           TextField(
@@ -176,9 +199,20 @@ class _NewRepoPageState extends State<NewRepoPage> {
             ),
           ],
           const SizedBox(height: 16),
-          FilledButton(
-            onPressed: _busy ? null : _submit,
-            child: Text(_busy ? _t('creating') : _t('create')),
+          // 「创建」按钮跟着滚动"让路"：下滑时向屏外收起（只露约 1/4，点击即弹回），
+          // 上滑自动完全弹回。
+          //
+          // 该按钮本身就在内容**末尾**（滚到底才出现），若再叠加"近底部半屏收起"，
+          // 等于把页面主操作藏起来 —— 按用户「收起按照那个页面」的要求，
+          // 本页关闭该规则（bottomReserve: 0），只保留方向规则。
+          ScrollAwareAction(
+            controller: _scroll,
+            edge: AxisDirection.down,
+            bottomReserve: 0,
+            child: FilledButton(
+              onPressed: _busy ? null : _submit,
+              child: Text(_busy ? _t('creating') : _t('create')),
+            ),
           ),
         ],
       )),

@@ -161,5 +161,13 @@
   "webSectionDesc": "Options that exist only in the browser",
   "webInstallPrompt": "Ask to add to home screen on launch",
   "webInstallPromptDesc": "Asked once each time the page is opened; skipped once the app is installed (opened from its own icon).",
-  "storageAllFilesGranted": "All-files access granted"
+  "storageAllFilesGranted": "All-files access granted",
+  "groupInterface": "Interface",
+  "groupStorageNetwork": "Storage & network",
+  "groupAboutHelp": "About & help",
+  "dangerZone": "Danger zone",
+  "expandGroup": "Expand",
+  "collapseGroup": "Collapse",
+  "logsSaving": "Saving to disk",
+  "logsLineCount": "{count} lines"
 }

@@ -120,5 +120,6 @@
   "webInstallDialogBody": "Add this app to your desktop / home screen so it later opens on its own, like a normal app.\n\nSelecting “Confirm” opens the browser's install prompt.",
   "webInstallIosBody": "iOS browsers do not support one-tap adding (a platform limitation, not an app issue).\n\nTap the “Share” button at the bottom, then choose “Add to Home Screen”.",
   "webInstallChromiumBody": "The browser did not offer one-tap installation this time (it may already be installed, or this page does not meet the install criteria yet).\n\nYou can still choose “Install app” or “Add to Home Screen” from the browser menu.",
-  "guide": "View guide"
+  "guide": "View guide",
+  "scrollAwareCollapsedHint": "Collapsed to the edge — tap to expand"
 }

@@ -161,5 +161,13 @@
   "webSectionDesc": "只有浏览器里才有的选项",
   "webInstallPrompt": "打开时询问添加到桌面",
   "webInstallPromptDesc": "每次打开网页时询问一次；已安装（从桌面图标打开）后不再询问。",
-  "storageAllFilesGranted": "已获得所有文件访问权限"
+  "storageAllFilesGranted": "已获得所有文件访问权限",
+  "groupInterface": "界面",
+  "groupStorageNetwork": "存储与网络",
+  "groupAboutHelp": "关于与帮助",
+  "dangerZone": "危险区",
+  "expandGroup": "展开",
+  "collapseGroup": "收起",
+  "logsSaving": "已落盘",
+  "logsLineCount": "{count} 行"
 }

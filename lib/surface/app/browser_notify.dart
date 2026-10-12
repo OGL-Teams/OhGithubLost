@@ -25,6 +25,12 @@ Future<String> ogLBrowserNotifyPermissionAsync() =>
     impl.ogLBrowserNotifyPermissionAsync();
 
 /// **真实申请**一次通知授权（浏览器会弹自己的授权条）。返回申请后的状态。
+///
+/// 状态集合同 [ogLBrowserNotifyPermission]，另有 `error` = 有 Notification
+/// API 但这次申请没成功（**可重试**，不等于 `unsupported`）。
+///
+/// **必须在用户手势里调用**：浏览器会拒绝启动期自动发起的申请，
+/// 因此本函数只应由按钮回调触发，不要在初始化 / 定时器里调用。
 Future<String> ogLBrowserNotifyRequest() => impl.ogLBrowserNotifyRequest();
 
 /// 发送一条浏览器通知；返回是否**确实**发出（不支持 / 未授权 / 失败 = `false`）。

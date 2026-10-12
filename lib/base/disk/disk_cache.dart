@@ -387,11 +387,19 @@ class RepositoryCache {
 
     if (limit > 0 && survivors.length > limit) {
       survivors.sort((a, b) => a.fetchedAt.compareTo(b.fetchedAt));
-      while (survivors.length > limit) {
-        final victim = survivors.removeAt(0);
+      // 从最旧开始淘汰。`_evictIfStale` 可能因"刚被并发写刷新"而**拒绝**淘汰，
+      // 那种条目绝不能从 `survivors` 里丢掉：丢了就会虚报"已腾位"（计数与
+      // `remaining` 都不再真实），而且下一次扫描又从头来 —— 表现为缓存
+      // 长期超出上限、淘汰永远"做完一半"。
+      var index = 0;
+      while (survivors.length > limit && index < survivors.length) {
+        final _LocalMeta victim = survivors[index];
         if (await _evictIfStale(victim.encoded, victim.fetchedAt)) {
           removed++;
+          survivors.removeAt(index);
+          continue; // 同一下标现在是下一个候选。
         }
+        index++; // 这次没删成（热数据）：跳过，宁可暂时超限。
       }
     }
 

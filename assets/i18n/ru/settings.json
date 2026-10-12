@@ -161,5 +161,13 @@
   "webSectionDesc": "Параметры, доступные только в браузере",
   "webInstallPrompt": "Спрашивать о добавлении на главный экран при запуске",
   "webInstallPromptDesc": "Спрашивается один раз при каждом открытии страницы; не спрашивается, когда приложение уже установлено (запуск со своей иконки).",
-  "storageAllFilesGranted": "Доступ ко всем файлам предоставлен"
+  "storageAllFilesGranted": "Доступ ко всем файлам предоставлен",
+  "groupInterface": "Интерфейс",
+  "groupStorageNetwork": "Хранилище и сеть",
+  "groupAboutHelp": "О программе и справка",
+  "dangerZone": "Опасная зона",
+  "expandGroup": "Развернуть",
+  "collapseGroup": "Свернуть",
+  "logsSaving": "Запись в файл включена",
+  "logsLineCount": "Строк: {count}"
 }

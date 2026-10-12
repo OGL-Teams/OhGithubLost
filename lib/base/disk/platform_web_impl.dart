@@ -13,9 +13,11 @@
 ///   （键按应用根前缀隔离），因此键值在刷新后仍在。若 `localStorage`
 ///   不可用（隐私模式 / 禁用存储），自动降级为进程内存，绝不抛。
 ///   但**绝不静默吞** —— 配额满（`QuotaExceededError`）或被禁用
-///   （`SecurityError`）必须上报到用户可见的层（实现见
-///   `base_bootstrap.dart` 的 `storageError`，由组合根转给
-///   `OgLNoticeCenter`，详见 `surface/app/error_surface.dart`）。
+///   （`SecurityError`）必须上报到用户可见的层：base 层走 `KernelDiagnostics`
+///   （`code = OGL-DISK-1xx`，落盘后可在关于页 / 磁盘日志里 grep），
+///   同时经 [OgLStorageFailureCallback] 回调把消息交给组合根，
+///   由 `main.dart` 转成 `OgLAppLog` / 通知中心的用户可见告警
+///   （详见 `surface/app/error_surface.dart`）。**base 不 import surface**。
 /// - **安全保险库无系统密钥库**：浏览器没有 Keystore / DPAPI / libsecret。
 ///   为避免把长期令牌**明文**留在 `localStorage`，Web 端保险库**仅内存持有**
 ///   （刷新后需重新登录）。这是一处**如实的能力缺失**，不是静默降级。
@@ -26,7 +28,7 @@ import 'dart:js_interop';
 
 import 'package:flutter/foundation.dart';
 
-import '../../surface/app/error_surface.dart';
+import '../../kernel/diagnostics.dart';
 import 'disk_bridge.dart';
 import 'disk_cache.dart';
 import 'disk_draft.dart';
@@ -178,9 +180,9 @@ class IoDiskFileStore implements DiskFileStore {
       (removed: 0, failed: const <String>[]);
 }
 
-/// 错误回调：把 localStorage 故障上报到 surface 层的 OgLAppLog。
+/// 错误回调：把 localStorage 故障上报到 surface 层（**注入式**，非 import）。
 ///
-/// 由组合根（`base_bootstrap.dart` → `PlatformStorage.open()` → 装配根 main）
+/// 由组合根（`main.dart` → `baseLayerModulesOnPlatform` → `PlatformStorage.open()`）
 /// 注入；L1（base 层）**不直接** import surface 层（违反分层），
 /// 通过回调反转依赖：`surface` 知道 `base`，`base` 不知道 `surface`。
 typedef OgLStorageFailureCallback = void Function(String message);
@@ -194,11 +196,20 @@ typedef OgLStorageFailureCallback = void Function(String message);
 /// 配额满（`QuotaExceededError`）与被禁用（`SecurityError`）是浏览器
 /// 通知用户的两大典型场景 —— 旧代码 `catch (_)` 一吞了之，用户重启发现
 /// 设置全没了也找不到原因。
-/// 现在：失败时把异常对象**逐条**追加到 [lastFailure]（给上层展示），
-/// 同时通过 [onFailure] 回调（注入式）派发到 surface 层
+/// 现在：失败时把可读原因**逐条**写进 [lastFailure]（供上层展示），
+/// 经 [KernelDiagnostics] 记一条 `OGL-DISK-1xx` 警告（base 层自己的通道），
+/// 并通过 [onFailure] 回调（注入式）派发到组合根 → surface 层
 /// `OgLAppLog.instance.add('存储', message, severity: warning)`；
-/// 如果没注入回调（测试 / 早期启动），仅保留 [lastFailure] 与 `debugPrint`。
-/// 注入方由 `base_bootstrap.dart` 的装配根完成（不破坏分层）。
+/// 如果没注入回调（测试 / 早期启动），仍有 [lastFailure]、诊断日志与
+/// `debugPrint`。注入方由 `main.dart` 的装配根完成（不破坏分层）。
+///
+/// ## 镜像（[_mirror]）只保存"**没落上去**"的值
+/// 之前的写法是"写之前先把值放进镜像"，于是镜像里既有真值也有兜底值，
+/// 且**永不失效**：另一个标签页删掉 / 浏览器清掉 `localStorage` 之后，
+/// `read()` 仍会从镜像里把旧值捞回来（`has()` / `keys()` 同罪）——
+/// 表现为"设置删了又活过来 / 退出登录后令牌还在内存里读得到"。
+/// 现在：镜像只在**真实写失败**时填充，真实写成功即丢弃该键的镜像副本；
+/// 真实存储里没有、镜像里也没有 ⇒ 如实返回"不存在"。
 class IoDiskKv implements DiskKv {
   /// 创建键值存储。
   IoDiskKv({required String root, OgLStorageFailureCallback? onFailure})
@@ -213,8 +224,31 @@ class IoDiskKv implements DiskKv {
   /// 底层文件存储（诊断用；浏览器下为内存文件表，不参与 KV 读写）。
   IoDiskFileStore get store => _store;
 
-  /// 降级镜像：`localStorage` 写入失败时的兜底，同时作为读取的第二来源。
+  /// 降级镜像：**只在 `localStorage` 写 / 删失败时**填充。
+  ///
+  /// 它是"没真存上"的值的唯一去处（本会话读得到，刷新即丢），
+  /// **不是**真实存储的缓存 —— 真值永远以 `localStorage` 为准。
+  /// 否则会出现"镜像里复活已被删除的键"（详见类注释）。
   static final Map<String, String> _mirror = <String, String>{};
+
+  /// base 层自己的诊断通道（与 `disk_draft` / `disk_journal` 同一套做法：
+  /// base 不 import surface；用户可见的告警由 [onFailure] 回调带出去）。
+  static final KernelDiagnostics _diag = KernelDiagnostics();
+
+  /// 事件码：读失败。
+  static const String kCodeRead = 'OGL-DISK-101';
+
+  /// 事件码：写失败。
+  static const String kCodeWrite = 'OGL-DISK-102';
+
+  /// 事件码：删失败。
+  static const String kCodeRemove = 'OGL-DISK-103';
+
+  /// 事件码：存在性判断失败。
+  static const String kCodeHas = 'OGL-DISK-104';
+
+  /// 事件码：枚举键失败。
+  static const String kCodeKeys = 'OGL-DISK-105';
 
   /// 最近一次失败原因（供上层展示用）。
   ///
@@ -232,19 +266,44 @@ class IoDiskKv implements DiskKv {
     _lastFailure = null;
   }
 
+  /// 记录一次失败：`lastFailure` + 内核诊断 + 注入式回调（三条路都走）。
+  ///
+  /// 绝不静默：配额满 / 被禁用这类"整会话不可用"的故障必须留下可查痕迹。
+  void _report(String message, Object error, String code) {
+    _lastFailure = message;
+    debugPrint('OGL 存储：$message / $error');
+    _diag.warn(
+      'DISK',
+      message,
+      code: code,
+      data: <String, Object?>{'error': '$error'},
+    );
+    _onFailure?.call(message);
+  }
+
   @override
   Future<String?> read(String key) async {
     final String name = '$_prefix$key';
     try {
-      return _localStorage.getItem(name) ?? _mirror[name];
+      final String? value = _localStorage.getItem(name);
+      if (value != null) {
+        // 真值在真实存储里 —— 顺手丢掉镜像里的旧副本，防两套值分叉。
+        _mirror.remove(name);
+        return value;
+      }
+      // 真实存储里没有这条：可能是别的标签页删的、也可能是浏览器清过站点数据，
+      // 也可能是本会话写失败后的兜底。只有**确实写失败过**的键才会落在镜像里
+      // （见 [write]），所以这里返回 `_mirror[name]` 既保住了兜底，
+      // 又不会"复活"已被真实删除的键。
+      return _mirror[name];
     } catch (error) {
-      // ★ 读失败也要上报** —— 之前只看返静默返 _mirror，用户连"我读不到
-      //   我刚写的设置"这种真相都不知道；现在落 lastFailure + 回调注入。
-      _lastFailure = 'localStorage 读失败：${error.runtimeType}（键 $name）';
-      debugPrint('OGL 存储：$_lastFailure / $error');
-      OgLAppLog.instance.add('存储', 'localStorage 操作失败：$error',
-          severity: OgLNoticeSeverity.warning);
-      _onFailure?.call(_lastFailure!);
+      // ★ 读失败也要上报 —— 之前静默返镜像，用户连"我读不到我刚写的设置"
+      //   这种真相都不知道；现在落 lastFailure + 内核诊断 + 注入回调。
+      _report(
+        'localStorage 读失败：${error.runtimeType}（键 $name）',
+        error,
+        kCodeRead,
+      );
       return _mirror[name];
     }
   }
@@ -252,31 +311,36 @@ class IoDiskKv implements DiskKv {
   @override
   Future<void> write(String key, String value) async {
     final String name = '$_prefix$key';
-    _mirror[name] = value;
     try {
       _localStorage.setItem(name, value);
+      // 落上了真实存储 → 丢弃镜像兜底副本（镜像只留"没落上去"的值）。
+      _mirror.remove(name);
     } catch (error) {
-      // 存储不可用：保留在内存镜像里，不抛 —— 但要告诉上层"没真存上"。
-      _lastFailure = 'localStorage 写失败：${error.runtimeType}（键 $name）';
-      debugPrint('OGL 存储：$_lastFailure / $error');
-      OgLAppLog.instance.add('存储', 'localStorage 操作失败：$error',
-          severity: OgLNoticeSeverity.warning);
-      _onFailure?.call(_lastFailure!);
+      // 写失败（配额满 / 被禁用）：值只留在内存镜像里（本会话读得到），
+      // 但必须如实告诉上层"没真存上" —— 刷新即丢，绝不假装成功。
+      _mirror[name] = value;
+      _report(
+        'localStorage 写失败：${error.runtimeType}（键 $name）',
+        error,
+        kCodeWrite,
+      );
     }
   }
 
   @override
   Future<void> remove(String key) async {
     final String name = '$_prefix$key';
+    // 先清镜像：调用方要的语义是"这条已经没有了"，无论真实删除成功与否，
+    // 都不该再从兜底副本里读出来。
     _mirror.remove(name);
     try {
       _localStorage.removeItem(name);
     } catch (error) {
-      _lastFailure = 'localStorage 删失败：${error.runtimeType}（键 $name）';
-      debugPrint('OGL 存储：$_lastFailure / $error');
-      OgLAppLog.instance.add('存储', 'localStorage 操作失败：$error',
-          severity: OgLNoticeSeverity.warning);
-      _onFailure?.call(_lastFailure!);
+      _report(
+        'localStorage 删失败：${error.runtimeType}（键 $name）',
+        error,
+        kCodeRemove,
+      );
     }
   }
 
@@ -288,10 +352,12 @@ class IoDiskKv implements DiskKv {
         return true;
       }
     } catch (error) {
-      // 落到镜像判断。失败原因已在 setItem / removeItem 时上报，这里无须重报。
-      debugPrint('OGL 存储：localStorage has 失败：$error');
-      OgLAppLog.instance.add('存储', 'localStorage 操作失败：$error',
-          severity: OgLNoticeSeverity.warning);
+      // 读不到真实存储 → 只能按镜像判断；失败原因如实上报。
+      _report(
+        'localStorage has 失败：${error.runtimeType}（键 $name）',
+        error,
+        kCodeHas,
+      );
     }
     return _mirror.containsKey(name);
   }
@@ -305,13 +371,17 @@ class IoDiskKv implements DiskKv {
         final String? name = _localStorage.key(i);
         if (name != null && name.startsWith(_prefix)) {
           names.add(name.substring(_prefix.length));
+          // 真实存储里有的键 → 镜像副本作废（同一根键不该有两套值）。
+          _mirror.remove(name);
         }
       }
     } catch (error) {
-      // 存储不可用：只从镜像取。失败原因已在 setItem / removeItem 时上报。
-      debugPrint('OGL 存储：localStorage keys 失败：$error');
-      OgLAppLog.instance.add('存储', 'localStorage 操作失败：$error',
-          severity: OgLNoticeSeverity.warning);
+      // 存储不可用：只从镜像取；失败原因如实上报。
+      _report(
+        'localStorage keys 失败：${error.runtimeType}',
+        error,
+        kCodeKeys,
+      );
     }
     for (final String name in _mirror.keys) {
       if (name.startsWith(_prefix)) {

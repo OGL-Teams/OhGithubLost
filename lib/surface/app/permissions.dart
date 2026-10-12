@@ -451,6 +451,12 @@ OgLPermissionStatus _webNotifStatus(String raw) {
     case 'default':
       // 还没决定过：可以真的申请一次。
       return OgLPermissionStatus.needsUserAction;
+    case 'error':
+      // 有 `Notification` API，但这次读取 / 申请失败（无用户手势、
+      // iframe 权限策略没放行、旧浏览器的回调式 API…）——**可重试**。
+      // 与 `unsupported` 必须分开：谎报"不支持"会给用户一个不存在的
+      // "换浏览器"结论，而 Web 连"跳系统设置"这条路都没有。
+      return OgLPermissionStatus.needsUserAction;
     default:
       // 浏览器不提供 Notification：如实报"不支持"，不是"已拒绝"。
       return OgLPermissionStatus.unsupported;
@@ -482,22 +488,28 @@ class _WebPermissionGateway implements OgLPermissionGateway {
   bool get canOpenSettings => false;
 
   @override
-  Future<List<OgLPermissionInfo>> describe() async =>
-       <OgLPermissionInfo>[
-        OgLPermissionInfo(
-          permission: OgLPermission.storage,
-          title: _t('storageAccess'),
-          rationale: _t('webStorageDesc'),
-          // 不适用（没有这一步），而不是"被拒绝"。
-          status: OgLPermissionStatus.notRequired,
-        ),
-        OgLPermissionInfo(
-          permission: OgLPermission.notifications,
-          title: _t('notification'),
-          rationale: _t('webNotifGatewayDesc'),
-          status: _webNotifStatus(ogLBrowserNotifyPermission()),
-        ),
-      ];
+  Future<List<OgLPermissionInfo>> describe() async {
+    // 走 async 版本：`navigator.permissions.query({name:'notifications'})` 优先，
+    // 失败自动回退 `Notification.permission`（跨浏览器差异收敛在
+    // `browser_notify_web.dart` 内）。与 `OgLSystemNotifier` 的 Web 初始化
+    // 共用同一条判定链，避免"设置页说已授权、发通知时又说不支持"这种自相矛盾。
+    final String raw = await ogLBrowserNotifyPermissionAsync();
+    return <OgLPermissionInfo>[
+      OgLPermissionInfo(
+        permission: OgLPermission.storage,
+        title: _t('storageAccess'),
+        rationale: _t('webStorageDesc'),
+        // 不适用（没有这一步），而不是"被拒绝"。
+        status: OgLPermissionStatus.notRequired,
+      ),
+      OgLPermissionInfo(
+        permission: OgLPermission.notifications,
+        title: _t('notification'),
+        rationale: _t('webNotifGatewayDesc'),
+        status: _webNotifStatus(raw),
+      ),
+    ];
+  }
 
   @override
   Future<OgLPermissionStatus> request(OgLPermission permission) async {

@@ -123,9 +123,9 @@ class AboutPage extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: ListTile(
               leading: Icon(Icons.favorite, color: theme.colorScheme.error),
-              title: Text(OgLI18n.instance.t('shell', 'donateHeart')),
+              title: Text(OgLI18n.instance.t('settings', 'donateHeart')),
               subtitle: Text(
-                OgLI18n.instance.t('shell', 'donateTileDesc', args: <String, String>{
+                OgLI18n.instance.t('settings', 'donateTileDesc', args: <String, String>{
                   'repo': OgLProjectInfo.repoFullName,
                 }),
               ),

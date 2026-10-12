@@ -33,10 +33,20 @@ class NetBridge {
       return '系统解析';
     }
     final policy = service.policy;
-    // Web：浏览器不给裸 socket，自定义 DNS / DoH **不可能生效**。
-    // 这里如实告诉用户，而不是展示一个切过去也毫无作用的开关。
+    // Web：浏览器不给裸 socket，自定义 DNS **不接管连接**（拿到的 IP 无法
+    // 回灌给浏览器的网络栈）。这里如实告诉用户，而不是展示一个切过去
+    // 也毫无作用的开关；DoH 查询确实可用，因此也一并说明它做了什么。
     if (!service.supportsCustomDns) {
-      return '系统解析（Web 浏览器不允许自定义 DNS）';
+      if (policy.mode != NetDnsMode.custom) {
+        return '系统解析（Web：连接由浏览器解析）';
+      }
+      if (service.supportsDohQuery && policy.preferDoh) {
+        final DnsServer? first =
+            policy.servers.isEmpty ? null : policy.servers.first;
+        return 'DoH 查询${first == null ? '' : '（${first.label}）'} · '
+            '连接仍由浏览器解析';
+      }
+      return '系统解析（Web：无明文 UDP 通道；DoH 未启用）';
     }
     if (policy.mode == NetDnsMode.system) {
       return '系统解析';
@@ -53,6 +63,10 @@ class NetBridge {
       };
 
   /// 设置页：应用 DNS 选择（策略对象为可变设计——即时生效）。
+  ///
+  /// ★ 真正的写入点是 [DnsService.applySelection]（它会**作废旧解析缓存**）。
+  ///   早先这里直接改字段，缓存里的旧答案会照旧返回最多 TTL（5 分钟）——
+  ///   用户看到的就是"设置改了却没生效"。
   void applyDnsSelection({
     required bool custom,
     required String serverId,
@@ -62,17 +76,11 @@ class NetBridge {
     if (service == null) {
       return;
     }
-    final policy = service.policy;
-    policy.mode = custom ? NetDnsMode.custom : NetDnsMode.system;
-    policy.preferDoh = preferDoh;
-    final picked = builtinDnsServers
-        .where((server) => server.id == serverId)
-        .toList();
-    if (picked.isNotEmpty) {
-      policy.servers
-        ..clear()
-        ..addAll(picked);
-    }
+    service.applySelection(
+      custom: custom,
+      serverId: serverId,
+      preferDoh: preferDoh,
+    );
   }
 
   /// 发送请求。
@@ -108,6 +116,17 @@ class NetModule extends OgLModule {
   /// [dns] 为 `null` 时会自动建一个**默认策略**的 [DnsService]
   /// （模式 = `system`，内置五家 DNS 已就绪，等用户在设置里选择）。
   /// 这样"内置 DNS"始终可用，而**默认行为与不加 DNS 完全一致**。
+  ///
+  /// ## 为什么默认就把 DoH 的 HTTP 能力装上
+  /// 底座本体不 import 平台 HTTP 客户端（它要能在任何平台编译），DoH 所需的
+  /// HTTP 能力必须由装配层注入。此前没人注入 —— 于是设置里的「DoH 优先」
+  /// 开着也**永远不会真的走 DoH**（默认工厂只造明文 UDP，
+  /// `DohDnsResolver` 全项目没有任何实例化点）。这里把它接上：
+  /// 用户选的自定义 DNS + DoH 优先，才是它字面上的意思。
+  ///
+  /// Web 侧的诚实边界：DoH 在浏览器里只能**查询**（真解析、真 IP），
+  /// **不能接管连接**——连接仍由浏览器自己的解析器决定；这一点由
+  /// `DnsService` 的日志（`OGL-DNS-105`）与 `dnsSummary` 如实说明。
   NetModule({
     NetTransport? transport,
     NetObserver? observer,
@@ -116,7 +135,7 @@ class NetModule extends OgLModule {
     NetTransport Function()? transportFactory,
     DnsService? dns,
   })  : _observer = observer ?? NetObserver(),
-        _dns = dns ?? DnsService(),
+        _dns = dns ?? DnsService(dohClient: WebDohHttpClient()),
         _explicit = transport {
     _policy = policy;
     _mirrors = mirrors ?? MirrorSelector();
@@ -177,6 +196,12 @@ class NetModule extends OgLModule {
         'policy': _policy.toString(),
         'mirrors': _mirrors.channels.length,
         'dns': bridge.dnsSummary,
+        // 能力边界一并上报：Web 上自定义 DNS 只做得到"查询"。
+        'dnsCapabilities': <String, Object?>{
+          'udp': _dns.supportsUdpDns,
+          'dohQuery': _dns.supportsDohQuery,
+          'takeover': _dns.supportsCustomDns,
+        },
         'syslog': 'DNS 策略可随时切换，不重建传输层',
       },
     );

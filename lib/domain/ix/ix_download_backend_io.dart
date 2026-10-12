@@ -23,7 +23,7 @@ library;
 
 import 'ix_download.dart';
 
-/// 原生后端的"路径解析"路径：把 `savePath`（绝对本地路径）包成 `Uri.file`。
+/// 原生端的"路径解析"规则：把**本地绝对路径**包成 `Uri.file`。
 ///
 /// `Uri.file` 与 `Uri.parse` 的关键差异：
 /// - `Uri.file('/Users/foo/My File.md')` → `pathSegments = ['Users', 'foo', 'My%20File.md']`
@@ -32,16 +32,23 @@ import 'ix_download.dart';
 ///   这是 `download_manager_page._openLocal` 上 `Uri.file` 被误换成 `Uri.parse`
 ///   后报"无应用打开"的根因。
 ///
-/// `pathFor` 与 [IxDownloadTask.savePath] 字段同义——都表示"本地绝对路径"，
-/// 但这里是 [Uri]，便于直接喂给 `launchUrl` / `File.copy` / `RepositoryCache`。
-Uri pathForSpec(IxDownloadSpec spec) => Uri.file(spec.savePath);
+/// ★ 路径**由调用方给出**（原生后端的 `background_downloader` 用
+///   `task.filePath()` 算，应用文档目录由该库的 `BaseDirectory` 决定）。
+///   本文件是纯 Web 构建里的**占位**，不 import `dart:io` / `path_provider`，
+///   因此**不臆造**目录规则：只负责"本地路径 → Uri"这一步。
+Uri pathForSpec(String localPath) => Uri.file(localPath);
 
 /// 原生端 `pathFor` 的 [IxDownloadBackend] 适配入口（工厂）。
 ///
-/// **仅供集成分支使用**——它把 `pathForSpec` 收到 backend 的协议方法里，
+/// **仅供集成分支使用**——它把 `pathForSpec` 收进 backend 的协议方法里，
 /// 其它方法在本文件**留白**（抛 `UnimplementedError`）以强制补齐。
 class IoDownloadBackend implements IxDownloadBackend {
-  IoDownloadBackend();
+  /// 创建。集成分支应传入"由库算出的本地路径"查询函数
+  /// （`DownloadTask.filePath()`），不要自己拼目录。
+  IoDownloadBackend({String Function(IxDownloadSpec spec)? localPathOf})
+      : _localPathOf = localPathOf;
+
+  final String Function(IxDownloadSpec spec)? _localPathOf;
 
   @override
   Stream<IxDownloadEvent> get events =>
@@ -60,7 +67,16 @@ class IoDownloadBackend implements IxDownloadBackend {
       throw UnimplementedError('IoDownloadBackend.supportsPauseResume');
 
   @override
-  Future<Uri?> pathFor(IxDownloadSpec spec) async => pathForSpec(spec);
+  Future<Uri?> pathFor(IxDownloadSpec spec) async {
+    final String Function(IxDownloadSpec spec)? resolve = _localPathOf;
+    if (resolve == null) {
+      throw UnimplementedError(
+        'IoDownloadBackend.pathFor：集成分支必须注入 localPathOf'
+        '（由 background_downloader 的 task.filePath() 给出真实落盘路径）',
+      );
+    }
+    return pathForSpec(resolve(spec));
+  }
 
   @override
   Future<void> enqueue(IxDownloadSpec spec) =>
@@ -79,15 +95,15 @@ class IoDownloadBackend implements IxDownloadBackend {
       throw UnimplementedError('IoDownloadBackend.cancel');
 
   @override
-  Future<int?> completedSize(String id) =>
+  Future<int?> completedSize(String id, {String? path}) =>
       throw UnimplementedError('IoDownloadBackend.completedSize');
 
   @override
-  Future<String?> fileSha256(String id) =>
+  Future<String?> fileSha256(String id, {String? path}) =>
       throw UnimplementedError('IoDownloadBackend.fileSha256');
 
   @override
-  Future<void> deleteFile(String id) =>
+  Future<void> deleteFile(String id, {String? path}) =>
       throw UnimplementedError('IoDownloadBackend.deleteFile');
 
   @override

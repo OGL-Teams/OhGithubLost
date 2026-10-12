@@ -15,6 +15,8 @@
 /// `null`，[OgLReveal] 见到 `null` 就**直接渲染**（不进入动画）。
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
@@ -174,6 +176,23 @@ class OgLReveal extends StatefulWidget {
 class _OgLRevealState extends State<OgLReveal> {
   bool _shown = false;
 
+  /// 待触发的**错峰延时**（可取消）。
+  ///
+  /// ★ 为什么不用 `Future<void>.delayed`（7.4.1 资源修复）：
+  /// `Future.delayed` **无法取消**，它的回调闭包会一直捕获本 `State`（以及它
+  /// 背后整棵 Element 子树）直到延时耗尽。而 [OgLReveal] 大量出现在**列表项
+  /// 构建器**里（`dashboard_page` / `search_page` / `repo_page` /
+  /// `notifications_page`）与**每个页面的根级子项**里（`OgLRevealList`）：
+  /// - 快速滚动时，项在不停地创建 / 卸载，每次卸载都会留下一个仍然挂着
+  ///   `this` 的延时闭包（档位 3 下最长 16 × 36ms ≈ 576ms）；
+  /// - 反复翻页时，同一时刻可以同时挂着成百上千个这样的闭包——它们既拖住
+  ///   GC（已卸载的 State 与子树迟迟回收不掉），又会在 State 早已 `dispose`
+  ///   之后照旧被唤醒（只是靠 `mounted` 兜住，不报错但纯属白做功）。
+  ///
+  /// 这正是"反复翻页后动画越来越卡"的一类**持有型 / 分配型**来源。
+  /// 改成持有 [Timer] 并在 [dispose] 里 `cancel`，State 在卸载当帧即可回收。
+  Timer? _delayTimer;
+
   @override
   void initState() {
     super.initState();
@@ -185,12 +204,22 @@ class _OgLRevealState extends State<OgLReveal> {
     super.didUpdateWidget(oldWidget);
     // 档位从低切到高（或反之）时重新判定一次：档位变化不该让已显示的项回弹。
     if (oldWidget.delay != widget.delay && widget.delay == null) {
+      _delayTimer?.cancel();
+      _delayTimer = null;
       _shown = true;
     }
   }
 
+  @override
+  void dispose() {
+    // ★ 取消未完成的入场延时：不取消 = 回调闭包继续持有本 State（资源泄漏）。
+    _delayTimer?.cancel();
+    _delayTimer = null;
+    super.dispose();
+  }
+
   void _start() {
-    if (!mounted) {
+    if (!mounted || _shown) {
       return;
     }
     final Duration? delay = widget.delay;
@@ -202,7 +231,8 @@ class _OgLRevealState extends State<OgLReveal> {
       setState(() => _shown = true);
       return;
     }
-    Future<void>.delayed(delay, () {
+    _delayTimer = Timer(delay, () {
+      _delayTimer = null;
       if (mounted) {
         setState(() => _shown = true);
       }
