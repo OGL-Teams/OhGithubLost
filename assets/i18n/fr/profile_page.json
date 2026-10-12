@@ -25,5 +25,7 @@
   "switch": "Basculer",
   "switchFailed": "Échec de la bascule : {error}",
   "switchable": "Bascule possible",
-  "switched": "Bascule effectuée"
+  "switched": "Bascule effectuée",
+  "settings": "Paramètres",
+  "settingsDesc": "Apparence · réseau · IA · à propos"
 }

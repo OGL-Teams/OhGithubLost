@@ -28,7 +28,7 @@
   "featureTokenVault": "Secure Token storage",
   "gotIt": "Got it",
   "guest": "Guest",
-  "home": "Home",
+  "home": "Repos",
   "ignore": "Ignore",
   "loading": "Loading",
   "login": "Login",
@@ -48,7 +48,7 @@
   "permSelfTestPending": "Self-test not yet completed in this session",
   "permSelfTestProblems": "{count} items need attention",
   "permStorageProblem": "Missing 'File Access' permission: logs and downloads will only be saved to the app's private directory, invisible to external tools (file manager / computer), and cannot be exported for troubleshooting. Grant this app 'Files and media / All files access' in your system settings, then restart the app.",
-  "profile": "Profile",
+  "profile": "Me",
   "retry": "Retry",
   "search": "Search",
   "settings": "Settings",
@@ -68,5 +68,6 @@
   "closeWindow": "Close",
   "webNotifGatewayDesc": "A browser allows notifications only after you agree: the button below opens the browser's own permission prompt. Changing that later must be done in the browser's site settings — the app cannot open that page for you.",
   "webMouseNoticeTitle": "Mouse detected",
-  "webMouseNoticeBody": "Right-click = back; hold the left button = long-press menu; click = tap (same as mobile); touch gestures are disabled."
+  "webMouseNoticeBody": "Right-click = back; hold the left button = long-press menu; click = tap (same as mobile); touch gestures are disabled.",
+  "ai": "AI"
 }

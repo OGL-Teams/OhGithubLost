@@ -28,7 +28,7 @@
   "featureTokenVault": "Sichere Token-Speicherung",
   "gotIt": "Verstanden",
   "guest": "Gast",
-  "home": "Startseite",
+  "home": "Repos",
   "ignore": "Ignorieren",
   "loading": "Wird geladen",
   "login": "Anmelden",
@@ -48,7 +48,7 @@
   "permSelfTestPending": "Selbsttest für diese Sitzung noch nicht abgeschlossen",
   "permSelfTestProblems": "{count} Einträge müssen bearbeitet werden",
   "permStorageProblem": "Berechtung „Dateizugriff“ fehlt: Logs und Downloads werden nur im privaten App-Verzeichnis gespeichert, sind für externe Tools (Dateiverwaltung / Computer) nicht sichtbar und können nicht zur Fehlersuche exportiert werden. Bitte gewähren Sie dieser App in den Systemeinstellungen die Berechtigung „Dateien und Medien / Alle Dateien zugreifen“ und starten Sie die App neu.",
-  "profile": "Meine",
+  "profile": "Profil",
   "retry": "Erneut versuchen",
   "search": "Suchen",
   "settings": "Einstellungen",
@@ -68,5 +68,6 @@
   "closeWindow": "Schließen",
   "webNotifGatewayDesc": "Ein Browser erlaubt Benachrichtigungen erst, wenn Sie zustimmen: Die Schaltfläche unten öffnet die Berechtigungsabfrage des Browsers. Später ändern lässt sich das nur in den Website-Einstellungen des Browsers – die App kann diese Seite nicht für Sie öffnen.",
   "webMouseNoticeTitle": "Maus erkannt",
-  "webMouseNoticeBody": "Rechtsklick = Zurück; linke Taste gedrückt halten = Langdruck-Menü; Klick = Tippen (wie mobil); Touch-Gesten sind deaktiviert."
+  "webMouseNoticeBody": "Rechtsklick = Zurück; linke Taste gedrückt halten = Langdruck-Menü; Klick = Tippen (wie mobil); Touch-Gesten sind deaktiviert.",
+  "ai": "KI"
 }

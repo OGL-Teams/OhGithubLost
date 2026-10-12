@@ -28,7 +28,7 @@
   "featureTokenVault": "令牌安全存储",
   "gotIt": "知道了",
   "guest": "游客",
-  "home": "首页",
+  "home": "仓库",
   "ignore": "忽略",
   "loading": "加载",
   "login": "登录",
@@ -48,7 +48,7 @@
   "permSelfTestPending": "本次会话尚未完成自检",
   "permSelfTestProblems": "{count} 项需要处理",
   "permStorageProblem": "缺少「文件访问」权限：日志与下载将只落在应用私有目录，外部工具（文件管理器 / 电脑）看不到，也无法导出排查。请在系统设置中授予本应用的「文件与媒体 / 所有文件访问」权限后重启应用。",
-  "profile": "我的",
+  "profile": "个人",
   "retry": "重试",
   "search": "搜索",
   "settings": "设置",
@@ -68,5 +68,6 @@
   "closeWindow": "关闭",
   "webNotifGatewayDesc": "浏览器只在你同意之后才允许通知：点下方按钮会弹出浏览器自己的授权条。之后要改授权，只能到浏览器的「站点设置」里操作，应用无法代你跳转。",
   "webMouseNoticeTitle": "检测到鼠标",
-  "webMouseNoticeBody": "右键 = 返回；长按左键 = 长按菜单；单击 = 点按（与移动端一致）；触摸手势已禁用。"
+  "webMouseNoticeBody": "右键 = 返回；长按左键 = 长按菜单；单击 = 点按（与移动端一致）；触摸手势已禁用。",
+  "ai": "AI"
 }

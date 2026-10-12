@@ -28,7 +28,7 @@
   "featureTokenVault": "Token 安全儲存",
   "gotIt": "知道了",
   "guest": "遊客",
-  "home": "首頁",
+  "home": "倉庫",
   "ignore": "忽略",
   "loading": "載入",
   "login": "登入",
@@ -48,7 +48,7 @@
   "permSelfTestPending": "本次工作階段尚未完成自檢",
   "permSelfTestProblems": "{count} 項需要處理",
   "permStorageProblem": "缺少「檔案存取」權限：日誌與下載將僅保存在應用程式私有目錄，外部工具（檔案管理器／電腦）無法看到，也無法匯出排查。請在系統設定中授予本應用程式「檔案與媒體／所有檔案存取」權限後重新啟動應用程式。",
-  "profile": "我的",
+  "profile": "個人",
   "retry": "重試",
   "search": "搜尋",
   "settings": "設定",
@@ -68,5 +68,6 @@
   "closeWindow": "關閉",
   "webNotifGatewayDesc": "瀏覽器只在你同意之後才允許通知：點下方按鈕會彈出瀏覽器自己的授權列。之後要改授權，只能到瀏覽器的「網站設定」裡操作，應用程式無法代你跳轉。",
   "webMouseNoticeTitle": "偵測到滑鼠",
-  "webMouseNoticeBody": "滑鼠右鍵 = 返回；長按左鍵 = 長按選單；單擊 = 點按（與行動端一致）；觸控手勢已停用。"
+  "webMouseNoticeBody": "滑鼠右鍵 = 返回；長按左鍵 = 長按選單；單擊 = 點按（與行動端一致）；觸控手勢已停用。",
+  "ai": "AI"
 }

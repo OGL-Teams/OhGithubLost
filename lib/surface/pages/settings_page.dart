@@ -40,6 +40,8 @@ import '../util/clipboard_x.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
+import 'ai_chat_page.dart';
+import 'ai_settings_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
 import 'onboarding_page.dart';
@@ -480,6 +482,7 @@ class _SettingsPageState extends State<SettingsPage> {
               // Web 版开关（**只有浏览器构建里才有行为**）：web 树特有条目，
               // 不随 main 版重构删除（main 是原生平台，没有这一项）。
               _webSection(theme),
+              _aiGroup(theme),
               _aboutGroup(theme),
               _logsGroup(theme),
               // 危险区：与上面所有分组**双重拉开**（留白 + 分隔线 + 告警配色），
@@ -1668,7 +1671,40 @@ class _SettingsPageState extends State<SettingsPage> {
   /// "许可"卡片）。它们同属"看说明 / 找人帮忙"，合并后根级少三个卡片；
   /// 顺带把危险动作（重置）从"维护"里摘出去 —— 它现在单独在危险区，
   /// 不再和"权限与引导"当邻居。
-  Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
+  /// **AI 助手**分组：进入聊天 / 打开设置。文案复用 `ai` 分片。
+Widget _aiGroup(ThemeData theme) => OgLSettingsGroup(
+      title: OgLI18n.instance.t('ai', 'title'),
+      subtitle: OgLI18n.instance.t('ai', 'privacy'),
+      leading: const Icon(Icons.smart_toy_outlined),
+      expanded: _isOpen('ai'),
+      onToggle: (bool open) => _toggleGroup('ai', open),
+      expandLabel: _t('expandGroup'),
+      collapseLabel: _t('collapseGroup'),
+      children: <Widget>[
+        ListTile(
+          leading: const Icon(Icons.chat_outlined),
+          title: Text(OgLI18n.instance.t('ai', 'newChat')),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (BuildContext _) => AiChatPage(surface: widget.surface),
+            ),
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.settings_outlined),
+          title: Text(OgLI18n.instance.t('ai', 'settings')),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (BuildContext _) => AiSettingsPage(surface: widget.surface),
+            ),
+          ),
+        ),
+      ],
+    );
+
+Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
         title: _t('groupAboutHelp'),
         subtitle: _aboutSummary(),
         leading: const Icon(Icons.help_outline),

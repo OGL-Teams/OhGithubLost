@@ -25,5 +25,7 @@
   "switch": "切换",
   "switchFailed": "切换失败：{error}",
   "switchable": "可切换",
-  "switched": "已切换"
+  "switched": "已切换",
+  "settings": "设置",
+  "settingsDesc": "外观 · 网络 · AI · 关于"
 }

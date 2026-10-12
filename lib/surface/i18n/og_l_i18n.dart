@@ -94,6 +94,7 @@ class OgLI18n extends ChangeNotifier {
     'about_page',
     'action_log_page',
     'action_run_page',
+    'ai',
     'code_editor_page',
     'commit_page',
     'common',

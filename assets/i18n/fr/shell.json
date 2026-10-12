@@ -28,7 +28,7 @@
   "featureTokenVault": "Stockage sécurisé des jetons",
   "gotIt": "Compris",
   "guest": "Invité",
-  "home": "Accueil",
+  "home": "Dépôts",
   "ignore": "Ignorer",
   "loading": "Chargement",
   "login": "Connexion",
@@ -48,7 +48,7 @@
   "permSelfTestPending": "L'autocontrôle de cette session n'est pas terminé",
   "permSelfTestProblems": "{count} élément(s) nécessitent une prise en charge",
   "permStorageProblem": "Permission « Accès aux fichiers » manquante : les journaux et les téléchargements ne seront enregistrés que dans le répertoire privé de l'application. Les outils externes (gestionnaire de fichiers / ordinateur) ne pourront pas les voir ni les exporter pour les diagnostic. Veuillez accorder à cette application la permission « Fichiers et médias / Accès à tous les fichiers » dans les paramètres du système, puis relancer l'application.",
-  "profile": "Mes",
+  "profile": "Profil",
   "retry": "Réessayer",
   "search": "Recherche",
   "settings": "Paramètres",
@@ -68,5 +68,6 @@
   "closeWindow": "Fermer",
   "webNotifGatewayDesc": "Le navigateur n'autorise les notifications qu'après votre accord : le bouton ci-dessous ouvre la demande d'autorisation du navigateur. Modifier ce choix ensuite se fait dans les paramètres de site du navigateur — l'application ne peut pas ouvrir cette page à votre place.",
   "webMouseNoticeTitle": "Souris détectée",
-  "webMouseNoticeBody": "Clic droit = retour ; maintenir le bouton gauche = menu d’appui long ; clic = appui (comme sur mobile) ; les gestes tactiles sont désactivés."
+  "webMouseNoticeBody": "Clic droit = retour ; maintenir le bouton gauche = menu d’appui long ; clic = appui (comme sur mobile) ; les gestes tactiles sont désactivés.",
+  "ai": "IA"
 }
