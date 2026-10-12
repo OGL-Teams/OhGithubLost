@@ -13,6 +13,7 @@ import 'dart:async';
 
 import '../base/base_bridge.dart';
 import '../base/disk/og_l_storage.dart';
+import '../base/net/ai_http_client_io.dart';
 import '../base/net/net_bridge.dart';
 import '../base/net/net_transport.dart';
 import '../base/net/range_download.dart';
@@ -20,6 +21,8 @@ import '../kernel/bridge_registry.dart';
 import '../kernel/contract/module.dart';
 import '../kernel/contract/storage_export.dart';
 import '../kernel/environment.dart';
+import 'ai/ai_service.dart';
+import 'ai/ai_tools.dart';
 import 'gh/gh_api.dart';
 import 'gh/gh_auth.dart';
 import 'gh/gh_client.dart';
@@ -46,6 +49,7 @@ class DomainBridge {
     required this.notifications,
     required this.sysInfo,
     required this.sysAccess,
+    required this.ai,
     IxDownloadManager? downloads,
     IxActionLogs? actionLogs,
     IxPresign? presign,
@@ -78,6 +82,9 @@ class DomainBridge {
 
   /// Mod 能力守门。
   final SysAccessGuard sysAccess;
+
+  /// AI 助手（会话 / 设置 / 补全编排；密钥走 vault）。
+  final AiService ai;
 
   /// 内建下载管理器。
   final IxDownloadManager downloads;
@@ -399,6 +406,18 @@ class DomainLayerModule extends OgLModule {
     );
     context.di.register<RepoFileService>(repoFiles);
 
+    // ── AI 助手：依赖经抽象注入（DiskKv / DiskVault / AiHttpClient）。
+    //    工具注册表暂时为空——GitHub 操作工具（建 Issue / 读文件 / 建 PR …）
+    //    在后续相位由 `domain/gh` 的只读/受控工具逐项接入。
+    final base = BaseBridge.of(context.bridges);
+    final AiService ai = AiService(
+      store: base.disk.kv,
+      vault: base.disk.vault,
+      http: const AiHttpClientIo(),
+      tools: buildAiTools(context.di.resolve<GhApi>()),
+    );
+    context.di.register<AiService>(ai);
+
     final bridge = DomainBridge(
       auth: ghAuth,
       api: context.di.resolve<GhApi>(),
@@ -408,6 +427,7 @@ class DomainLayerModule extends OgLModule {
       notifications: context.di.resolve<IxNotificationCenter>(),
       sysInfo: context.di.resolve<SysInfoService>(),
       sysAccess: context.di.resolve<SysAccessGuard>(),
+      ai: ai,
       downloads: context.di.resolve<IxDownloadManager>(),
       actionLogs: context.di.resolve<IxActionLogs>(),
       repoFiles: repoFiles,

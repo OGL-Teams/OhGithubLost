@@ -34,7 +34,7 @@
   "featureWorkflowInputs": "工作流手动触发参数解析（YAML）",
   "gotIt": "知道了",
   "guest": "游客",
-  "home": "首页",
+  "home": "仓库",
   "ignore": "忽略",
   "loading": "加载",
   "login": "登录",
@@ -50,7 +50,7 @@
   "permSelfTestPending": "本次会话尚未完成自检",
   "permSelfTestProblems": "{count} 项需要处理",
   "permStorageProblem": "缺少「文件访问」权限：日志与下载将只落在应用私有目录，外部工具（文件管理器 / 电脑）看不到，也无法导出排查。请在系统设置中授予本应用的「文件与媒体 / 所有文件访问」权限后重启应用。",
-  "profile": "我的",
+  "profile": "个人",
   "retry": "重试",
   "search": "搜索",
   "settings": "设置",
@@ -65,5 +65,6 @@
   "minimizeWindow": "最小化",
   "maximizeWindow": "最大化",
   "restoreWindow": "还原",
-  "closeWindow": "关闭"
+  "closeWindow": "关闭",
+  "ai": "AI"
 }

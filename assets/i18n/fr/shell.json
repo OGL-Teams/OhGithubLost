@@ -34,7 +34,7 @@
   "featureWorkflowInputs": "Analyse des paramètres de workflow (YAML)",
   "gotIt": "Compris",
   "guest": "Invité",
-  "home": "Accueil",
+  "home": "Dépôts",
   "ignore": "Ignorer",
   "loading": "Chargement",
   "login": "Connexion",
@@ -50,7 +50,7 @@
   "permSelfTestPending": "L'autocontrôle de cette session n'est pas terminé",
   "permSelfTestProblems": "{count} élément(s) nécessitent une prise en charge",
   "permStorageProblem": "Permission « Accès aux fichiers » manquante : les journaux et les téléchargements ne seront enregistrés que dans le répertoire privé de l'application. Les outils externes (gestionnaire de fichiers / ordinateur) ne pourront pas les voir ni les exporter pour les diagnostic. Veuillez accorder à cette application la permission « Fichiers et médias / Accès à tous les fichiers » dans les paramètres du système, puis relancer l'application.",
-  "profile": "Mes",
+  "profile": "Profil",
   "retry": "Réessayer",
   "search": "Recherche",
   "settings": "Paramètres",
@@ -65,5 +65,6 @@
   "minimizeWindow": "Réduire",
   "maximizeWindow": "Agrandir",
   "restoreWindow": "Restaurer",
-  "closeWindow": "Fermer"
+  "closeWindow": "Fermer",
+  "ai": "IA"
 }

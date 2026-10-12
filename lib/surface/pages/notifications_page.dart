@@ -159,7 +159,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title:  Text(_t('title')),
+        title: ListenableBuilder(
+          listenable: OgLAppLog.instance,
+          builder: (BuildContext context, Widget? _) {
+            final int n = OgLAppLog.instance.unreadCount;
+            return Text(n > 0 ? '${_t('title')} ($n)' : _t('title'));
+          },
+        ),
         actions: <Widget>[
           IconButton(
             tooltip: _t('markAllRead'),

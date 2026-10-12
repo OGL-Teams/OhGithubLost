@@ -40,6 +40,8 @@ import '../util/accel.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
+import 'ai_chat_page.dart';
+import 'ai_settings_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
 import 'onboarding_page.dart';
@@ -106,6 +108,7 @@ class _SettingsPageState extends State<SettingsPage> {
     'interface',
     'code',
     'storage',
+    'ai',
     'about',
     'logs',
   ];
@@ -494,6 +497,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _interfaceGroup(value),
               _codeGroup(context, theme, value),
               _storageGroup(theme, value),
+              _aiGroup(theme),
               _aboutGroup(theme),
               _logsGroup(theme),
               // 危险区：与上面所有分组**双重拉开**（留白 + 分隔线 + 告警配色），
@@ -1636,7 +1640,36 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       );
 
-  /// **关于与帮助**分组：权限与引导 / 关于 / 捐赠 / 开源许可 / 法律文本。
+  /// **AI 助手**分组：进入聊天 / 打开设置。文案复用 `ai` 分片。
+Widget _aiGroup(ThemeData theme) => OgLSettingsGroup(
+      title: OgLI18n.instance.t('ai', 'title'),
+      subtitle: OgLI18n.instance.t('ai', 'privacy'),
+      leading: const Icon(Icons.smart_toy_outlined),
+      children: <Widget>[
+        ListTile(
+          leading: const Icon(Icons.chat_outlined),
+          title: Text(OgLI18n.instance.t('ai', 'newChat')),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (BuildContext _) => AiChatPage(surface: widget.surface),
+            ),
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.settings_outlined),
+          title: Text(OgLI18n.instance.t('ai', 'settings')),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (BuildContext _) => AiSettingsPage(surface: widget.surface),
+            ),
+          ),
+        ),
+      ],
+    );
+
+/// **关于与帮助**分组：权限与引导 / 关于 / 捐赠 / 开源许可 / 法律文本。
   ///
   /// 五项原先散在三个卡片里（"维护"里的权限引导、"捐赠"卡片、"关于"卡片、
   /// "许可"卡片）。它们同属"看说明 / 找人帮忙"，合并后根级少三个卡片；

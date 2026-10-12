@@ -25,5 +25,7 @@
   "switch": "Switch",
   "switchFailed": "Switch failed: {error}",
   "switchable": "Switchable",
-  "switched": "Switched"
+  "switched": "Switched",
+  "settings": "Settings",
+  "settingsDesc": "Appearance · network · AI · about"
 }

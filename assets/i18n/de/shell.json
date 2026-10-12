@@ -34,7 +34,7 @@
   "featureWorkflowInputs": "Parsen der Workflow-Parameter (YAML)",
   "gotIt": "Verstanden",
   "guest": "Gast",
-  "home": "Startseite",
+  "home": "Repos",
   "ignore": "Ignorieren",
   "loading": "Wird geladen",
   "login": "Anmelden",
@@ -50,7 +50,7 @@
   "permSelfTestPending": "Selbsttest für diese Sitzung noch nicht abgeschlossen",
   "permSelfTestProblems": "{count} Einträge müssen bearbeitet werden",
   "permStorageProblem": "Berechtung „Dateizugriff“ fehlt: Logs und Downloads werden nur im privaten App-Verzeichnis gespeichert, sind für externe Tools (Dateiverwaltung / Computer) nicht sichtbar und können nicht zur Fehlersuche exportiert werden. Bitte gewähren Sie dieser App in den Systemeinstellungen die Berechtigung „Dateien und Medien / Alle Dateien zugreifen“ und starten Sie die App neu.",
-  "profile": "Meine",
+  "profile": "Profil",
   "retry": "Erneut versuchen",
   "search": "Suchen",
   "settings": "Einstellungen",
@@ -65,5 +65,6 @@
   "minimizeWindow": "Minimieren",
   "maximizeWindow": "Maximieren",
   "restoreWindow": "Wiederherstellen",
-  "closeWindow": "Schließen"
+  "closeWindow": "Schließen",
+  "ai": "KI"
 }

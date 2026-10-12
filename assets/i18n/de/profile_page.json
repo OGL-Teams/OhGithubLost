@@ -25,5 +25,7 @@
   "switch": "Wechseln",
   "switchFailed": "Wechsel fehlgeschlagen: {error}",
   "switchable": "Schaltbar",
-  "switched": "Geschaltet"
+  "switched": "Geschaltet",
+  "settings": "Einstellungen",
+  "settingsDesc": "Erscheinungsbild · Netzwerk · KI · Info"
 }

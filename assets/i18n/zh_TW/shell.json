@@ -34,7 +34,7 @@
   "featureWorkflowInputs": "工作流手動觸發參數解析（YAML）",
   "gotIt": "知道了",
   "guest": "遊客",
-  "home": "首頁",
+  "home": "倉庫",
   "ignore": "忽略",
   "loading": "載入",
   "login": "登入",
@@ -50,7 +50,7 @@
   "permSelfTestPending": "本次工作階段尚未完成自檢",
   "permSelfTestProblems": "{count} 項需要處理",
   "permStorageProblem": "缺少「檔案存取」權限：日誌與下載將僅保存在應用程式私有目錄，外部工具（檔案管理器／電腦）無法看到，也無法匯出排查。請在系統設定中授予本應用程式「檔案與媒體／所有檔案存取」權限後重新啟動應用程式。",
-  "profile": "我的",
+  "profile": "個人",
   "retry": "重試",
   "search": "搜尋",
   "settings": "設定",
@@ -65,5 +65,6 @@
   "minimizeWindow": "最小化",
   "maximizeWindow": "最大化",
   "restoreWindow": "還原",
-  "closeWindow": "關閉"
+  "closeWindow": "關閉",
+  "ai": "AI"
 }

@@ -34,7 +34,7 @@
   "featureWorkflowInputs": "Workflow dispatch input parsing (YAML)",
   "gotIt": "Got it",
   "guest": "Guest",
-  "home": "Home",
+  "home": "Repos",
   "ignore": "Ignore",
   "loading": "Loading",
   "login": "Login",
@@ -50,7 +50,7 @@
   "permSelfTestPending": "Self-test not yet completed in this session",
   "permSelfTestProblems": "{count} items need attention",
   "permStorageProblem": "Missing 'File Access' permission: logs and downloads will only be saved to the app's private directory, invisible to external tools (file manager / computer), and cannot be exported for troubleshooting. Grant this app 'Files and media / All files access' in your system settings, then restart the app.",
-  "profile": "Profile",
+  "profile": "Me",
   "retry": "Retry",
   "search": "Search",
   "settings": "Settings",
@@ -65,5 +65,6 @@
   "minimizeWindow": "Minimize",
   "maximizeWindow": "Maximize",
   "restoreWindow": "Restore",
-  "closeWindow": "Close"
+  "closeWindow": "Close",
+  "ai": "AI"
 }
