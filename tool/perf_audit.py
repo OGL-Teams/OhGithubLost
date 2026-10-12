@@ -52,6 +52,8 @@ REVIEWED_BOUNDED = {
     'lib/surface/pages/release_detail_page.dart': 'Release 附件（通常 < 30）',
     'lib/surface/pages/workflow_dispatch_page.dart': '工作流 inputs（表单，条数少）',
     'lib/surface/pages/repo_page.dart': '分支选择弹层（打开即用，通常几十条）',
+    'lib/surface/pages/ai_settings_page.dart': 'AI 设置项固定条数',
+    'lib/surface/pages/settings_section_page.dart': '设置分区（折叠分组，条数少）',
 }
 
 RULES = [

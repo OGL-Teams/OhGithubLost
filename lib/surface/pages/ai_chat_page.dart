@@ -246,7 +246,7 @@ class _AiChatPageState extends State<AiChatPage> {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.78),
         decoration: BoxDecoration(
           color: mine ? theme.colorScheme.primaryContainer : theme.colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(12),
@@ -370,11 +370,15 @@ class _AiChatPageState extends State<AiChatPage> {
   void _showHistory(ThemeData theme) {
     showModalBottomSheet<void>(
       context: context,
-      builder: (BuildContext sheetContext) => ListView(
-        shrinkWrap: true,
-        children: <Widget>[
-          for (final AiConversation c in _history)
-            ListTile(
+      isScrollControlled: true,
+      builder: (BuildContext sheetContext) => DraggableScrollableSheet(
+        expand: false,
+        builder: (BuildContext _, ScrollController controller) => ListView.builder(
+          controller: controller,
+          itemCount: _history.length,
+          itemBuilder: (BuildContext ctx, int i) {
+            final AiConversation c = _history[i];
+            return ListTile(
               title: Text(c.title ?? c.id),
               subtitle: Text(c.repo ?? ''),
               trailing: IconButton(
@@ -388,10 +392,9 @@ class _AiChatPageState extends State<AiChatPage> {
                 Navigator.of(sheetContext).pop();
                 unawaited(_openConversation(c));
               },
-            ),
-          if (_history.isEmpty)
-            ListTile(title: Text(_t('empty'))),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
