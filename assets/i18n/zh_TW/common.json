@@ -121,5 +121,6 @@
   "webInstallIosBody": "iOS 的瀏覽器不支援一鍵加入（這是平台限制，不是應用程式的問題）。\n\n請點下方的「分享」按鈕，然後在清單中選擇「加入主畫面」。",
   "webInstallChromiumBody": "這次瀏覽器沒有給出「一鍵安裝」入口（可能已安裝，或本頁還不符合安裝條件）。\n\n你仍可以在瀏覽器選單裡選擇「安裝應用程式」或「加入主畫面」。",
   "guide": "檢視使用引導",
-  "scrollAwareCollapsedHint": "已收邊，點擊展開"
+  "scrollAwareCollapsedHint": "已收邊，點擊展開",
+  "viewDownloads": "查看下載"
 }

@@ -127,15 +127,14 @@ class _AiChatPageState extends State<AiChatPage> {
     }
     _input.clear();
     final String accountId = await _accountId();
-
     final AiMessage user = AiMessage(role: AiRole.user, content: text);
     final List<AiMessage> messages = List<AiMessage>.of(_conversation.messages)
       ..add(user);
-    if (_conversation.id.isEmpty) {
-      _conversation.id = 'c${DateTime.now().microsecondsSinceEpoch}';
-    }
+    final String cid = _conversation.id.isEmpty
+        ? 'c${DateTime.now().microsecondsSinceEpoch}'
+        : _conversation.id;
     _conversation = AiConversation(
-      id: _conversation.id,
+      id: cid,
       accountId: accountId,
       repo: widget.repo,
       title: _conversation.title ?? (text.length > 24 ? '${text.substring(0, 24)}…' : text),
@@ -143,12 +142,27 @@ class _AiChatPageState extends State<AiChatPage> {
       createdAt: _conversation.createdAt,
       updatedAt: DateTime.now(),
     );
+    if (mounted) {
+      setState(() {});
+    }
+    await _run(messages, accountId);
+  }
+
+  /// 重试：上一条 user 消息在失败时已写入 [_conversation.messages]，
+  /// 直接对同一份消息列表再跑一遍，不重复追加。
+  Future<void> _retry() async {
+    if (_sending || _conversation.messages.isEmpty) {
+      return;
+    }
+    await _run(_conversation.messages, await _accountId());
+  }
+
+  Future<void> _run(List<AiMessage> messages, String accountId) async {
     setState(() {
       _sending = true;
       _lastError = null;
     });
-
-    OgLAppLog.instance.add('AI', text, severity: OgLNoticeSeverity.info);
+    OgLAppLog.instance.add('AI', messages.last.content, severity: OgLNoticeSeverity.info);
 
     try {
       final List<AiMessage> transcript = await _ai.complete(
@@ -223,6 +237,10 @@ class _AiChatPageState extends State<AiChatPage> {
       );
     }
     final bool mine = m.role == AiRole.user;
+    // 空 assistant 消息（工具调用中转轮）不渲染，工具结果单独展示。
+    if (!mine && m.content.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -234,7 +252,7 @@ class _AiChatPageState extends State<AiChatPage> {
           borderRadius: BorderRadius.circular(12),
         ),
         child: SelectableText(
-          m.content.isEmpty ? (mine ? text : _t('working')) : m.content,
+          m.content.isEmpty ? text : m.content,
           style: theme.textTheme.bodyMedium,
         ),
       ),
@@ -306,7 +324,7 @@ class _AiChatPageState extends State<AiChatPage> {
                       style: TextStyle(color: theme.colorScheme.error),
                     ),
                   ),
-                  TextButton(onPressed: _send, child: Text(_t('retry'))),
+                  TextButton(onPressed: _retry, child: Text(_t('retry'))),
                 ],
               ),
             ),

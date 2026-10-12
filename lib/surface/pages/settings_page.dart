@@ -21,6 +21,7 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -40,11 +41,11 @@ import '../util/clipboard_x.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
-import 'ai_chat_page.dart';
 import 'ai_settings_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
 import 'onboarding_page.dart';
+import 'settings_section_page.dart';
 
 /// 设置页。
 class SettingsPage extends StatefulWidget {
@@ -76,12 +77,6 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 账户行因此反复闪「读取中」。账号增删后（见 [_refreshAccount]）重建它即可。
   Future<GhAccount?>? _accountFuture;
 
-  @override
-  void dispose() {
-    widget.surface.domain.auth.removeListener(_refreshAccount);
-    super.dispose();
-  }
-
   /// 重建账户行 Future（账号状态变化后调用）。
   void _refreshAccount() {
     if (!mounted) {
@@ -111,7 +106,8 @@ class _SettingsPageState extends State<SettingsPage> {
   // 实例字段会随 pop 丢掉，"记住上次展开的分组"就无从谈起。
 
   /// 当前展开的分组（进程内保持；见上文差异说明）。
-  static final Set<String> _openGroups = <String>{};
+  final ValueNotifier<Set<String>> _openGroups =
+      ValueNotifier<Set<String>>(<String>{});
 
   @override
   void initState() {
@@ -121,18 +117,25 @@ class _SettingsPageState extends State<SettingsPage> {
     widget.surface.domain.auth.addListener(_refreshAccount);
   }
 
+  @override
+  void dispose() {
+    widget.surface.domain.auth.removeListener(_refreshAccount);
+    _openGroups.dispose();
+    super.dispose();
+  }
+
   /// 展开状态是否已记录（用于区分"用户收起过"与"默认收起"）。
-  bool _isOpen(String id) => _openGroups.contains(id);
+  bool _isOpen(String id) => _openGroups.value.contains(id);
 
   /// 切换分组展开状态。
   void _toggleGroup(String id, bool open) {
-    setState(() {
-      if (open) {
-        _openGroups.add(id);
-      } else {
-        _openGroups.remove(id);
-      }
-    });
+    final Set<String> next = Set<String>.of(_openGroups.value);
+    if (open) {
+      next.add(id);
+    } else {
+      next.remove(id);
+    }
+    _openGroups.value = next;
   }
 
   /// 折叠摘要：明暗模式（分组标题下一行，收起时也知道当前是什么）。
@@ -178,6 +181,39 @@ class _SettingsPageState extends State<SettingsPage> {
     final int count = OgLAppLog.instance.entries.length;
     final String lines = _t('logsLineCount', <String, Object?>{'count': count});
     return '${_t('logsSaving')} · $lines';
+  }
+
+  /// 分类入口（第一层 · 进入式）：一个可点卡片，push 到对应分区页。
+  Widget _categoryTile(
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        subtitle: subtitle == null ? null : Text(subtitle),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  /// 打开分区页（第二层 · 折叠式），共享 [_openGroups] 折叠状态。
+  void _openSection(String title, List<Widget Function()> builders) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext _) => SettingsSectionPage(
+          title: title,
+          collapseState: _openGroups,
+          builders: builders,
+        ),
+      ),
+    );
   }
 
   /// 自定义代码配色的可选色板（ARGB）。
@@ -476,15 +512,69 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
               ),
               _accountCard(theme),
-              _interfaceGroup(value),
-              _codeGroup(context, theme, value),
-              _storageGroup(theme, value),
-              // Web 版开关（**只有浏览器构建里才有行为**）：web 树特有条目，
-              // 不随 main 版重构删除（main 是原生平台，没有这一项）。
-              _webSection(theme),
-              _aiGroup(theme),
-              _aboutGroup(theme),
-              _logsGroup(theme),
+              _categoryTile(
+                theme,
+                icon: Icons.tune,
+                title: _t('groupInterface'),
+                subtitle: _interfaceSummary(value),
+                onTap: () => _openSection(
+                  _t('groupInterface'),
+                  <Widget Function()>[() => _interfaceGroup(value)],
+                ),
+              ),
+              _categoryTile(
+                theme,
+                icon: Icons.code,
+                title: _t('codeAndFiles'),
+                subtitle: _codeSummary(value),
+                onTap: () => _openSection(
+                  _t('codeAndFiles'),
+                  <Widget Function()>[() => _codeGroup(context, theme, value)],
+                ),
+              ),
+              _categoryTile(
+                theme,
+                icon: Icons.storage_outlined,
+                title: _t('groupStorageNetwork'),
+                onTap: () => _openSection(
+                  _t('groupStorageNetwork'),
+                  <Widget Function()>[
+                    () => _storageGroup(theme, value),
+                    () => _webSection(theme),
+                  ],
+                ),
+              ),
+              _categoryTile(
+                theme,
+                icon: Icons.smart_toy_outlined,
+                title: OgLI18n.instance.t('ai', 'title'),
+                subtitle: OgLI18n.instance.t('ai', 'privacy'),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext _) => AiSettingsPage(surface: widget.surface),
+                  ),
+                ),
+              ),
+              _categoryTile(
+                theme,
+                icon: Icons.help_outline,
+                title: _t('groupAboutHelp'),
+                subtitle: _aboutSummary(),
+                onTap: () => _openSection(
+                  _t('groupAboutHelp'),
+                  <Widget Function()>[() => _aboutGroup(theme)],
+                ),
+              ),
+              _categoryTile(
+                theme,
+                icon: Icons.article_outlined,
+                title: _t('logs'),
+                subtitle: _logsSummary(),
+                onTap: () => _openSection(
+                  _t('logs'),
+                  <Widget Function()>[() => _logsGroup(theme)],
+                ),
+              ),
               // 危险区：与上面所有分组**双重拉开**（留白 + 分隔线 + 告警配色），
               // 免得"收尾顺手点一下"就把设置全清了。
               const SizedBox(height: 8),
@@ -1671,39 +1761,6 @@ class _SettingsPageState extends State<SettingsPage> {
   /// "许可"卡片）。它们同属"看说明 / 找人帮忙"，合并后根级少三个卡片；
   /// 顺带把危险动作（重置）从"维护"里摘出去 —— 它现在单独在危险区，
   /// 不再和"权限与引导"当邻居。
-  /// **AI 助手**分组：进入聊天 / 打开设置。文案复用 `ai` 分片。
-Widget _aiGroup(ThemeData theme) => OgLSettingsGroup(
-      title: OgLI18n.instance.t('ai', 'title'),
-      subtitle: OgLI18n.instance.t('ai', 'privacy'),
-      leading: const Icon(Icons.smart_toy_outlined),
-      expanded: _isOpen('ai'),
-      onToggle: (bool open) => _toggleGroup('ai', open),
-      expandLabel: _t('expandGroup'),
-      collapseLabel: _t('collapseGroup'),
-      children: <Widget>[
-        ListTile(
-          leading: const Icon(Icons.chat_outlined),
-          title: Text(OgLI18n.instance.t('ai', 'newChat')),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (BuildContext _) => AiChatPage(surface: widget.surface),
-            ),
-          ),
-        ),
-        ListTile(
-          leading: const Icon(Icons.settings_outlined),
-          title: Text(OgLI18n.instance.t('ai', 'settings')),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (BuildContext _) => AiSettingsPage(surface: widget.surface),
-            ),
-          ),
-        ),
-      ],
-    );
-
 Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
         title: _t('groupAboutHelp'),
         subtitle: _aboutSummary(),

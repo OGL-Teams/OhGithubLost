@@ -23,6 +23,7 @@ import '../app/error_surface.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import 'download_manager_page.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/clipboard_x.dart';
@@ -1655,7 +1656,11 @@ class _CodeTabState extends State<_CodeTab> {
         category: IxDownloadCategory.repo,
         connections: widget.surface.settings.settings.downloadConnections,
       );
-      _toast(_t('addedToDownload', {'name': ghPathName(entry.path)}));
+      ogLShowDownloadQueued(
+        context,
+        widget.surface,
+        _t('addedToDownload', {'name': ghPathName(entry.path)}),
+      );
     } catch (error) {
       _toast(_t('addDownloadFailed', {'error': error}));
     }

@@ -256,8 +256,10 @@ class AiService {
   }
 
   /// 探测模型列表（供设置页下拉）。
-  Future<List<String>> detectModels({String? key}) async {
-    final AiSettings s = await settings();
+  ///
+  /// [config] 传入时用表单里的**当前值**（尚未保存）；否则读已持久化的设置。
+  Future<List<String>> detectModels({String? key, AiSettings? config}) async {
+    final AiSettings s = config ?? await settings();
     final String k = key ?? await _requireKey(s);
     final AiProvider provider = AiProvider(s.kind);
     final AiHttpResponse res = await _http.send(

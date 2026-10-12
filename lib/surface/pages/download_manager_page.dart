@@ -23,6 +23,27 @@ String _t(String key, [Map<String, Object?>? args]) =>
     OgLI18n.instance.t('download_manager_page', key,
         args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
+/// 下载已入队：弹 SnackBar，带「查看下载」动作跳转到下载中心。
+void ogLShowDownloadQueued(
+  BuildContext context,
+  SurfaceBridge surface,
+  String message,
+) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      action: SnackBarAction(
+        label: OgLI18n.instance.t('common', 'viewDownloads'),
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext _) => DownloadManagerPage(surface: surface),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 /// 下载管理页。
 class DownloadManagerPage extends StatelessWidget {
   /// 创建页面。

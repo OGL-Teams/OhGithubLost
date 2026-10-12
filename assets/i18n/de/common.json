@@ -121,5 +121,6 @@
   "webInstallIosBody": "iOS-Browser unterstützen das Hinzufügen mit einem Tipp nicht (Plattformbeschränkung, kein Fehler der App).\n\nTippen Sie unten auf „Teilen“ und wählen Sie dann „Zum Home-Bildschirm“.",
   "webInstallChromiumBody": "Dieser Browser hat diesmal keine Installation mit einem Tipp angeboten (die App ist vielleicht schon installiert oder die Seite erfüllt die Kriterien noch nicht).\n\nIm Browser-Menü können Sie weiterhin „App installieren“ bzw. „Zum Startbildschirm hinzufügen“ wählen.",
   "guide": "Anleitung ansehen",
-  "scrollAwareCollapsedHint": "An den Rand eingeklappt – zum Erweitern tippen"
+  "scrollAwareCollapsedHint": "An den Rand eingeklappt – zum Erweitern tippen",
+  "viewDownloads": "Downloads anzeigen"
 }

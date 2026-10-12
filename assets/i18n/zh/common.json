@@ -121,5 +121,6 @@
   "webInstallIosBody": "iOS 的浏览器不支持一键添加（这是平台限制，不是应用的问题）。\n\n请点下方的「共享」按钮，然后在列表中选择「添加到主屏幕」。",
   "webInstallChromiumBody": "这次浏览器没有给出「一键安装」入口（可能已安装，或本页还不满足安装条件）。\n\n你仍可以在浏览器菜单里选择「安装应用」或「添加到桌面 / 主屏幕」。",
   "guide": "查看使用引导",
-  "scrollAwareCollapsedHint": "已收边，点击展开"
+  "scrollAwareCollapsedHint": "已收边，点击展开",
+  "viewDownloads": "查看下载"
 }

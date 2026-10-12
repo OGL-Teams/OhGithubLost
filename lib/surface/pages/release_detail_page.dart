@@ -17,6 +17,7 @@ import '../app/error_surface.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import 'download_manager_page.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/clipboard_x.dart';
@@ -267,7 +268,8 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
         expectedSha256: IxPresign.normalizeDigest(asset.raw['digest']),
       );
       if (mounted) {
-        _toast(_t('addedToDownload', {'name': asset.name}));
+        ogLShowDownloadQueued(context, widget.surface,
+            _t('addedToDownload', {'name': asset.name}));
       }
     } catch (error) {
       if (mounted) {
