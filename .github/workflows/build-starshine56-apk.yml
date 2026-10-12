@@ -31,7 +31,9 @@ jobs:
         run: flutter pub get
 
       - name: Generate Android platform
-        run: flutter create --platforms=android --project-name ohgithublost .
+        run: |
+          flutter create --platforms=android --project-name ohgithublost .
+          rm -f test/widget_test.dart
 
       - name: Analyze
         run: flutter analyze
