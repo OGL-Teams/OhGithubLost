@@ -42,7 +42,10 @@ jobs:
               s = s.replace('compileOptions {', 'compileOptions {\n        isCoreLibraryDesugaringEnabled = true')
           else:
               s = s.replace('isCoreLibraryDesugaringEnabled = false', 'isCoreLibraryDesugaringEnabled = true')
-          if 'desugar_jdk_libs' not in s:
+          # Add dependencies block at end if not present
+          if 'dependencies {' not in s:
+              s += '\n\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n'
+          elif 'desugar_jdk_libs' not in s:
               s = s.replace('dependencies {', 'dependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")')
           open(p,'w').write(s)
           print(open(p).read())
