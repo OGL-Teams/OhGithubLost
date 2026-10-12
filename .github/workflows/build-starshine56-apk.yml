@@ -1,0 +1,47 @@
+# ============================================================================
+# starshine56 分支专用：ARM64 Release APK 构建
+# 只在 starshine56 分支触发，不影响 main
+# ============================================================================
+name: build-starshine56-apk
+
+on:
+  push:
+    branches: [starshine56]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.5'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Build ARM64 Release APK
+        run: flutter build apk --release --target-platform android-arm64 --tree-shake-icons
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ohgithublost-arm64-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
