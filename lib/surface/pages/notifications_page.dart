@@ -76,7 +76,10 @@ void _warmSeverityGlyphs() {
 /// 通知中心页。
 class NotificationsPage extends StatefulWidget {
   /// 创建页面。
-  const NotificationsPage({super.key});
+  const NotificationsPage({this.embedded = false, super.key});
+
+  /// 嵌入到其他页面时不自带 AppBar（由外层提供标题栏）。
+  final bool embedded;
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
@@ -158,13 +161,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title:  Text(_t('title')),
-        actions: <Widget>[
-          IconButton(
-            tooltip: _t('markAllRead'),
-            icon: const Icon(Icons.done_all),
-            onPressed: OgLAppLog.instance.markAllRead,
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title:  Text(_t('title')),
+              actions: <Widget>[
+                IconButton(
+                  tooltip: _t('markAllRead'),
+                  icon: const Icon(Icons.done_all),
+                  onPressed: OgLAppLog.instance.markAllRead,
           ),
           IconButton(
             tooltip: _t('resetTitle'),

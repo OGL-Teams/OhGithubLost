@@ -65,5 +65,6 @@
   "minimizeWindow": "最小化",
   "maximizeWindow": "最大化",
   "restoreWindow": "还原",
-  "closeWindow": "关闭"
+  "closeWindow": "关闭",
+  "tools": "工具"
 }

@@ -10,16 +10,21 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
 
 import '../base/base_bridge.dart';
 import '../base/disk/og_l_storage.dart';
+import '../base/net/ai_http_transport.dart';
 import '../base/net/net_bridge.dart';
 import '../base/net/net_transport.dart';
 import '../base/net/range_download.dart';
 import '../kernel/bridge_registry.dart';
 import '../kernel/contract/module.dart';
+import '../kernel/contract/net_types.dart';
 import '../kernel/contract/storage_export.dart';
 import '../kernel/environment.dart';
+import 'ai/ai_provider.dart';
+import 'ai/ai_service.dart';
 import 'gh/gh_api.dart';
 import 'gh/gh_auth.dart';
 import 'gh/gh_client.dart';
@@ -31,6 +36,7 @@ import 'ix/ix_notify.dart';
 import 'ix/ix_presign.dart';
 import 'ix/ix_session.dart';
 import 'ix/ix_task.dart';
+import 'productivity/productivity_service.dart';
 import 'sys/sys_access.dart';
 import 'sys/sys_info.dart';
 
@@ -50,10 +56,16 @@ class DomainBridge {
     IxActionLogs? actionLogs,
     IxPresign? presign,
     RepoFileService? repoFiles,
+    this.ai,
+    this.productivity,
   })  : downloads = downloads ?? IxDownloadManager(),
         actionLogs = actionLogs ?? IxActionLogs(tokenProvider: () async => null),
         presign = presign ?? IxPresign(tokenProvider: () async => null),
         _repoFiles = repoFiles ?? RepoFileService(api: api);
+
+  /// AI 助手与 GitHub 生产力服务；真实装配时提供，可选参数保持既有测试兼容。
+  final AiService? ai;
+  final ProductivityService? productivity;
 
   /// 认证（多账号 / 令牌）。
   final GhAuthService auth;
@@ -399,10 +411,75 @@ class DomainLayerModule extends OgLModule {
     );
     context.di.register<RepoFileService>(repoFiles);
 
+    // ── AI 助手与 GitHub 生产力服务装配 ──────────────────────────────────
+    // 两条网络通道分别注入：AI 密钥不经 GitHub 请求或镜像传输；通知写操作
+    // 走账号绑定通道，排队期间切号即拒绝发往新账号。
+    final GhClient ghClient = context.di.resolve<GhClient>();
+    final BaseBridge base = BaseBridge.of(context.bridges);
+
+    Future<Object?> githubRequest(
+      String method,
+      String path,
+      Map<String, Object?>? body,
+      Map<String, String> query,
+    ) async {
+      final GhResponse response = await ghClient.send(
+        GhRequest(
+          path: path,
+          method: NetMethod.values
+              .firstWhere((NetMethod e) => e.verb == method),
+          body: body,
+          query: query,
+          cacheBypass: true,
+        ),
+      );
+      return response.body.trim().isEmpty
+          ? <String, Object?>{}
+          : jsonDecode(response.body);
+    }
+
+    Future<Object?> notificationGithub(
+      String accountId,
+      String method,
+      String path,
+      Map<String, Object?>? body,
+      Map<String, String> query,
+    ) async {
+      final GhResponse response = await ghClient.send(
+        GhRequest(
+          path: path,
+          method: NetMethod.values
+              .firstWhere((NetMethod e) => e.verb == method),
+          body: body,
+          query: query,
+          cacheBypass: true,
+          expectedAccountId: accountId,
+        ),
+      );
+      return response.body.trim().isEmpty
+          ? <String, Object?>{}
+          : jsonDecode(response.body);
+    }
+
+    final AiProvider aiProvider = AiProvider(AiHttpTransport().send);
+    final AiService ai = AiService(
+      store: base.disk.kv,
+      vault: base.disk.vault,
+      github: githubRequest,
+      provider: aiProvider.request,
+      account: ghAuth.activeAccountId,
+    );
+    final ProductivityService productivity = ProductivityService(
+      store: base.disk.kv,
+      notificationGithub: notificationGithub,
+      github: githubRequest,
+      account: ghAuth.activeAccountId,
+    );
+
     final bridge = DomainBridge(
       auth: ghAuth,
       api: context.di.resolve<GhApi>(),
-      client: context.di.resolve<GhClient>(),
+      client: ghClient,
       session: context.di.resolve<IxSession>(),
       tasks: context.di.resolve<IxTaskRunner>(),
       notifications: context.di.resolve<IxNotificationCenter>(),
@@ -411,6 +488,8 @@ class DomainLayerModule extends OgLModule {
       downloads: context.di.resolve<IxDownloadManager>(),
       actionLogs: context.di.resolve<IxActionLogs>(),
       repoFiles: repoFiles,
+      ai: ai,
+      productivity: productivity,
       // 第一跳解析：此前**漏传**，DomainBridge 只能退回 `tokenProvider` 恒为
       // `null` 的兜底实例 —— 私有仓库的 Release 附件 / Action 产物因此拿不到
       // 签名地址。令牌在本地取用，不落到别处。

@@ -52,12 +52,16 @@ enum OgLNoticeSeverity {
 /// [auto]（critical 后台投系统通知、其余按级别展示）。
 ///
 /// - [auto]：按严重级别自动决定（critical → 弹窗；其余 → 横幅）；
+/// - [logOnly]：**只收纳到应用日志**，不弹窗不横幅（启动诊断 / 普通提示默认走这里）；
 /// - [inAppOnly]：**只在应用内**提示（前台横幅 / 弹窗），不尝试系统通知；
 /// - [allChannels]：**三种方式全用** —— 前台弹窗/横幅 + 同时投系统通知，
 ///   保证用户切到后台也能看到（如"下载完成""长时间任务结束"）。
 enum OgLNoticeDelivery {
   /// 按级别自动。
   auto,
+
+  /// 仅收纳到应用日志，不打扰用户。
+  logOnly,
 
   /// 仅应用内。
   inAppOnly,
@@ -120,11 +124,13 @@ class OgLNoticeCenter extends ChangeNotifier {
   ///
   /// [delivery]：投递方式；**当前所有调用点都走默认的 [OgLNoticeDelivery.auto]**
   /// （参数尚未接线，见该枚举的说明）。
+  /// [delivery]：默认仅收纳到应用日志；主动操作 / 未捕获异常需要即时反馈时
+  /// 显式传 [OgLNoticeDelivery.inAppOnly]（或 [auto] / [allChannels]）。
   void report({
     required String title,
     String? detail,
     OgLNoticeSeverity severity = OgLNoticeSeverity.warning,
-    OgLNoticeDelivery delivery = OgLNoticeDelivery.auto,
+    OgLNoticeDelivery delivery = OgLNoticeDelivery.logOnly,
   }) {
     // 去重在前：相同的 `title + detail` 已在待展示队列里时，**直接返回** ——
     // 既不再入队，也不重复落盘。否则同一个异常每帧上报会把磁盘日志刷爆，
@@ -134,18 +140,14 @@ class OgLNoticeCenter extends ChangeNotifier {
         return;
       }
     }
-    // 落盘在后：走到这里的都是**新的**通知；它可能因为"正在弹窗"而延后
-    // 展示，但绝不允许丢失（磁盘留痕）。
-    OgLLogFile.line(
+    // 所有通知一律进应用日志（收纳视图可见），无论是否即时弹窗。
+    OgLAppLog.instance.add(
       _t('notification'),
       detail == null || detail.isEmpty ? title : '$title：$detail',
-      level: severity == OgLNoticeSeverity.critical
-          ? 'ERR'
-          : severity == OgLNoticeSeverity.warning
-              ? 'WARN'
-              : 'INFO',
+      severity: severity,
     );
-    if (_pending.length >= maxPending) {
+    if (delivery != OgLNoticeDelivery.logOnly &&
+        _pending.length >= maxPending) {
       final dropIndex = _pending.indexWhere(
         (OgLNotice n) => n.severity != OgLNoticeSeverity.critical,
       );
@@ -157,7 +159,10 @@ class OgLNoticeCenter extends ChangeNotifier {
       severity: severity,
       delivery: delivery,
     );
-    _pending.add(notice);
+    // logOnly 只落日志与历史，不进待展示队列（不弹窗 / 不横幅）。
+    if (delivery != OgLNoticeDelivery.logOnly) {
+      _pending.add(notice);
+    }
     _history.insert(0, notice);
     while (_history.length > 200) {
       _history.removeLast();

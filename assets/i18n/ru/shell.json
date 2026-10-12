@@ -65,5 +65,6 @@
   "minimizeWindow": "Свернуть",
   "maximizeWindow": "Развернуть",
   "restoreWindow": "Восстановить",
-  "closeWindow": "Закрыть"
+  "closeWindow": "Закрыть",
+  "tools": "Инструменты"
 }

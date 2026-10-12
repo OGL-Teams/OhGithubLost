@@ -234,6 +234,7 @@ class GhRequest {
     this.headers = const <String, String>{},
     this.conflictsAsRemoteConflict = false,
     this.cacheBypass = false,
+    this.expectedAccountId,
   });
 
   /// 路径（`/repos/...`）或完整 URL。
@@ -263,6 +264,9 @@ class GhRequest {
 
   /// 本次请求是否**绕过只读缓存**（下拉刷新 / 写后重读时置真）。
   final bool cacheBypass;
+
+  /// 排队期间切换账号时，拒绝把旧账号的通知操作发给新账号。
+  final String? expectedAccountId;
 
   /// 拼出完整 URL。
   String toUrl(String base) {
@@ -512,7 +516,9 @@ class GhClient {
     // ── 只读缓存（R4）：命中即返回，不打网络、不占额度 ──────────────────
     // 仅对白名单内的 GET 生效；被显式 bypass（下拉刷新 / 写后重读）时跳过。
     final Duration? cacheTtl =
-        (request.method == NetMethod.get && !request.cacheBypass)
+        (request.method == NetMethod.get &&
+                !request.cacheBypass &&
+                request.expectedAccountId == null)
             ? ttlForPath(request.path)
             : null;
     if (cacheTtl != null) {
@@ -548,7 +554,19 @@ class GhClient {
 
     await _semaphore.acquire();
     try {
-      final token = await _auth.activeToken();
+      // 账号绑定通道：通知等写操作必须发往发起时的账号，排队期间切号即拒绝。
+      final String? expected = request.expectedAccountId;
+      if (expected != null &&
+          await _auth.activeAccountId() != expected) {
+        throw const GhAuthException('accountChanged');
+      }
+      final token = expected == null
+          ? await _auth.activeToken()
+          : await _auth.tokenFor(expected);
+      if (expected != null &&
+          (token == null || await _auth.activeAccountId() != expected)) {
+        throw const GhAuthException('accountChanged');
+      }
       final headers = <String, String>{
         'accept': 'application/vnd.github+json',
         'x-github-api-version': '2022-11-28',

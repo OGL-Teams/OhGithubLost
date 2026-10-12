@@ -65,5 +65,6 @@
   "minimizeWindow": "Réduire",
   "maximizeWindow": "Agrandir",
   "restoreWindow": "Restaurer",
-  "closeWindow": "Fermer"
+  "closeWindow": "Fermer",
+  "tools": "Outils"
 }

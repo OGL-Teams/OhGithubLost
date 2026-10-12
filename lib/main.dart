@@ -83,6 +83,7 @@ void main() async {
       title: '界面异常',
       detail: details.exceptionAsString(),
       severity: OgLNoticeSeverity.critical,
+      delivery: OgLNoticeDelivery.inAppOnly,
     );
   };
   // 2) 平台/异步未捕获异常：返回 true 表示"已处理"（已呈现给用户），
@@ -94,6 +95,7 @@ void main() async {
       title: '未捕获异常',
       detail: error.toString(),
       severity: OgLNoticeSeverity.critical,
+      delivery: OgLNoticeDelivery.inAppOnly,
     );
     return true;
   };

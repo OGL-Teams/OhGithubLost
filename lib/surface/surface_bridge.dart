@@ -13,6 +13,8 @@
 /// 设置里的明暗偏好 + 系统亮度 → 唯一一次 `ThemeData` 编译。
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../base/base_bridge.dart';
@@ -25,6 +27,7 @@ import '../domain/domain_bridge.dart';
 import '../domain/gh/repo_file_service.dart';
 import '../kernel/bridge_registry.dart';
 import '../kernel/contract/module.dart';
+import '../platform/platform.dart';
 import 'app/error_surface.dart';
 import 'app/motion.dart';
 import 'i18n/og_l_i18n.dart';
@@ -91,6 +94,92 @@ class SurfaceBridge {
     } catch (error) {
       debugPrint('OGL 界面偏好写入失败：$key -> $error');
     }
+  }
+
+  // ── AI 助手与 GitHub 生产力服务门面 ──────────────────────────────────
+  /// AI 与体验服务在真实装配时提供；页面不直接依赖领域实现。
+  bool get hasAi => domain.ai != null;
+  bool get isDesktop => ogLIsDesktopPlatform;
+
+  Future<AiSettings> aiSettings() => domain.ai!.settings();
+  Future<bool> aiHasKey({AiSettings? config}) =>
+      domain.ai!.hasKey(config: config);
+  Future<void> aiSaveSettings(
+    AiSettings value, {
+    String? key,
+    bool clearKey = false,
+  }) =>
+      domain.ai!.saveSettings(value, key: key, clearKey: clearKey);
+  Future<List<String>> aiDetectModels({String? key, AiSettings? config}) =>
+      domain.ai!.detectModels(key: key, config: config);
+  Future<List<AiConversation>> aiConversations() => domain.ai!.conversations();
+  Future<AiConversation> aiNewChat({String repo = '', String branch = ''}) =>
+      domain.ai!.newConversation(repo: repo, branch: branch);
+  Future<void> aiDeleteChat(String id) => domain.ai!.deleteConversation(id);
+  Future<void> aiSend(
+    AiConversation chat,
+    String text,
+    AiConfirmation confirm,
+  ) =>
+      domain.ai!.send(chat, text, confirm);
+  Future<List<Map<String, dynamic>>> aiAudit() => domain.ai!.audit();
+  Future<Map<String, dynamic>> aiRollback(
+    Map<String, dynamic> entry,
+    AiConfirmation confirm,
+  ) =>
+      domain.ai!.rollback(entry, confirm);
+
+  final ValueNotifier<int> aiBuildChanges = ValueNotifier<int>(0);
+
+  Future<List<Map<String, dynamic>>> aiPollBuilds() async {
+    final List<Map<String, dynamic>> builds = await domain.ai!.pollBuilds();
+    if (builds.isNotEmpty) {
+      aiBuildChanges.value++;
+    }
+    return builds;
+  }
+
+  Future<List<Map<String, dynamic>>> githubNotifications({
+    int page = 1,
+    bool all = false,
+  }) =>
+      domain.productivity!.notifications(page: page, all: all);
+  Future<void> markGithubNotificationRead(String id) =>
+      domain.productivity!.markRead(id);
+  Future<void> markAllGithubNotificationsRead() =>
+      domain.productivity!.markAllNotificationsRead();
+  Future<Map<String, dynamic>> githubNotificationSubject(
+    String repo,
+    String url,
+  ) =>
+      domain.productivity!.notificationSubject(repo, url);
+  Future<Map<String, dynamic>> starMetadata() => domain.productivity!.starMetadata();
+  Future<void> organizeStar(String repo, String category, List<String> tags) =>
+      domain.productivity!.organizeStar(repo, category, tags);
+  Future<Map<String, dynamic>> repoWatches() => domain.productivity!.watches();
+  Future<void> watchRepo(String repo, bool enabled) =>
+      domain.productivity!.setWatch(repo, enabled);
+  Future<List<Map<String, dynamic>>> pollRepoUpdates() =>
+      domain.productivity!.pollUpdates();
+  Future<Map<String, dynamic>> monthlyContributions(
+    String login,
+    DateTime month,
+  ) =>
+      domain.productivity!.contributions(login, month);
+
+  /// 产物下载复用原有鉴权与下载队列，不把临时地址交给 AI。
+  Future<void> downloadAiArtifact(Map<String, dynamic> artifact) async {
+    final String repo = artifact['repo'] as String;
+    final int id = artifact['id'] as int;
+    final String first = domain.api.artifactDownloadUrl(repo, id);
+    final String direct = await resolveDownloadUrl(first);
+    await domain.downloads.enqueue(
+      url: direct,
+      headers: direct == first ? await downloadAuthHeaders() : const {},
+      fileName: '${artifact['name']}.zip',
+      category: IxDownloadCategory.artifact,
+      connections: settings.settings.downloadConnections,
+    );
   }
 
   /// 探测存储是否可用（无探针时按可用处理）。

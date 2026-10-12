@@ -17,6 +17,7 @@ import 'drafts_page.dart';
 import 'gists_page.dart';
 import 'login_page.dart';
 import 'repo_page.dart';
+import 'settings_page.dart';
 
 /// 取 `profile_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) =>
@@ -257,6 +258,22 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // 设置入口（设置已合并到"我的"页）
+            Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              child: ListTile(
+                leading: const Icon(Icons.settings_outlined),
+                title: Text(OgLI18n.instance.t('shell', 'settings')),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => SettingsPage(surface: widget.surface),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),

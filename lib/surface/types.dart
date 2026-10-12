@@ -14,6 +14,8 @@
 /// 新增页面若要暴露新的领域类型，**请改这个文件**，而不是把 domain 路径写进页面。
 library;
 
+/// AI：仅导出数据模型与异常，业务服务经桥调用，隐藏 `AiService` 实现。
+export '../domain/ai/ai_models.dart';
 /// 账户：仅暴露状态枚举与账户 DTO，**隐藏** `GhAuthService`。
 export '../domain/gh/gh_auth.dart' hide GhAuthService;
 /// 客户端：仅暴露异常类型，**隐藏** `GhClient` 与限流快照的内部构造。

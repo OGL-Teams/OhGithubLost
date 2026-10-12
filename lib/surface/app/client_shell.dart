@@ -18,20 +18,26 @@ import 'package:flutter/services.dart';
 
 import '../../kernel/kernel.dart';
 import '../i18n/og_l_i18n.dart';
+import '../pages/ai_chat_page.dart';
+import '../pages/ai_settings_page.dart';
+import '../pages/contributions_page.dart';
 import '../pages/dashboard_page.dart';
+import '../pages/github_notifications_page.dart';
 import '../pages/login_page.dart';
 import '../pages/onboarding_page.dart';
 import '../pages/profile_page.dart';
 import '../pages/search_page.dart';
 import '../pages/settings_page.dart';
+import '../pages/star_manager_page.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../widgets/anim/anim_preload.dart';
 import 'animations.dart';
 import 'back_guard.dart';
 import 'error_surface.dart';
+import 'system_notifier.dart';
 
-/// 壳内的四个页面（导航值）。
+/// 壳内的页面导航值（首页 / 搜索 / AI / 我的；设置从"我的"进入）。
 enum OgLShellTab {
   /// 首页（我的仓库 / 星标）。
   home,
@@ -39,11 +45,11 @@ enum OgLShellTab {
   /// 搜索（仓库 / 代码）。
   search,
 
-  /// 我的（账户 / Gist / 危险区）。
-  profile,
+  /// AI 助手。
+  ai,
 
-  /// 设置（外观 / 网络 / 账户 / 关于）。
-  settings,
+  /// 我的（账户 / Gist / 设置 / 危险区）。
+  profile,
 }
 
 /// 客户端主壳（含登录门）。
@@ -71,6 +77,12 @@ class _OgLClientShellState extends State<OgLClientShell> {
   bool _guest = false;
   String? _accountId;
 
+  /// AI 构建 / 关注仓库更新轮询（仅装配了 AI 服务时启用）。
+  Timer? _pollTimer;
+  bool _polling = false;
+  int _pollTick = 0;
+  String? _lastPollError;
+
   /// 是否已完成首次引导（设置在 `runApp` 之前已加载，直接读取即可）。
   bool _onboardingDone = false;
 
@@ -84,13 +96,149 @@ class _OgLClientShellState extends State<OgLClientShell> {
     // ★ 认证是全局可观察状态：登录 / 失效 / 切号 / 登出都自动联动。
     widget.surface.domain.auth.addListener(_onAuthChanged);
     _check();
+    if (widget.surface.hasAi) {
+      _pollTimer = Timer.periodic(
+        const Duration(seconds: 30),
+        (_) => unawaited(_pollEvents(updates: _pollTick++ % 10 == 0)),
+      );
+    }
   }
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
     widget.surface.domain.auth.removeListener(_onAuthChanged);
     super.dispose();
   }
+
+  /// 运行中检查；应用被系统终止时不承诺实时通知，恢复后下一轮补查。
+  Future<void> _pollEvents({bool updates = false}) async {
+    if (_polling || !widget.surface.hasAi || _accountId == null) {
+      return;
+    }
+    _polling = true;
+    try {
+      final List<Map<String, dynamic>> builds =
+          await widget.surface.aiPollBuilds();
+      for (final Map<String, dynamic> build in builds) {
+        final Map<dynamic, dynamic> run =
+            build['run'] as Map<dynamic, dynamic>;
+        final bool success = run['conclusion'] == 'success';
+        final String text = aiText(success ? 'buildReady' : 'buildFailed');
+        OgLAppLog.instance
+            .add(aiText('title'), '${build['repo']} · $text');
+        await OgLSystemNotifier.instance.show(
+          title: text,
+          body: '${build['repo']}',
+        );
+      }
+      if (updates) {
+        final List<Map<String, dynamic>> changes =
+            await widget.surface.pollRepoUpdates();
+        for (final Map<String, dynamic> change in changes) {
+          final String text = aiText(
+            change['release'] == true ? 'newRelease' : 'newCommit',
+          );
+          OgLAppLog.instance
+              .add(aiText('watch'), '${change['repo']} · $text');
+          await OgLSystemNotifier.instance.show(
+            title: text,
+            body: '${change['repo']}',
+          );
+        }
+      }
+      _lastPollError = null;
+    } catch (error) {
+      final String text = aiError(error);
+      if (_lastPollError != text) {
+        _lastPollError = text;
+        OgLAppLog.instance.add(
+          aiText('notifications'),
+          text,
+          severity: OgLNoticeSeverity.warning,
+        );
+      }
+    } finally {
+      _polling = false;
+    }
+  }
+
+  void _openFeature(Widget page) => Navigator.push<void>(
+        context,
+        MaterialPageRoute<void>(builder: (_) => page),
+      );
+
+  /// 抽屉只放扩展工具（GitHub 通知 / 星标管理 / 贡献统计）。
+  Widget? _drawer() => !widget.surface.hasAi
+      ? null
+      : Drawer(
+          child: SafeArea(
+            child: Column(
+              children: <Widget>[
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                        child: Text(
+                          OgLI18n.instance.t('shell', 'tools'),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.notifications_outlined),
+                        title: Text(aiText('notifications')),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        onTap: () {
+                          _scaffoldKey.currentState?.closeDrawer();
+                          _openFeature(
+                            GithubNotificationsPage(surface: widget.surface),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.label_outline),
+                        title: Text(aiText('stars')),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        onTap: () {
+                          _scaffoldKey.currentState?.closeDrawer();
+                          _openFeature(
+                            StarManagerPage(surface: widget.surface),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.bar_chart),
+                        title: Text(aiText('contributions')),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        onTap: () {
+                          _scaffoldKey.currentState?.closeDrawer();
+                          _openFeature(
+                            ContributionsPage(surface: widget.surface),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
 
   void _onAuthChanged() {
     if (mounted) {
@@ -228,8 +376,11 @@ class _OgLClientShellState extends State<OgLClientShell> {
         );
       case OgLShellTab.profile:
         return ProfilePage(surface: widget.surface, onAccountsChanged: _check);
-      case OgLShellTab.settings:
-        return SettingsPage(surface: widget.surface, report: widget.report);
+      case OgLShellTab.ai:
+        return AiChatPage(
+          key: ValueKey<String>('ai-${_accountId ?? 'guest'}'),
+          surface: widget.surface,
+        );
     }
   }
 
@@ -306,6 +457,7 @@ class _OgLClientShellState extends State<OgLClientShell> {
     if (width < 600) {
       return Scaffold(
         key: _scaffoldKey,
+        drawer: _drawer(),
         body: body,
         bottomNavigationBar: NavigationBar(
           selectedIndex: index,
@@ -321,15 +473,16 @@ class _OgLClientShellState extends State<OgLClientShell> {
               icon: const Icon(Icons.search),
               label: OgLI18n.instance.t('shell', 'search'),
             ),
+            if (widget.surface.hasAi)
+              NavigationDestination(
+                icon: const Icon(Icons.auto_awesome_outlined),
+                selectedIcon: const Icon(Icons.auto_awesome),
+                label: 'AI',
+              ),
             NavigationDestination(
               icon: const Icon(Icons.person_outline),
               selectedIcon: const Icon(Icons.person),
               label: OgLI18n.instance.t('shell', 'profile'),
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.settings_outlined),
-              selectedIcon: const Icon(Icons.settings),
-              label: OgLI18n.instance.t('shell', 'settings'),
             ),
           ],
         ),
@@ -340,9 +493,17 @@ class _OgLClientShellState extends State<OgLClientShell> {
     final bool extended = width >= 1200;
     return Scaffold(
       key: _scaffoldKey,
+      drawer: _drawer(),
       body: Row(
         children: <Widget>[
           NavigationRail(
+            leading: widget.surface.hasAi
+                ? IconButton(
+                    tooltip: aiText('menu'),
+                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                    icon: const Icon(Icons.menu),
+                  )
+                : null,
             selectedIndex: index,
             onDestinationSelected: (int value) =>
                 _select(OgLShellTab.values[value]),
@@ -360,14 +521,14 @@ class _OgLClientShellState extends State<OgLClientShell> {
                 label: Text(OgLI18n.instance.t('shell', 'search')),
               ),
               NavigationRailDestination(
+                icon: const Icon(Icons.auto_awesome_outlined),
+                selectedIcon: const Icon(Icons.auto_awesome),
+                label: const Text('AI'),
+              ),
+              NavigationRailDestination(
                 icon: const Icon(Icons.person_outline),
                 selectedIcon: const Icon(Icons.person),
                 label: Text(OgLI18n.instance.t('shell', 'profile')),
-              ),
-              NavigationRailDestination(
-                icon: const Icon(Icons.settings_outlined),
-                selectedIcon: const Icon(Icons.settings),
-                label: Text(OgLI18n.instance.t('shell', 'settings')),
               ),
             ],
           ),

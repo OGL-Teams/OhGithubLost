@@ -12,6 +12,8 @@ analyzer:
     dead_code: error
     missing_required_param: error
     missing_return: error
+  exclude:
+    - build/**
 
 linter:
   rules:
