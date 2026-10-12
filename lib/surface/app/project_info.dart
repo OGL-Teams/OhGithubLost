@@ -27,10 +27,10 @@ abstract final class OgLProjectInfo {
   static const String abbreviation = 'OGL';
 
   /// 主要开发者。
-  static const String mainDeveloper = 'yingo-server';
+  static const String mainDeveloper = 'OGL-Teams';
 
   /// 仓库所属账号。
-  static const String repoOwner = 'yingo-server';
+  static const String repoOwner = 'OGL-Teams';
 
   /// 仓库名称。
   static const String repoName = 'OhGithubLost';
