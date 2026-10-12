@@ -34,11 +34,19 @@ jobs:
         run: |
           flutter create --platforms=android --project-name ohgithublost .
           rm -f test/widget_test.dart
-          # permission_handler_android requires compileSdk 37
-          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 37/' android/app/build.gradle.kts
-          # flutter_local_notifications requires core library desugaring
-          sed -i 's/isCoreLibraryDesugaringEnabled = false/isCoreLibraryDesugaringEnabled = true/' android/app/build.gradle.kts
-          echo '    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")' >> android/app/build.gradle.kts
+          python3 <<'PYEOF'
+          import re
+          p = 'android/app/build.gradle.kts'
+          s = open(p).read()
+          # compileSdk 37
+          s = s.replace('compileSdk = flutter.compileSdkVersion', 'compileSdk = 37')
+          # enable desugaring
+          s = s.replace('isCoreLibraryDesugaringEnabled = false', 'isCoreLibraryDesugaringEnabled = true')
+          # add desugar dependency inside dependencies block
+          s = s.replace('dependencies {', 'dependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")')
+          open(p,'w').write(s)
+          print(open(p).read())
+          PYEOF
 
       - name: Analyze
         run: flutter analyze
