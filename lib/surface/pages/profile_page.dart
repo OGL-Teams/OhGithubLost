@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 
 import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -101,10 +102,8 @@ class _ProfilePageState extends State<ProfilePage> {
         return;
       }
       if (!ok) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_t('noTokenSwitch', {'login': account.login})),
-          ),
+        OgLNotifier.of(context).warning(
+          _t('noTokenSwitch', {'login': account.login}),
         );
         return;
       }
@@ -122,8 +121,8 @@ class _ProfilePageState extends State<ProfilePage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('switchFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('switchFailed', {'error': error}),
         );
       }
     }
@@ -168,8 +167,8 @@ class _ProfilePageState extends State<ProfilePage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('removeFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('removeFailed', {'error': error}),
         );
       }
     }

@@ -146,8 +146,8 @@ void main() {
 
     expect(report.infos, isEmpty);
     expect(report.allReady, isTrue); // 没有实测结果 = 不误报
-    final KernelLogEntry entry =
-        diag.logTail.firstWhere((KernelLogEntry e) => e.level == KernelLogLevel.error);
+    final KernelLogEntry entry = diag.logTail
+        .firstWhere((KernelLogEntry e) => e.level == KernelLogLevel.error);
     expect(entry.code, kOgLPermSelfTestFailed);
   });
 

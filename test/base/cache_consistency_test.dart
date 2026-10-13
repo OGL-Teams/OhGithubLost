@@ -88,7 +88,8 @@ class FakeCacheRemote implements CacheRemote {
       if (_forcedConflicts > 0) {
         _forcedConflicts--;
         conflictCount++;
-        throw RemoteConflictException(statusCode: 409, currentSha: current?.sha);
+        throw RemoteConflictException(
+            statusCode: 409, currentSha: current?.sha);
       }
       if (expectedSha != null &&
           current != null &&
@@ -310,7 +311,9 @@ void main() {
       // 只有第一个持有有效基线：其余因为基线过期被 D2 拦下，而不是被覆盖。
       expect(outcomes.where((outcome) => outcome.ok).length, 1);
       expect(
-        outcomes.where((outcome) => outcome.conflict == WriteConflict.staleSha).length,
+        outcomes
+            .where((outcome) => outcome.conflict == WriteConflict.staleSha)
+            .length,
         4,
       );
     });
@@ -490,8 +493,7 @@ void main() {
   group('异常必须转成结果（绝不外抛）', () {
     test('写入期网络异常 → WriteOutcome.failure，而非抛出异常', () async {
       remote.seed(_keyA, 'remote-v1', 'sha-v1');
-      remote.writeError =
-          const NetException(NetErrorKind.connection, '断网');
+      remote.writeError = const NetException(NetErrorKind.connection, '断网');
 
       final outcome = await cache.write(
         const WriteIntent(

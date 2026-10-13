@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -292,9 +293,8 @@ class _DashboardPageState extends State<DashboardPage> {
       return;
     }
     OgLAppLog.instance.result(_t('home'), _t('repoCreated'), created.fullName);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(_t('repoCreatedName', {'name': created.fullName}))),
+    OgLNotifier.of(context).success(
+      _t('repoCreatedName', {'name': created.fullName}),
     );
     await _mine.refresh();
     if (mounted) {

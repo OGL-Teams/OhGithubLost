@@ -17,6 +17,7 @@ import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import 'gist_detail_page.dart';
 import 'new_gist_page.dart';
+import '../app/notifier.dart';
 
 /// 取 `gists_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -87,9 +88,7 @@ class _GistsPageState extends State<GistsPage> {
     final String id = ghStr(gist, 'id');
     if (id.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('missingId'))),
-        );
+        OgLNotifier.of(context).info(_t('missingId');
       }
       return;
     }
@@ -113,9 +112,7 @@ class _GistsPageState extends State<GistsPage> {
       ),
     );
     if (created == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('created'))),
-      );
+      OgLNotifier.of(context).info(_t('created');
       await _gistsC().load();
     }
   }
@@ -124,9 +121,7 @@ class _GistsPageState extends State<GistsPage> {
     final String url = ghStr(gist, 'html_url');
     if (url.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('noOpenLink'))),
-        );
+        OgLNotifier.of(context).info(_t('noOpenLink');
       }
       return;
     }

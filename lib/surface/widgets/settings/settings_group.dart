@@ -164,7 +164,7 @@ class OgLSettingsGroup extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     return Card(
       clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[

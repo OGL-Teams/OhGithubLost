@@ -47,6 +47,7 @@ import 'new_issue_page.dart';
 import 'new_release_page.dart';
 import 'pull_page.dart';
 import 'release_detail_page.dart';
+import '../util/clipboard_x.dart';
 import 'workflow_dispatch_page.dart';
 
 /// 取 `repo` 分片文案。
@@ -287,8 +288,7 @@ class _RepoPageState extends State<RepoPage> {
   }
 
   Future<void> _copyCloneUrl() async {
-    await Clipboard.setData(
-        ClipboardData(text: 'https://github.com/$_full.git'));
+    await ogLCopyText('https://github.com/$_full.git', tag: '克隆链接');
     _notifier.success(_t('cloneUrlCopied'));
   }
 
@@ -1686,7 +1686,7 @@ class _CodeTabState extends State<_CodeTab> {
         actions: <Widget>[
           TextButton(
             onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: entry.path));
+              await ogLCopyText(entry.path, tag: '路径');
               if (dialogContext.mounted) {
                 Navigator.of(dialogContext).pop();
                 _notifier.success(_t('pathCopied'));
@@ -2032,7 +2032,7 @@ class _CodeTabState extends State<_CodeTab> {
   Future<void> _deleteFromFile(GhContent file) => _deleteEntry(file);
 
   Future<void> _copyPath(String path) async {
-    await Clipboard.setData(ClipboardData(text: path));
+    await ogLCopyText(path, tag: '路径');
     _notifier.success(_t('pathCopied'));
   }
 
@@ -2392,9 +2392,7 @@ class _IssuesTabState extends State<_IssuesTab> {
       ),
     );
     if (created == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('issueCreated'))),
-      );
+      OgLNotifier.of(context).info(_t('issueCreated');
       await _paged.refresh();
     }
   }
@@ -2427,9 +2425,8 @@ class _IssuesTabState extends State<_IssuesTab> {
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('closeFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('closeFailed', {'error': error});
       }
     }
   }
@@ -2704,9 +2701,8 @@ class _ReleasesTabState extends State<_ReleasesTab> {
       ),
     );
     if (created != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('releaseCreated', {'tag': created.tagName}))),
-      );
+      
+        OgLNotifier.of(context).warning(_t('releaseCreated', {'tag': created.tagName});
       await _paged.refresh();
     }
   }
@@ -2891,9 +2887,8 @@ class _BranchesTabState extends State<_BranchesTab> {
       widget.onBranchChanged();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('branchCreateFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('branchCreateFailed', {'error': error});
       }
     }
   }
@@ -2933,9 +2928,8 @@ class _BranchesTabState extends State<_BranchesTab> {
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('branchRenameFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('branchRenameFailed', {'error': error});
       }
     }
   }
@@ -2972,9 +2966,8 @@ class _BranchesTabState extends State<_BranchesTab> {
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('branchDeleteFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('branchDeleteFailed', {'error': error});
       }
     }
   }
@@ -3192,9 +3185,7 @@ class _ActionsTabState extends State<_ActionsTab> {
       ),
     );
     if (triggered == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('workflowTriggered'))),
-      );
+      OgLNotifier.of(context).info(_t('workflowTriggered');
       await _paged.refresh();
     }
   }
@@ -3472,15 +3463,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       OgLAppLog.instance.result('仓库', _t('basicInfoUpdated'), _full);
       if (mounted) {
         widget.onRepoChanged(updated);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('saved'))),
-        );
+        OgLNotifier.of(context).success(_t('saved');
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('saveFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('saveFailed', {'error': error});
       }
     } finally {
       if (mounted) {
@@ -3495,9 +3483,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
     }
     final String domain = _cname.text.trim();
     if (domain.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('domainRequired'))),
-      );
+      OgLNotifier.of(context).info(_t('domainRequired');
       return;
     }
     setState(() => _busy = true);
@@ -3524,13 +3510,11 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
         );
         if (!result.ok) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(_t('cnameSaveFailed', {
-                  'error':
-                      result.detail ?? ghWriteConflictText(result.conflict),
-                })),
-              ),
+            OgLNotifier.of(context).warning(
+              _t('cnameSaveFailed', {
+                'error':
+                    result.detail ?? ghWriteConflictText(result.conflict),
+              }),
             );
           }
           return;
@@ -3538,15 +3522,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       }
       OgLAppLog.instance.result('仓库', _t('cnameSaved'), domain);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('cnameSavedShort'))),
-        );
+        OgLNotifier.of(context).success(_t('cnameSavedShort');
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('cnameSaveFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('cnameSaveFailed', {'error': error});
       }
     } finally {
       if (mounted) {
@@ -3566,15 +3547,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       OgLAppLog.instance.result('仓库', _t('pagesEnabled'), _full);
       if (mounted) {
         setState(() => _pagesFuture = _loadPages());
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('pagesEnabledHint'))),
-        );
+        OgLNotifier.of(context).info(_t('pagesEnabledHint');
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('enableFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('enableFailed', {'error': error});
       }
     } finally {
       if (mounted) {
@@ -3593,15 +3571,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       OgLAppLog.instance.result('仓库', _t('pagesDisabledHint'), _full);
       if (mounted) {
         setState(() => _pagesFuture = _loadPages());
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('pagesDisabledHint'))),
-        );
+        OgLNotifier.of(context).info(_t('pagesDisabledHint');
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('disableFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('disableFailed', {'error': error});
       }
     } finally {
       if (mounted) {
@@ -3644,9 +3619,8 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('branchDeleteFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('branchDeleteFailed', {'error': error});
       }
     }
   }

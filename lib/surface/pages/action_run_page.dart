@@ -127,9 +127,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
       OgLAppLog.instance
           .result('Actions', _t('rerunTriggered'), '#${widget.runId}');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('rerunTriggered'))),
-        );
+        OgLNotifier.of(context).info(_t('rerunTriggered'));
       }
       await _detailC().load();
     } catch (error) {
@@ -139,8 +137,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('rerunFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('rerunFailed', {'error': error}),
         );
       }
     } finally {
@@ -188,8 +186,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('cancelFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('cancelFailed', {'error': error}),
         );
       }
     } finally {

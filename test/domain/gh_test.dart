@@ -77,9 +77,19 @@ void main() {
         'truncated': true,
         'tree': <Map<String, dynamic>>[
           <String, dynamic>{'path': 'src', 'type': 'tree', 'sha': 'a'},
-          <String, dynamic>{'path': 'src/main.dart', 'type': 'blob', 'sha': 'b', 'size': 10},
+          <String, dynamic>{
+            'path': 'src/main.dart',
+            'type': 'blob',
+            'sha': 'b',
+            'size': 10
+          },
           <String, dynamic>{'path': 'src/ui', 'type': 'tree', 'sha': 'c'},
-          <String, dynamic>{'path': 'README.md', 'type': 'blob', 'sha': 'd', 'size': 5},
+          <String, dynamic>{
+            'path': 'README.md',
+            'type': 'blob',
+            'sha': 'd',
+            'size': 5
+          },
         ],
       });
 
@@ -266,11 +276,15 @@ void main() {
     });
 
     test('账号序列化不含任何令牌痕迹', () {
-      const account = GhAccount(id: '1', login: 'alice', scopes: <String>['repo']);
+      const account =
+          GhAccount(id: '1', login: 'alice', scopes: <String>['repo']);
       final json = jsonEncode(account.toJson());
       expect(json.contains('token'), isFalse);
       expect(account.canWrite, isTrue);
-      expect(const GhAccount(id: '2', login: 'b', scopes: <String>['public_repo']).canWrite, isFalse);
+      expect(
+          const GhAccount(id: '2', login: 'b', scopes: <String>['public_repo'])
+              .canWrite,
+          isFalse);
     });
   });
 
@@ -284,7 +298,8 @@ void main() {
       vault = InMemoryVault();
       store = InMemoryKv();
       diagnostics = KernelDiagnostics();
-      auth = GhAuthService(vault: vault, store: store, diagnostics: diagnostics);
+      auth =
+          GhAuthService(vault: vault, store: store, diagnostics: diagnostics);
     });
 
     test('保存后令牌进保险库、元数据进 KV（互不混杂）', () async {

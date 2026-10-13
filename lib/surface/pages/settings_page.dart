@@ -43,6 +43,7 @@ import 'about_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
 import 'onboarding_page.dart';
+import '../../util/clipboard_x.dart';
 
 /// 设置页。
 class SettingsPage extends StatefulWidget {
@@ -443,7 +444,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// 复制全部日志到剪贴板。
   Future<void> _copyLogs(List<String> lines) async {
-    await Clipboard.setData(ClipboardData(text: lines.join('\n')));
+    ogLCopyText(lines.join('\n', tag: '日志');
     if (!mounted) {
       return;
     }
@@ -480,7 +481,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: saveError == null
                     ? const SizedBox(width: double.infinity)
                     : Card(
-                        margin: const EdgeInsets.only(bottom: 10),
+                        margin: const EdgeInsets.only(bottom: 12),
                         color: theme.colorScheme.errorContainer,
                         child: Padding(
                           padding: const EdgeInsets.all(12),
@@ -892,7 +893,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _storageGroup(ThemeData theme, OgLSettings value) => OgLSettingsGroup(
         title: _t('groupStorageNetwork'),
         subtitle: _storageSummary(value),
-        leading: const Icon(Icons.storage),
+        leading: const Icon(Icons.storage_outlined),
         expanded: _isOpen('storage'),
         onToggle: (bool open) => _toggleGroup('storage', open),
         expandLabel: _t('expandGroup'),
@@ -937,7 +938,7 @@ class _SettingsPageState extends State<SettingsPage> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: const Icon(Icons.chevron_right, size: 18),
+        trailing: const Icon(Icons.chevron_right, size: 24),
         onTap: onTap,
       );
 
@@ -1376,7 +1377,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         'accelPrivateWarnPoint3',
                       ])
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
+                          padding: const EdgeInsets.only(bottom: 8),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -1586,7 +1587,7 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 一眼知道"现在是谁登录着"（退出登录在「用户页」，那里才是危险动作的归属地）。
   Widget _accountCard(ThemeData theme) => Card(
         clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[

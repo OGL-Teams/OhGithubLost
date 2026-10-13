@@ -10,6 +10,7 @@ import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../app/notifier.dart';
 
 /// 取 `new_gist_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -100,15 +101,11 @@ class _NewGistPageState extends State<NewGistPage> {
   Future<void> _submit() async {
     final String filename = _filename.text.trim();
     if (filename.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('fileNameRequired'))),
-      );
+      OgLNotifier.of(context).info(_t('fileNameRequired');
       return;
     }
     if (_content.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('contentRequired'))),
-      );
+      OgLNotifier.of(context).info(_t('contentRequired');
       return;
     }
     if (_busy) {
@@ -132,8 +129,8 @@ class _NewGistPageState extends State<NewGistPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('createFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('createFailed', {'error': error}),
         );
       }
     } finally {

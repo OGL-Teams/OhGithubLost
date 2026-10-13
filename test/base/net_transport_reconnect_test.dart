@@ -96,8 +96,7 @@ class _ClosingHttpServer {
 }
 
 void main() {
-  test('连接策略：每个请求都必须声明 connection: close（禁用 keep-alive 复用）',
-      () async {
+  test('连接策略：每个请求都必须声明 connection: close（禁用 keep-alive 复用）', () async {
     final _ClosingHttpServer server = await _ClosingHttpServer.start();
     addTearDown(server.close);
 

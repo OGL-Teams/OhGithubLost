@@ -9,15 +9,17 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../widgets/code_editor_field.dart';
+import '../app/notifier.dart';
 
 /// 取 `gist_detail_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -200,9 +202,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
       );
       OgLAppLog.instance.result('Gist', _t('updated'), file.name);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('saved'))),
-        );
+        OgLNotifier.of(context).success(_t('saved');
       }
       // 控制器可能在 `updateGist` 期间随页面一起被释放（用户退了出去）：
       // 释放后不再 `_detailC().load()` —— 这既避免无谓请求，也避免在已
@@ -217,8 +217,8 @@ class _GistDetailPageState extends State<GistDetailPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('saveFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('saveFailed', {'error': error}),
         );
       }
     } finally {
@@ -266,8 +266,8 @@ class _GistDetailPageState extends State<GistDetailPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('deleteFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('deleteFailed', {'error': error}),
         );
       }
     } finally {
@@ -278,11 +278,9 @@ class _GistDetailPageState extends State<GistDetailPage> {
   }
 
   Future<void> _copy(_GistFile file) async {
-    await Clipboard.setData(ClipboardData(text: file.content));
+    await ogLCopyText(file.content, tag: 'Gist 文件');
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('copiedFile', {'name': file.name}))),
-      );
+      OgLNotifier.of(context).success(_t('copiedFile', {'name': file.name});
     }
   }
 

@@ -23,14 +23,27 @@ void main() {
   group('预览类型判定', () {
     test('位图', () {
       for (final String p in <String>[
-        'a.png', 'a.JPG', 'a.jpeg', 'a.gif', 'a.webp', 'a.bmp', 'a.ico', 'a.avif',
+        'a.png',
+        'a.JPG',
+        'a.jpeg',
+        'a.gif',
+        'a.webp',
+        'a.bmp',
+        'a.ico',
+        'a.avif',
       ]) {
         expect(ogLPreviewKindOf(p), OgLPreviewKind.image, reason: p);
       }
     });
 
     test('音频', () {
-      for (final String p in <String>['a.mp3', 'a.m4a', 'a.wav', 'a.ogg', 'a.flac']) {
+      for (final String p in <String>[
+        'a.mp3',
+        'a.m4a',
+        'a.wav',
+        'a.ogg',
+        'a.flac'
+      ]) {
         expect(ogLPreviewKindOf(p), OgLPreviewKind.audio, reason: p);
       }
     });
@@ -41,14 +54,26 @@ void main() {
 
     test('XML 家族', () {
       for (final String p in <String>[
-        'a.xml', 'a.xsd', 'a.xsl', 'a.plist', 'a.csproj', 'a.vcxproj', 'a.xaml',
+        'a.xml',
+        'a.xsd',
+        'a.xsl',
+        'a.plist',
+        'a.csproj',
+        'a.vcxproj',
+        'a.xaml',
       ]) {
         expect(ogLPreviewKindOf(p), OgLPreviewKind.xml, reason: p);
       }
     });
 
     test('未知类型不提供预览', () {
-      for (final String p in <String>['a.dart', 'a.md', 'a.json', 'noext', '']) {
+      for (final String p in <String>[
+        'a.dart',
+        'a.md',
+        'a.json',
+        'noext',
+        ''
+      ]) {
         expect(ogLPreviewKindOf(p), OgLPreviewKind.unknown, reason: p);
       }
     });

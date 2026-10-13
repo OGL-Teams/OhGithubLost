@@ -10,10 +10,45 @@ import 'package:ohgithublost/kernel/diagnostics.dart';
 
 /// 一份手工构造的合法响应：`a.com → 1.2.3.4`（含压缩指针）。
 const List<int> _cannedResponse = <int>[
-  0x12, 0x34, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
-  0x01, 0x61, 0x03, 0x63, 0x6F, 0x6D, 0x00, 0x00, 0x01, 0x00, 0x01,
-  0xC0, 0x0C, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x3C, 0x00, 0x04,
-  0x01, 0x02, 0x03, 0x04,
+  0x12,
+  0x34,
+  0x81,
+  0x80,
+  0x00,
+  0x01,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x61,
+  0x03,
+  0x63,
+  0x6F,
+  0x6D,
+  0x00,
+  0x00,
+  0x01,
+  0x00,
+  0x01,
+  0xC0,
+  0x0C,
+  0x00,
+  0x01,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x00,
+  0x3C,
+  0x00,
+  0x04,
+  0x01,
+  0x02,
+  0x03,
+  0x04,
 ];
 
 /// 固定应答的 UDP 通道。
@@ -86,13 +121,15 @@ void main() {
       final byId = <String, DnsServer>{
         for (final server in builtinDnsServers) server.id: server,
       };
-      expect(byId.keys, containsAll(<String>[
-        'alidns',
-        'dnspod',
-        'dns114',
-        'cloudflare',
-        'google',
-      ]));
+      expect(
+          byId.keys,
+          containsAll(<String>[
+            'alidns',
+            'dnspod',
+            'dns114',
+            'cloudflare',
+            'google',
+          ]));
       expect(byId['alidns']!.ip, '223.5.5.5');
       expect(byId['dnspod']!.ip, '119.29.29.29');
       expect(byId['dns114']!.ip, '114.114.114.114');
@@ -315,7 +352,8 @@ void main() {
         ),
         resolverFactory: (DnsServer server) => server.id == 'alidns'
             ? _FakeResolver(id: server.id, error: const DnsException('超时'))
-            : _FakeResolver(id: server.id, addresses: const <String>['7.7.7.7']),
+            : _FakeResolver(
+                id: server.id, addresses: const <String>['7.7.7.7']),
       );
       expect(await service.resolve('a.com'), <String>['7.7.7.7']);
     });
@@ -333,14 +371,16 @@ void main() {
                 delay: const Duration(milliseconds: 50),
                 addresses: const <String>['1.1.1.1'],
               )
-            : _FakeResolver(id: server.id, addresses: const <String>['2.2.2.2']),
+            : _FakeResolver(
+                id: server.id, addresses: const <String>['2.2.2.2']),
       );
       expect(await service.resolve('a.com'), <String>['2.2.2.2']);
     });
 
     test('custom 全部失败 → 回退系统解析，并记 warn（绝不静默）', () async {
       final diagnostics = KernelDiagnostics();
-      final system = _FakeResolver(id: 'system', addresses: const <String>['3.3.3.3']);
+      final system =
+          _FakeResolver(id: 'system', addresses: const <String>['3.3.3.3']);
       final service = DnsService(
         policy: DnsPolicy(mode: NetDnsMode.custom, raceServers: false),
         systemResolver: system,
@@ -397,7 +437,8 @@ void main() {
         resolverFactory: (DnsServer server) =>
             _FakeResolver(id: server.id, addresses: const <String>['8.8.4.4']),
       );
-      final result = await DnsProbe(service: service, sampleHost: 'a.com').run();
+      final result =
+          await DnsProbe(service: service, sampleHost: 'a.com').run();
       expect(result.ok, isTrue);
       expect(result.summary, contains('8.8.4.4'));
       expect(result.detail?['mode'], 'custom');
@@ -414,7 +455,8 @@ void main() {
         resolverFactory: (DnsServer server) =>
             _FakeResolver(id: server.id, error: const DnsException('全挂')),
       );
-      final result = await DnsProbe(service: service, sampleHost: 'a.com').run();
+      final result =
+          await DnsProbe(service: service, sampleHost: 'a.com').run();
       expect(result.ok, isFalse);
       expect(result.summary, contains('失败'));
     });

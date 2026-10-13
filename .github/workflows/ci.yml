@@ -57,6 +57,12 @@ jobs:
       - name: 平台注入器自检（幂等 / 缺 why 拒绝）
         run: python3 tool/inject_platform_spec_selftest.py
 
+      # 格式护栏：修「fork 那份 diff 78% 文件被触碰、53% 是空白漂移」类问题。
+      # 必须在 analyze 之前跑——空行/缩进不统一会让后续 review 全是噪音。
+      # 用 CI 镜像里自带的 `dart format --set-exit-if-changed`（无需本地 SDK）。
+      - name: 格式护栏（dart format）
+        run: dart format --set-exit-if-changed --output=none lib/
+
       - name: 静态分析（警告即失败）
         run: flutter analyze --fatal-infos --fatal-warnings
 

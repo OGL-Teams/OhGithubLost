@@ -270,7 +270,8 @@ void main() {
       await guard.grant('mod.b', SysCapability.memory);
 
       expect(await guard.revokeAll('mod.a'), 2);
-      expect(await guard.grantsFor('mod.a'), isNot(contains(SysCapability.memory)));
+      expect(await guard.grantsFor('mod.a'),
+          isNot(contains(SysCapability.memory)));
       expect(await guard.grantsFor('mod.b'), contains(SysCapability.memory));
     });
 
@@ -327,7 +328,8 @@ void main() {
         guarded.grant('mod.c', SysCapability.network),
       ]);
 
-      expect(await guarded.grantsFor('mod.a'), isNot(contains(SysCapability.memory)));
+      expect(await guarded.grantsFor('mod.a'),
+          isNot(contains(SysCapability.memory)));
       expect(await guarded.grantsFor('mod.a'), contains(SysCapability.network));
       expect(await guarded.grantsFor('mod.b'), contains(SysCapability.memory));
       expect(await guarded.grantsFor('mod.c'), contains(SysCapability.network));

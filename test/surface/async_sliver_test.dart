@@ -29,8 +29,9 @@ void main() {
                 controller: controller,
                 emptyIcon: Icons.inbox,
                 itemCountOf: (List<int> rows) => rows.length,
-                itemBuilder: (BuildContext context, List<int> rows, int index) =>
-                    SizedBox(height: 40, child: Text('行 $index')),
+                itemBuilder:
+                    (BuildContext context, List<int> rows, int index) =>
+                        SizedBox(height: 40, child: Text('行 $index')),
               ),
             ],
           ),
@@ -66,8 +67,9 @@ void main() {
                 emptyIcon: Icons.inbox,
                 emptyText: '没有内容',
                 itemCountOf: (List<int> rows) => rows.length,
-                itemBuilder: (BuildContext context, List<int> rows, int index) =>
-                    const SizedBox.shrink(),
+                itemBuilder:
+                    (BuildContext context, List<int> rows, int index) =>
+                        const SizedBox.shrink(),
               ),
             ],
           ),

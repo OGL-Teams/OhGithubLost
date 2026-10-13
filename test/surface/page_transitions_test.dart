@@ -41,8 +41,7 @@ Widget _transition(
 }
 
 void main() {
-  testWidgets('档位 0：不做任何包装（回到 Flutter 之外的"瞬时切换"）',
-      (WidgetTester tester) async {
+  testWidgets('档位 0：不做任何包装（回到 Flutter 之外的"瞬时切换"）', (WidgetTester tester) async {
     late BuildContext context;
     await tester.pumpWidget(
       MaterialApp(

@@ -18,6 +18,7 @@ import '../types.dart';
 import '../util/gh_format.dart';
 import '../widgets/anim/anim_preload.dart';
 import 'repo_page.dart';
+import '../app/notifier.dart';
 
 /// 取 `search_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -263,9 +264,7 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> _open(_SearchHit hit) async {
     final GhRepo? repo = hit.repo;
     if (repo == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('noRepoForResult'))),
-      );
+      OgLNotifier.of(context).info(_t('noRepoForResult');
       return;
     }
     _preloadChildRepoRoute(repo);

@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../app/async.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -552,12 +553,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _t('addDownloadFailed', <String, Object?>{'error': error}),
-            ),
-          ),
+        OgLNotifier.of(context).warning(
+          _t('addDownloadFailed', <String, Object?>{'error': error}),
         );
       }
     } finally {

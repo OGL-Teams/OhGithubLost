@@ -166,7 +166,8 @@ void main() {
         readbackDelay: Duration.zero,
       )..attachJournal(journal);
 
-      final crashed = await first.write(_intent(content: 'new', baseSha: 'sha-old'));
+      final crashed =
+          await first.write(_intent(content: 'new', baseSha: 'sha-old'));
       expect(crashed.ok, isFalse);
       expect(await journal.pendingCount(), 1, reason: '崩溃窗口内必须留下待同步记录');
 
@@ -200,7 +201,8 @@ void main() {
         readbackDelay: Duration.zero,
       )..attachJournal(journal);
 
-      final outcome = await cache.write(_intent(content: 'mine', baseSha: 'sha-old'));
+      final outcome =
+          await cache.write(_intent(content: 'mine', baseSha: 'sha-old'));
       expect(outcome.ok, isFalse);
       expect(outcome.conflict, WriteConflict.verificationFailed);
 
@@ -229,7 +231,8 @@ void main() {
 
       kv.failNextWrite = StateError('磁盘满（模拟）');
 
-      final outcome = await cache.write(_intent(content: 'new', baseSha: 'sha-old'));
+      final outcome =
+          await cache.write(_intent(content: 'new', baseSha: 'sha-old'));
 
       expect(outcome.ok, isFalse);
       expect(
@@ -263,7 +266,8 @@ void main() {
       blobs.truncateSuffix = '.txt'; // 下一次读内容时截半（掉电留下的半截写）
       final again = await cache.read(_key());
 
-      expect(again!.content, 'good-content-0123456789', reason: '坏内容被丢弃后必须回源重取');
+      expect(again!.content, 'good-content-0123456789',
+          reason: '坏内容被丢弃后必须回源重取');
       expect(await cache.localCount(), 1, reason: '索引与内容必须重新自洽，不留脏状态');
     });
   });

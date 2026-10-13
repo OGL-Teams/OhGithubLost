@@ -6,6 +6,7 @@
 /// 3. 刷新失败**不丢旧数据**（softError 提示，内容仍在）；
 /// 4. 并发抑制：上一次没回来之前不重复发请求。
 library;
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';

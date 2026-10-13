@@ -31,6 +31,7 @@ import '../widgets/anim/anim_preload.dart';
 import 'animations.dart';
 import 'back_guard.dart';
 import 'error_surface.dart';
+import '../app/notifier.dart';
 
 /// 壳内的五个页面（导航值）。
 enum OgLShellTab {
@@ -193,12 +194,8 @@ class _OgLClientShellState extends State<OgLClientShell> {
           if (!mounted) {
             return;
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              duration: _backGuard.exitWindow,
-              content: Text(OgLI18n.instance.t('shell', kOgLBackExitHintKey)),
-            ),
-          );
+          OgLNotifier.of(context)
+              .info(OgLI18n.instance.t('shell', kOgLBackExitHintKey));
         case OgLBackAction.exit:
           await SystemNavigator.pop();
       }

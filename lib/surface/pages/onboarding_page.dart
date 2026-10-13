@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 
 import '../app/animations.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../app/permissions.dart';
 import '../i18n/og_l_i18n.dart';
 import '../settings.dart';
@@ -146,14 +147,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
   ) async {
     switch (status) {
       case OgLPermissionStatus.granted:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('ready', {'title': info.title}))),
-        );
+        OgLNotifier.of(context).info(_t('ready', {'title': info.title});
         return;
       case OgLPermissionStatus.notRequired:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('noAuthNeeded', {'title': info.title}))),
-        );
+        OgLNotifier.of(context).info(_t('noAuthNeeded', {'title': info.title});
         return;
       case OgLPermissionStatus.needsUserAction:
       case OgLPermissionStatus.unsupported:

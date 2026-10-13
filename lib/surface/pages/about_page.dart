@@ -10,7 +10,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../kernel/kernel.dart';
@@ -20,6 +19,7 @@ import '../app/permission_selftest.dart';
 import '../app/permissions.dart';
 import '../app/project_info.dart';
 import '../i18n/og_l_i18n.dart';
+import '../util/clipboard_x.dart';
 
 /// 取 `about_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -52,7 +52,7 @@ class AboutPage extends StatelessWidget {
     } catch (error) {
       // 打不开外部浏览器时的兜底：**先真的把链接写进剪贴板**，再提示「已复制」
       // —— 此前只弹提示不复制，属于谎报成功。
-      await Clipboard.setData(ClipboardData(text: url));
+      await ogLCopyText(url, tag: '链接');
       if (context.mounted) {
         _notifier(context).warning(
           _t('copied', {'label': Uri.decodeFull(url)}),
@@ -62,7 +62,7 @@ class AboutPage extends StatelessWidget {
   }
 
   Future<void> _copy(BuildContext context, String text, String label) async {
-    await Clipboard.setData(ClipboardData(text: text));
+    await ogLCopyText(text, tag: label);
     if (!context.mounted) {
       return;
     }

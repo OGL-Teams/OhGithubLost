@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import 'clipboard_x.dart';
 
@@ -60,9 +61,7 @@ Future<void> openLinkOrCopy(BuildContext context, String href,
   final Uri? uri = Uri.tryParse(href);
   if (uri == null || uri.scheme.isEmpty) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('linkInvalid'))),
-      );
+      OgLNotifier.of(context).warning(_t('linkInvalid'));
     }
     return;
   }
@@ -72,8 +71,6 @@ Future<void> openLinkOrCopy(BuildContext context, String href,
   }
   await ogLCopyText(href, tag: tag);
   if (context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_t('linkOpenFailedCopy', {'url': href}))),
-    );
+    OgLNotifier.of(context).info(_t('linkOpenFailedCopy', {'url': href}));
   }
 }

@@ -23,7 +23,8 @@ NetResponse _status(int code) => NetResponse(
       duration: const Duration(milliseconds: 5),
     );
 
-NetRequest _request([String url = 'https://api.github.com/repos']) => NetRequest(
+NetRequest _request([String url = 'https://api.github.com/repos']) =>
+    NetRequest(
       method: NetMethod.get,
       url: url,
     );

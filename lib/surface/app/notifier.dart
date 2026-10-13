@@ -38,6 +38,13 @@ class OgLNotifier {
 
   final ScaffoldMessengerState _messenger;
 
+  /// 从 BuildContext 取 messenger 的便捷方法（无 State 时也可用）。
+  ///
+  /// **不要**在 `await` 之后无 `mounted` 守卫直接调用——必须先判
+  /// `context.mounted`（与本仓库其它直接取 ScaffoldMessenger 的地方同规矩）。
+  static OgLNotifier of(BuildContext context) =>
+      OgLNotifier(ScaffoldMessenger.of(context));
+
   /// 普通提示。
   void info(String message) => _show(message);
 

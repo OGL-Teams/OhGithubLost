@@ -14,8 +14,7 @@ import 'package:ohgithublost/surface/widgets/log_body.dart';
 
 void main() {
   group('OgLLogBody（长日志分块虚拟化）', () {
-    testWidgets('1200 行日志只渲染视口附近的分块（不是全部）',
-        (WidgetTester tester) async {
+    testWidgets('1200 行日志只渲染视口附近的分块（不是全部）', (WidgetTester tester) async {
       final String text = List<String>.generate(
         1200,
         (int i) => 'line $i',
@@ -29,8 +28,7 @@ void main() {
       );
       // 每块 120 行 → 共 10 块；视口只应该构建前几块。
       final int rendered = tester.widgetList<Text>(find.byType(Text)).length;
-      expect(rendered, lessThan(10),
-          reason: '虚拟化失效：一次性构建了全部 $rendered 块');
+      expect(rendered, lessThan(10), reason: '虚拟化失效：一次性构建了全部 $rendered 块');
       expect(rendered, greaterThan(0), reason: '至少渲染首屏');
       // 首行必须在（内容没丢）。
       expect(find.textContaining('line 0'), findsOneWidget);
@@ -81,17 +79,25 @@ void main() {
     test('缺字段 → 默认值；非法值 → 默认值；合法值保留', () {
       expect(OgLSettings.fromJson(null).downloadConnections,
           OgLSettings.kOgLDefaultDownloadConnections);
-      expect(OgLSettings.fromJson(<String, Object?>{'downloadConnections': 3})
-          .downloadConnections, OgLSettings.kOgLDefaultDownloadConnections);
-      expect(OgLSettings.fromJson(<String, Object?>{'downloadConnections': 99})
-          .downloadConnections, OgLSettings.kOgLDefaultDownloadConnections);
-      expect(OgLSettings.fromJson(<String, Object?>{'downloadConnections': 8})
-          .downloadConnections, 8);
+      expect(
+          OgLSettings.fromJson(<String, Object?>{'downloadConnections': 3})
+              .downloadConnections,
+          OgLSettings.kOgLDefaultDownloadConnections);
+      expect(
+          OgLSettings.fromJson(<String, Object?>{'downloadConnections': 99})
+              .downloadConnections,
+          OgLSettings.kOgLDefaultDownloadConnections);
+      expect(
+          OgLSettings.fromJson(<String, Object?>{'downloadConnections': 8})
+              .downloadConnections,
+          8);
     });
 
     test('字符串数字也能读（手改配置文件）', () {
-      expect(OgLSettings.fromJson(<String, Object?>{'downloadConnections': '2'})
-          .downloadConnections, 2);
+      expect(
+          OgLSettings.fromJson(<String, Object?>{'downloadConnections': '2'})
+              .downloadConnections,
+          2);
       expect(
         OgLSettings.fromJson(<String, Object?>{'downloadConnections': 'abc'})
             .downloadConnections,
@@ -103,8 +109,8 @@ void main() {
       final OgLSettings custom =
           OgLSettings.defaults.copyWith(downloadConnections: 2);
       expect(custom.encode(), contains('"downloadConnections":2'));
-      final Map<String, Object?> round = jsonDecode(custom.encode())
-          as Map<String, Object?>;
+      final Map<String, Object?> round =
+          jsonDecode(custom.encode()) as Map<String, Object?>;
       expect(OgLSettings.fromJson(round).downloadConnections, 2);
     });
   });

@@ -8,13 +8,14 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/animations.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 
 /// 取 `download_manager_page` 分片文案。
@@ -344,21 +345,17 @@ class DownloadManagerPage extends StatelessWidget {
         throw StateError(_t('noAppForFile'));
       }
     } catch (_) {
-      await Clipboard.setData(ClipboardData(text: task.savePath));
+      await ogLCopyText(task.savePath, tag: '下载路径');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('cannotOpenCopied'))),
-        );
+        OgLNotifier.of(context).info(_t('cannotOpenCopied'));
       }
     }
   }
 
   Future<void> _copyPath(BuildContext context, IxDownloadTask task) async {
-    await Clipboard.setData(ClipboardData(text: task.savePath));
+    await ogLCopyText(task.savePath, tag: '下载路径');
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('pathCopied'))),
-      );
+      OgLNotifier.of(context).success(_t('pathCopied'));
     }
   }
 }

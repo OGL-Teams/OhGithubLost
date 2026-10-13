@@ -161,12 +161,14 @@ class OgLBootFailureApp extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                    // M5: 用 textTheme.titleLarge 替代硬编码 22/w6 —— 跟随系统
+                    // fontScale 缩放（用户把字号拉到 130% 时这一行会一起变大，
+                    // 旧实现钉死 22px 看起来不协调）。
                     Text(
                       _t('bootRejected'),
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
                     const SizedBox(height: 12),
                     Text(_t('dataUntouched')),

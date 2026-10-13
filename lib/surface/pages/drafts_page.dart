@@ -16,6 +16,8 @@ import '../app/async.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../app/notifier.dart';
+import '../../util/clipboard_x.dart';
 
 /// 取 `drafts_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -115,9 +117,7 @@ class _DraftsPageState extends State<DraftsPage> {
       branch: draft.branch.isEmpty ? null : draft.branch,
     );
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('deleted'))),
-      );
+      OgLNotifier.of(context).info(_t('deleted');
       await _controller().load();
     }
   }
@@ -139,7 +139,7 @@ class _DraftsPageState extends State<DraftsPage> {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              unawaited(Clipboard.setData(ClipboardData(text: draft.content)));
+              unawaited(ogLCopyText(draft.content, tag: '复制内容'));
               Navigator.of(dialogContext).pop();
             },
             child: Text(_t('copyContent')),

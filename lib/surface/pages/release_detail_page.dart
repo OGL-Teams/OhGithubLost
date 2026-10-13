@@ -11,7 +11,6 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../app/animations.dart';
 import '../app/error_surface.dart';
@@ -20,6 +19,7 @@ import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/clipboard_x.dart';
 import '../util/accel.dart';
 import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
@@ -391,7 +391,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
       _notifier.warning(_t('assetNoUrl'));
       return;
     }
-    await Clipboard.setData(ClipboardData(text: url));
+    await ogLCopyText(url, tag: '资产链接');
     _notifier.success(_t('copiedDownloadLink'));
   }
 
@@ -408,7 +408,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
 
   Future<void> _copyNotes() async {
     final String text = _release.body ?? '';
-    await Clipboard.setData(ClipboardData(text: text));
+    await ogLCopyText(text, tag: '发布说明');
     if (mounted) {
       _notifier.success(_t('copiedNotes'));
     }
