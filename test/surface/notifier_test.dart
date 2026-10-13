@@ -23,27 +23,30 @@ void main() {
         ),
       );
 
-      // info
-      OgLNotifier(messenger).info('info-msg');
-      await tester.pump();
-      expect(find.text('info-msg'), findsOneWidget);
+      // SnackBar 是**队列**：上一条还在展示时，下一条要等它过期（或被显式
+      // 清掉）才会出现。这里每条展示后先关掉再验下一条——测的是
+      // "三种语气各自都能落地"，不是"同屏共存"。
+      for (final (String tone, String message) in <(String, String)>[
+        ('info', 'info-msg'),
+        ('success', 'success-msg'),
+        ('warning', 'warning-msg'),
+      ]) {
+        switch (tone) {
+          case 'info':
+            OgLNotifier(messenger).info(message);
+          case 'success':
+            OgLNotifier(messenger).success(message);
+          case 'warning':
+            OgLNotifier(messenger).warning(message);
+        }
+        await tester.pump();
+        expect(find.text(message), findsOneWidget);
 
-      // 让上一条过期，避免排队导致下一条不显示
-      await tester.pump(const Duration(seconds: 5));
-
-      // success
-      OgLNotifier(messenger).success('success-msg');
-      await tester.pump();
-      expect(find.text('success-msg'), findsOneWidget);
-
-      await tester.pump(const Duration(seconds: 5));
-
-      // warning（error 配色）
-      OgLNotifier(messenger).warning('warning-msg');
-      await tester.pump();
-      expect(find.text('warning-msg'), findsOneWidget);
-
-      // 三种语气都能落地（真正区分由实现里的 isError 决定，见 notifier.dart）。
+        // 关闭当前条（动画推进到结束），给下一条腾出队列。
+        messenger.clearSnackBars();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 5));
+      }
     });
   });
 }

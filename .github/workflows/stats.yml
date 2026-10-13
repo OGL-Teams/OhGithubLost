@@ -93,10 +93,10 @@ jobs:
         if: always() && steps.commit.outcome == 'success'
         run: |
           set -eu
-          base="https://fastly.jsdelivr.net/gh/${GITHUB_REPOSITORY}@stats/stats"
+          BASE="https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@stats/stats"
           for f in star-history.png commit-history.png; do
             code=$(curl -s -o /dev/null -w '%{http_code}' \
-              "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@stats/stats/$f" || true)
-            echo "purge $f -> $code"
+              "${BASE}/${f}" || true)
+            echo "purge ${f} -> ${code}"
           done
-          echo "CDN 缓存已清除：$base
+          echo 'CDN 缓存已清除'
