@@ -174,11 +174,19 @@ class AiService {
           maxTokens: maxTokens,
         ),
       );
-      final AiHttpResponse res = await _http.send(
-        s.baseUrl + path,
-        headers: _authHeaders(s.kind, key),
-        body: body,
-      );
+      final AiHttpResponse res;
+      try {
+        res = await _http.send(
+          s.baseUrl + path,
+          headers: _authHeaders(s.kind, key),
+          body: body,
+        );
+      } on AiTransportException catch (e) {
+        // ★ 传输层错误在这里**转成业务错误**（`transport` 码）：UI 层只认
+        //   `AiException` 一种类型，不用再 import kernel 的传输异常 ——
+        //   此前 UI 只 catch `AiException`，传输层异常直接穿透成未捕获异常。
+        throw AiException('transport', e.message);
+      }
       if (!res.ok) {
         throw AiException('httpError', '${res.statusCode}');
       }
@@ -237,22 +245,27 @@ class AiService {
         stream: true,
       ),
     );
-    await for (final AiSseEvent evt in _http.stream(
-      s.baseUrl + path,
-      headers: _authHeaders(s.kind, key),
-      body: body,
-    )) {
-      final String? data = evt.data;
-      if (data == null || evt.isDone) {
-        continue;
+    try {
+      await for (final AiSseEvent evt in _http.stream(
+        s.baseUrl + path,
+        headers: _authHeaders(s.kind, key),
+        body: body,
+      )) {
+        final String? data = evt.data;
+        if (data == null || evt.isDone) {
+          continue;
+        }
+        final AiStreamDelta d = provider.parseStreamChunk(data);
+        if (d.finished) {
+          break;
+        }
+        if (d.content.isNotEmpty) {
+          yield d.content;
+        }
       }
-      final AiStreamDelta d = provider.parseStreamChunk(data);
-      if (d.finished) {
-        break;
-      }
-      if (d.content.isNotEmpty) {
-        yield d.content;
-      }
+    } on AiTransportException catch (e) {
+      // 同 `complete()`：传输错误统一转成 `AiException`（UI 只 catch 一种）。
+      throw AiException('transport', e.message);
     }
   }
 
@@ -263,10 +276,16 @@ class AiService {
     final AiSettings s = config ?? await settings();
     final String k = key ?? await _requireKey(s);
     final AiProvider provider = AiProvider(s.kind);
-    final AiHttpResponse res = await _http.send(
-      s.baseUrl + provider.modelListPath(),
-      headers: _authHeaders(s.kind, k),
-    );
+    final AiHttpResponse res;
+    try {
+      res = await _http.send(
+        s.baseUrl + provider.modelListPath(),
+        headers: _authHeaders(s.kind, k),
+      );
+    } on AiTransportException catch (e) {
+      // 同 `complete()`：传输错误统一转成 `AiException`（UI 只 catch 一种）。
+      throw AiException('transport', e.message);
+    }
     if (!res.ok) {
       throw AiException('httpError', '${res.statusCode}');
     }

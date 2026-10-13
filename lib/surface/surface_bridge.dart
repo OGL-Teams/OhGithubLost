@@ -433,8 +433,11 @@ class SurfaceBridge {
   /// 读 AI 当前是否启用（页面进入时一次性调用即可）。
   Future<bool> hasAi() async {
     try {
-      final dynamic s = await domain.ai.settings();
-      _cachedHasAi = s is Object && '${s.enabled}' == 'true';
+      // 类型化读取（`AiSettings` 经 `types.dart` 导出）：不要用 dynamic +
+      // `is Object` 的写法 —— 后者会把 `enabled` 的静态解析打断，编译期直接报
+      // "The getter 'enabled' isn't defined for the type 'Object'"。
+      final AiSettings s = await domain.ai.settings();
+      _cachedHasAi = s.enabled;
     } catch (_) {
       // 读不到就保留旧值：hasAi 是"该不该让用户看到 AI 入口"的开关，
       // 读失败不该让入口从屏幕上消失。

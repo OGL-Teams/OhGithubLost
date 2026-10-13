@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../kernel/kernel.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../pages/ai_chat_page.dart';
 import '../pages/dashboard_page.dart';
@@ -31,7 +32,6 @@ import '../widgets/anim/anim_preload.dart';
 import 'animations.dart';
 import 'back_guard.dart';
 import 'error_surface.dart';
-import '../app/notifier.dart';
 
 /// 壳内的五个页面（导航值）。
 enum OgLShellTab {

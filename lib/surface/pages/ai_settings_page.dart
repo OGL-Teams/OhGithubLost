@@ -6,10 +6,10 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
-import '../app/notifier.dart';
 
 /// 取 `ai` 分片文案。
 String _t(String key, [Map<String, String>? args]) =>
@@ -125,7 +125,8 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
       });
     } on AiException catch (e) {
       if (mounted) {
-        _toast('${_t('error')}：${e.code}');
+        // 优先展示可读详情（如「端点必须是 HTTPS」）：code 只是类别。
+        _toast('${_t('error')}：${e.detail.isEmpty ? e.code : e.detail}');
       }
     } finally {
       if (mounted) {
@@ -156,7 +157,8 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
       }
     } on AiException catch (e) {
       if (mounted) {
-        _toast('${_t('error')}：${e.code}');
+        // 优先展示可读详情（如「端点必须是 HTTPS」）：code 只是类别。
+        _toast('${_t('error')}：${e.detail.isEmpty ? e.code : e.detail}');
       }
     } finally {
       if (mounted) {

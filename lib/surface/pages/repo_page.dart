@@ -16,7 +16,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../app/animations.dart';
 import '../app/async.dart';
@@ -28,6 +27,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/accel.dart';
+import '../util/clipboard_x.dart';
 import '../util/file_icons.dart';
 import '../util/file_preview.dart';
 import '../util/gh_format.dart';
@@ -47,7 +47,6 @@ import 'new_issue_page.dart';
 import 'new_release_page.dart';
 import 'pull_page.dart';
 import 'release_detail_page.dart';
-import '../util/clipboard_x.dart';
 import 'workflow_dispatch_page.dart';
 
 /// 取 `repo` 分片文案。
