@@ -30,16 +30,49 @@ enum OgLPreviewKind {
 }
 
 const Set<String> _kImageExt = <String>{
-  'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'avif', 'tif', 'tiff',
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'webp',
+  'bmp',
+  'ico',
+  'avif',
+  'tif',
+  'tiff',
 };
 
 const Set<String> _kAudioExt = <String>{
-  'mp3', 'm4a', 'wav', 'ogg', 'oga', 'flac', 'aac', 'opus', 'wma', 'mid',
+  'mp3',
+  'm4a',
+  'wav',
+  'ogg',
+  'oga',
+  'flac',
+  'aac',
+  'opus',
+  'wma',
+  'mid',
 };
 
 const Set<String> _kXmlExt = <String>{
-  'xml', 'xsd', 'xsl', 'xslt', 'plist', 'csproj', 'vcxproj', 'props', 'targets',
-  'xaml', 'rss', 'atom', 'pom', 'gradle', 'iml', 'storyboard', 'xib',
+  'xml',
+  'xsd',
+  'xsl',
+  'xslt',
+  'plist',
+  'csproj',
+  'vcxproj',
+  'props',
+  'targets',
+  'xaml',
+  'rss',
+  'atom',
+  'pom',
+  'gradle',
+  'iml',
+  'storyboard',
+  'xib',
 };
 
 /// 取小写扩展名（无扩展名返回空串）。

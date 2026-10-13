@@ -207,8 +207,8 @@ class GhApi implements CacheRemote {
 
   /// 仓库详情。
   Future<GhRepo> repo(String fullName) async {
-    final object =
-        await client.getObject('/repos/$fullName', label: 'GET /repos/$fullName');
+    final object = await client.getObject('/repos/$fullName',
+        label: 'GET /repos/$fullName');
     return GhRepo.fromJson(object ?? const <String, dynamic>{});
   }
 
@@ -495,7 +495,9 @@ class GhApi implements CacheRemote {
     }
     final response = await client.send(GhRequest(
       path: '/repos/$fullName/git/trees/$ref',
-      query: recursive ? <String, String>{'recursive': '1'} : const <String, String>{},
+      query: recursive
+          ? <String, String>{'recursive': '1'}
+          : const <String, String>{},
       label: 'GET tree($ref)',
     ));
     return GhTree.fromJson(response.jsonObject ?? const <String, dynamic>{});
@@ -649,7 +651,8 @@ class GhApi implements CacheRemote {
       return null;
     }
     final content = GhJson.str(object, 'content');
-    return GhContent.decodeContent(content, GhJson.str(object, 'encoding', fallback: encoding));
+    return GhContent.decodeContent(
+        content, GhJson.str(object, 'encoding', fallback: encoding));
   }
 
   /// 写入内容（**带基线 sha → 乐观锁**）。
@@ -1223,18 +1226,21 @@ class GhApi implements CacheRemote {
     int perPage = 30,
     int page = 1,
   }) =>
-      client.getList(
-        '/repos/$fullName/issues',
-        query: <String, String>{
-          'state': state,
-          'per_page': '$perPage',
-          'page': '$page',
-          'filter': 'all',
-        },
-        label: 'GET issues',
-      ).then((List<Map<String, dynamic>> items) => items
-          .where((Map<String, dynamic> item) => !item.containsKey('pull_request'))
-          .toList());
+      client
+          .getList(
+            '/repos/$fullName/issues',
+            query: <String, String>{
+              'state': state,
+              'per_page': '$perPage',
+              'page': '$page',
+              'filter': 'all',
+            },
+            label: 'GET issues',
+          )
+          .then((List<Map<String, dynamic>> items) => items
+              .where((Map<String, dynamic> item) =>
+                  !item.containsKey('pull_request'))
+              .toList());
 
   /// 新建 Issue。
   Future<Map<String, dynamic>> createIssue(
@@ -1382,7 +1388,9 @@ class GhApi implements CacheRemote {
         if (files != null)
           'files': <String, Object?>{
             for (final MapEntry<String, String?> e in files.entries)
-              e.key: e.value == null ? null : <String, Object?>{'content': e.value},
+              e.key: e.value == null
+                  ? null
+                  : <String, Object?>{'content': e.value},
           },
       },
       label: 'PATCH gists/$id',
@@ -1579,7 +1587,8 @@ class GhApi implements CacheRemote {
         '/repos/$fullName/readme',
         label: 'GET readme',
       );
-      final encoded = GhJson.str(object ?? const <String, dynamic>{}, 'content');
+      final encoded =
+          GhJson.str(object ?? const <String, dynamic>{}, 'content');
       return GhContent.decodeContent(
         encoded,
         GhJson.str(
@@ -1625,8 +1634,7 @@ class GhApi implements CacheRemote {
     // 目录：Contents API 返回数组 → 用 `dir:` 标记，把整份列表 JSON 缓存起来。
     final String probe = body.trimLeft();
     if (probe.startsWith('[')) {
-      final String marker =
-          '$_dirShaPrefix${sha1.convert(utf8.encode(body))}';
+      final String marker = '$_dirShaPrefix${sha1.convert(utf8.encode(body))}';
       return RemoteDocument(content: body, sha: marker);
     }
 

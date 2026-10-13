@@ -108,7 +108,8 @@ class KernelReport {
       };
 
   @override
-  String toString() => 'KernelReport(appVersion=$appVersion, safeMode=$safeMode, '
+  String toString() =>
+      'KernelReport(appVersion=$appVersion, safeMode=$safeMode, '
       'modules=${moduleStates.length}, bridges=$bridges, '
       'warnings=${trustWarnings.length})';
 }
@@ -154,7 +155,8 @@ class OgLKernel {
   );
 
   /// 生命周期编排。
-  late final KernelLifecycle lifecycle = KernelLifecycle(diagnostics: diagnostics);
+  late final KernelLifecycle lifecycle =
+      KernelLifecycle(diagnostics: diagnostics);
 
   BootResult? _bootResult;
   KernelReport? _report;

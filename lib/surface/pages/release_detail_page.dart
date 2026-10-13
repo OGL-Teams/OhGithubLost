@@ -28,9 +28,10 @@ import '../widgets/readme_view.dart';
 import 'download_manager_page.dart';
 
 /// 取 `release_detail_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('release_detail_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'release_detail_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 发布详情页。
 class ReleaseDetailPage extends StatefulWidget {
@@ -73,14 +74,14 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
       context: context,
       builder: (BuildContext dialogContext) => StatefulBuilder(
         builder: (BuildContext ctx, StateSetter setLocal) => AlertDialog(
-          title:  Text(_t('editTitle')),
+          title: Text(_t('editTitle')),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 TextField(
                   controller: tag,
-                  decoration:  InputDecoration(
+                  decoration: InputDecoration(
                     labelText: _t('tagLabel'),
                     border: OutlineInputBorder(),
                   ),
@@ -88,7 +89,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                 const SizedBox(height: 10),
                 TextField(
                   controller: name,
-                  decoration:  InputDecoration(
+                  decoration: InputDecoration(
                     labelText: _t('titleLabel'),
                     border: OutlineInputBorder(),
                   ),
@@ -98,7 +99,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                   controller: body,
                   minLines: 5,
                   maxLines: 12,
-                  decoration:  InputDecoration(
+                  decoration: InputDecoration(
                     labelText: _t('bodyLabel'),
                     border: OutlineInputBorder(),
                     alignLabelWithHint: true,
@@ -106,13 +107,13 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title:  Text(_t('draft')),
+                  title: Text(_t('draft')),
                   value: draft,
                   onChanged: (bool v) => setLocal(() => draft = v),
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title:  Text(_t('prerelease')),
+                  title: Text(_t('prerelease')),
                   value: prerelease,
                   onChanged: (bool v) => setLocal(() => prerelease = v),
                 ),
@@ -122,11 +123,11 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child:  Text(_t('cancel')),
+              child: Text(_t('cancel')),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child:  Text(_t('save')),
+              child: Text(_t('save')),
             ),
           ],
         ),
@@ -184,19 +185,19 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('deleteTitle')),
+        title: Text(_t('deleteTitle')),
         content: Text(_t('deleteDesc', {'tag': _release.tagName})),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('delete')),
+            child: Text(_t('delete')),
           ),
         ],
       ),
@@ -206,7 +207,8 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
     }
     setState(() => _busy = true);
     try {
-      await widget.surface.domain.api.deleteRelease(widget.fullName, _release.id);
+      await widget.surface.domain.api
+          .deleteRelease(widget.fullName, _release.id);
       OgLAppLog.instance.result(_t('publish'), _t('deleted'), _release.tagName);
       if (mounted) {
         Navigator.of(context).pop(true);
@@ -317,7 +319,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                         unawaited(_download(asset));
                       },
                       icon: const Icon(Icons.download_outlined),
-                      label:  Text(_t('download')),
+                      label: Text(_t('download')),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -328,7 +330,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                         unawaited(_copyAssetLink(asset));
                       },
                       icon: const Icon(Icons.link),
-                      label:  Text(_t('copyLink')),
+                      label: Text(_t('copyLink')),
                     ),
                   ),
                 ],
@@ -354,7 +356,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
           children: <Widget>[
             ListTile(
               leading: const Icon(Icons.download_outlined),
-              title:  Text(_t('download')),
+              title: Text(_t('download')),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 unawaited(_download(asset));
@@ -362,7 +364,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
             ),
             ListTile(
               leading: const Icon(Icons.link),
-              title:  Text(_t('copyDownloadLink')),
+              title: Text(_t('copyDownloadLink')),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 unawaited(_copyAssetLink(asset));
@@ -370,7 +372,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
             ),
             ListTile(
               leading: const Icon(Icons.info_outline),
-              title:  Text(_t('viewFileDetail')),
+              title: Text(_t('viewFileDetail')),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 unawaited(_showAssetDetail(asset));
@@ -451,74 +453,80 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
           ),
         ],
       ),
-      body: OgLReveal(delay: Duration.zero, child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: <Widget>[
-          Text(
-            _release.name == null || _release.name!.isEmpty
-                ? _release.tagName
-                : _release.name!,
-            style: theme.textTheme.titleLarge,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            <String>[
-              if (_release.publishedAt != null)
-                _t('publishedAt', {
-                  'date': _release.publishedAt!
-                      .toIso8601String()
-                      .split('T')
-                      .first,
-                }),
-              if (marks.isNotEmpty) marks.join(' / '),
-              _t('assetsCount', {'count': _release.assets.length}),
-            ].join(' · '),
-            style: theme.textTheme.bodySmall,
-          ),
-          if (_release.body != null && _release.body!.trim().isNotEmpty) ...<Widget>[
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: ReadmeView(
-                  markdown: _release.body!,
-                  onOpenLink: (Uri uri) {
-                    unawaited(openExternalLink(uri, tag: _t('publish')));
-                  },
-                ),
+      body: OgLReveal(
+          delay: Duration.zero,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: <Widget>[
+              Text(
+                _release.name == null || _release.name!.isEmpty
+                    ? _release.tagName
+                    : _release.name!,
+                style: theme.textTheme.titleLarge,
               ),
-            ),
-          ],
-          const Divider(height: 32),
-          Text(_t('assets'), style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          if (_release.assets.isEmpty)
-             Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text(_t('noAssets')),
-            )
-          else
-            for (final GhAsset asset in _release.assets)
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.inventory_2_outlined),
-                  title: Text(
-                    asset.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    _t('assetMeta', {'size': ghSizeText(asset.size), 'count': asset.downloadCount}),
-                  ),
-                  trailing: const Icon(Icons.info_outline),
-                  // R5：点击**先看详情**（不再直接触发下载）；长按弹出快捷操作。
-                  onTap: () => unawaited(_showAssetDetail(asset)),
-                  onLongPress: () => unawaited(_showAssetActions(asset)),
-                ),
+              const SizedBox(height: 6),
+              Text(
+                <String>[
+                  if (_release.publishedAt != null)
+                    _t('publishedAt', {
+                      'date': _release.publishedAt!
+                          .toIso8601String()
+                          .split('T')
+                          .first,
+                    }),
+                  if (marks.isNotEmpty) marks.join(' / '),
+                  _t('assetsCount', {'count': _release.assets.length}),
+                ].join(' · '),
+                style: theme.textTheme.bodySmall,
               ),
-          const SizedBox(height: 24),
-        ],
-      )),
+              if (_release.body != null &&
+                  _release.body!.trim().isNotEmpty) ...<Widget>[
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: ReadmeView(
+                      markdown: _release.body!,
+                      onOpenLink: (Uri uri) {
+                        unawaited(openExternalLink(uri, tag: _t('publish')));
+                      },
+                    ),
+                  ),
+                ),
+              ],
+              const Divider(height: 32),
+              Text(_t('assets'), style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              if (_release.assets.isEmpty)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(_t('noAssets')),
+                )
+              else
+                for (final GhAsset asset in _release.assets)
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.inventory_2_outlined),
+                      title: Text(
+                        asset.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        _t('assetMeta', {
+                          'size': ghSizeText(asset.size),
+                          'count': asset.downloadCount
+                        }),
+                      ),
+                      trailing: const Icon(Icons.info_outline),
+                      // R5：点击**先看详情**（不再直接触发下载）；长按弹出快捷操作。
+                      onTap: () => unawaited(_showAssetDetail(asset)),
+                      onLongPress: () => unawaited(_showAssetActions(asset)),
+                    ),
+                  ),
+              const SizedBox(height: 24),
+            ],
+          )),
     );
   }
 }

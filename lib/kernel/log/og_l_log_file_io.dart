@@ -154,7 +154,8 @@ class OgLLogBackend {
     if (today == _dayStamp) {
       return;
     }
-    final String prefix = File(_filePath!).uri.pathSegments.last.split('-').first;
+    final String prefix =
+        File(_filePath!).uri.pathSegments.last.split('-').first;
     final String next = '$dir/$prefix-$today.log';
     try {
       sink.flush();

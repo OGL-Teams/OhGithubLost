@@ -36,6 +36,14 @@ class IoDownloadBackend implements IxDownloadBackend {
 
   StreamSubscription<TaskUpdate>? _subscription;
 
+  /// 落盘目录裁决器（装配根注入；`null` = 应用私有目录，见契约注释）。
+  Future<String?> Function()? _downloadDirProvider;
+
+  @override
+  set downloadDirProvider(Future<String?> Function()? provider) {
+    _downloadDirProvider = provider;
+  }
+
   @override
   Stream<IxDownloadEvent> get events => _events.stream;
 
@@ -49,21 +57,45 @@ class IoDownloadBackend implements IxDownloadBackend {
   bool get supportsPauseResume => true;
 
   /// 构造库任务（`pathFor` 与 `enqueue` 共用同一份参数，保证 taskId 一致）。
-  DownloadTask _build(IxDownloadSpec spec) => DownloadTask(
-        url: spec.url,
-        filename: spec.fileName,
-        directory: 'ogl/download/${spec.folder}',
-        baseDirectory: BaseDirectory.applicationDocuments,
-        headers: spec.headers,
-        updates: Updates.statusAndProgress,
-        allowPause: true,
-        retries: 2,
-      );
+  ///
+  /// ★ 落盘去处跟随存储裁决（[downloadDirProvider]）：
+  ///   - 公共目录档（用户拿到 ogl 权限）→ `directory` 指向
+  ///     `/storage/emulated/0/ogl/download/…`，**直接写用户可见目录**；
+  ///   - SAF / 内部档 → 裁决器返回的是私有根，行为与旧版一致
+  ///     （SAF 档完成后仍由导出器粘贴过去）；
+  ///   - 裁决器不可用 / 抛异常 → 回退旧版私有目录，**绝不阻塞下载**。
+  ///
+  /// 注意：库的 `directory` 是**相对** baseDirectory 的路径；这里在桌面 /
+  /// 公共目录场景传绝对路径，用 [BaseDirectory.root]（库对 root + 以 `/`
+  /// 开头的 directory 会按绝对路径处理）。
+  Future<DownloadTask> _build(IxDownloadSpec spec) async {
+    String directory = 'ogl/download/${spec.folder}';
+    BaseDirectory base = BaseDirectory.applicationDocuments;
+    try {
+      final String? resolved = await _downloadDirProvider?.call();
+      if (resolved != null && resolved.isNotEmpty) {
+        directory = '$resolved/${spec.folder}';
+        base = BaseDirectory.root;
+      }
+    } catch (_) {
+      // 裁决失败：维持私有目录（下载可用性优先）。
+    }
+    return DownloadTask(
+      url: spec.url,
+      filename: spec.fileName,
+      directory: directory,
+      baseDirectory: base,
+      headers: spec.headers,
+      updates: Updates.statusAndProgress,
+      allowPause: true,
+      retries: 2,
+    );
+  }
 
   @override
   Future<String> pathFor(IxDownloadSpec spec) async {
     try {
-      return await _build(spec).filePath();
+      return await (await _build(spec)).filePath();
     } catch (_) {
       // 拿不到真实路径时退回文件名（界面至少能显示一个可读的名字）。
       return spec.fileName;
@@ -72,7 +104,16 @@ class IoDownloadBackend implements IxDownloadBackend {
 
   @override
   Future<void> enqueue(IxDownloadSpec spec) async {
-    final DownloadTask task = _build(spec);
+    final DownloadTask task = await _build(spec);
+    // ★ 同一 taskId 的旧终态记录必须先清：库对「已完成/已失败」的 taskId
+    //   重新 enqueue 会拒绝或直接补一个旧状态事件——于是「下载 → 移除 →
+    //   再下载同一条」第二次必然失败且无任何界面提示（横幅也不弹）。
+    //   先 cancel 再 enqueue = 库内重置该 id 的状态机。
+    try {
+      await _downloader.cancelTaskWithId(task.taskId);
+    } catch (_) {
+      // 无旧任务时忽略。
+    }
     _tasks[spec.id] = task;
     _idsByLibraryId[task.taskId] = spec.id;
     await _downloader.enqueue(task);
@@ -173,7 +214,8 @@ class IoDownloadBackend implements IxDownloadBackend {
       //   不守卫会算出负的 received → 界面显示「-4.3 MB / 4.3 MB」。
       final double clamped = update.progress < 0 ? 0 : update.progress;
       final int received = total > 0 ? (clamped * total).round() : 0;
-      _events.add(IxDownloadEvent.progress(id, received: received, total: total));
+      _events
+          .add(IxDownloadEvent.progress(id, received: received, total: total));
     }
   }
 

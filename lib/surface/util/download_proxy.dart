@@ -78,6 +78,7 @@ List<String> ogLAccelCandidates({
   required OgLAccelFamily family,
   int? bytes,
   bool repoPrivate = false,
+
   /// [privateAccelAccepted]：私有仓库 + raw 族时，用户是否已**知情接受**
   /// 「令牌会交给第三方通道」。默认 `false` → 不加速（令牌不出设备）。
   bool privateAccelAccepted = false,

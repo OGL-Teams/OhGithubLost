@@ -212,7 +212,8 @@ class SurfaceBridge {
       net?.dnsServerChoices ?? const <String, String>{};
 
   /// 当前 DNS 策略摘要（UI 必须向用户展示，不得让用户猜）。
-  String get dnsSummary => net?.dnsSummary ?? OgLI18n.instance.t('common', 'systemResolve');
+  String get dnsSummary =>
+      net?.dnsSummary ?? OgLI18n.instance.t('common', 'systemResolve');
 
   /// 把当前设置里的 DNS 选择应用到网络底座（策略对象可变 → 即时生效）。
   void applyDns() {
@@ -351,7 +352,9 @@ class SurfaceBridge {
       //   公开仓库则相反 —— 一个头都不带，代理没必要也不需要令牌。
       return (
         urls: candidates,
-        headers: repoPrivate ? await downloadAuthHeaders() : const <String, String>{},
+        headers: repoPrivate
+            ? await downloadAuthHeaders()
+            : const <String, String>{},
       );
     }
     final String apiUrl = 'https://api.github.com/repos/$fullName/contents/'
@@ -415,6 +418,35 @@ class SurfaceBridge {
   /// 设置下载并发连接数（非法档位由 `settings` 回落默认）。
   Future<void> setDownloadConnections(int value) =>
       settings.setDownloadConnections(value);
+
+  /// AI 助手是否启用（设置页 / 客户端 tab 入口 / AI 子页都按它判可见性）。
+  ///
+  /// 数据源是 AI 设置（`AiSettings.enabled` + provider + 模型），不现造：
+  /// `domain.ai.settings()` 已存在；新增的 `hasAi` 只是把"读一次"封装成
+  /// 一个**同步可见**的派生属性 —— 之前各页面都是各读各的 Future，UI
+  /// 重建节奏也各走各的。
+  ///
+  /// 缓存策略：构造时读一次，结果写进 [_cachedHasAi]。后续页面要"立刻
+  /// 跟上"AI 开关的变更，就调一次 [refreshAi];失败时保留旧值（不是 false）。
+  bool _cachedHasAi = false;
+
+  /// 读 AI 当前是否启用（页面进入时一次性调用即可）。
+  Future<bool> hasAi() async {
+    try {
+      final dynamic s = await domain.ai.settings();
+      _cachedHasAi = s is Object && '${s.enabled}' == 'true';
+    } catch (_) {
+      // 读不到就保留旧值：hasAi 是"该不该让用户看到 AI 入口"的开关，
+      // 读失败不该让入口从屏幕上消失。
+    }
+    return _cachedHasAi;
+  }
+
+  /// 当前缓存值（同步版本；用于 build 里就近决定要不要渲染 AI 入口）。
+  bool get hasAiCached => _cachedHasAi;
+
+  /// 刷新缓存（在 AI 设置保存后调用，例如设置页 / AI 子页写完时）。
+  Future<void> refreshAi() => hasAi();
 
   /// 仓库文件操作服务（统一文件操作入口）。
   RepoFileService get repoFiles => domain.repoFiles;
@@ -485,15 +517,15 @@ class SurfaceBridge {
   }
 
   @override
-  String toString() =>
-      'SurfaceBridge(mode=${settings.settings.mode.name}, '
+  String toString() => 'SurfaceBridge(mode=${settings.settings.mode.name}, '
       'dns=${settings.settings.dnsMode})';
 }
 
 /// 用 L1 的 KV 实现设置持久化（**唯一**允许把 L3 的存储需求接到 L1 的地方）。
 class KvSettingsPersistence implements OgLSettingsPersistence {
   /// 创建。
-  const KvSettingsPersistence(this._kv, {this.key = OgLSettingsController.storageKey});
+  const KvSettingsPersistence(this._kv,
+      {this.key = OgLSettingsController.storageKey});
 
   final DiskKv _kv;
 

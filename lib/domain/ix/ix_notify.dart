@@ -115,8 +115,8 @@ class IxNotificationCenter extends ChangeNotifier {
   int get unreadCount => _items.length;
 
   /// 是否存在危险级告警（UI 用来显示红点）。
-  bool get hasDanger =>
-      _items.any((IxNotification item) => item.level == IxNotificationLevel.danger);
+  bool get hasDanger => _items
+      .any((IxNotification item) => item.level == IxNotificationLevel.danger);
 
   /// 投递一条通知；同 ID 会合并计数而不是堆叠。
   void push({
@@ -193,8 +193,8 @@ class IxNotificationCenter extends ChangeNotifier {
   /// 关闭一条。
   void dismiss(String id) {
     final before = _items.length;
-    _items.removeWhere((IxNotification item) =>
-        item.id == id && item.dismissible);
+    _items.removeWhere(
+        (IxNotification item) => item.id == id && item.dismissible);
     if (_items.length != before) {
       _dismissed.add(id);
       notifyListeners();

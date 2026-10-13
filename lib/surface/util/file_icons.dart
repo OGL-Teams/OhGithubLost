@@ -234,7 +234,8 @@ OgLFileVisual ogLFileVisualFor(String path, {bool isDirectory = false}) {
     case 'otf':
     case 'woff':
     case 'woff2':
-      return const OgLFileVisual(Icons.font_download_outlined, Color(0xFF8A6FD1));
+      return const OgLFileVisual(
+          Icons.font_download_outlined, Color(0xFF8A6FD1));
     case 'pem':
     case 'crt':
     case 'cer':
@@ -257,7 +258,8 @@ OgLFileVisual ogLFileVisualFor(String path, {bool isDirectory = false}) {
     case '.gitattributes':
     case '.gitmodules':
     case '.dockerignore':
-      return const OgLFileVisual(Icons.account_tree_outlined, Color(0xFFF14E32));
+      return const OgLFileVisual(
+          Icons.account_tree_outlined, Color(0xFFF14E32));
     case 'license':
     case 'licence':
     case 'copying':

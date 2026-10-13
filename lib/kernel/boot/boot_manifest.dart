@@ -236,7 +236,8 @@ class BootManifest {
       );
 
   /// 签名所覆盖的规范化字节。
-  List<int> canonicalPayloadBytes() => utf8.encode(canonicalJsonEncode(payload));
+  List<int> canonicalPayloadBytes() =>
+      utf8.encode(canonicalJsonEncode(payload));
 
   /// 序列化（含签名）。
   Map<String, Object?> toJson() => <String, Object?>{

@@ -33,8 +33,7 @@ class KernelStartupError extends Error {
   final List<String> rollbackErrors;
 
   @override
-  String toString() =>
-      'KernelStartupError($moduleId): $message（cause=$cause, '
+  String toString() => 'KernelStartupError($moduleId): $message（cause=$cause, '
       'rollbackErrors=$rollbackErrors）';
 }
 

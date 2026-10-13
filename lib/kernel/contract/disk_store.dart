@@ -88,7 +88,8 @@ class InMemoryVault implements DiskVault {
   final Map<String, String> _secrets = <String, String>{};
 
   /// 密文快照。
-  Map<String, String> get snapshot => Map<String, String>.unmodifiable(_secrets);
+  Map<String, String> get snapshot =>
+      Map<String, String>.unmodifiable(_secrets);
 
   @override
   Future<String?> readSecret(String key) async => _secrets[key];
@@ -152,7 +153,8 @@ class InMemoryFileStore implements DiskFileStore {
       if (rest.isEmpty) {
         continue;
       }
-      names.add(rest.contains('/') ? rest.substring(0, rest.indexOf('/')) : rest);
+      names.add(
+          rest.contains('/') ? rest.substring(0, rest.indexOf('/')) : rest);
     }
     return names.toList()..sort();
   }

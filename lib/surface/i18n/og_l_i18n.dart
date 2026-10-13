@@ -18,7 +18,6 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-
 /// 一个可选语言。
 @immutable
 class OgLLocale {
@@ -42,10 +41,8 @@ String ogLDetectDeviceLocale() {
   if (language == 'zh') {
     final String script = device.scriptCode ?? '';
     final String region = device.countryCode ?? '';
-    final bool traditional = script == 'Hant' ||
-        region == 'TW' ||
-        region == 'HK' ||
-        region == 'MO';
+    final bool traditional =
+        script == 'Hant' || region == 'TW' || region == 'HK' || region == 'MO';
     return traditional ? 'zh_TW' : 'zh';
   }
   for (final OgLLocale item in OgLI18n.locales) {
@@ -55,7 +52,6 @@ String ogLDetectDeviceLocale() {
   }
   return 'zh';
 }
-
 
 /// i18n 内核（全局单例；仅展示层使用）。
 class OgLI18n extends ChangeNotifier {

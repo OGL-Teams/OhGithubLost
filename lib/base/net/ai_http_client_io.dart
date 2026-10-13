@@ -29,7 +29,8 @@ class AiHttpClientIo implements AiHttpClient {
         uri.hasQuery ||
         uri.hasFragment;
     if (bad) {
-      throw AiTransportException('AI 端点必须是纯 HTTPS 地址（不允许 userInfo/query/fragment）');
+      throw AiTransportException(
+          'AI 端点必须是纯 HTTPS 地址（不允许 userInfo/query/fragment）');
     }
   }
 
@@ -97,7 +98,8 @@ class AiHttpClientIo implements AiHttpClient {
     _validateEndpoint(url);
     final HttpClient client = _client(timeout);
     try {
-      final HttpClientRequest req = await client.openUrl('POST', Uri.parse(url));
+      final HttpClientRequest req =
+          await client.openUrl('POST', Uri.parse(url));
       req.followRedirects = false;
       req.persistentConnection = false;
       headers.forEach(req.headers.set);

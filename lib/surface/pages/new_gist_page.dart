@@ -12,9 +12,10 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 
 /// 取 `new_gist_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('new_gist_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'new_gist_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 新建 Gist 页。
 class NewGistPage extends StatefulWidget {
@@ -100,13 +101,13 @@ class _NewGistPageState extends State<NewGistPage> {
     final String filename = _filename.text.trim();
     if (filename.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('fileNameRequired'))),
+        SnackBar(content: Text(_t('fileNameRequired'))),
       );
       return;
     }
     if (_content.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('contentRequired'))),
+        SnackBar(content: Text(_t('contentRequired'))),
       );
       return;
     }
@@ -158,61 +159,63 @@ class _NewGistPageState extends State<NewGistPage> {
         }
       },
       child: Scaffold(
-      appBar: AppBar(
-        title:  Text(_t('title')),
-        actions: <Widget>[
-          TextButton(
-            onPressed: _busy ? null : _submit,
-            child: Text(_busy ? _t('creating') : _t('create')),
-          ),
-        ],
-      ),
-      body: OgLReveal(delay: Duration.zero, child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: <Widget>[
-          TextField(
-            controller: _description,
-            decoration:  InputDecoration(
-              labelText: _t('description'),
-              border: OutlineInputBorder(),
+        appBar: AppBar(
+          title: Text(_t('title')),
+          actions: <Widget>[
+            TextButton(
+              onPressed: _busy ? null : _submit,
+              child: Text(_busy ? _t('creating') : _t('create')),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _filename,
-            decoration:  InputDecoration(
-              labelText: _t('fileName'),
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.insert_drive_file_outlined),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(_t('content'), style: theme.textTheme.labelLarge),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _content,
-            minLines: 8,
-            maxLines: 20,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
-            decoration:  InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: _t('contentHint'),
-            ),
-          ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title:  Text(_t('isPublic')),
-            subtitle:  Text(_t('isPublicDesc')),
-            value: _public,
-            onChanged: (bool on) => setState(() => _public = on),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _t('fileNameHint'),
-            style: theme.textTheme.bodySmall,
-          ),
-        ],
-      )),
+          ],
+        ),
+        body: OgLReveal(
+            delay: Duration.zero,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: <Widget>[
+                TextField(
+                  controller: _description,
+                  decoration: InputDecoration(
+                    labelText: _t('description'),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _filename,
+                  decoration: InputDecoration(
+                    labelText: _t('fileName'),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.insert_drive_file_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(_t('content'), style: theme.textTheme.labelLarge),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _content,
+                  minLines: 8,
+                  maxLines: 20,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: _t('contentHint'),
+                  ),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(_t('isPublic')),
+                  subtitle: Text(_t('isPublicDesc')),
+                  value: _public,
+                  onChanged: (bool on) => setState(() => _public = on),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _t('fileNameHint'),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            )),
       ),
     );
   }

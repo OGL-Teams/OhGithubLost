@@ -15,9 +15,10 @@ import '../types.dart';
 import '../widgets/scroll_aware_action.dart';
 
 /// 取 `new_repo_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('new_repo_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'new_repo_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 新建仓库页。
 class NewRepoPage extends StatefulWidget {
@@ -151,71 +152,73 @@ class _NewRepoPageState extends State<NewRepoPage> {
         }
       },
       child: Scaffold(
-      appBar: AppBar(title:  Text(_t('title'))),
-      body: OgLReveal(delay: Duration.zero, child: ListView(
-        controller: _scroll,
-        padding: const EdgeInsets.all(16),
-        children: <Widget>[
-          TextField(
-            controller: _name,
-            autofocus: true,
-            decoration:  InputDecoration(
-              labelText: _t('nameLabel'),
-              hintText: 'my-project',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _description,
-            maxLines: 3,
-            decoration:  InputDecoration(
-              labelText: _t('description'),
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SwitchListTile(
-            title:  Text(_t('private')),
-            subtitle:  Text(_t('privateDesc')),
-            value: _private,
-            onChanged: _busy
-                ? null
-                : (bool value) => setState(() => _private = value),
-          ),
-          if (_error != null) ...<Widget>[
-            const SizedBox(height: 12),
-            Card(
-              color: Theme.of(context).colorScheme.errorContainer,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  _error!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onErrorContainer,
+        appBar: AppBar(title: Text(_t('title'))),
+        body: OgLReveal(
+            delay: Duration.zero,
+            child: ListView(
+              controller: _scroll,
+              padding: const EdgeInsets.all(16),
+              children: <Widget>[
+                TextField(
+                  controller: _name,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    labelText: _t('nameLabel'),
+                    hintText: 'my-project',
+                    border: OutlineInputBorder(),
                   ),
                 ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
-          // 「创建」按钮跟着滚动"让路"：下滑时向屏外收起（只露约 1/4，点击即弹回），
-          // 上滑自动完全弹回。
-          //
-          // 该按钮本身就在内容**末尾**（滚到底才出现），若再叠加"近底部半屏收起"，
-          // 等于把页面主操作藏起来 —— 按用户「收起按照那个页面」的要求，
-          // 本页关闭该规则（bottomReserve: 0），只保留方向规则。
-          ScrollAwareAction(
-            controller: _scroll,
-            edge: AxisDirection.down,
-            bottomReserve: 0,
-            child: FilledButton(
-              onPressed: _busy ? null : _submit,
-              child: Text(_busy ? _t('creating') : _t('create')),
-            ),
-          ),
-        ],
-      )),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _description,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: _t('description'),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  title: Text(_t('private')),
+                  subtitle: Text(_t('privateDesc')),
+                  value: _private,
+                  onChanged: _busy
+                      ? null
+                      : (bool value) => setState(() => _private = value),
+                ),
+                if (_error != null) ...<Widget>[
+                  const SizedBox(height: 12),
+                  Card(
+                    color: Theme.of(context).colorScheme.errorContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        _error!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                // 「创建」按钮跟着滚动"让路"：下滑时向屏外收起（只露约 1/4，点击即弹回），
+                // 上滑自动完全弹回。
+                //
+                // 该按钮本身就在内容**末尾**（滚到底才出现），若再叠加"近底部半屏收起"，
+                // 等于把页面主操作藏起来 —— 按用户「收起按照那个页面」的要求，
+                // 本页关闭该规则（bottomReserve: 0），只保留方向规则。
+                ScrollAwareAction(
+                  controller: _scroll,
+                  edge: AxisDirection.down,
+                  bottomReserve: 0,
+                  child: FilledButton(
+                    onPressed: _busy ? null : _submit,
+                    child: Text(_busy ? _t('creating') : _t('create')),
+                  ),
+                ),
+              ],
+            )),
       ),
     );
   }

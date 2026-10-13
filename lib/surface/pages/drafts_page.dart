@@ -18,9 +18,10 @@ import '../surface_bridge.dart';
 import '../types.dart';
 
 /// 取 `drafts_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('drafts_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'drafts_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 草稿箱页。
 class DraftsPage extends StatefulWidget {
@@ -85,19 +86,19 @@ class _DraftsPageState extends State<DraftsPage> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('deleteDraft')),
-        content:  Text(_t('deleteDraftDesc')),
+        title: Text(_t('deleteDraft')),
+        content: Text(_t('deleteDraftDesc')),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(OgLI18n.instance.t('common', 'cancel')),
+            child: Text(OgLI18n.instance.t('common', 'cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(OgLI18n.instance.t('common', 'delete')),
+            child: Text(OgLI18n.instance.t('common', 'delete')),
           ),
         ],
       ),
@@ -115,7 +116,7 @@ class _DraftsPageState extends State<DraftsPage> {
     );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('deleted'))),
+        SnackBar(content: Text(_t('deleted'))),
       );
       await _controller().load();
     }
@@ -141,14 +142,14 @@ class _DraftsPageState extends State<DraftsPage> {
               unawaited(Clipboard.setData(ClipboardData(text: draft.content)));
               Navigator.of(dialogContext).pop();
             },
-            child:  Text(_t('copyContent')),
+            child: Text(_t('copyContent')),
           ),
           FilledButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
               unawaited(_confirmDelete(draft));
             },
-            child:  Text(_t('deleteDraft')),
+            child: Text(_t('deleteDraft')),
           ),
         ],
       ),
@@ -158,7 +159,7 @@ class _DraftsPageState extends State<DraftsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title:  Text(_t('title'))),
+      appBar: AppBar(title: Text(_t('title'))),
       body: AsyncView<List<GhDraft>>(
         controller: _controller(),
         emptyIcon: Icons.edit_note,

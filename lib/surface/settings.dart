@@ -140,8 +140,7 @@ class OgLSettings {
           serverId is String && serverId.isNotEmpty ? serverId : 'alidns',
       dnsPreferDoh: _asBool(raw['dnsPreferDoh'], fallback: true),
       downloadConnections: _asDownloadConnections(raw['downloadConnections']),
-      releaseProxyEnabled:
-          _asBool(raw['releaseProxyEnabled'], fallback: false),
+      releaseProxyEnabled: _asBool(raw['releaseProxyEnabled'], fallback: false),
       accelPrivateRepoAccepted:
           _asBool(raw['accelPrivateRepoAccepted'], fallback: false),
       accelScopes: _asAccelScopes(raw['accelScopes']),
@@ -149,11 +148,10 @@ class OgLSettings {
       releaseProxySelectedId: _asAccelSelectedId(raw['releaseProxySelectedId']),
       releaseProxyConsentVersion:
           _asInt(raw['releaseProxyConsentVersion'], fallback: 0),
-      releaseProxyConsentAt:
-          raw['releaseProxyConsentAt'] is String &&
-                  (raw['releaseProxyConsentAt'] as String).isNotEmpty
-              ? raw['releaseProxyConsentAt'] as String
-              : null,
+      releaseProxyConsentAt: raw['releaseProxyConsentAt'] is String &&
+              (raw['releaseProxyConsentAt'] as String).isNotEmpty
+          ? raw['releaseProxyConsentAt'] as String
+          : null,
       foldersFirst: _asBool(raw['foldersFirst'], fallback: true),
       codeHighlight: _asBool(raw['codeHighlight'], fallback: true),
       codeFontSize: _clampDouble(
@@ -264,7 +262,12 @@ class OgLSettings {
   /// 保持"数据层不认识 UI 资源"的前提下，这里只存**代码**；
   /// 具体加载由展示层完成，非法代码一律回落 `zh`。
   static const List<String> languageCodes = <String>[
-    'zh', 'zh_TW', 'en', 'de', 'fr', 'ru',
+    'zh',
+    'zh_TW',
+    'en',
+    'de',
+    'fr',
+    'ru',
   ];
 
   static String _asLocale(Object? value) =>
@@ -385,8 +388,7 @@ class OgLSettings {
       releaseProxyConsentVersion >= kOgLAccelConsentVersion;
 
   /// 某个适用范围是否开启。
-  bool accelScopeEnabled(OgLAccelScope scope) =>
-      accelScopes.contains(scope.id);
+  bool accelScopeEnabled(OgLAccelScope scope) => accelScopes.contains(scope.id);
 
   /// **按范围**取生效前缀：范围关掉、或总开关/协议/通道任一不满足 → 空列表。
   ///
@@ -495,14 +497,12 @@ class OgLSettings {
         dnsMode: dnsMode ?? this.dnsMode,
         dnsServerId: dnsServerId ?? this.dnsServerId,
         dnsPreferDoh: dnsPreferDoh ?? this.dnsPreferDoh,
-        downloadConnections:
-            downloadConnections ?? this.downloadConnections,
+        downloadConnections: downloadConnections ?? this.downloadConnections,
         releaseProxyEnabled: releaseProxyEnabled ?? this.releaseProxyEnabled,
         accelPrivateRepoAccepted:
             accelPrivateRepoAccepted ?? this.accelPrivateRepoAccepted,
         accelScopes: accelScopes ?? this.accelScopes,
-        releaseProxyChannels:
-            releaseProxyChannels ?? this.releaseProxyChannels,
+        releaseProxyChannels: releaseProxyChannels ?? this.releaseProxyChannels,
         releaseProxySelectedId:
             releaseProxySelectedId ?? this.releaseProxySelectedId,
         releaseProxyConsentVersion:
@@ -626,6 +626,17 @@ class OgLSettingsController extends ChangeNotifier {
   /// 是否已完成一次加载。
   bool get isLoaded => _loaded;
 
+  /// UI 已消费一次错误后清零（弹过一次 SnackBar 后调用，避免反复弹同一条）。
+  ///
+  /// **不是**「下一次错误前不要再弹」——而是「这次已经告诉过用户了」。
+  void clearLastError() {
+    if (_lastError == null) {
+      return;
+    }
+    _lastError = null;
+    notifyListeners();
+  }
+
   /// 加载（**永不抛**：坏数据回落默认并记录原因）。
   ///
   /// **首次启动**（尚无持久化数据）跟随系统语言：系统语言受支持就用它，
@@ -668,8 +679,8 @@ class OgLSettingsController extends ChangeNotifier {
       apply(_settings.copyWith(mode: mode));
 
   /// 便捷：设置 DNS 解析模式（`system` / `custom`）。
-  Future<void> setDnsMode(String mode) =>
-      apply(_settings.copyWith(dnsMode: mode == 'custom' ? 'custom' : 'system'));
+  Future<void> setDnsMode(String mode) => apply(
+      _settings.copyWith(dnsMode: mode == 'custom' ? 'custom' : 'system'));
 
   /// 便捷：设置自定义模式下的内置 DNS。
   Future<void> setDnsServer(String serverId) =>
@@ -690,17 +701,17 @@ class OgLSettingsController extends ChangeNotifier {
   /// 便捷：开关某个加速适用范围。
   Future<void> setAccelScope(OgLAccelScope scope, bool enabled) {
     final List<String> next = <String>[
-      for (final String id in _settings.accelScopes) if (id != scope.id) id,
+      for (final String id in _settings.accelScopes)
+        if (id != scope.id) id,
     ];
     if (enabled && !next.contains(scope.id)) {
       next.add(scope.id);
     }
     // 保持枚举顺序，落盘可读、diff 稳定。
-    next.sort((String a, String b) =>
-        OgLAccelScope.values
-            .indexWhere((OgLAccelScope s) => s.id == a)
-            .compareTo(OgLAccelScope.values
-                .indexWhere((OgLAccelScope s) => s.id == b)));
+    next.sort((String a, String b) => OgLAccelScope.values
+        .indexWhere((OgLAccelScope s) => s.id == a)
+        .compareTo(
+            OgLAccelScope.values.indexWhere((OgLAccelScope s) => s.id == b)));
     return apply(_settings.copyWith(accelScopes: next));
   }
 
@@ -729,8 +740,7 @@ class OgLSettingsController extends ChangeNotifier {
     final bool needClear = _settings.releaseProxySelectedId == channelId;
     return apply(_settings.copyWith(
       releaseProxyChannels: next,
-      releaseProxySelectedId:
-          needClear ? '' : _settings.releaseProxySelectedId,
+      releaseProxySelectedId: needClear ? '' : _settings.releaseProxySelectedId,
     ));
   }
 
@@ -852,8 +862,7 @@ class OgLSettingsController extends ChangeNotifier {
   /// 便捷：设置界面语言（非法代码回落 `zh`）。
   Future<void> setLanguage(String code) => apply(
         _settings.copyWith(
-          languageCode:
-              OgLSettings.languageCodes.contains(code) ? code : 'zh',
+          languageCode: OgLSettings.languageCodes.contains(code) ? code : 'zh',
         ),
       );
 

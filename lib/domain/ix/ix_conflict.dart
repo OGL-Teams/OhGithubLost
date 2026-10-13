@@ -111,8 +111,7 @@ class IxConflictResolution {
   final bool confirmed;
 
   /// 是否可以放行（危险动作必须已确认）。
-  bool get allowed =>
-      !_requiresConfirmation(action) || confirmed;
+  bool get allowed => !_requiresConfirmation(action) || confirmed;
 
   static bool _requiresConfirmation(ConflictAction action) =>
       action == ConflictAction.forceOverwrite ||

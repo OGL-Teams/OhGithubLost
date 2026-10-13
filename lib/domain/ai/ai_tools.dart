@@ -33,16 +33,20 @@ List<AiTool> buildAiTools(GhApi api) => <AiTool>[
           if (repo.isEmpty) {
             return <String, Object?>{'error': '缺少 repo'};
           }
-          final String dir = '${args['path'] ?? ''}'.replaceAll(RegExp(r'^/+'), '');
+          final String dir =
+              '${args['path'] ?? ''}'.replaceAll(RegExp(r'^/+'), '');
           try {
             final GhTree tree = await api.tree(repo, recursive: true);
             final List<Map<String, String>> out = <Map<String, String>>[];
             for (final GhTreeEntry e in tree.entries) {
-              final bool under = dir.isEmpty || e.path == dir || e.path.startsWith('$dir/');
+              final bool under =
+                  dir.isEmpty || e.path == dir || e.path.startsWith('$dir/');
               if (!under) {
                 continue;
               }
-              final String rest = dir.isEmpty ? e.path : e.path.substring(dir.length).replaceAll(RegExp(r'^/+'), '');
+              final String rest = dir.isEmpty
+                  ? e.path
+                  : e.path.substring(dir.length).replaceAll(RegExp(r'^/+'), '');
               if (rest.isEmpty || rest.contains('/')) {
                 continue; // 只列直接子项
               }

@@ -26,8 +26,13 @@
 ///   重新标定基线，不计入方向判定。
 ///
 /// ## 无障碍
-/// - 收边态下，元素**仍然可点**：收边时在可见区域内覆盖一层透明手势层
-///   （只拦截"点击"，不拦截拖拽 —— 滚动照常交给列表），命中即展开；
+/// - 收边态下，元素**仍然可点**：收边时在可见区域上盖一层手势层，
+///   轻点（或屏幕阅读器激活）即展开；该层**只在收边态存在**，展开态零拦截；
+///   它拦的是"从这条 1/4 条带上起手的手势"——换"轻点必展开"的确定性
+///   （详见 `_ScrollAwareActionState.build` 里的取舍说明）；
+/// - 收边态把"原控件语义 + 收边提示"合并成**一个**语义节点
+///   （[MergeSemantics]）：读出来是「<原控件>，已收边，点击展开」一条，
+///   而不是"一个无名按钮 + 一条提示"两条；
 /// - 可见部分中"沿屏幕边缘方向"的尺寸由 `peekFactor` 与
 ///   [minVisibleExtent]（默认 48dp，含 [edgeInset] 边距）共同保证，
 ///   展开态的主控件本身仍是 ≥ 48dp 的触控目标；
@@ -164,7 +169,8 @@ class _ScrollAwareActionState extends State<ScrollAwareAction>
     final OgLOAnimQuality quality = OgLAnim.quality(context);
     _collapseDuration = quality.fast;
     _expandDuration = quality.medium;
-    if (_curveForward != quality.curve || _curveReverse != quality.settleCurve) {
+    if (_curveForward != quality.curve ||
+        _curveReverse != quality.settleCurve) {
       _curve?.dispose();
       _curve = CurvedAnimation(
         parent: _anim,
@@ -199,9 +205,10 @@ class _ScrollAwareActionState extends State<ScrollAwareAction>
   // ── 几何 ──────────────────────────────────────────────────────────────────
 
   /// 滑动轴。
-  Axis get _axis => widget.edge == AxisDirection.up || widget.edge == AxisDirection.down
-      ? Axis.vertical
-      : Axis.horizontal;
+  Axis get _axis =>
+      widget.edge == AxisDirection.up || widget.edge == AxisDirection.down
+          ? Axis.vertical
+          : Axis.horizontal;
 
   /// 收边方向在轴上的符号（+1 = 正方向滑出）。
   double get _sign => switch (widget.edge) {
@@ -245,7 +252,11 @@ class _ScrollAwareActionState extends State<ScrollAwareAction>
     if (controller == null || !controller.hasClients) {
       return;
     }
-    if (!controller.positions.every((ScrollPosition p) => p.hasPixels && p.hasContentDimensions)) {
+    // 三项都就绪才读得到 `pixels` / `maxScrollExtent` / `viewportDimension`；
+    // 少任何一项都会在 `viewportDimension` 的断言上炸（首帧 / 视图刚换绑时）。
+    final bool ready = controller.positions.every((ScrollPosition p) =>
+        p.hasPixels && p.hasContentDimensions && p.hasViewportDimension);
+    if (!ready) {
       return;
     }
     final ScrollPosition position = controller.positions.last;
@@ -343,8 +354,15 @@ class _ScrollAwareActionState extends State<ScrollAwareAction>
         ? const AlwaysStoppedAnimation<Offset>(Offset.zero)
         : curve.drive(Tween<Offset>(begin: Offset.zero, end: _collapsedOffset));
 
-    // 收边态：盖一层"只吃点击、不吃拖拽"的透明手势层 ——
-    // 点击 = 展开（不会误触原主操作），滚动仍然交给下面的列表。
+    // 收边态：盖一层手势层 —— 点击 = 展开（**不会误触原主操作**）。
+    //
+    // 为什么是 `HitTestBehavior.opaque`：收边后元素只剩 1/4 露在屏幕边缘，
+    // 若用 `translucent`，点在最边缘的条带上有机会**穿透到下面的列表项**
+    // （两个 Tap 识别器抢同一个手势，谁赢取决于命中顺序）——
+    // 那就会出现"轻点收边元素却打开了某个列表项"。`opaque` 让这条带子
+    // 的归属**确定**：轻点必展开（规格第 2 条）。
+    // 代价已知且有界：从这条带子**起手**的拖拽不会带动列表；条带贴边、
+    // 只占元素自己的范围（收边态才存在，展开态零拦截）。
     final Widget tapLayer = Semantics(
       hint: _t(kScrollAwareCollapsedHintKey),
       child: GestureDetector(
@@ -360,12 +378,17 @@ class _ScrollAwareActionState extends State<ScrollAwareAction>
 
     return SlideTransition(
       position: slide,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: <Widget>[
-          KeyedSubtree(key: _childKey, child: widget.child),
-          if (_collapsed) Positioned.fill(child: tapLayer),
-        ],
+      // 收边态把"原控件语义 + 收边提示"并成**一个**节点：屏幕阅读器读到
+      // 「新建仓库，已收边，点击展开」一条；否则会是"一个无名按钮 + 一条提示"
+      // 两个节点，用户以为有两个控件。激活它 = 展开（与轻点一致）。
+      child: MergeSemantics(
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: <Widget>[
+            KeyedSubtree(key: _childKey, child: widget.child),
+            if (_collapsed) Positioned.fill(child: tapLayer),
+          ],
+        ),
       ),
     );
   }

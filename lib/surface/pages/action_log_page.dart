@@ -12,9 +12,10 @@ import '../surface_bridge.dart';
 import '../widgets/log_body.dart';
 
 /// 取 `action_log_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('action_log_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'action_log_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// Actions 日志页。
 class ActionLogPage extends StatefulWidget {
@@ -65,8 +66,8 @@ class _ActionLogPageState extends State<ActionLogPage> {
     final controller = AsyncController<Map<String, String>>(
       label: _t('title'),
       isEmpty: (Map<String, String> value) => value.isEmpty,
-      loader: () => widget.surface.domain.actionLogs
-          .fetch(widget.fullName, widget.runId),
+      loader: () =>
+          widget.surface.domain.actionLogs.fetch(widget.fullName, widget.runId),
     );
     _logs = controller;
     return controller;
@@ -77,7 +78,7 @@ class _ActionLogPageState extends State<ActionLogPage> {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title:  Text(_t('title')),
+        title: Text(_t('title')),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -92,7 +93,7 @@ class _ActionLogPageState extends State<ActionLogPage> {
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
             child: TextField(
               controller: _query,
-              decoration:  InputDecoration(
+              decoration: InputDecoration(
                 isDense: true,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.search),
@@ -114,7 +115,7 @@ class _ActionLogPageState extends State<ActionLogPage> {
                     .toList()
                   ..sort();
                 if (keys.isEmpty) {
-                  return  Center(child: Text(_t('noMatchingJob')));
+                  return Center(child: Text(_t('noMatchingJob')));
                 }
                 return ListView(
                   padding: const EdgeInsets.all(12),
@@ -137,7 +138,8 @@ class _ActionLogPageState extends State<ActionLogPage> {
                               constraints: const BoxConstraints(maxHeight: 420),
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainerHighest,
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               // 5.0：长日志**分块虚拟化**渲染。
@@ -151,9 +153,7 @@ class _ActionLogPageState extends State<ActionLogPage> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 _t('linesCount', <String, Object?>{
-                                  'count': (logs[key] ?? '')
-                                      .split('\n')
-                                      .length,
+                                  'count': (logs[key] ?? '').split('\n').length,
                                 }),
                                 style: theme.textTheme.bodySmall,
                               ),

@@ -158,8 +158,7 @@ class NetRequest {
       );
 
   @override
-  String toString() =>
-      'NetRequest(${method.verb} ${label ?? url}'
+  String toString() => 'NetRequest(${method.verb} ${label ?? url}'
       '${headers.isEmpty ? '' : ' headers=${headers.length}'})';
 }
 

@@ -88,8 +88,7 @@ class KernelProbeReport {
       };
 
   @override
-  String toString() =>
-      '[$id] ${result.ok ? 'OK' : 'FAIL'} ${result.summary} '
+  String toString() => '[$id] ${result.ok ? 'OK' : 'FAIL'} ${result.summary} '
       '(${duration.inMilliseconds}ms)';
 }
 

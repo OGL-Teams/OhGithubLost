@@ -51,9 +51,10 @@ import 'package:re_highlight/re_highlight.dart';
 import '../i18n/og_l_i18n.dart';
 
 /// 取 `common` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('common', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'common', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 高亮语言注册的上限（超过即跳过高亮，避免超大文件拖垮渲染）。
 const int kOgLHighlightMaxChars = 400 * 1024;
@@ -483,7 +484,6 @@ class OgLCodeField extends StatefulWidget {
   /// 内容内边距。
   final EdgeInsetsGeometry padding;
 
-
   static Widget _lineNumbers(
     BuildContext context,
     CodeLineEditingController editingController,
@@ -580,8 +580,9 @@ class _OgLCodeFieldState extends State<OgLCodeField> {
     final ThemeData theme = Theme.of(context);
     final OgLCodeTheme palette =
         widget.codeTheme ?? OgLCodeTheme.fromScheme(theme.colorScheme);
-    final String lang =
-        widget.language.isNotEmpty ? widget.language : ogLDetectLanguage(widget.path);
+    final String lang = widget.language.isNotEmpty
+        ? widget.language
+        : ogLDetectLanguage(widget.path);
     return CodeEditor(
       controller: widget.controller,
       readOnly: widget.readOnly,
@@ -609,8 +610,10 @@ class _OgLCodeFieldState extends State<OgLCodeField> {
           palette: palette,
         ),
       ),
-      indicatorBuilder: widget.showLineNumbers ? OgLCodeField._lineNumbers : null,
-      findBuilder: widget.findController == null ? null : OgLCodeField._findPanel,
+      indicatorBuilder:
+          widget.showLineNumbers ? OgLCodeField._lineNumbers : null,
+      findBuilder:
+          widget.findController == null ? null : OgLCodeField._findPanel,
     );
   }
 }
@@ -714,7 +717,8 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
         double.infinity,
         controller.value == null
             ? 0
-            : _kRowHeight * ((controller.value!.replaceMode && !readOnly) ? 2 : 1),
+            : _kRowHeight *
+                ((controller.value!.replaceMode && !readOnly) ? 2 : 1),
       );
 
   @override
@@ -750,7 +754,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
             controller: controller.findInputController,
             focusNode: controller.findInputFocusNode,
             style: const TextStyle(fontSize: 13),
-            decoration:  InputDecoration(
+            decoration: InputDecoration(
               isDense: true,
               hintText: _t('findHint'),
               border: InputBorder.none,
@@ -784,7 +788,9 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
           IconButton(
             icon: const Icon(Icons.swap_vert, size: 18),
             tooltip: value.replaceMode ? _t('findOnly') : _t('replaceMode'),
-            onPressed: value.replaceMode ? controller.findMode : controller.replaceMode,
+            onPressed: value.replaceMode
+                ? controller.findMode
+                : controller.replaceMode,
           ),
         IconButton(
           icon: const Icon(Icons.close, size: 18),
@@ -803,7 +809,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
               controller: controller.replaceInputController,
               focusNode: controller.replaceInputFocusNode,
               style: const TextStyle(fontSize: 13),
-              decoration:  InputDecoration(
+              decoration: InputDecoration(
                 isDense: true,
                 hintText: _t('replaceWithHint'),
                 border: InputBorder.none,
@@ -818,7 +824,8 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
           IconButton(
             icon: const Icon(Icons.done_all, size: 18),
             tooltip: _t('replaceAll'),
-            onPressed: value.result == null ? null : controller.replaceAllMatches,
+            onPressed:
+                value.result == null ? null : controller.replaceAllMatches,
           ),
           const SizedBox(width: 8),
         ],

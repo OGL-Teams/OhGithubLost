@@ -55,7 +55,8 @@ class DomainBridge {
     IxPresign? presign,
     RepoFileService? repoFiles,
   })  : downloads = downloads ?? IxDownloadManager(),
-        actionLogs = actionLogs ?? IxActionLogs(tokenProvider: () async => null),
+        actionLogs =
+            actionLogs ?? IxActionLogs(tokenProvider: () async => null),
         presign = presign ?? IxPresign(tokenProvider: () async => null),
         _repoFiles = repoFiles ?? RepoFileService(api: api);
 
@@ -343,6 +344,15 @@ class IxModule extends OgLModule {
       engine: OgLRangeDownloader(),
       // 成品导出（存储②档：把成品粘贴到用户选的 SAF 文件夹）。
       storageExporter: const _OgLStorageExporter(),
+      // ★ 落盘目录裁决器（装配根注入，逻辑层只认函数签名）：
+      //   返回的目录 = 「存储方案实际写入位置」/download。
+      //   ① 公共目录档时即 /storage/emulated/0/ogl/download——
+      //   下载**直接写进用户可见的 ogl 目录**（旧实现写死应用私有目录，
+      //   用户"拿到了 ogl 权限却永远看不到文件"，还要靠打开 file:// 失败
+      //   才发现文件根本不在那）。② SAF 档照旧私有 + 完成后导出；
+      //   ③ 内部档维持私有。后端拿不到裁决（null）时回退私有目录，绝不阻塞下载。
+      downloadDirProvider: () async =>
+          '${(await OgLStorage.plan()).root}/download',
     );
     actionLogs = IxActionLogs(
       tokenProvider: () async => (await auth.activeToken())?.value,
@@ -533,6 +543,7 @@ class _SysEnvProbe implements KernelEnvironmentProbe {
     );
   }
 }
+
 /// 装配根提供的**成品导出**实现（逻辑层只认契约，硬件层干活）。
 ///
 /// 存储②档（用户授权了 SAF 文件夹）时，把下载成品**粘贴**进该文件夹；

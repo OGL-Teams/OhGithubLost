@@ -192,8 +192,7 @@ class RepoFileResult {
   int get total => items.length;
 
   /// 成功数。
-  int get succeeded =>
-      items.where((RepoFileItemResult item) => item.ok).length;
+  int get succeeded => items.where((RepoFileItemResult item) => item.ok).length;
 
   /// 失败数。
   int get failed => items.where((RepoFileItemResult item) => !item.ok).length;
@@ -744,7 +743,8 @@ class RepoFileService {
       if (probe.isDirectory) {
         return _singleFailure(
           source,
-          const _RepoFileFailure('isDirectory', '目标为目录：请以 isDirectory: true 递归删除'),
+          const _RepoFileFailure(
+              'isDirectory', '目标为目录：请以 isDirectory: true 递归删除'),
         );
       }
       if (expectedHeadSha != null) {
@@ -917,7 +917,8 @@ class RepoFileService {
             const _RepoFileFailure('notFound', '没有可执行的文件'),
           );
         }
-        final String commitMessage = message ?? _defaultBatchMessage(ops, total);
+        final String commitMessage =
+            message ?? _defaultBatchMessage(ops, total);
         _emit(onProgress, RepoFilePhase.preparing, 0, total, '');
 
         // ── 阶段 B：分块（读 + 提交） ──
@@ -988,9 +989,8 @@ class RepoFileService {
           }
           if (readFailure != null) {
             for (int i = cursor; i < end; i++) {
-              failures[i] = i == failedAt
-                  ? readFailure
-                  : 'aborted: 本批未提交（前序读取失败）';
+              failures[i] =
+                  i == failedAt ? readFailure : 'aborted: 本批未提交（前序读取失败）';
             }
             stopped = true;
             cancelledStop = readCancelled;
@@ -1399,7 +1399,8 @@ class RepoFileService {
     if (given.isNotEmpty) {
       return given;
     }
-    final Map<String, dynamic>? object = await client.getObject('/repos/$fullName');
+    final Map<String, dynamic>? object =
+        await client.getObject('/repos/$fullName');
     final String fallback =
         GhJson.str(object ?? const <String, dynamic>{}, 'default_branch');
     if (fallback.isEmpty) {
@@ -1587,9 +1588,9 @@ class RepoFileService {
     String? expectedHeadSha,
     required RepoFileCancelToken token,
   }) async {
-    final bool needsRaw =
-        upserts.any((_Transfer t) => t.payload.needsRaw || t.mode != _defaultMode) ||
-            deletions.any((_Deletion d) => !d.isPlain);
+    final bool needsRaw = upserts.any(
+            (_Transfer t) => t.payload.needsRaw || t.mode != _defaultMode) ||
+        deletions.any((_Deletion d) => !d.isPlain);
     if (!needsRaw) {
       return api.commitFiles(
         fullName,
@@ -1904,11 +1905,17 @@ class _Source {
 
 /// 待写入的载荷（三选一：文本 / 字节 / sha 引用）。
 class _Payload {
-  const _Payload.text(this.text) : base64 = null, refSha = null;
+  const _Payload.text(this.text)
+      : base64 = null,
+        refSha = null;
 
-  const _Payload.bytes(this.base64) : text = null, refSha = null;
+  const _Payload.bytes(this.base64)
+      : text = null,
+        refSha = null;
 
-  const _Payload.reference(this.refSha) : text = null, base64 = null;
+  const _Payload.reference(this.refSha)
+      : text = null,
+        base64 = null;
 
   /// 文本内容（合法 UTF-8 才有）。
   final String? text;

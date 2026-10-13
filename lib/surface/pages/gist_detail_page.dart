@@ -20,9 +20,10 @@ import '../util/link_opener.dart';
 import '../widgets/code_editor_field.dart';
 
 /// 取 `gist_detail_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('gist_detail_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'gist_detail_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 一个 Gist 文件（内容已解析）。
 class _GistFile {
@@ -178,12 +179,11 @@ class _GistDetailPageState extends State<GistDetailPage> {
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(controller.text),
-            child:  Text(_t('save')),
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: Text(_t('save')),
           ),
         ],
       ),
@@ -201,7 +201,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
       OgLAppLog.instance.result('Gist', _t('updated'), file.name);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(_t('saved'))),
+          SnackBar(content: Text(_t('saved'))),
         );
       }
       // 控制器可能在 `updateGist` 期间随页面一起被释放（用户退了出去）：
@@ -232,19 +232,19 @@ class _GistDetailPageState extends State<GistDetailPage> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('deleteTitle')),
-        content:  Text(_t('deleteDesc')),
+        title: Text(_t('deleteTitle')),
+        content: Text(_t('deleteDesc')),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('delete')),
+            child: Text(_t('delete')),
           ),
         ],
       ),
@@ -291,7 +291,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title:  Text(_t('title')),
+        title: Text(_t('title')),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.delete_outline),
@@ -308,13 +308,17 @@ class _GistDetailPageState extends State<GistDetailPage> {
           padding: const EdgeInsets.all(16),
           children: <Widget>[
             Text(
-              detail.description.isEmpty ? _t('noDescription') : detail.description,
+              detail.description.isEmpty
+                  ? _t('noDescription')
+                  : detail.description,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 4),
             Text(
               '${detail.isPublic ? _t('public') : _t('private')} · '
-                  '${_t('fileCount', <String, Object?>{'count': detail.files.length})}',
+              '${_t('fileCount', <String, Object?>{
+                    'count': detail.files.length
+                  })}',
               style: theme.textTheme.bodySmall,
             ),
             if (detail.htmlUrl.isNotEmpty) ...<Widget>[
@@ -328,7 +332,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                     );
                   },
                   icon: const Icon(Icons.open_in_new),
-                  label:  Text(_t('openInBrowser')),
+                  label: Text(_t('openInBrowser')),
                 ),
               ),
             ],
@@ -405,7 +409,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                       ),
                     ),
                     if (file.content.isEmpty)
-                       Padding(
+                      Padding(
                         padding: EdgeInsets.all(16),
                         child: Text(_t('emptyOrUnreadable')),
                       )

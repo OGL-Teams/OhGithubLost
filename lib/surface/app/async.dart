@@ -23,9 +23,10 @@ import 'animations.dart';
 import 'error_surface.dart';
 
 /// 取 `shell` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('shell', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'shell', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 通用异步控制器：加载 / 刷新 / 重试，并发抑制、失败保留旧数据。
 class AsyncController<T> extends ChangeNotifier {
@@ -116,7 +117,8 @@ class AsyncController<T> extends ChangeNotifier {
       _data = value;
       _empty = isEmpty(value);
       _error = null;
-      OgLAppLog.instance.result(_t('loading'), _t('done', {'label': label}), _summarize(value));
+      OgLAppLog.instance.result(
+          _t('loading'), _t('done', {'label': label}), _summarize(value));
     } catch (error) {
       _error = _describe(error);
       OgLAppLog.instance.add(
@@ -270,7 +272,8 @@ class AsyncView<T> extends StatelessWidget {
           }
           return Column(
             children: <Widget>[
-              OgLAsyncSoftErrorBar(message: soft, onDismiss: controller.dismissError),
+              OgLAsyncSoftErrorBar(
+                  message: soft, onDismiss: controller.dismissError),
               if (fill)
                 Expanded(child: _enterData(builder(context, data)))
               else
@@ -322,7 +325,7 @@ class OgLAsyncErrorPane extends StatelessWidget {
             const SizedBox(height: 16),
             FilledButton.tonal(
               onPressed: onRetry,
-              child:  Text(_t('retry')),
+              child: Text(_t('retry')),
             ),
           ],
         ),
@@ -409,7 +412,6 @@ class OgLAsyncSoftErrorBar extends StatelessWidget {
   }
 }
 
-
 /// 异步数据的 **Sliver 形态**：与 [AsyncView] 同语义（加载 / 空 / 错 / 软错），
 /// 但以 **sliver** 输出，于是"静态头部 + 长数据行"可以共用一个 `CustomScrollView`：
 ///
@@ -489,7 +491,8 @@ class OgLAsyncSliver<T> extends StatelessWidget {
           final String? failure = controller.error;
           if (failure != null && !controller.isLoading) {
             return SliverToBoxAdapter(
-              child: OgLAsyncErrorPane(message: failure, onRetry: controller.load),
+              child:
+                  OgLAsyncErrorPane(message: failure, onRetry: controller.load),
             );
           }
           return const SliverToBoxAdapter(

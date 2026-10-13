@@ -19,9 +19,10 @@ import '../surface_bridge.dart';
 import '../util/gh_format.dart';
 
 /// 取 `workflow_dispatch_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('workflow_dispatch_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'workflow_dispatch_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 一个 `workflow_dispatch` 参数声明。
 class _WfInput {
@@ -215,8 +216,8 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
         _form = parsed;
         for (final _WfInput input in parsed) {
           if (input.type == 'choice') {
-            _formChoice[input.name] =
-                input.defaultValue ?? (input.options.isEmpty ? '' : input.options.first);
+            _formChoice[input.name] = input.defaultValue ??
+                (input.options.isEmpty ? '' : input.options.first);
           } else if (input.type == 'boolean') {
             _formBool[input.name] = input.defaultValue == 'true';
           } else {
@@ -287,7 +288,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
     if (raw.startsWith('{')) {
       final Object? decoded = jsonDecode(raw);
       if (decoded is! Map) {
-        throw  FormatException(_t('inputsNotObject'));
+        throw FormatException(_t('inputsNotObject'));
       }
       return <String, String>{
         for (final MapEntry<Object?, Object?> e in decoded.entries)
@@ -302,9 +303,10 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
       }
       final int eq = trimmed.indexOf('=');
       if (eq <= 0) {
-        throw  FormatException(_t('eachLineKeyValue'));
+        throw FormatException(_t('eachLineKeyValue'));
       }
-      result[trimmed.substring(0, eq).trim()] = trimmed.substring(eq + 1).trim();
+      result[trimmed.substring(0, eq).trim()] =
+          trimmed.substring(eq + 1).trim();
     }
     return result;
   }
@@ -423,116 +425,118 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
         }
       },
       child: Scaffold(
-      appBar: AppBar(
-        title:  Text(_t('manualTrigger')),
-        actions: <Widget>[
-          TextButton(
-            onPressed: _busy ? null : _submit,
-            child: Text(_busy ? _t('triggering') : _t('trigger')),
-          ),
-        ],
-      ),
-      body: AsyncView<List<Map<String, dynamic>>>(
-        controller: _workflowsC(),
-        emptyIcon: Icons.play_circle_outline,
-        emptyText: _t('noWorkflows'),
-        builder: (BuildContext context, List<Map<String, dynamic>> workflows) {
-          if (_selected == null && workflows.isNotEmpty) {
-            // 默认选中第一个工作流——不能在 build 中直接 setState，
-            // 放到下一帧执行。
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && _selected == null) {
-                _selectWorkflow(workflows.first);
-              }
-            });
-          }
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: <Widget>[
-              Text(_t('title'), style: theme.textTheme.titleSmall),
-              const SizedBox(height: 8),
-              Card(
-                child: Column(
+        appBar: AppBar(
+          title: Text(_t('manualTrigger')),
+          actions: <Widget>[
+            TextButton(
+              onPressed: _busy ? null : _submit,
+              child: Text(_busy ? _t('triggering') : _t('trigger')),
+            ),
+          ],
+        ),
+        body: AsyncView<List<Map<String, dynamic>>>(
+          controller: _workflowsC(),
+          emptyIcon: Icons.play_circle_outline,
+          emptyText: _t('noWorkflows'),
+          builder:
+              (BuildContext context, List<Map<String, dynamic>> workflows) {
+            if (_selected == null && workflows.isNotEmpty) {
+              // 默认选中第一个工作流——不能在 build 中直接 setState，
+              // 放到下一帧执行。
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && _selected == null) {
+                  _selectWorkflow(workflows.first);
+                }
+              });
+            }
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: <Widget>[
+                Text(_t('title'), style: theme.textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Card(
+                  child: Column(
+                    children: <Widget>[
+                      for (final Map<String, dynamic> wf in workflows)
+                        ListTile(
+                          leading: Icon(
+                            _selected == ghInt(wf, 'id').toString()
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                          ),
+                          title: Text(
+                            ghStr(wf, 'name'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            '${ghStr(wf, 'path')} · ${ghStr(wf, 'state')}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: _busy ? null : () => _selectWorkflow(wf),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(_t('refLabel'), style: theme.textTheme.titleSmall),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _ref,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'main',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
                   children: <Widget>[
-                    for (final Map<String, dynamic> wf in workflows)
-                      ListTile(
-                        leading: Icon(
-                          _selected == ghInt(wf, 'id').toString()
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                        ),
-                        title: Text(
-                          ghStr(wf, 'name'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          '${ghStr(wf, 'path')} · ${ghStr(wf, 'state')}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        onTap: _busy ? null : () => _selectWorkflow(wf),
+                    Expanded(
+                      child:
+                          Text(_t('inputs'), style: theme.textTheme.titleSmall),
+                    ),
+                    if (_loadingForm)
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(_t('refLabel'), style: theme.textTheme.titleSmall),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _ref,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'main',
+                const SizedBox(height: 8),
+                ..._formSection(theme),
+                const SizedBox(height: 16),
+                ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  title:
+                      Text(_t('advanced'), style: theme.textTheme.titleSmall),
+                  childrenPadding: const EdgeInsets.only(bottom: 8),
+                  children: <Widget>[
+                    TextField(
+                      controller: _inputs,
+                      minLines: 3,
+                      maxLines: 8,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 13,
+                      ),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: _t('jsonHint'),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(_t('inputs'), style: theme.textTheme.titleSmall),
-                  ),
-                  if (_loadingForm)
-                    const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ..._formSection(theme),
-              const SizedBox(height: 16),
-              ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                title: Text(_t('advanced'), style: theme.textTheme.titleSmall),
-                childrenPadding: const EdgeInsets.only(bottom: 8),
-                children: <Widget>[
-                  TextField(
-                    controller: _inputs,
-                    minLines: 3,
-                    maxLines: 8,
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 13,
-                    ),
-                    decoration:  InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: _t('jsonHint'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _t('dispatchHint') +
-                _t('dispatchHint2'),
-                style: theme.textTheme.bodySmall,
-              ),
-            ],
-          );
-        },
-      ),
+                const SizedBox(height: 8),
+                Text(
+                  _t('dispatchHint') + _t('dispatchHint2'),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -568,7 +572,8 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
   }
 
   Widget _fieldFor(ThemeData theme, _WfInput input) {
-    final String label = input.name + (input.required ? _t('requiredSuffix') : _t('optionalSuffix'));
+    final String label = input.name +
+        (input.required ? _t('requiredSuffix') : _t('optionalSuffix'));
     final String? helper = input.description;
     if (input.type == 'choice') {
       final String value = _formChoice[input.name] ?? '';
@@ -602,7 +607,9 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
           ? const TextInputType.numberWithOptions(decimal: true)
           : TextInputType.text,
       inputFormatters: input.type == 'number'
-          ? <TextInputFormatter>[FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))]
+          ? <TextInputFormatter>[
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
+            ]
           : null,
       decoration: InputDecoration(
         labelText: label,

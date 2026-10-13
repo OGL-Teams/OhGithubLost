@@ -32,9 +32,10 @@ import 'download_manager_page.dart';
 import 'settings_page.dart';
 
 /// 取 `common` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('common', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'common', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 文件预览页。
 class FilePreviewPage extends StatefulWidget {
@@ -244,9 +245,10 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
           child: Image.memory(
             bytes,
             fit: BoxFit.contain,
-            errorBuilder: (BuildContext context, Object error, StackTrace? stack) =>
-                _notice(Theme.of(context), Icons.broken_image_outlined,
-                    _t('previewTooLarge')),
+            errorBuilder:
+                (BuildContext context, Object error, StackTrace? stack) =>
+                    _notice(Theme.of(context), Icons.broken_image_outlined,
+                        _t('previewTooLarge')),
           ),
         ),
       );
@@ -301,8 +303,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
               customTypeName:
                   widget.surface.settings.settings.codeColorTypeName,
               customString: widget.surface.settings.settings.codeColorString,
-              customComment:
-                  widget.surface.settings.settings.codeColorComment,
+              customComment: widget.surface.settings.settings.codeColorComment,
               customNumber: widget.surface.settings.settings.codeColorNumber,
             ),
           ),
@@ -348,8 +349,9 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
             Text(
               // 私有仓库 + 未接受加速：多给一句实话，别让人白去设置里找开关。
               // 已接受的私有仓库与公开仓库同等待遇，不需要这句解释。
-              (widget.repoPrivate && !widget.surface.settings.settings
-                      .accelPrivateRepoAccepted)
+              (widget.repoPrivate &&
+                      !widget
+                          .surface.settings.settings.accelPrivateRepoAccepted)
                   ? _t('fileTooLargeBodyPrivate')
                   : _t('fileTooLargeBody'),
               textAlign: TextAlign.center,
@@ -423,8 +425,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
           future: widget.repoPrivate
               ? widget.surface.downloadAuthHeaders()
               : Future<Map<String, String>>.value(const <String, String>{}),
-          builder: (BuildContext context,
-              AsyncSnapshot<Map<String, String>> snap) {
+          builder:
+              (BuildContext context, AsyncSnapshot<Map<String, String>> snap) {
             final Map<String, String> headers =
                 snap.data ?? const <String, String>{};
             return InteractiveViewer(
@@ -441,13 +443,13 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
                       progress == null
                           ? child
                           : const Center(child: CircularProgressIndicator()),
-                  errorBuilder: (BuildContext context, Object error,
-                          StackTrace? stack) =>
-                      // ★ 这里**不能**说「文件过大」：>1 MB 已经由
-                      //   `_tooLargePane` 处理过了，走到这里说明是加载失败
-                      //   （认证、限流、网络），说成文件过大会让人白折腾。
-                      _notice(theme, Icons.broken_image_outlined,
-                          _t('previewLoadFailed')),
+                  errorBuilder:
+                      (BuildContext context, Object error, StackTrace? stack) =>
+                          // ★ 这里**不能**说「文件过大」：>1 MB 已经由
+                          //   `_tooLargePane` 处理过了，走到这里说明是加载失败
+                          //   （认证、限流、网络），说成文件过大会让人白折腾。
+                          _notice(theme, Icons.broken_image_outlined,
+                              _t('previewLoadFailed')),
                 ),
               ),
             );
@@ -460,8 +462,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
       case OgLPreviewKind.xml:
       case OgLPreviewKind.unknown:
         // 文本类 > 1 MB 不在预览页展开（编辑器才是它的去处）。
-        return _notice(theme, Icons.description_outlined,
-            _t('fileTooLargeTitle'));
+        return _notice(
+            theme, Icons.description_outlined, _t('fileTooLargeTitle'));
     }
   }
 

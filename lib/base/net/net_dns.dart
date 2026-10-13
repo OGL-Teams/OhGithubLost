@@ -579,8 +579,8 @@ class DnsCache {
     // 腾位置时先丢"马上就要过期"的，最耐用的那些留下）。
     final now = DateTime.now();
     final expired = _entries.entries
-        .where((MapEntry<String, DnsAnswer> entry) =>
-            entry.value.isExpiredAt(now))
+        .where(
+            (MapEntry<String, DnsAnswer> entry) => entry.value.isExpiredAt(now))
         .map((MapEntry<String, DnsAnswer> entry) => entry.key)
         .toList();
     for (final key in expired) {
@@ -978,8 +978,7 @@ class DnsService {
   Future<({List<String> addresses, String serverId})> _race(
     List<Future<({List<String> addresses, String serverId})>> attempts,
   ) {
-    final completer =
-        Completer<({List<String> addresses, String serverId})>();
+    final completer = Completer<({List<String> addresses, String serverId})>();
     var remaining = attempts.length;
     Object? lastError;
     for (final attempt in attempts) {

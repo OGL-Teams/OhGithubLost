@@ -27,9 +27,10 @@ import 'keyboard_guard.dart';
 import 'motion.dart';
 
 /// 取 `shell` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('shell', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'shell', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 应用根。
 class OgLApp extends StatelessWidget {
@@ -160,7 +161,7 @@ class OgLBootFailureApp extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                     Text(
+                    Text(
                       _t('bootRejected'),
                       style: TextStyle(
                         fontSize: 22,
@@ -168,7 +169,7 @@ class OgLBootFailureApp extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                     Text(_t('dataUntouched')),
+                    Text(_t('dataUntouched')),
                     const SizedBox(height: 16),
                     SelectableText(
                       message,

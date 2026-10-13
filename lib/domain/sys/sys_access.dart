@@ -391,8 +391,8 @@ class SysAccessGuard {
     final result = <String, Object?>{
       'collectedAt': snapshot.collectedAt.toIso8601String(),
       'granted': (owned.toList()
-            ..sort((SysCapability a, SysCapability b) =>
-                a.name.compareTo(b.name)))
+            ..sort(
+                (SysCapability a, SysCapability b) => a.name.compareTo(b.name)))
           .map((SysCapability capability) => capability.name)
           .toList(),
     };
@@ -438,8 +438,7 @@ class SysAccessGuard {
                 sysCapabilityInfo(capability).toJson())
             .toList(),
         'hasSensitive': requested.any(
-          (SysCapability capability) =>
-              sysCapabilityInfo(capability).sensitive,
+          (SysCapability capability) => sysCapabilityInfo(capability).sensitive,
         ),
       };
 

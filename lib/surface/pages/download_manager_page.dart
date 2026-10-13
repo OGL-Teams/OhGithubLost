@@ -18,9 +18,10 @@ import '../types.dart';
 import '../util/gh_format.dart';
 
 /// 取 `download_manager_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('download_manager_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'download_manager_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 下载已入队：弹 SnackBar，带「查看下载」动作跳转到下载中心。
 ///
@@ -34,6 +35,10 @@ void ogLShowDownloadQueued(
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(message),
+      // 带「查看下载」动作的横幅应**长一点**：M3 默认 4s 容易
+      // 在用户读完文件名之前就收回（特别是点了 "viewDownloads" 但
+      // 不去点跳转的情况——横幅消失后就没入口了）。给 8s 留出决定时间。
+      duration: const Duration(seconds: 8),
       action: SnackBarAction(
         label: OgLI18n.instance.t('common', 'viewDownloads'),
         onPressed: () => Navigator.of(context).push(
@@ -54,13 +59,12 @@ class DownloadManagerPage extends StatelessWidget {
   /// 表面桥。
   final SurfaceBridge surface;
 
-
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title:  Text(_t('title')),
+        title: Text(_t('title')),
         actions: <Widget>[
           IconButton(
             tooltip: _t('clearFinished'),
@@ -84,7 +88,7 @@ class DownloadManagerPage extends StatelessWidget {
                     color: theme.colorScheme.outline,
                   ),
                   const SizedBox(height: 12),
-                   Text(_t('empty')),
+                  Text(_t('empty')),
                   const SizedBox(height: 4),
                   Text(
                     _t('emptyHint'),
@@ -148,7 +152,7 @@ class DownloadManagerPage extends StatelessWidget {
               TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0, end: task.progress),
                 duration: OgLAnim.fast(context),
-                curve: Curves.easeOut,
+                curve: OgLAnim.curve(context),
                 builder: (
                   BuildContext context,
                   double value,
@@ -279,7 +283,8 @@ class DownloadManagerPage extends StatelessWidget {
   /// 显示在界面上** —— 那会让非中文用户在下载管理页看到中文。域层不参与 i18n
   /// 扫描（`i18n_scan` 只看 `lib/surface/`），所以这类问题门禁抓不到，只能靠
   /// 「界面文案一律经 `_t`」这条纪律守住。
-  static String _categoryLabel(IxDownloadCategory category) => switch (category) {
+  static String _categoryLabel(IxDownloadCategory category) =>
+      switch (category) {
         IxDownloadCategory.release => _t('categoryRelease'),
         IxDownloadCategory.repo => _t('categoryRepo'),
         IxDownloadCategory.gist => _t('categoryGist'),
@@ -342,7 +347,7 @@ class DownloadManagerPage extends StatelessWidget {
       await Clipboard.setData(ClipboardData(text: task.savePath));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(_t('cannotOpenCopied'))),
+          SnackBar(content: Text(_t('cannotOpenCopied'))),
         );
       }
     }
@@ -352,7 +357,7 @@ class DownloadManagerPage extends StatelessWidget {
     await Clipboard.setData(ClipboardData(text: task.savePath));
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('pathCopied'))),
+        SnackBar(content: Text(_t('pathCopied'))),
       );
     }
   }

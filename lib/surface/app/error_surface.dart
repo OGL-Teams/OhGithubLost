@@ -28,9 +28,10 @@ import '../i18n/og_l_i18n.dart';
 import 'system_notifier.dart';
 
 /// 取 `shell` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('shell', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'shell', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 通知严重级别。
 enum OgLNoticeSeverity {
@@ -339,10 +340,13 @@ class OgLAppLogEntry {
 
   /// 时间。
   final DateTime at;
+
   /// 区域（认证 / 仓库 / …）。
   final String area;
+
   /// 正文（含原始异常与堆栈）。
   final String message;
+
   /// 级别。
   final OgLNoticeSeverity severity;
 
@@ -457,10 +461,9 @@ class _OgLNoticeHostState extends State<OgLNoticeHost>
   /// - 同时**落盘 + 记入应用日志**，即便系统通道不可用也不会丢消息；
   /// - 回到前台后，[_drain] 仍会把排队中的应用内提示补发出来。
   void _emitSystemNotice(OgLNotice notice) {
-    final String text =
-        notice.detail == null || notice.detail!.isEmpty
-            ? notice.title
-            : '${notice.title}：${notice.detail}';
+    final String text = notice.detail == null || notice.detail!.isEmpty
+        ? notice.title
+        : '${notice.title}：${notice.detail}';
     OgLLogFile.line(
       _t('notification'),
       _t('systemChannel', {'text': text}),
@@ -509,7 +512,7 @@ class _OgLNoticeHostState extends State<OgLNoticeHost>
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child:  Text(_t('gotIt')),
+              child: Text(_t('gotIt')),
             ),
           ],
         ),
@@ -557,7 +560,8 @@ class OgLDiagnosticsNoticeSink implements KernelLogSink {
     OgLNoticeCenter.instance.report(
       title: entry.message,
       detail: entry.code == null ? entry.tag : '${entry.tag} · ${entry.code}',
-      severity: isError ? OgLNoticeSeverity.critical : OgLNoticeSeverity.warning,
+      severity:
+          isError ? OgLNoticeSeverity.critical : OgLNoticeSeverity.warning,
     );
   }
 }

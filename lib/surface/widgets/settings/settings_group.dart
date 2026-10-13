@@ -99,7 +99,8 @@ Future<T?> ogLShowSettingsChoice<T>({
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
                               option.hint!,
-                              style: Theme.of(dialogContext).textTheme.bodySmall,
+                              style:
+                                  Theme.of(dialogContext).textTheme.bodySmall,
                             ),
                           ),
                       ],
@@ -196,7 +197,8 @@ class OgLSettingsGroup extends StatelessWidget {
                         children: <Widget>[
                           Semantics(
                             header: true,
-                            child: Text(title, style: theme.textTheme.titleMedium),
+                            child:
+                                Text(title, style: theme.textTheme.titleMedium),
                           ),
                           if (subtitle.isNotEmpty)
                             Padding(

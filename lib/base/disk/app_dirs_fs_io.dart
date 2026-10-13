@@ -57,8 +57,7 @@ abstract final class AppDirsFs {
       try {
         final Directory? ext = await getExternalStorageDirectory();
         if (ext != null) {
-          final String candidate =
-              '${ext.path.replaceAll(r'\', '/')}/$folder';
+          final String candidate = '${ext.path.replaceAll(r'\', '/')}/$folder';
           if (await writable(candidate)) {
             return candidate;
           }

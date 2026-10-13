@@ -23,9 +23,10 @@ import 'notifications_page.dart';
 import 'repo_page.dart';
 
 /// 取 `dashboard_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('dashboard_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'dashboard_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 每页条数。
 const int _kPageSize = 30;
@@ -103,7 +104,8 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_bootstrap()));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => unawaited(_bootstrap()));
     // 分级预加载：本页主视觉的图片资源 = 身份头像。
     // - 账号头像 → `currentPage`（档位 ≥1）；
     // - 列表前几项的 owner 头像 → 数据落地后才登记（见 [_preloadRepoAvatars]）。
@@ -181,7 +183,8 @@ class _DashboardPageState extends State<DashboardPage> {
   /// - 其余项是**列表单项入场**（`OgLReveal`，视口驱动）→ `currentPage`（档位 ≥1）。
   void _preloadRepoAvatars() {
     final List<GhRepo> items = _active.items;
-    final int take = items.length < _kPreloadLeads ? items.length : _kPreloadLeads;
+    final int take =
+        items.length < _kPreloadLeads ? items.length : _kPreloadLeads;
     bool registered = false;
     for (int i = 0; i < take; i++) {
       final GhRepo repo = items[i];
@@ -259,7 +262,8 @@ class _DashboardPageState extends State<DashboardPage> {
   void _openDownloads() {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => DownloadManagerPage(surface: widget.surface),
+        builder: (BuildContext context) =>
+            DownloadManagerPage(surface: widget.surface),
       ),
     );
   }
@@ -289,7 +293,8 @@ class _DashboardPageState extends State<DashboardPage> {
     }
     OgLAppLog.instance.result(_t('home'), _t('repoCreated'), created.fullName);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_t('repoCreatedName', {'name': created.fullName}))),
+      SnackBar(
+          content: Text(_t('repoCreatedName', {'name': created.fullName}))),
     );
     await _mine.refresh();
     if (mounted) {
@@ -301,13 +306,14 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:  Text(_t('home')),
+        title: Text(_t('home')),
         actions: <Widget>[
           ListenableBuilder(
             listenable: OgLAppLog.instance,
             builder: (BuildContext context, Widget? _) {
               final int alerts = OgLAppLog.instance.entries
-                  .where((OgLAppLogEntry e) => e.severity != OgLNoticeSeverity.info)
+                  .where((OgLAppLogEntry e) =>
+                      e.severity != OgLNoticeSeverity.info)
                   .length;
               return IconButton(
                 icon: alerts > 0
@@ -345,7 +351,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: FloatingActionButton.extended(
           onPressed: _createRepo,
           icon: const Icon(Icons.add),
-          label:  Text(_t('newRepo')),
+          label: Text(_t('newRepo')),
         ),
       ),
       body: Column(
@@ -353,7 +359,7 @@ class _DashboardPageState extends State<DashboardPage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: SegmentedButton<int>(
-              segments:  <ButtonSegment<int>>[
+              segments: <ButtonSegment<int>>[
                 ButtonSegment<int>(value: 0, label: Text(_t('mine'))),
                 ButtonSegment<int>(value: 1, label: Text(_t('starred'))),
               ],
@@ -387,7 +393,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     action: _segment == 0
                         ? FilledButton(
                             onPressed: _createRepo,
-                            child:  Text(_t('newRepo')),
+                            child: Text(_t('newRepo')),
                           )
                         : null,
                   );
@@ -409,7 +415,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ? const CircularProgressIndicator()
                                 : OutlinedButton(
                                     onPressed: p.loadMore,
-                                    child: Text(_t('loadMore', {'count': p.items.length})),
+                                    child: Text(_t(
+                                        'loadMore', {'count': p.items.length})),
                                   ),
                           ),
                         );
@@ -419,7 +426,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         delay: OgLAnim.staggerOf(context, index),
                         child: ListTile(
                           leading: Icon(
-                            repo.isPrivate ? Icons.lock_outline : Icons.folder_outlined,
+                            repo.isPrivate
+                                ? Icons.lock_outline
+                                : Icons.folder_outlined,
                           ),
                           title: OgLSharedTitle(
                             tag: 'ogl-repo:${repo.fullName}',

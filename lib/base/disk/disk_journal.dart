@@ -305,8 +305,7 @@ class WriteJournal {
 
   String _keyOf(String id) => '$namespace$id';
 
-  String _nextId() =>
-      '${DateTime.now().microsecondsSinceEpoch}-${_sequence++}';
+  String _nextId() => '${DateTime.now().microsecondsSinceEpoch}-${_sequence++}';
 
   Future<void> _write(JournalRecord record) =>
       _store.write(_keyOf(record.id), jsonEncode(record.toJson()));

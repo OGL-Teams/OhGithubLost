@@ -17,9 +17,10 @@ import '../util/link_opener.dart';
 import '../widgets/readme_view.dart';
 
 /// 取 `pull_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('pull_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'pull_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// PR 详情页。
 class PullPage extends StatefulWidget {
@@ -108,61 +109,63 @@ class _PullPageState extends State<PullPage> {
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      body: OgLReveal(delay: Duration.zero, child: CustomScrollView(
-        slivers: <Widget>[
-          // 头部：常量级 widget 数量，一次性构建即可；
-          // 数据行交给下面的 sliver 懒加载（长列表不再一次性构建）。
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-
-              Text(title, style: theme.textTheme.titleLarge),
-              const SizedBox(height: 8),
-              Text(
-                'by ${ghLogin(widget.pull)} · '
-                '${ghDate(widget.pull, 'created_at')} · '
-                '${_stateText()}',
-                style: theme.textTheme.bodySmall,
-              ),
-              const SizedBox(height: 12),
-              if (body.trim().isNotEmpty)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: ReadmeView(
-                      markdown: body,
-                      onOpenLink: (Uri uri) {
-                        unawaited(openExternalLink(uri, tag: 'PR'));
-                      },
-                    ),
+      body: OgLReveal(
+          delay: Duration.zero,
+          child: CustomScrollView(
+            slivers: <Widget>[
+              // 头部：常量级 widget 数量，一次性构建即可；
+              // 数据行交给下面的 sliver 懒加载（长列表不再一次性构建）。
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Text(title, style: theme.textTheme.titleLarge),
+                      const SizedBox(height: 8),
+                      Text(
+                        'by ${ghLogin(widget.pull)} · '
+                        '${ghDate(widget.pull, 'created_at')} · '
+                        '${_stateText()}',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 12),
+                      if (body.trim().isNotEmpty)
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: ReadmeView(
+                              markdown: body,
+                              onOpenLink: (Uri uri) {
+                                unawaited(openExternalLink(uri, tag: 'PR'));
+                              },
+                            ),
+                          ),
+                        ),
+                      const Divider(height: 32),
+                      Text(_t('changedFiles'),
+                          style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 8)
+                    ],
                   ),
                 ),
-              const Divider(height: 32),
-              Text(_t('changedFiles'), style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8)
-                ],
               ),
-            ),
-          ),
-          OgLAsyncSliver<List<Map<String, dynamic>>>(
-            controller: _filesC(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCountOf: (List<Map<String, dynamic>> files) => files.length,
-            itemBuilder: (
-              BuildContext context,
-              List<Map<String, dynamic>> files,
-              int index,
-            ) =>
-                _fileTile(files[index]),
-            emptyIcon: Icons.description_outlined,
-            emptyText: _t('noChangedFiles'),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
-      )),
+              OgLAsyncSliver<List<Map<String, dynamic>>>(
+                controller: _filesC(),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCountOf: (List<Map<String, dynamic>> files) => files.length,
+                itemBuilder: (
+                  BuildContext context,
+                  List<Map<String, dynamic>> files,
+                  int index,
+                ) =>
+                    _fileTile(files[index]),
+                emptyIcon: Icons.description_outlined,
+                emptyText: _t('noChangedFiles'),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            ],
+          )),
     );
   }
 

@@ -24,9 +24,10 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import '../i18n/og_l_i18n.dart';
 
 /// 取 `common` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('common', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'common', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 徽章行：`[![alt](图片)](链接)`（可重复；装饰用，整行删除）。
 final RegExp _badgeRow = RegExp(r'^(\s*\[!\[[^\)]*\)\]\([^)]*\)\s*)+$');
@@ -177,7 +178,9 @@ String simplifyReadme(
         images++;
         return m.group(0) ?? '';
       }
-      return alt.isEmpty ? _t('readmeImageOmitted') : _t('readmeImageAlt', {'alt': alt});
+      return alt.isEmpty
+          ? _t('readmeImageOmitted')
+          : _t('readmeImageAlt', {'alt': alt});
     });
     kept.add(swapped.replaceAll(_htmlTag, '').trimRight());
   }
@@ -317,7 +320,8 @@ class ReadmeView extends StatelessWidget {
       imageBuilder: (Uri uri, String? title, String? alt) {
         final String label =
             (alt == null || alt.trim().isEmpty) ? uri.path : alt.trim();
-        final TextStyle fallback = body.copyWith(color: scheme.onSurfaceVariant);
+        final TextStyle fallback =
+            body.copyWith(color: scheme.onSurfaceVariant);
         // ① 加速路径：**自定义通道 + 公开仓库**（或私有仓库且用户已知情接受）
         //    时，仓库内图片走 **raw + 代理**。
         //    私有仓库的 raw 必须带令牌（匿名是 404）：令牌由 [imageHeaders]
@@ -357,7 +361,8 @@ class ReadmeView extends StatelessWidget {
         if (target == null) {
           return Text(_t('readmeImageAlt', {'alt': label}), style: fallback);
         }
-        return _ReadmeImage.net(url: target, alt: label, fallbackStyle: fallback);
+        return _ReadmeImage.net(
+            url: target, alt: label, fallbackStyle: fallback);
       },
       styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
         p: body.copyWith(height: 1.5),
@@ -390,6 +395,7 @@ class _ReadmeImage extends StatelessWidget {
   /// 走 API：参数是仓库内相对路径。
   const _ReadmeImage.api({
     required String path,
+
     /// 缓存作用域（仓库 + 分支的基址）。字节缓存必须区分仓库：
     /// 只以仓库内相对路径为键时，`assets/logo.png` 这类同名文件会在
     /// 两个仓库之间命中同一份缓存，显示成另一个仓库的图且无任何提示。
@@ -446,7 +452,8 @@ class _ReadmeImage extends StatelessWidget {
     final String cacheKey = '$_scope|$path';
     final Uint8List? cached = _cache[cacheKey];
     if (cached != null) {
-      return _frame(Image.memory(cached, fit: BoxFit.contain, alignment: Alignment.centerLeft));
+      return _frame(Image.memory(cached,
+          fit: BoxFit.contain, alignment: Alignment.centerLeft));
     }
     return _frame(
       FutureBuilder<Uint8List?>(
@@ -457,9 +464,11 @@ class _ReadmeImage extends StatelessWidget {
           }
           final Uint8List? bytes = snapshot.data;
           if (bytes == null || bytes.isEmpty) {
-            return Text(_t('readmeImageAlt', {'alt': alt}), style: fallbackStyle);
+            return Text(_t('readmeImageAlt', {'alt': alt}),
+                style: fallbackStyle);
           }
-          return Image.memory(bytes, fit: BoxFit.contain, alignment: Alignment.centerLeft);
+          return Image.memory(bytes,
+              fit: BoxFit.contain, alignment: Alignment.centerLeft);
         },
       ),
     );
@@ -494,8 +503,7 @@ class _ReadmeImage extends StatelessWidget {
     //（否则 raw 匿名必然 404，用户看到的是莫名其妙的替代文本）。
     return FutureBuilder<Map<String, String>>(
       future: headers,
-      builder:
-          (BuildContext context, AsyncSnapshot<Map<String, String>> snap) {
+      builder: (BuildContext context, AsyncSnapshot<Map<String, String>> snap) {
         if (snap.connectionState != ConnectionState.done) {
           return const _ReadmeImageSpinner();
         }

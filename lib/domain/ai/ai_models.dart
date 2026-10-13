@@ -55,8 +55,8 @@ class AiSettings {
   /// 去尾斜杠后的纯 HTTPS 端点。
   final String baseUrl;
 
-  static const AiSettings empty =
-      AiSettings(enabled: false, kind: AiProviderKind.openai, model: '', baseUrl: '');
+  static const AiSettings empty = AiSettings(
+      enabled: false, kind: AiProviderKind.openai, model: '', baseUrl: '');
 
   Map<String, Object?> toJson() => <String, Object?>{
         'enabled': enabled,
@@ -69,7 +69,8 @@ class AiSettings {
     if (raw is! Map) {
       return AiSettings.empty;
     }
-    final String base = '${raw['baseUrl'] ?? ''}'.replaceAll(RegExp(r'/+$'), '');
+    final String base =
+        '${raw['baseUrl'] ?? ''}'.replaceAll(RegExp(r'/+$'), '');
     return AiSettings(
       enabled: raw['enabled'] == true,
       kind: AiProviderKind.fromName('${raw['kind']}') ?? AiProviderKind.openai,
@@ -94,7 +95,8 @@ class AiToolCall {
   final Map<String, Object?> arguments;
 
   static AiToolCall fromRaw(Map<Object?, Object?> raw) {
-    final Map<Object?, Object?> fn = (raw['function'] as Map?) ?? const <Object?, Object?>{};
+    final Map<Object?, Object?> fn =
+        (raw['function'] as Map?) ?? const <Object?, Object?>{};
     final Object? argsRaw = fn['arguments'];
     Map<String, Object?> args = const <String, Object?>{};
     if (argsRaw is String && argsRaw.isNotEmpty) {
@@ -117,7 +119,10 @@ class AiToolCall {
   Map<String, Object?> toJson() => <String, Object?>{
         'id': id,
         'type': 'function',
-        'function': <String, Object?>{'name': name, 'arguments': jsonEncode(arguments)},
+        'function': <String, Object?>{
+          'name': name,
+          'arguments': jsonEncode(arguments)
+        },
       };
 }
 
@@ -152,14 +157,12 @@ class AiMessage {
       };
 
   static AiMessage fromJson(Map<String, Object?> raw) {
-    final List<Object?> calls = (raw['tool_calls'] as List?) ?? const <Object?>[];
+    final List<Object?> calls =
+        (raw['tool_calls'] as List?) ?? const <Object?>[];
     return AiMessage(
       role: AiRole.fromName('${raw['role']}'),
       content: '${raw['content'] ?? ''}',
-      toolCalls: calls
-          .whereType<Map>()
-          .map(AiToolCall.fromRaw)
-          .toList(),
+      toolCalls: calls.whereType<Map>().map(AiToolCall.fromRaw).toList(),
       toolCallId: raw['tool_call_id'] as String?,
       name: raw['name'] as String?,
     );

@@ -11,11 +11,13 @@ import '../surface_bridge.dart';
 import '../types.dart';
 
 /// 取 `ai` 分片文案。
-String _t(String key, [Map<String, String>? args]) => OgLI18n.instance.t('ai', key, args: args);
+String _t(String key, [Map<String, String>? args]) =>
+    OgLI18n.instance.t('ai', key, args: args);
 
 /// 内置服务商预设（无密钥、无自定义端点时的快速选择）。
 class _AiPreset {
-  const _AiPreset(this.label, this.kind, this.baseUrl, {this.defaultModel = ''});
+  const _AiPreset(this.label, this.kind, this.baseUrl,
+      {this.defaultModel = ''});
 
   final String label;
   final AiProviderKind kind;
@@ -24,10 +26,12 @@ class _AiPreset {
 }
 
 const List<_AiPreset> _kPresets = <_AiPreset>[
-  _AiPreset('DeepSeek', AiProviderKind.openai, 'https://api.deepseek.com', defaultModel: 'deepseek-chat'),
+  _AiPreset('DeepSeek', AiProviderKind.openai, 'https://api.deepseek.com',
+      defaultModel: 'deepseek-chat'),
   _AiPreset('OpenAI', AiProviderKind.openai, 'https://api.openai.com/v1'),
   _AiPreset('Anthropic', AiProviderKind.anthropic, 'https://api.anthropic.com'),
-  _AiPreset('Gemini', AiProviderKind.gemini, 'https://generativelanguage.googleapis.com/v1beta'),
+  _AiPreset('Gemini', AiProviderKind.gemini,
+      'https://generativelanguage.googleapis.com/v1beta'),
 ];
 
 /// AI 设置页。
@@ -207,7 +211,8 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                   decoration: InputDecoration(labelText: _t('protocol')),
                   items: <DropdownMenuItem<AiProviderKind>>[
                     for (final AiProviderKind k in AiProviderKind.values)
-                      DropdownMenuItem<AiProviderKind>(value: k, child: Text(k.name)),
+                      DropdownMenuItem<AiProviderKind>(
+                          value: k, child: Text(k.name)),
                   ],
                   onChanged: (AiProviderKind? v) {
                     if (v != null) {
@@ -244,7 +249,8 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                         decoration: InputDecoration(labelText: _t('model')),
                         items: <DropdownMenuItem<String>>[
                           if (_model.isNotEmpty)
-                            DropdownMenuItem<String>(value: _model, child: Text(_model)),
+                            DropdownMenuItem<String>(
+                                value: _model, child: Text(_model)),
                           for (final String m in _models)
                             DropdownMenuItem<String>(value: m, child: Text(m)),
                         ],

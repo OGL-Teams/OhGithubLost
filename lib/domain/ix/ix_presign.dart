@@ -209,7 +209,9 @@ class IxPresign {
     } else if (RegExp(r'^0x[0-9a-f]+$').hasMatch(host)) {
       value = BigInt.tryParse(host.substring(2), radix: 16);
     }
-    if (value == null || value < BigInt.zero || value > BigInt.from(0xFFFFFFFF)) {
+    if (value == null ||
+        value < BigInt.zero ||
+        value > BigInt.from(0xFFFFFFFF)) {
       return null;
     }
     final int v = value.toInt();

@@ -216,6 +216,14 @@ abstract class IxDownloadBackend {
 
   /// 释放资源。
   void dispose();
+
+  /// 落盘目录裁决器（由装配根注入；`null` = 维持应用私有目录）。
+  ///
+  /// 后端在构造库任务时调用：返回值决定下载**直接写到哪里**。
+  /// ① 公共目录档（用户拿到了 ogl 权限）→ 写 `/storage/emulated/0/ogl/download/…`，
+  ///   文件立刻对用户可见；② SAF 档 → 照旧私有 + 完成后导出；③ 内部 → 私有。
+  /// 必须容错：裁决抛异常时按未提供处理（私有目录），**绝不阻塞下载**。
+  set downloadDirProvider(Future<String?> Function()? provider);
 }
 
 /// Windows 保留设备名（大小写不敏感，带任意扩展名都危险）。
@@ -247,7 +255,8 @@ String ogLSafeDownloadFileName(String raw, {String fallback = 'download'}) {
   name = name.replaceAll(RegExp(r'[\x00-\x1F\x7F<>:"/\\|?*]'), '');
   name = name.trim().replaceAll(RegExp(r'\s+'), ' ');
   // ③ 去掉前导点（隐藏文件）与尾部的点/空格（Windows 不允许尾随点与空格）。
-  name = name.replaceAll(RegExp(r'^[.]+'), '').replaceAll(RegExp(r'[. ]+$'), '');
+  name =
+      name.replaceAll(RegExp(r'^[.]+'), '').replaceAll(RegExp(r'[. ]+$'), '');
   if (name.isEmpty) {
     return fallback;
   }
@@ -284,8 +293,7 @@ String ogLSafeDownloadFileName(String raw, {String fallback = 'download'}) {
 /// 的前提冲突）。
 String ogLAssertDownloadUrl(String url) {
   final Uri? parsed = Uri.tryParse(url);
-  if (parsed == null ||
-      (parsed.scheme != 'http' && parsed.scheme != 'https')) {
+  if (parsed == null || (parsed.scheme != 'http' && parsed.scheme != 'https')) {
     throw ArgumentError.value(url, 'url', '只允许 http/https 地址');
   }
   return url;
@@ -309,8 +317,15 @@ IxDownloadErrorKind _kindOfFailure(Object error) {
 IxDownloadErrorKind _kindOfText(String text) {
   final String lower = text.toLowerCase();
   const List<String> diskHints = <String>[
-    'filesystem', 'file system', 'no space', 'enospc', 'read-only',
-    'permission denied', 'write failed', 'write error', 'disk',
+    'filesystem',
+    'file system',
+    'no space',
+    'enospc',
+    'read-only',
+    'permission denied',
+    'write failed',
+    'write error',
+    'disk',
   ];
   const List<String> networkHints = <String>[
     'socket', 'connect', 'timeout', 'timed out', 'host', 'dns', //
@@ -463,9 +478,8 @@ class IxDownloadTask {
         total: total ?? this.total,
         bytesPerSecond: bytesPerSecond ?? this.bytesPerSecond,
         createdAt: createdAt,
-        error: identical(error, _kUnset)
-            ? this.error
-            : error as IxDownloadError?,
+        error:
+            identical(error, _kUnset) ? this.error : error as IxDownloadError?,
         verified: verified ?? this.verified,
       );
 }
@@ -481,12 +495,14 @@ class IxDownloadManager extends ChangeNotifier {
     KernelDiagnostics? diagnostics,
     DownloadEngine? engine,
     StorageExporter? storageExporter,
+    Future<String?> Function()? downloadDirProvider,
     IxDownloadBackend? backend,
   })  : _diagnostics = diagnostics,
         _engine = engine,
         _exporter = storageExporter,
         _backend = backend ?? createDownloadBackend() {
     _subscription = _backend.events.listen(_onEvent);
+    _backend.downloadDirProvider = downloadDirProvider;
   }
 
   final IxDownloadBackend _backend;
@@ -704,7 +720,9 @@ class IxDownloadManager extends ChangeNotifier {
         continue;
       }
       reachable ??= candidate;
-      if (current.supportsRange && current.total != null && current.total! > 0) {
+      if (current.supportsRange &&
+          current.total != null &&
+          current.total! > 0) {
         uri = parsed;
         probe = current;
         break;
@@ -1104,8 +1122,7 @@ class IxDownloadManager extends ChangeNotifier {
     try {
       // ★ 必须把**落盘路径**一并传下去：分片下载的成品不经过库队列，
       //   只按 id 查库表会读到 `null` → 好好的文件被判"校验不匹配"。
-      final String? actual =
-          await _backend.fileSha256(id, path: snap.savePath);
+      final String? actual = await _backend.fileSha256(id, path: snap.savePath);
       if (actual == null) {
         return false;
       }

@@ -78,7 +78,8 @@ class MirrorSelector {
   final List<MirrorChannel> _channels;
 
   /// 通道列表（只读）。
-  List<MirrorChannel> get channels => List<MirrorChannel>.unmodifiable(_channels);
+  List<MirrorChannel> get channels =>
+      List<MirrorChannel>.unmodifiable(_channels);
 
   /// 是否配置了可用通道。
   bool get isEmpty => _channels.every((channel) => !channel.enabled);

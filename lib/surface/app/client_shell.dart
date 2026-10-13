@@ -24,6 +24,7 @@ import '../pages/login_page.dart';
 import '../pages/onboarding_page.dart';
 import '../pages/profile_page.dart';
 import '../pages/search_page.dart';
+import '../pages/settings_page.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../widgets/anim/anim_preload.dart';
@@ -31,7 +32,7 @@ import 'animations.dart';
 import 'back_guard.dart';
 import 'error_surface.dart';
 
-/// 壳内的四个页面（导航值）。
+/// 壳内的五个页面（导航值）。
 enum OgLShellTab {
   /// 仓库（我的仓库 / 星标）。
   home,
@@ -42,8 +43,14 @@ enum OgLShellTab {
   /// AI 助手。
   ai,
 
-  /// 我的（账户 / 设置 / Gist / 危险区）。
+  /// 我的（账户管理 / 多账号切换 / Gist / 草稿 / 危险区）。
   profile,
+
+  /// 设置（外观 / 代码 / 网络 / 关于 / 日志）。
+  ///
+  /// U1：从「我的」页底二次点击提到一级入口 —— 设置是高频页，
+  /// 不该埋在账户管理里再点一次。
+  settings,
 }
 
 /// 客户端主壳（含登录门）。
@@ -167,8 +174,7 @@ class _OgLClientShellState extends State<OgLClientShell> {
       // 启动检查 / 登录门阶段 `_tab` 仍是 home，但壳还没构建（[_buildShell]
       // 提前 return，没有 tab bar）——此时不能按"已在首页"处理，
       // 否则登录门上的返回键会直接进入「再按一次退出」链路。
-      final bool atHome =
-          _tab == OgLShellTab.home &&
+      final bool atHome = _tab == OgLShellTab.home &&
           _onboardingDone &&
           _checked &&
           (_accountId != null || _guest);
@@ -230,6 +236,8 @@ class _OgLClientShellState extends State<OgLClientShell> {
         return AiChatPage(surface: widget.surface);
       case OgLShellTab.profile:
         return ProfilePage(surface: widget.surface, onAccountsChanged: _check);
+      case OgLShellTab.settings:
+        return SettingsPage(surface: widget.surface, report: widget.report);
     }
   }
 
@@ -261,7 +269,7 @@ class _OgLClientShellState extends State<OgLClientShell> {
       );
     }
     if ((_accountId == null ||
-        widget.surface.domain.auth.state == GhAuthState.expired) &&
+            widget.surface.domain.auth.state == GhAuthState.expired) &&
         !_guest) {
       return LoginPage(
         surface: widget.surface,
@@ -331,6 +339,13 @@ class _OgLClientShellState extends State<OgLClientShell> {
               selectedIcon: const Icon(Icons.person),
               label: OgLI18n.instance.t('shell', 'profile'),
             ),
+            // U1：设置升为一级入口（icons.settings_outlined 是 5 tab 里最
+            // 不抢眼的，符合"功能而非主操作"的产品意图）。
+            NavigationDestination(
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
+              label: OgLI18n.instance.t('shell', 'settings'),
+            ),
           ],
         ),
       );
@@ -347,8 +362,9 @@ class _OgLClientShellState extends State<OgLClientShell> {
             onDestinationSelected: (int value) =>
                 _select(OgLShellTab.values[value]),
             extended: extended,
-            labelType:
-                extended ? NavigationRailLabelType.none : NavigationRailLabelType.all,
+            labelType: extended
+                ? NavigationRailLabelType.none
+                : NavigationRailLabelType.all,
             destinations: <NavigationRailDestination>[
               NavigationRailDestination(
                 icon: const Icon(Icons.folder_outlined),
@@ -368,6 +384,11 @@ class _OgLClientShellState extends State<OgLClientShell> {
                 icon: const Icon(Icons.person_outline),
                 selectedIcon: const Icon(Icons.person),
                 label: Text(OgLI18n.instance.t('shell', 'profile')),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings),
+                label: Text(OgLI18n.instance.t('shell', 'settings')),
               ),
             ],
           ),

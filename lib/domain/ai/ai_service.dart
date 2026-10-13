@@ -115,7 +115,8 @@ class AiService {
   Future<void> saveConversation(AiConversation c) =>
       _store.write('$_convPrefix${c.id}', jsonEncode(c.toJson()));
 
-  Future<void> deleteConversation(String id) => _store.remove('$_convPrefix$id');
+  Future<void> deleteConversation(String id) =>
+      _store.remove('$_convPrefix$id');
 
   // ── 审计（AI 操作永久落盘）────────────────────────────────────────────
 

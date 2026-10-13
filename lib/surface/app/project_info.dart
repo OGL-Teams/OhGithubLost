@@ -1,5 +1,3 @@
-
-
 /// L3 展示级 · 项目元数据（名称 / 主要开发者 / 仓库坐标 / 许可）。
 ///
 /// ## 为什么单独成文件
@@ -14,9 +12,10 @@ library;
 import '../i18n/og_l_i18n.dart';
 
 /// 取 `shell` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('shell', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'shell', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 项目元数据。
 abstract final class OgLProjectInfo {
@@ -85,13 +84,19 @@ class OgLDependencyLicense {
 /// 随产物分发）。
 final List<OgLDependencyLicense> kOgLDependencyLicenses =
     <OgLDependencyLicense>[
-  OgLDependencyLicense('flutter_localizations', 'BSD-3-Clause', _t('featureLocalization')),
-  OgLDependencyLicense('path_provider', 'BSD-3-Clause', _t('featureCrossPlatformDirs')),
-  OgLDependencyLicense('flutter_secure_storage', 'MIT', _t('featureTokenVault')),
+  OgLDependencyLicense(
+      'flutter_localizations', 'BSD-3-Clause', _t('featureLocalization')),
+  OgLDependencyLicense(
+      'path_provider', 'BSD-3-Clause', _t('featureCrossPlatformDirs')),
+  OgLDependencyLicense(
+      'flutter_secure_storage', 'MIT', _t('featureTokenVault')),
   OgLDependencyLicense('crypto', 'BSD-3-Clause', _t('featureDigest')),
-  OgLDependencyLicense('cryptography', 'Apache-2.0', _t('featureManifestSignature')),
-  OgLDependencyLicense('flutter_markdown', 'BSD-3-Clause', _t('featureMarkdown')),
-  OgLDependencyLicense('url_launcher', 'BSD-3-Clause', _t('featureExternalLink')),
+  OgLDependencyLicense(
+      'cryptography', 'Apache-2.0', _t('featureManifestSignature')),
+  OgLDependencyLicense(
+      'flutter_markdown', 'BSD-3-Clause', _t('featureMarkdown')),
+  OgLDependencyLicense(
+      'url_launcher', 'BSD-3-Clause', _t('featureExternalLink')),
   OgLDependencyLicense('flutter_svg', 'MIT', _t('featureSvg')),
   OgLDependencyLicense('re_editor', 'MIT', _t('featureCodeEditor')),
   OgLDependencyLicense('re_highlight', 'MIT', _t('featureHighlight')),
@@ -101,7 +106,7 @@ final List<OgLDependencyLicense> kOgLDependencyLicenses =
   OgLDependencyLicense('saf_stream', 'BSD-3-Clause', _t('featureSafCopy')),
   OgLDependencyLicense('background_downloader', 'MIT', _t('featureDownloads')),
   OgLDependencyLicense('archive', 'MIT', _t('featureActionsZip')),
-  OgLDependencyLicense('flutter_local_notifications', 'BSD-3-Clause',
-      _t('featureSystemNotice')),
+  OgLDependencyLicense(
+      'flutter_local_notifications', 'BSD-3-Clause', _t('featureSystemNotice')),
   OgLDependencyLicense('yaml', 'MIT', _t('featureWorkflowInputs')),
 ];

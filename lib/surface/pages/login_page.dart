@@ -6,6 +6,7 @@
 /// 任何一步失败都会让"看起来登上了、实际没有令牌"，
 /// 因此每一步都摊开显示状态，失败时错误原样给用户看（并写日志）。
 library;
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -19,9 +20,10 @@ import 'onboarding_page.dart';
 import 'repo_page.dart';
 
 /// 取 `login` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('login', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'login', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 登录页。
 class LoginPage extends StatefulWidget {
@@ -87,7 +89,11 @@ class _LoginPageState extends State<LoginPage> {
     final String pendingId = 'pending-${DateTime.now().millisecondsSinceEpoch}';
     try {
       OgLAppLog.instance.add(_t('signIn'), '1/4 暂存待验证账户（$pendingId）');
-      await auth.saveAccount(GhAccount(id: pendingId, login: OgLI18n.instance.t('login', 'pendingSuffix')), token);
+      await auth.saveAccount(
+          GhAccount(
+              id: pendingId,
+              login: OgLI18n.instance.t('login', 'pendingSuffix')),
+          token);
       await auth.switchTo(pendingId);
 
       if (mounted) {
@@ -157,7 +163,8 @@ class _LoginPageState extends State<LoginPage> {
       }
       if (mounted) {
         setState(() {
-          _error = OgLI18n.instance.t('login', 'verifyFailed', args: <String, String>{'error': '$error'});
+          _error = OgLI18n.instance.t('login', 'verifyFailed',
+              args: <String, String>{'error': '$error'});
           _phase = '';
         });
       }
@@ -212,97 +219,103 @@ class _LoginPageState extends State<LoginPage> {
             ),
         ],
       ),
-      body: OgLReveal(delay: Duration.zero, child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: <Widget>[
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Icon(Icons.security, color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      // 保险库说明：`vaultNote`（含平台与域名等专有名词，不译）。
-                      OgLI18n.instance.t('login', 'vaultNote'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _input,
-            obscureText: _obscure,
-            enabled: !_busy,
-            autocorrect: false,
-            decoration: InputDecoration(
-              labelText: OgLI18n.instance.t('login', 'tokenLabel'),
-              hintText: 'ghp_… / github_pat_…',
-              border: const OutlineInputBorder(),
-              prefixIcon: const Icon(Icons.key),
-              suffixIcon: IconButton(
-                icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
-                tooltip: _obscure ? OgLI18n.instance.t('login', 'showToken') : OgLI18n.instance.t('login', 'hideToken'),
-                onPressed: () => setState(() => _obscure = !_obscure),
-              ),
-            ),
-            onSubmitted: (String _) async {
-              await _login();
-            },
-            onChanged: (String _) {
-              if (_error != null) {
-                setState(() => _error = null);
-              }
-            },
-          ),
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _busy ? null : _login,
-            child: _busy
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
+      body: OgLReveal(
+          delay: Duration.zero,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: <Widget>[
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                      Icon(Icons.security,
+                          color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          // 保险库说明：`vaultNote`（含平台与域名等专有名词，不译）。
+                          OgLI18n.instance.t('login', 'vaultNote'),
+                        ),
                       ),
-                      SizedBox(width: 8),
-                      Text(OgLI18n.instance.t('login', 'verifying')),
                     ],
-                  )
-                : Text(OgLI18n.instance.t('login', 'signIn')),
-          ),
-          if (_phase.isNotEmpty) ...<Widget>[
-            const SizedBox(height: 8),
-            Text(_phase, style: Theme.of(context).textTheme.bodySmall),
-          ],
-          if (_error != null) ...<Widget>[
-            const SizedBox(height: 12),
-            Card(
-              color: Theme.of(context).colorScheme.errorContainer,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  // 错误详情：保留原始异常 + 引导去「关于」页复制。
-                  OgLI18n.instance.t(
-                    'login',
-                    'errorDetail',
-                    args: <String, String>{'error': _error ?? ''},
-                  ),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onErrorContainer,
                   ),
                 ),
               ),
-            ),
-          ],
-        ],
-      )),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _input,
+                obscureText: _obscure,
+                enabled: !_busy,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  labelText: OgLI18n.instance.t('login', 'tokenLabel'),
+                  hintText: 'ghp_… / github_pat_…',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.key),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                        _obscure ? Icons.visibility : Icons.visibility_off),
+                    tooltip: _obscure
+                        ? OgLI18n.instance.t('login', 'showToken')
+                        : OgLI18n.instance.t('login', 'hideToken'),
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
+                ),
+                onSubmitted: (String _) async {
+                  await _login();
+                },
+                onChanged: (String _) {
+                  if (_error != null) {
+                    setState(() => _error = null);
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: _busy ? null : _login,
+                child: _busy
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 8),
+                          Text(OgLI18n.instance.t('login', 'verifying')),
+                        ],
+                      )
+                    : Text(OgLI18n.instance.t('login', 'signIn')),
+              ),
+              if (_phase.isNotEmpty) ...<Widget>[
+                const SizedBox(height: 8),
+                Text(_phase, style: Theme.of(context).textTheme.bodySmall),
+              ],
+              if (_error != null) ...<Widget>[
+                const SizedBox(height: 12),
+                Card(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text(
+                      // 错误详情：保留原始异常 + 引导去「关于」页复制。
+                      OgLI18n.instance.t(
+                        'login',
+                        'errorDetail',
+                        args: <String, String>{'error': _error ?? ''},
+                      ),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onErrorContainer,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          )),
     );
   }
 }

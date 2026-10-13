@@ -50,7 +50,8 @@ class InMemoryBootFileSystem extends BootFileSystem {
   final Map<String, List<int>> _files;
 
   /// 全部文件（只读快照）。
-  Map<String, List<int>> get files => Map<String, List<int>>.unmodifiable(_files);
+  Map<String, List<int>> get files =>
+      Map<String, List<int>>.unmodifiable(_files);
 
   /// 以 UTF-8 文本写入一个文件（测试便利方法）。
   void writeText(String path, String content) {

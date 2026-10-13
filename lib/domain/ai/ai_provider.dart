@@ -97,9 +97,7 @@ class AiProvider {
       'model': req.model,
       'max_tokens': req.maxTokens,
       if (req.stream) 'stream': true,
-      'messages': req.messages
-          .map((AiMessage m) => m.toJson())
-          .toList(),
+      'messages': req.messages.map((AiMessage m) => m.toJson()).toList(),
       if (req.tools.isNotEmpty)
         'tools': req.tools
             .map((AiToolSpec t) => <String, Object?>{
@@ -190,7 +188,8 @@ class AiProvider {
         parts.add(<String, Object?>{
           'functionResponse': <String, Object?>{
             'name': callNames[m.toolCallId] ?? '',
-            'response': decoded is Map ? decoded : <String, Object?>{'result': decoded},
+            'response':
+                decoded is Map ? decoded : <String, Object?>{'result': decoded},
           },
         });
       } else {
@@ -257,14 +256,16 @@ class AiProvider {
   }
 
   AiReply _parseOpenAi(Map<Object?, Object?> raw) {
-    final List<Object?> choices = (raw['choices'] as List?) ?? const <Object?>[];
+    final List<Object?> choices =
+        (raw['choices'] as List?) ?? const <Object?>[];
     if (choices.isEmpty) {
       return const AiReply();
     }
     final Map<Object?, Object?> choice = choices.first as Map;
     final Map<Object?, Object?> message =
         (choice['message'] as Map?) ?? const <Object?, Object?>{};
-    final List<Object?> calls = (message['tool_calls'] as List?) ?? const <Object?>[];
+    final List<Object?> calls =
+        (message['tool_calls'] as List?) ?? const <Object?>[];
     return AiReply(
       content: '${message['content'] ?? ''}',
       toolCalls: calls.whereType<Map>().map(AiToolCall.fromRaw).toList(),
@@ -308,7 +309,8 @@ class AiProvider {
     final Map<Object?, Object?> candidate = candidates.first as Map;
     final Map<Object?, Object?> content =
         (candidate['content'] as Map?) ?? const <Object?, Object?>{};
-    final List<Object?> parts = (content['parts'] as List?) ?? const <Object?>[];
+    final List<Object?> parts =
+        (content['parts'] as List?) ?? const <Object?>[];
     final List<AiToolCall> calls = <AiToolCall>[];
     final List<String> texts = <String>[];
     int seq = 0;
@@ -391,7 +393,8 @@ class AiProvider {
         final Map<Object?, Object?> candidate = candidates.first as Map;
         final Map<Object?, Object?> content =
             (candidate['content'] as Map?) ?? const <Object?, Object?>{};
-        final List<Object?> parts = (content['parts'] as List?) ?? const <Object?>[];
+        final List<Object?> parts =
+            (content['parts'] as List?) ?? const <Object?>[];
         final List<String> texts = <String>[];
         for (final Object? p in parts) {
           if (p is Map && p['text'] is String && p['thought'] != true) {
@@ -435,7 +438,8 @@ class AiProvider {
             .where((Object? e) =>
                 ((e as Map)['supportedGenerationMethods'] as List? ?? const [])
                     .contains('generateContent'))
-            .map((Object? e) => '${(e as Map)['name'] ?? ''}'.replaceFirst('models/', ''))
+            .map((Object? e) =>
+                '${(e as Map)['name'] ?? ''}'.replaceFirst('models/', ''))
             .where((String s) => s.isNotEmpty)
             .toList();
     }

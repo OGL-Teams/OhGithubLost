@@ -163,7 +163,8 @@ class ResilientTransport implements NetTransport {
           ? _policy.delayFor(
               attempt,
               statusCode: response.statusCode,
-              retryAfter: parseRetryAfterHeader(response.headers['retry-after']),
+              retryAfter:
+                  parseRetryAfterHeader(response.headers['retry-after']),
             )
           : null;
       if (delay == null) {

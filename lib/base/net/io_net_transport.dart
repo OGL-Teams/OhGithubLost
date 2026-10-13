@@ -29,7 +29,8 @@ import 'net_transport.dart';
 import 'net_types.dart';
 
 /// 基于 `dart:io HttpClient` 的传输实现（Android / Windows / Linux 共用）。
-class IoNetTransport implements NetTransport {  /// 创建传输。
+class IoNetTransport implements NetTransport {
+  /// 创建传输。
   ///
   /// [dns] 为 `custom` 模式时启用**自定义 DNS**：连接前先按策略解析域名，
   /// 再直连解析出的 IP（TLS 的 SNI 仍用原主机名，证书校验不受影响）。
@@ -84,7 +85,8 @@ class IoNetTransport implements NetTransport {  /// 创建传输。
     ) async {
       const Duration connectTimeout = Duration(seconds: 15);
       if (proxyHost != null && proxyPort != null) {
-        return Socket.startConnect(proxyHost, proxyPort).timeout(connectTimeout);
+        return Socket.startConnect(proxyHost, proxyPort)
+            .timeout(connectTimeout);
       }
       final int port = uri.hasPort && uri.port != 0
           ? uri.port
