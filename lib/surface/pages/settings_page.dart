@@ -444,7 +444,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// 复制全部日志到剪贴板。
   Future<void> _copyLogs(List<String> lines) async {
-    ogLCopyText(lines.join('\n', tag: '日志');
+    await ogLCopyText(lines.join('\n'), tag: '日志');
     if (!mounted) {
       return;
     }
@@ -458,22 +458,21 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(title: Text(_t('title'))),
       // 根级子项逐个挂入场动画（[OgLRevealList] 自动错峰）；不再整页包一层
       // `OgLReveal` —— 那会与路由过渡叠加成双重动画。
+      //
+      // 顶部 saveError 真的"置顶"：放在 body 顶的 Column 里、ListView 之前，
+      // 而不是塞进 ListView 的第一个 child——后者仍受 ListView padding 16
+      // 影响，视觉上与分组列表有 16px 间距，看起来不像"系统级告警"。
+      // 真正置顶 = 紧贴 AppBar 下方，与下面所有内容**视觉上断开**（无 16
+      // 顶部 padding + 自己的 ErrorContainer 配色 + AnimatedSize 过渡）。
       body: ListenableBuilder(
         listenable: _settings,
         builder: (BuildContext context, Widget? _) {
           final OgLSettings value = _settings.settings;
           final String? saveError = _settings.lastError;
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: OgLRevealList.of(context, <Widget>[
-              // 根级只有「5 个可折叠分组 + 账户条 + 1 个危险区」，且分组默认**收起**：
-              // 进入设置页先看到的是分组清单（账户 → 界面 → 代码与文件 →
-              // 存储与网络 → 关于与帮助 → 日志），一屏正好 5~7 个可点条目。
-              // 组内条目展开后才出现 —— 不再被长说明文字挤没。
-              //
+          return Column(
+            children: <Widget>[
               // 保存失败提示：常驻 `AnimatedSize` 承载条件内容（带过渡；
-              // 档位 0 时 `OgLAnim` 给零时长 = 立即展开），并**置顶**：
-              // 保存出错是必须立刻知道的事，不该埋在页面中部。
+              // 档位 0 时 `OgLAnim` 给零时长 = 立即展开）。
               AnimatedSize(
                 duration: OgLAnim.medium(context),
                 curve: OgLAnim.curve(context),
@@ -481,7 +480,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: saveError == null
                     ? const SizedBox(width: double.infinity)
                     : Card(
-                        margin: const EdgeInsets.only(bottom: 12),
+                        margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                         color: theme.colorScheme.errorContainer,
                         child: Padding(
                           padding: const EdgeInsets.all(12),
@@ -494,24 +493,37 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                       ),
               ),
-              _accountCard(theme),
-              _interfaceGroup(value),
-              _codeGroup(context, theme, value),
-              _storageGroup(theme, value),
-              _aboutGroup(theme),
-              _logsGroup(theme),
-              // 危险区：与上面所有分组**双重拉开**（留白 + 分隔线 + 告警配色），
-              // 免得"收尾顺手点一下"就把设置全清了。
-              const SizedBox(height: 8),
-              Divider(height: 28, color: theme.colorScheme.outlineVariant),
-              OgLSettingsDangerCard(
-                title: _t('dangerZone'),
-                actionTitle: _t('resetSettings'),
-                actionSubtitle: _t('restoreDefaults'),
-                onTap: _reset,
+              Expanded(
+                child: ListView(
+                  // 顶部 padding 收紧：saveError 已经占满了顶部视觉，分组
+                  // 列表只留 8px 间距即可。
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  children: OgLRevealList.of(context, <Widget>[
+                    // 根级只有「5 个可折叠分组 + 账户条 + 1 个危险区」：
+                    // 账户 → 界面 → 代码与文件 → 存储与网络 → 关于与帮助 →
+                    // 日志，危险区在最底。一屏正好 5~7 个可点条目。
+                    _accountCard(theme),
+                    _interfaceGroup(value),
+                    _codeGroup(context, theme, value),
+                    _storageGroup(theme, value),
+                    _aboutGroup(theme),
+                    _logsGroup(theme),
+                    // 危险区：与上面所有分组**双重拉开**（留白 + 分隔线 + 告警配色），
+                    // 免得"收尾顺手点一下"就把设置全清了。
+                    const SizedBox(height: 8),
+                    Divider(
+                        height: 28, color: theme.colorScheme.outlineVariant),
+                    OgLSettingsDangerCard(
+                      title: _t('dangerZone'),
+                      actionTitle: _t('resetSettings'),
+                      actionSubtitle: _t('restoreDefaults'),
+                      onTap: _reset,
+                    ),
+                    const SizedBox(height: 24),
+                  ]),
+                ),
               ),
-              const SizedBox(height: 24),
-            ]),
+            ],
           );
         },
       ),

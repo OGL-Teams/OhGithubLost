@@ -202,7 +202,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
       );
       OgLAppLog.instance.result('Gist', _t('updated'), file.name);
       if (mounted) {
-        OgLNotifier.of(context).success(_t('saved');
+        OgLNotifier.of(context).success(_t('saved'));
       }
       // 控制器可能在 `updateGist` 期间随页面一起被释放（用户退了出去）：
       // 释放后不再 `_detailC().load()` —— 这既避免无谓请求，也避免在已
@@ -280,7 +280,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
   Future<void> _copy(_GistFile file) async {
     await ogLCopyText(file.content, tag: 'Gist 文件');
     if (mounted) {
-      OgLNotifier.of(context).success(_t('copiedFile', {'name': file.name});
+      OgLNotifier.of(context).success(_t('copiedFile', {'name': file.name}));
     }
   }
 

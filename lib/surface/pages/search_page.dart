@@ -264,7 +264,7 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> _open(_SearchHit hit) async {
     final GhRepo? repo = hit.repo;
     if (repo == null) {
-      OgLNotifier.of(context).info(_t('noRepoForResult');
+      OgLNotifier.of(context).info(_t('noRepoForResult'));
       return;
     }
     _preloadChildRepoRoute(repo);

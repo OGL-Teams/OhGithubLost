@@ -88,7 +88,7 @@ class _GistsPageState extends State<GistsPage> {
     final String id = ghStr(gist, 'id');
     if (id.isEmpty) {
       if (mounted) {
-        OgLNotifier.of(context).info(_t('missingId');
+        OgLNotifier.of(context).info(_t('missingId'));
       }
       return;
     }
@@ -112,7 +112,7 @@ class _GistsPageState extends State<GistsPage> {
       ),
     );
     if (created == true && mounted) {
-      OgLNotifier.of(context).info(_t('created');
+      OgLNotifier.of(context).info(_t('created'));
       await _gistsC().load();
     }
   }
@@ -121,7 +121,7 @@ class _GistsPageState extends State<GistsPage> {
     final String url = ghStr(gist, 'html_url');
     if (url.isEmpty) {
       if (mounted) {
-        OgLNotifier.of(context).info(_t('noOpenLink');
+        OgLNotifier.of(context).info(_t('noOpenLink'));
       }
       return;
     }

@@ -117,7 +117,7 @@ class _DraftsPageState extends State<DraftsPage> {
       branch: draft.branch.isEmpty ? null : draft.branch,
     );
     if (mounted) {
-      OgLNotifier.of(context).info(_t('deleted');
+      OgLNotifier.of(context).info(_t('deleted'));
       await _controller().load();
     }
   }

@@ -2392,7 +2392,7 @@ class _IssuesTabState extends State<_IssuesTab> {
       ),
     );
     if (created == true && mounted) {
-      OgLNotifier.of(context).info(_t('issueCreated');
+      OgLNotifier.of(context).info(_t('issueCreated'));
       await _paged.refresh();
     }
   }
@@ -2425,8 +2425,7 @@ class _IssuesTabState extends State<_IssuesTab> {
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
-        
-          OgLNotifier.of(context).warning(_t('closeFailed', {'error': error});
+        OgLNotifier.of(context).warning(_t('closeFailed', {'error': error}));
       }
     }
   }
@@ -2701,8 +2700,8 @@ class _ReleasesTabState extends State<_ReleasesTab> {
       ),
     );
     if (created != null && mounted) {
-      
-        OgLNotifier.of(context).warning(_t('releaseCreated', {'tag': created.tagName});
+      OgLNotifier.of(context)
+          .warning(_t('releaseCreated', {'tag': created.tagName}));
       await _paged.refresh();
     }
   }
@@ -2887,8 +2886,8 @@ class _BranchesTabState extends State<_BranchesTab> {
       widget.onBranchChanged();
     } catch (error) {
       if (mounted) {
-        
-          OgLNotifier.of(context).warning(_t('branchCreateFailed', {'error': error});
+        OgLNotifier.of(context)
+            .warning(_t('branchCreateFailed', {'error': error}));
       }
     }
   }
@@ -2928,8 +2927,8 @@ class _BranchesTabState extends State<_BranchesTab> {
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
-        
-          OgLNotifier.of(context).warning(_t('branchRenameFailed', {'error': error});
+        OgLNotifier.of(context)
+            .warning(_t('branchRenameFailed', {'error': error}));
       }
     }
   }
@@ -2966,8 +2965,8 @@ class _BranchesTabState extends State<_BranchesTab> {
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
-        
-          OgLNotifier.of(context).warning(_t('branchDeleteFailed', {'error': error});
+        OgLNotifier.of(context)
+            .warning(_t('branchDeleteFailed', {'error': error}));
       }
     }
   }
@@ -3185,7 +3184,7 @@ class _ActionsTabState extends State<_ActionsTab> {
       ),
     );
     if (triggered == true && mounted) {
-      OgLNotifier.of(context).info(_t('workflowTriggered');
+      OgLNotifier.of(context).info(_t('workflowTriggered'));
       await _paged.refresh();
     }
   }
@@ -3463,12 +3462,11 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       OgLAppLog.instance.result('仓库', _t('basicInfoUpdated'), _full);
       if (mounted) {
         widget.onRepoChanged(updated);
-        OgLNotifier.of(context).success(_t('saved');
+        OgLNotifier.of(context).success(_t('saved'));
       }
     } catch (error) {
       if (mounted) {
-        
-          OgLNotifier.of(context).warning(_t('saveFailed', {'error': error});
+        OgLNotifier.of(context).warning(_t('saveFailed', {'error': error}));
       }
     } finally {
       if (mounted) {
@@ -3483,7 +3481,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
     }
     final String domain = _cname.text.trim();
     if (domain.isEmpty) {
-      OgLNotifier.of(context).info(_t('domainRequired');
+      OgLNotifier.of(context).info(_t('domainRequired'));
       return;
     }
     setState(() => _busy = true);
@@ -3512,8 +3510,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
           if (mounted) {
             OgLNotifier.of(context).warning(
               _t('cnameSaveFailed', {
-                'error':
-                    result.detail ?? ghWriteConflictText(result.conflict),
+                'error': result.detail ?? ghWriteConflictText(result.conflict),
               }),
             );
           }
@@ -3522,12 +3519,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       }
       OgLAppLog.instance.result('仓库', _t('cnameSaved'), domain);
       if (mounted) {
-        OgLNotifier.of(context).success(_t('cnameSavedShort');
+        OgLNotifier.of(context).success(_t('cnameSavedShort'));
       }
     } catch (error) {
       if (mounted) {
-        
-          OgLNotifier.of(context).warning(_t('cnameSaveFailed', {'error': error});
+        OgLNotifier.of(context)
+            .warning(_t('cnameSaveFailed', {'error': error}));
       }
     } finally {
       if (mounted) {
@@ -3547,12 +3544,11 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       OgLAppLog.instance.result('仓库', _t('pagesEnabled'), _full);
       if (mounted) {
         setState(() => _pagesFuture = _loadPages());
-        OgLNotifier.of(context).info(_t('pagesEnabledHint');
+        OgLNotifier.of(context).info(_t('pagesEnabledHint'));
       }
     } catch (error) {
       if (mounted) {
-        
-          OgLNotifier.of(context).warning(_t('enableFailed', {'error': error});
+        OgLNotifier.of(context).warning(_t('enableFailed', {'error': error}));
       }
     } finally {
       if (mounted) {
@@ -3571,12 +3567,11 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       OgLAppLog.instance.result('仓库', _t('pagesDisabledHint'), _full);
       if (mounted) {
         setState(() => _pagesFuture = _loadPages());
-        OgLNotifier.of(context).info(_t('pagesDisabledHint');
+        OgLNotifier.of(context).info(_t('pagesDisabledHint'));
       }
     } catch (error) {
       if (mounted) {
-        
-          OgLNotifier.of(context).warning(_t('disableFailed', {'error': error});
+        OgLNotifier.of(context).warning(_t('disableFailed', {'error': error}));
       }
     } finally {
       if (mounted) {
@@ -3619,8 +3614,8 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       }
     } catch (error) {
       if (mounted) {
-        
-          OgLNotifier.of(context).warning(_t('branchDeleteFailed', {'error': error});
+        OgLNotifier.of(context)
+            .warning(_t('branchDeleteFailed', {'error': error}));
       }
     }
   }

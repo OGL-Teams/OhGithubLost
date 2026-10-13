@@ -101,11 +101,11 @@ class _NewGistPageState extends State<NewGistPage> {
   Future<void> _submit() async {
     final String filename = _filename.text.trim();
     if (filename.isEmpty) {
-      OgLNotifier.of(context).info(_t('fileNameRequired');
+      OgLNotifier.of(context).info(_t('fileNameRequired'));
       return;
     }
     if (_content.text.isEmpty) {
-      OgLNotifier.of(context).info(_t('contentRequired');
+      OgLNotifier.of(context).info(_t('contentRequired'));
       return;
     }
     if (_busy) {
