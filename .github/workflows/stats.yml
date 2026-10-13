@@ -71,6 +71,7 @@ jobs:
             --out-dir /tmp/stats-repo/stats
 
       - name: 提交到 stats 分支
+        id: commit
         env:
           STATS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -84,3 +85,18 @@ jobs:
           git commit -q -m "chore(stats): 更新星标与提交数据"
           git push -q origin stats
           echo '已更新 stats 分支'
+
+      # ★ jsDelivr 对分支引用的缓存约 12 小时：不清缓存，README 上的图
+      #   会一直发旧版。purge 接口逐 URL 提交，成功即返回 200；
+      #   失败不阻断 workflow（旧图多挂一会儿，不值得为它红一次 CI）。
+      - name: 清除 jsDelivr CDN 缓存（让 README 立即拿到新图）
+        if: always() && steps.commit.outcome == 'success'
+        run: |
+          set -eu
+          BASE="https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@stats/stats"
+          for f in star-history.png commit-history.png; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' \
+              "${BASE}/${f}" || true)
+            echo "purge ${f} -> ${code}"
+          done
+          echo 'CDN 缓存已清除'
