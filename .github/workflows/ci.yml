@@ -59,9 +59,11 @@ jobs:
 
       # 格式护栏：修「fork 那份 diff 78% 文件被触碰、53% 是空白漂移」类问题。
       # 必须在 analyze 之前跑——空行/缩进不统一会让后续 review 全是噪音。
-      # 用 CI 镜像里自带的 `dart format --set-exit-if-changed`（无需本地 SDK）。
+      # 用 CI 镜像里自带的 `dart format --set-exit-if-changed`（不读
+      # `analysis_options.yaml`，避免 flutter_lints 解析失败误杀）。
+      # 范围 `lib test`：源码 + widget 测试都要格式化一致。
       - name: 格式护栏（dart format）
-        run: dart format --set-exit-if-changed --output=none lib/
+        run: dart format --set-exit-if-changed --output=none lib test
 
       - name: 静态分析（警告即失败）
         run: flutter analyze --fatal-infos --fatal-warnings

@@ -156,15 +156,14 @@ class _IssuePageState extends State<IssuePage> {
   Future<void> _postComment() async {
     final String body = _comment.text.trim();
     if (body.isEmpty) {
-      OgLNotifier.of(context).info(_t('commentRequired');
+      OgLNotifier.of(context).info(_t('commentRequired'));
       return;
     }
     // 护栏：GitHub 对评论正文有长度上限；本地先拦，避免把超大负载发出去
     // 后被服务端拒绝（浪费一次往返，且错误信息不如本地清晰）。
     if (body.length > _kMaxCommentChars) {
       OgLNotifier.of(context).warning(
-        _t('commentTooLong',
-            {'length': body.length, 'max': _kMaxCommentChars}),
+        _t('commentTooLong', {'length': body.length, 'max': _kMaxCommentChars}),
       );
       return;
     }
@@ -185,7 +184,7 @@ class _IssuePageState extends State<IssuePage> {
       _comment.clear();
       await _commentsC().load();
       if (mounted) {
-        OgLNotifier.of(context).info(_t('commentPosted');
+        OgLNotifier.of(context).info(_t('commentPosted'));
       }
     } catch (error) {
       OgLAppLog.instance.add(

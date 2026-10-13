@@ -147,10 +147,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
   ) async {
     switch (status) {
       case OgLPermissionStatus.granted:
-        OgLNotifier.of(context).info(_t('ready', {'title': info.title});
+        OgLNotifier.of(context).info(_t('ready', {'title': info.title}));
         return;
       case OgLPermissionStatus.notRequired:
-        OgLNotifier.of(context).info(_t('noAuthNeeded', {'title': info.title});
+        OgLNotifier.of(context).info(_t('noAuthNeeded', {'title': info.title}));
         return;
       case OgLPermissionStatus.needsUserAction:
       case OgLPermissionStatus.unsupported:
