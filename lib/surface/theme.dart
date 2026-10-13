@@ -51,11 +51,9 @@ String ogLSeedColorLabel(String id) => OgLI18n.instance.t(
 /// 按 id 取主题色（未知 id 回落品牌色）。
 Color ogLSeedColorOf(String id) => kOgLSeedColors[id] ?? kOgLSeedColor;
 
-
 /// 界面密度（`compact` → 更紧凑）。
-VisualDensity ogLDensityOf(String id) => id == 'compact'
-    ? VisualDensity.compact
-    : VisualDensity.standard;
+VisualDensity ogLDensityOf(String id) =>
+    id == 'compact' ? VisualDensity.compact : VisualDensity.standard;
 
 /// 按明暗 + 主题色 + 密度编译主题（浅色 / 深色两态；其余交给 Material 3 默认值）。
 ThemeData buildOgLTheme(

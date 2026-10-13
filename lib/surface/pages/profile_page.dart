@@ -20,9 +20,10 @@ import 'repo_page.dart';
 import 'settings_page.dart';
 
 /// 取 `profile_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('profile_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'profile_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 我的页。
 class ProfilePage extends StatefulWidget {
@@ -77,7 +78,8 @@ class _ProfilePageState extends State<ProfilePage> {
       label: _t('accounts'),
       isEmpty: (List<GhAccount> value) => value.isEmpty,
       loader: () async {
-        final List<GhAccount> list = await widget.surface.domain.auth.accounts();
+        final List<GhAccount> list =
+            await widget.surface.domain.auth.accounts();
         _activeId = await widget.surface.domain.auth.activeAccountId();
         return list;
       },
@@ -107,7 +109,8 @@ class _ProfilePageState extends State<ProfilePage> {
         );
         return;
       }
-      OgLAppLog.instance.result(_t('accounts'), _t('switched'), '@${account.login}');
+      OgLAppLog.instance
+          .result(_t('accounts'), _t('switched'), '@${account.login}');
       // 多用户安全：缓存不含账号维度（分页快照 / 仓库缓存都不含），
       // 切换后必须**清空所有缓存**，避免"用 B 账号看到 A 账号的私有数据"。
       await widget.surface.clearAllCaches();
@@ -131,19 +134,18 @@ class _ProfilePageState extends State<ProfilePage> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('removeTitle')),
+        title: Text(_t('removeTitle')),
         content: Text(
-          _t('removeDesc', {'login': account.login}) +
-          _t('removeDesc2'),
+          _t('removeDesc', {'login': account.login}) + _t('removeDesc2'),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('remove')),
+            child: Text(_t('remove')),
           ),
         ],
       ),
@@ -157,7 +159,8 @@ class _ProfilePageState extends State<ProfilePage> {
       // 多账号下正是「用 B 账号看到 A 账号内容」的串台来源。
       await widget.surface.forgetAccount(account.id);
       clearOgLRepoPageCaches();
-      OgLAppLog.instance.result(_t('accounts'), _t('removed'), '@${account.login}');
+      OgLAppLog.instance
+          .result(_t('accounts'), _t('removed'), '@${account.login}');
       await _refresh();
     } catch (error) {
       OgLAppLog.instance.add(
@@ -211,7 +214,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final AsyncController<List<GhAccount>> controller = _accountsC();
     return Scaffold(
       appBar: AppBar(
-        title:  Text(_t('mine')),
+        title: Text(_t('mine')),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.person_add_alt),
@@ -226,7 +229,7 @@ class _ProfilePageState extends State<ProfilePage> {
         emptyText: _t('notLoggedIn'),
         builder: (BuildContext context, List<GhAccount> accounts) => ListView(
           children: <Widget>[
-             Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: Text(_t('accounts')),
             ),
@@ -239,7 +242,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       leading: const Icon(Icons.key),
                       title: Text('@${account.login}'),
                       subtitle: Text(
-                        account.id == _activeId ? _t('currentAccount') : _t('switchable'),
+                        account.id == _activeId
+                            ? _t('currentAccount')
+                            : _t('switchable'),
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -247,7 +252,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           if (account.id != _activeId)
                             TextButton(
                               onPressed: () => _switchTo(account),
-                              child:  Text(_t('switch')),
+                              child: Text(_t('switch')),
                             ),
                           IconButton(
                             icon: const Icon(Icons.delete_outline),
@@ -261,7 +266,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             const SizedBox(height: 16),
-             Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
               child: Text(_t('content')),
             ),
@@ -269,15 +274,18 @@ class _ProfilePageState extends State<ProfilePage> {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               child: ListTile(
                 leading: const Icon(Icons.edit_note),
-                title:  Text(_t('drafts')),
+                title: Text(_t('drafts')),
                 subtitle: ListenableBuilder(
                   listenable: widget.surface.domain.api.draftsChanged,
-                  builder: (BuildContext context, Widget? _) => FutureBuilder<int>(
+                  builder: (BuildContext context, Widget? _) =>
+                      FutureBuilder<int>(
                     future: widget.surface.domain.api.draftCount(),
                     builder:
                         (BuildContext context, AsyncSnapshot<int> snapshot) {
                       final int count = snapshot.data ?? 0;
-                      return Text(count == 0 ? _t('noDrafts') : _t('draftCount', {'count': count}));
+                      return Text(count == 0
+                          ? _t('noDrafts')
+                          : _t('draftCount', {'count': count}));
                     },
                   ),
                 ),
@@ -290,8 +298,8 @@ class _ProfilePageState extends State<ProfilePage> {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               child: ListTile(
                 leading: const Icon(Icons.article_outlined),
-                title:  Text(_t('gists')),
-                subtitle:  Text(_t('gistsDesc')),
+                title: Text(_t('gists')),
+                subtitle: Text(_t('gistsDesc')),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _openGists,
               ),
@@ -301,18 +309,19 @@ class _ProfilePageState extends State<ProfilePage> {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               child: ListTile(
                 leading: const Icon(Icons.settings_outlined),
-                title:  Text(_t('settings')),
-                subtitle:  Text(_t('settingsDesc')),
+                title: Text(_t('settings')),
+                subtitle: Text(_t('settingsDesc')),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (BuildContext _) => SettingsPage(surface: widget.surface),
+                    builder: (BuildContext _) =>
+                        SettingsPage(surface: widget.surface),
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-             Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
               child: Text(_t('dangerZone')),
             ),
@@ -323,7 +332,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                     Text(_t('logoutDesc')),
+                    Text(_t('logoutDesc')),
                     const SizedBox(height: 12),
                     OutlinedButton(
                       onPressed: accounts.isEmpty
@@ -334,7 +343,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 await _remove(current);
                               }
                             },
-                      child:  Text(_t('logout')),
+                      child: Text(_t('logout')),
                     ),
                   ],
                 ),

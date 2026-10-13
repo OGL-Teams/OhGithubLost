@@ -20,9 +20,10 @@ import '../widgets/anim/anim_preload.dart';
 import 'repo_page.dart';
 
 /// 取 `search_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('search_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'search_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 // ── 分级预加载（页面级登记）─────────────────────────────────────────────
 // 策略表在 `widgets/anim/anim_preload.dart`：档位 1 仅当前页面 / 档位 2 追加
@@ -113,7 +114,8 @@ class _SearchPageState extends State<SearchPage> {
         loader: () async {
           final List<GhRepo> repos =
               await widget.surface.domain.api.searchRepos(q, perPage: 30);
-          OgLAppLog.instance.add(_t('search'), _t('repoResults', {'q': q, 'count': repos.length}));
+          OgLAppLog.instance.add(
+              _t('search'), _t('repoResults', {'q': q, 'count': repos.length}));
           final List<_SearchHit> hits = repos
               .map(
                 (GhRepo repo) => _SearchHit(
@@ -138,7 +140,8 @@ class _SearchPageState extends State<SearchPage> {
         loader: () async {
           final List<Map<String, dynamic>> items =
               await widget.surface.domain.api.searchCode(q, perPage: 30);
-          OgLAppLog.instance.add(_t('search'), _t('codeResults', {'q': q, 'count': items.length}));
+          OgLAppLog.instance.add(
+              _t('search'), _t('codeResults', {'q': q, 'count': items.length}));
           return items.map(_hitFromCode).toList();
         },
       );
@@ -198,7 +201,8 @@ class _SearchPageState extends State<SearchPage> {
   ///   第一张图 → `fullScreen`（档位 ≥2；该档额度最大，正是为它准备的）；
   /// - 第 2 条是**列表单项入场**（`OgLReveal`，视口驱动）→ `currentPage`（档位 ≥1）。
   void _preloadHitAvatars(List<_SearchHit> hits) {
-    final int take = hits.length < _kPreloadLeads ? hits.length : _kPreloadLeads;
+    final int take =
+        hits.length < _kPreloadLeads ? hits.length : _kPreloadLeads;
     bool registered = false;
     for (int i = 0; i < take; i++) {
       final GhRepo? repo = hits[i].repo;
@@ -260,7 +264,7 @@ class _SearchPageState extends State<SearchPage> {
     final GhRepo? repo = hit.repo;
     if (repo == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('noRepoForResult'))),
+        SnackBar(content: Text(_t('noRepoForResult'))),
       );
       return;
     }
@@ -307,7 +311,7 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     final AsyncController<List<_SearchHit>>? controller = _results;
     return Scaffold(
-      appBar: AppBar(title:  Text(_t('search'))),
+      appBar: AppBar(title: Text(_t('search'))),
       body: Column(
         children: <Widget>[
           Padding(
@@ -315,7 +319,7 @@ class _SearchPageState extends State<SearchPage> {
             child: Column(
               children: <Widget>[
                 SegmentedButton<int>(
-                  segments:  <ButtonSegment<int>>[
+                  segments: <ButtonSegment<int>>[
                     ButtonSegment<int>(value: 0, label: Text(_t('tabRepos'))),
                     ButtonSegment<int>(value: 1, label: Text(_t('tabCode'))),
                   ],
@@ -339,7 +343,7 @@ class _SearchPageState extends State<SearchPage> {
                 TextField(
                   controller: _input,
                   textInputAction: TextInputAction.search,
-                  decoration:  InputDecoration(
+                  decoration: InputDecoration(
                     hintText: _t('queryHint'),
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.search),
@@ -353,7 +357,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
           Expanded(
             child: controller == null
-                ?  Center(child: Text(_t('startHint')))
+                ? Center(child: Text(_t('startHint')))
                 : AsyncView<List<_SearchHit>>(
                     controller: controller,
                     emptyIcon: Icons.search_off,

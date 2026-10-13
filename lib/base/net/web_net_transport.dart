@@ -95,9 +95,8 @@ class WebNetTransport implements NetTransport {
       // 之类的连接策略——浏览器不暴露连接池，这些策略在 Web 上不适用。
       final http.StreamedResponse streamed =
           await _client.send(req).timeout(connectTimeout);
-      final String text = await streamed.stream
-          .bytesToString()
-          .timeout(receiveTimeout);
+      final String text =
+          await streamed.stream.bytesToString().timeout(receiveTimeout);
       stopwatch.stop();
       return NetResponse(
         statusCode: streamed.statusCode,
@@ -177,8 +176,7 @@ class WebNetTransport implements NetTransport {
 /// （浏览器里会被 CORS 拦下）；端点不可用时解析失败会被如实上报并回退系统解析。
 class WebDohHttpClient implements DnsHttpClient {
   /// 创建客户端。[client] 仅供测试注入。
-  WebDohHttpClient({http.Client? client})
-      : _client = client ?? BrowserClient();
+  WebDohHttpClient({http.Client? client}) : _client = client ?? BrowserClient();
 
   static const Duration _timeout = Duration(seconds: 8);
 
@@ -190,9 +188,8 @@ class WebDohHttpClient implements DnsHttpClient {
     Map<String, String> headers = const <String, String>{},
   }) async {
     final Uri uri = Uri.parse(url);
-    final http.Response response = await _client
-        .get(uri, headers: headers)
-        .timeout(_timeout);
+    final http.Response response =
+        await _client.get(uri, headers: headers).timeout(_timeout);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw NetException(
         NetErrorKind.connection,

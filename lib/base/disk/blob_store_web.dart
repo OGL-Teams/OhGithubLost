@@ -210,8 +210,7 @@ extension type _IdbDatabase._(JSObject _) implements JSObject {
     // `getAllKeys()` 结果是 JS Array；逐项转 Dart String。
     try {
       final outer = raw as JSObject;
-      final int length =
-          (outer.getProperty<JSNumber>('length'.toJS)).toDartInt;
+      final int length = (outer.getProperty<JSNumber>('length'.toJS)).toDartInt;
       final out = <String>[];
       for (var i = 0; i < length; i++) {
         final JSAny? item = outer.getProperty<JSAny?>(i.toJS);
@@ -557,9 +556,8 @@ class IoDiskBlobStore implements DiskBlobStore {
       final db = await _database();
       if (db == null) {
         final fallback = _fallback;
-        return _stripList(fallback != null
-            ? await fallback.keys()
-            : const <String>[]);
+        return _stripList(
+            fallback != null ? await fallback.keys() : const <String>[]);
       }
       final List<String> all = await db.allKeys(_kStoreName);
       return _stripList(all);

@@ -18,9 +18,10 @@ import '../util/link_opener.dart';
 import '../widgets/readme_view.dart';
 
 /// 取 `issue_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('issue_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'issue_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 评论文本上限（字符数）。
 ///
@@ -98,12 +99,14 @@ class _IssuePageState extends State<IssuePage> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title: Text(closing ? _t('closeIssue', {'number': _number}) : _t('reopenIssue', {'number': _number})),
+        title: Text(closing
+            ? _t('closeIssue', {'number': _number})
+            : _t('reopenIssue', {'number': _number})),
         content: Text(closing ? _t('closeHint') : _t('reopenHint')),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -153,7 +156,7 @@ class _IssuePageState extends State<IssuePage> {
     final String body = _comment.text.trim();
     if (body.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('commentRequired'))),
+        SnackBar(content: Text(_t('commentRequired'))),
       );
       return;
     }
@@ -162,7 +165,8 @@ class _IssuePageState extends State<IssuePage> {
     if (body.length > _kMaxCommentChars) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_t('commentTooLong', {'length': body.length, 'max': _kMaxCommentChars})),
+          content: Text(_t('commentTooLong',
+              {'length': body.length, 'max': _kMaxCommentChars})),
         ),
       );
       return;
@@ -185,7 +189,7 @@ class _IssuePageState extends State<IssuePage> {
       await _commentsC().load();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(_t('commentPosted'))),
+          SnackBar(content: Text(_t('commentPosted'))),
         );
       }
     } catch (error) {
@@ -221,149 +225,154 @@ class _IssuePageState extends State<IssuePage> {
       appBar: AppBar(
         title: Text('#$_number', maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
-      body: OgLReveal(delay: Duration.zero, child: CustomScrollView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        slivers: <Widget>[
-          // 头部（常量级）：标题 / 状态 / 正文 / 操作按钮 /「评论」标题。
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                    Text(title, style: theme.textTheme.titleLarge),
-                    const SizedBox(height: 8),
-                    Text(
-                      'by ${ghLogin(widget.issue)} · '
-                      '${ghDate(widget.issue, 'created_at')} · '
-                      '${open ? _t('openNow') : _t('closed')}',
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 12),
-                    if (body.trim().isNotEmpty)
-                      Card(
-                        child: Padding(
+      body: OgLReveal(
+          delay: Duration.zero,
+          child: CustomScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            slivers: <Widget>[
+              // 头部（常量级）：标题 / 状态 / 正文 / 操作按钮 /「评论」标题。
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Text(title, style: theme.textTheme.titleLarge),
+                      const SizedBox(height: 8),
+                      Text(
+                        'by ${ghLogin(widget.issue)} · '
+                        '${ghDate(widget.issue, 'created_at')} · '
+                        '${open ? _t('openNow') : _t('closed')}',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 12),
+                      if (body.trim().isNotEmpty)
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: ReadmeView(
+                              markdown: body,
+                              onOpenLink: (Uri uri) {
+                                unawaited(openExternalLink(uri, tag: '议题'));
+                              },
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: OutlinedButton.icon(
+                          onPressed: _busy ? null : _toggleState,
+                          icon: Icon(open ? Icons.task_alt : Icons.undo),
+                          label:
+                              Text(open ? _t('closeIssueTitle') : _t('reopen')),
+                        ),
+                      ),
+                      const Divider(height: 32),
+                      Text(_t('comments'), style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 8)
+                    ],
+                  ),
+                ),
+              ),
+              // 评论：按需构建（评论可以很多）。
+              OgLAsyncSliver<List<Map<String, dynamic>>>(
+                controller: _commentsC(),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                emptyIcon: Icons.chat_bubble_outline,
+                emptyText: _t('noComments'),
+                itemCountOf: (List<Map<String, dynamic>> comments) =>
+                    comments.length,
+                itemBuilder: (
+                  BuildContext context,
+                  List<Map<String, dynamic>> comments,
+                  int index,
+                ) {
+                  final Map<String, dynamic> comment = comments[index];
+                  return Card(
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Container(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                          child: Row(
+                            children: <Widget>[
+                              CircleAvatar(
+                                radius: 13,
+                                child: Text(
+                                  _initialOf(ghLogin(comment)),
+                                  style: theme.textTheme.labelSmall,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '${ghLogin(comment).isEmpty ? OgLI18n.instance.t('common', 'unknown') : ghLogin(comment)} · '
+                                  '${ghDate(comment, 'created_at')}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        Padding(
                           padding: const EdgeInsets.all(12),
                           child: ReadmeView(
-                            markdown: body,
+                            markdown: ghStr(comment, 'body'),
                             onOpenLink: (Uri uri) {
-                              unawaited(openExternalLink(uri, tag: '议题'));
+                              unawaited(
+                                  openExternalLink(uri, tag: _t('comments')));
                             },
                           ),
                         ),
-                      ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: OutlinedButton.icon(
-                        onPressed: _busy ? null : _toggleState,
-                        icon: Icon(open ? Icons.task_alt : Icons.undo),
-                        label: Text(open ? _t('closeIssueTitle') : _t('reopen')),
-                      ),
+                      ],
                     ),
-                    const Divider(height: 32),
-                    Text(_t('comments'), style: theme.textTheme.titleMedium),
-                    const SizedBox(height: 8)
-                ],
+                  );
+                },
               ),
-            ),
-          ),
-          // 评论：按需构建（评论可以很多）。
-          OgLAsyncSliver<List<Map<String, dynamic>>>(
-            controller: _commentsC(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            emptyIcon: Icons.chat_bubble_outline,
-            emptyText: _t('noComments'),
-            itemCountOf: (List<Map<String, dynamic>> comments) =>
-                comments.length,
-            itemBuilder: (
-              BuildContext context,
-              List<Map<String, dynamic>> comments,
-              int index,
-            ) {
-              final Map<String, dynamic> comment = comments[index];
-              return Card(
-                                         clipBehavior: Clip.antiAlias,
-                                         child: Column(
-                                           crossAxisAlignment: CrossAxisAlignment.stretch,
-                                           children: <Widget>[
-                                             Container(
-                                               color: theme.colorScheme.surfaceContainerHighest,
-                                               padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                                               child: Row(
-                                                 children: <Widget>[
-                                                   CircleAvatar(
-                                                     radius: 13,
-                                                     child: Text(
-                                                       _initialOf(ghLogin(comment)),
-                                                       style: theme.textTheme.labelSmall,
-                                                     ),
-                                                   ),
-                                                   const SizedBox(width: 8),
-                                                   Expanded(
-                                                     child: Text(
-                                                       '${ghLogin(comment).isEmpty ? OgLI18n.instance.t('common', 'unknown') : ghLogin(comment)} · '
-                                                       '${ghDate(comment, 'created_at')}',
-                                                       maxLines: 1,
-                                                       overflow: TextOverflow.ellipsis,
-                                                       style: theme.textTheme.bodySmall,
-                                                     ),
-                                                   ),
-                                                 ],
-                                               ),
-                                             ),
-                                             const Divider(height: 1),
-                                             Padding(
-                                               padding: const EdgeInsets.all(12),
-                                               child: ReadmeView(
-                                                 markdown: ghStr(comment, 'body'),
-                                                 onOpenLink: (Uri uri) {
-                                                   unawaited(openExternalLink(uri, tag: _t('comments')));
-                                                 },
-                                               ),
-                                             ),
-                                           ],
-                                         ),
-                                       );
-            },
-          ),
-          // 发表评论（尾部）：输入框 + 提交按钮。
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  const Divider(height: 32),
-                  Text(_t('postComment'), style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _comment,
-                    minLines: 3,
-                    maxLines: 8,
-                    enabled: !_posting,
-                    decoration:  InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: _t('commentHint'),
-                    ),
+              // 发表评论（尾部）：输入框 + 提交按钮。
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      const Divider(height: 32),
+                      Text(_t('postComment'),
+                          style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _comment,
+                        minLines: 3,
+                        maxLines: 8,
+                        enabled: !_posting,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: _t('commentHint'),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: FilledButton.icon(
+                          onPressed: _posting ? null : _postComment,
+                          icon: const Icon(Icons.send),
+                          label: Text(
+                              _posting ? _t('posting') : _t('postComment')),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: FilledButton.icon(
-                      onPressed: _posting ? null : _postComment,
-                      icon: const Icon(Icons.send),
-                      label: Text(_posting ? _t('posting') : _t('postComment')),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
-      )),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            ],
+          )),
     );
-
   }
 }

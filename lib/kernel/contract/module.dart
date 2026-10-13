@@ -111,8 +111,7 @@ class ModuleDescriptor {
   }
 
   @override
-  String toString() =>
-      'ModuleDescriptor($id@$version, layer=${layer.key}, '
+  String toString() => 'ModuleDescriptor($id@$version, layer=${layer.key}, '
       'requires=$requires, provides=$provides)';
 }
 

@@ -9,16 +9,17 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
+import 'clipboard_x.dart';
 
 /// 取 `common` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('common', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'common', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 用系统浏览器打开外链。
 ///
@@ -54,12 +55,13 @@ Future<bool> openExternalLink(Uri url, {String tag = '链接'}) async {
 }
 
 /// 打开外链；失败时把 URL 复制到剪贴板并横幅提示。
-Future<void> openLinkOrCopy(BuildContext context, String href, {String tag = '链接'}) async {
+Future<void> openLinkOrCopy(BuildContext context, String href,
+    {String tag = '链接'}) async {
   final Uri? uri = Uri.tryParse(href);
   if (uri == null || uri.scheme.isEmpty) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('linkInvalid'))),
+        SnackBar(content: Text(_t('linkInvalid'))),
       );
     }
     return;
@@ -68,7 +70,7 @@ Future<void> openLinkOrCopy(BuildContext context, String href, {String tag = '�
   if (ok) {
     return;
   }
-  await Clipboard.setData(ClipboardData(text: href));
+  await ogLCopyText(href, tag: tag);
   if (context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(_t('linkOpenFailedCopy', {'url': href}))),

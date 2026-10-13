@@ -21,9 +21,10 @@ import '../i18n/og_l_i18n.dart';
 import '../util/clipboard_x.dart';
 
 /// 取 `about_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('about_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'about_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 关于页。
 class AboutPage extends StatelessWidget {
@@ -43,7 +44,9 @@ class AboutPage extends StatelessWidget {
     } catch (error) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('copied', {'label': Uri.decodeFull(uri.toString())}))),
+          SnackBar(
+              content: Text(
+                  _t('copied', {'label': Uri.decodeFull(uri.toString())}))),
         );
       }
     }
@@ -67,7 +70,7 @@ class AboutPage extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final KernelReport? snapshot = report;
     return Scaffold(
-      appBar: AppBar(title:  Text(_t('title'))),
+      appBar: AppBar(title: Text(_t('title'))),
       // 根级子项逐个挂入场动画（[OgLRevealList] 自动错峰）；不再用整页
       // `OgLReveal` 包住整个列表 —— 那会与路由过渡叠加成双重动画。
       body: ListView(
@@ -90,12 +93,12 @@ class AboutPage extends StatelessWidget {
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.person_outline),
-                  title:  Text(_t('developer')),
+                  title: Text(_t('developer')),
                   subtitle: Text(OgLProjectInfo.mainDeveloper),
                 ),
                 ListTile(
                   leading: const Icon(Icons.link),
-                  title:  Text(_t('repo')),
+                  title: Text(_t('repo')),
                   subtitle: Text(OgLProjectInfo.repositoryUrl),
                   trailing: IconButton(
                     icon: const Icon(Icons.content_copy, size: 18),
@@ -109,7 +112,7 @@ class AboutPage extends StatelessWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.gavel_outlined),
-                  title:  Text(_t('license')),
+                  title: Text(_t('license')),
                   subtitle: Text(
                     '${OgLProjectInfo.licenseId} · ${OgLProjectInfo.licenseName}',
                   ),
@@ -125,7 +128,8 @@ class AboutPage extends StatelessWidget {
               leading: Icon(Icons.favorite, color: theme.colorScheme.error),
               title: Text(OgLI18n.instance.t('settings', 'donateHeart')),
               subtitle: Text(
-                OgLI18n.instance.t('settings', 'donateTileDesc', args: <String, String>{
+                OgLI18n.instance
+                    .t('settings', 'donateTileDesc', args: <String, String>{
                   'repo': OgLProjectInfo.repoFullName,
                 }),
               ),
@@ -139,17 +143,17 @@ class AboutPage extends StatelessWidget {
               children: <Widget>[
                 ListTile(
                   leading: const Icon(Icons.auto_awesome_outlined),
-                  title:  Text(_t('futureExt')),
-                  subtitle:  Text(_t('futureExtDesc')),
+                  title: Text(_t('futureExt')),
+                  subtitle: Text(_t('futureExtDesc')),
                 ),
                 const Divider(height: 1),
-                 ListTile(
+                ListTile(
                   dense: true,
                   leading: Icon(Icons.people_outline),
                   title: Text(_t('contributors')),
                   subtitle: Text(_t('contributorsDesc')),
                 ),
-                 ListTile(
+                ListTile(
                   dense: true,
                   leading: Icon(Icons.favorite_outline),
                   title: Text(_t('thanks')),
@@ -175,7 +179,8 @@ class AboutPage extends StatelessWidget {
                 ),
                 _KeyValueRow(
                   label: _t('services'),
-                  value: _t('servicesCount', {'count': snapshot.services.length}),
+                  value:
+                      _t('servicesCount', {'count': snapshot.services.length}),
                 ),
               ],
             ),
@@ -186,7 +191,7 @@ class AboutPage extends StatelessWidget {
                   : _t('trustCount', {'count': snapshot.trustWarnings.length}),
               children: <Widget>[
                 if (snapshot.trustWarnings.isEmpty)
-                   ListTile(
+                  ListTile(
                     leading: Icon(Icons.verified_outlined),
                     title: Text(_t('trustChainOk')),
                   )
@@ -265,13 +270,15 @@ class AboutPage extends StatelessWidget {
     if (last == null) {
       subtitle = OgLI18n.instance.t('shell', 'permSelfTestPending');
     } else if (last.allReady) {
-      subtitle = OgLI18n.instance.t('shell', 'permSelfTestAllReady', args: <String, String>{
+      subtitle = OgLI18n.instance
+          .t('shell', 'permSelfTestAllReady', args: <String, String>{
         'ready': '${last.readyCount}',
         'total': '${last.infos.length}',
         'ms': '${last.duration.inMilliseconds}',
       });
     } else {
-      subtitle = OgLI18n.instance.t('shell', 'permSelfTestProblems', args: <String, String>{
+      subtitle = OgLI18n.instance
+          .t('shell', 'permSelfTestProblems', args: <String, String>{
         'count': '${last.actionable.length}',
       });
     }
@@ -285,7 +292,9 @@ class AboutPage extends StatelessWidget {
             title: Text(OgLI18n.instance.t('shell', 'permSelfTestPending')),
           )
         else ...<Widget>[
-          _KeyValueRow(label: OgLI18n.instance.t('shell', 'permPlatform'), value: last.platform),
+          _KeyValueRow(
+              label: OgLI18n.instance.t('shell', 'permPlatform'),
+              value: last.platform),
           for (final OgLPermissionInfo info in last.infos)
             ListTile(
               dense: true,

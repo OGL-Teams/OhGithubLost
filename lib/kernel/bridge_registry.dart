@@ -57,7 +57,8 @@ class KernelBridgeRegistry {
   bool isRegistered(String layerKey) => _bridges.containsKey(layerKey);
 
   /// 已注册桥的快照（只读，用于诊断与测试）。
-  Map<String, Object> get snapshot => Map<String, Object>.unmodifiable(_bridges);
+  Map<String, Object> get snapshot =>
+      Map<String, Object>.unmodifiable(_bridges);
 
   /// 封存注册表：装配阶段结束后调用。
   void seal() {

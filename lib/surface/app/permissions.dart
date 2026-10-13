@@ -46,9 +46,10 @@ import '../i18n/og_l_i18n.dart';
 import 'browser_notify.dart';
 
 /// 取 `shell` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('shell', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'shell', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 权限种类（与业务相关的最小集合）。
 enum OgLPermission {
@@ -290,9 +291,7 @@ abstract class _HandlerGateway implements OgLPermissionGateway {
       OgLPermissionInfo(
         permission: OgLPermission.notifications,
         title: _t('notification'),
-        rationale: notify == null
-            ? _t('notifNoAuth')
-            : _t('notifDesc'),
+        rationale: notify == null ? _t('notifNoAuth') : _t('notifDesc'),
         status: notify == null
             ? OgLPermissionStatus.notRequired
             : await _statusOf(notify),
@@ -415,8 +414,7 @@ class _DesktopPermissionGateway implements OgLPermissionGateway {
   bool get canOpenSettings => false;
 
   @override
-  Future<List<OgLPermissionInfo>> describe() async =>
-       <OgLPermissionInfo>[
+  Future<List<OgLPermissionInfo>> describe() async => <OgLPermissionInfo>[
         OgLPermissionInfo(
           permission: OgLPermission.storage,
           title: _t('storageAccess'),

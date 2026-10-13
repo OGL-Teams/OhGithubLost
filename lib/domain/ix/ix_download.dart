@@ -312,7 +312,8 @@ String ogLSafeDownloadFileName(String raw, {String fallback = 'download'}) {
   name = name.replaceAll(RegExp(r'[\x00-\x1F\x7F<>:"/\\|?*]'), '');
   name = name.trim().replaceAll(RegExp(r'\s+'), ' ');
   // ③ 去掉前导点（隐藏文件）与尾部的点/空格（Windows 不允许尾随点与空格）。
-  name = name.replaceAll(RegExp(r'^[.]+'), '').replaceAll(RegExp(r'[. ]+$'), '');
+  name =
+      name.replaceAll(RegExp(r'^[.]+'), '').replaceAll(RegExp(r'[. ]+$'), '');
   if (name.isEmpty) {
     return fallback;
   }
@@ -341,8 +342,7 @@ String ogLSafeDownloadFileName(String raw, {String fallback = 'download'}) {
 /// 的前提冲突）。
 String ogLAssertDownloadUrl(String url) {
   final Uri? parsed = Uri.tryParse(url);
-  if (parsed == null ||
-      (parsed.scheme != 'http' && parsed.scheme != 'https')) {
+  if (parsed == null || (parsed.scheme != 'http' && parsed.scheme != 'https')) {
     throw ArgumentError.value(url, 'url', '只允许 http/https 地址');
   }
   return url;
@@ -690,7 +690,9 @@ class IxDownloadManager extends ChangeNotifier {
         continue;
       }
       reachable ??= candidate;
-      if (current.supportsRange && current.total != null && current.total! > 0) {
+      if (current.supportsRange &&
+          current.total != null &&
+          current.total! > 0) {
         uri = parsed;
         probe = current;
         break;
@@ -828,7 +830,8 @@ class IxDownloadManager extends ChangeNotifier {
         // 任务已被移除：绝不写回（否则会把移除过的任务"复活"）。
         return;
       }
-      final String path = (await _backend.pathFor(fallback))?.toFilePath() ?? '';
+      final String path =
+          (await _backend.pathFor(fallback))?.toFilePath() ?? '';
       final IxDownloadTask? fresh = _snapshots[id];
       if (fresh == null) {
         return; // await 期间被移除

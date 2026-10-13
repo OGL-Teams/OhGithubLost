@@ -46,22 +46,29 @@ class AiSseEvent {
   bool get isDone => data == '[DONE]';
 
   @override
-  String toString() => 'AiSseEvent(event: $event, id: $id, data: ${data?.length} chars)';
+  String toString() =>
+      'AiSseEvent(event: $event, id: $id, data: ${data?.length} chars)';
 }
 
 /// 传输层异常：**不携带响应体与密钥**，只含状态码与安全摘要。
 ///
 /// 与 `AiException`（domain 层的业务错误）区分开：本异常表示「网络 / 超时 /
 /// 非 2xx」，`detail` 只允许出现脱敏后的信息。
-class AiTransportException implements Exception {
+class AiTransportException implements AiException {
   const AiTransportException(this.message, {this.statusCode});
 
   final String message;
   final int? statusCode;
 
+  /// 兼容 [AiException.code]：调用方用同一套 `on AiException` 捕获。
   @override
-  String toString() =>
-      'AiTransportException(${statusCode ?? '-'})：$message';
+  String get code => 'transport';
+
+  @override
+  String get detail => message;
+
+  @override
+  String toString() => 'AiTransportException(${statusCode ?? '-'})：$message';
 }
 
 /// AI 供应商的裸 HTTP 传输。**不自动重试**——AI 请求非幂等，超时重试会重复计费 /

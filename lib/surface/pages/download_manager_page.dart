@@ -7,23 +7,26 @@ library;
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/animations.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
-import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 
 /// 取 `download_manager_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('download_manager_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'download_manager_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 下载已入队：弹 SnackBar，带「查看下载」动作跳转到下载中心。
+///
+/// 修「开始下载但看不到下载中心」：入队成功后不再只给一句提示，
+/// 而是给出可直接跳转的入口。
 void ogLShowDownloadQueued(
   BuildContext context,
   SurfaceBridge surface,
@@ -32,6 +35,10 @@ void ogLShowDownloadQueued(
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(message),
+      // 带「查看下载」动作的横幅应**长一点**：M3 默认 4s 容易
+      // 在用户读完文件名之前就收回（特别是点了 "viewDownloads" 但
+      // 不去点跳转的情况——横幅消失后就没入口了）。给 8s 留出决定时间。
+      duration: const Duration(seconds: 8),
       action: SnackBarAction(
         label: OgLI18n.instance.t('common', 'viewDownloads'),
         onPressed: () => Navigator.of(context).push(
@@ -52,13 +59,12 @@ class DownloadManagerPage extends StatelessWidget {
   /// 表面桥。
   final SurfaceBridge surface;
 
-
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title:  Text(_t('title')),
+        title: Text(_t('title')),
         actions: <Widget>[
           IconButton(
             tooltip: _t('clearFinished'),
@@ -82,7 +88,7 @@ class DownloadManagerPage extends StatelessWidget {
                     color: theme.colorScheme.outline,
                   ),
                   const SizedBox(height: 12),
-                   Text(_t('empty')),
+                  Text(_t('empty')),
                   const SizedBox(height: 4),
                   Text(
                     _t('emptyHint'),
@@ -137,25 +143,31 @@ class DownloadManagerPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            // 5.0：进度条**平滑插值**（库的进度事件 200ms 一跳，
-            // 直接绑值会出现"跳格子"；这里补间 220ms，观感连续）。
-            TweenAnimationBuilder<double>(
-              tween: Tween<double>(
-                begin: 0,
-                end: task.total > 0 ? task.progress : 0,
+            // `total > 0` 才画进度条：Web 上总大小恒为 `0`（浏览器下载不向
+            // 页面回报大小），无值进度条只会一直空转；此时照实写明
+            // 「已交给浏览器下载」，不假装量得出进度。
+            if (task.total > 0)
+              // 5.0：进度条**平滑插值**（库的进度事件 200ms 一跳，
+              // 直接绑值会出现"跳格子"；这里补间 220ms，观感连续）。
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: task.progress),
+                duration: OgLAnim.fast(context),
+                curve: OgLAnim.curve(context),
+                builder: (
+                  BuildContext context,
+                  double value,
+                  Widget? child,
+                ) =>
+                    LinearProgressIndicator(
+                  value: value.clamp(0.0, 1.0),
+                  minHeight: 4,
+                ),
+              )
+            else
+              Text(
+                _t('handedToBrowser'),
+                style: theme.textTheme.bodySmall,
               ),
-              duration: OgLAnim.fast(context),
-              curve: Curves.easeOut,
-              builder: (
-                BuildContext context,
-                double value,
-                Widget? child,
-              ) =>
-                  LinearProgressIndicator(
-                value: task.total > 0 ? value.clamp(0.0, 1.0) : null,
-                minHeight: 4,
-              ),
-            ),
             const SizedBox(height: 6),
             Row(
               children: <Widget>[
@@ -190,15 +202,11 @@ class DownloadManagerPage extends StatelessWidget {
                 ),
               ],
             ),
-            // 显示下载失败原因：
-            // 1) 强类型（Web 后端）走 `_t('downloadFailed.${reason.name}')`；
-            // 2) 兜底走 `task.error`（自由文本，如 `'integrityMismatch'`）
-            //    —— 但不再"直接打印 String"，而是查 `failure.<key>`，缺则回退。
-            if (task.failureReason != null || task.error != null)
+            if (task.errorText.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  _failureText(task),
+                  task.errorText,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall
@@ -210,13 +218,14 @@ class DownloadManagerPage extends StatelessWidget {
               runSpacing: 0,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: <Widget>[
-                if (active || task.status == IxDownloadStatus.queued)
+                if (surface.supportsPauseResume &&
+                    (active || task.status == IxDownloadStatus.queued))
                   IconButton(
                     tooltip: _t('pause'),
                     icon: const Icon(Icons.pause),
                     onPressed: () => unawaited(surface.pauseDownload(task.id)),
                   ),
-                if (paused)
+                if (surface.supportsPauseResume && paused)
                   IconButton(
                     tooltip: _t('resume'),
                     icon: const Icon(Icons.play_arrow),
@@ -236,12 +245,11 @@ class DownloadManagerPage extends StatelessWidget {
                     onPressed: () => unawaited(surface.cancelDownload(task.id)),
                   ),
                 if (done) ...<Widget>[
-                  if (!kIsWeb)
-                    IconButton(
-                      tooltip: _t('open'),
-                      icon: const Icon(Icons.open_in_new),
-                      onPressed: () => unawaited(_openLocal(context, task)),
-                    ),
+                  IconButton(
+                    tooltip: _t('open'),
+                    icon: const Icon(Icons.open_in_new),
+                    onPressed: () => unawaited(_openLocal(context, task)),
+                  ),
                   IconButton(
                     tooltip: _t('copyPath'),
                     icon: const Icon(Icons.content_copy),
@@ -275,7 +283,8 @@ class DownloadManagerPage extends StatelessWidget {
   /// 显示在界面上** —— 那会让非中文用户在下载管理页看到中文。域层不参与 i18n
   /// 扫描（`i18n_scan` 只看 `lib/surface/`），所以这类问题门禁抓不到，只能靠
   /// 「界面文案一律经 `_t`」这条纪律守住。
-  static String _categoryLabel(IxDownloadCategory category) => switch (category) {
+  static String _categoryLabel(IxDownloadCategory category) =>
+      switch (category) {
         IxDownloadCategory.release => _t('categoryRelease'),
         IxDownloadCategory.repo => _t('categoryRepo'),
         IxDownloadCategory.gist => _t('categoryGist'),
@@ -311,71 +320,44 @@ class DownloadManagerPage extends StatelessWidget {
     return '${_categoryLabel(task.category)} · $size$speed';
   }
 
-  /// 失败原因 → 本地化文案。
-  ///
-  /// 优先枚举（Web 后端），缺键时回退到 `task.error` 的 i18n 映射，
-  /// 再缺就回退到键名（**绝不返回空串**）。
-  static String _failureText(IxDownloadTask task) {
-    final IxDownloadFailureReason? reason = task.failureReason;
-    if (reason != null && reason != IxDownloadFailureReason.ok) {
-      // `_t` 的兜底链：当前语言 → en → 键名；键名不会空。
-      final String localized = _t('downloadFailed.${reason.name}');
-      // 兜底：如果键尚未翻译，至少把"开发期英文"也算上。
-      if (localized != 'downloadFailed.${reason.name}') {
-        return localized;
-      }
-      return IX_DOWNLOAD_FAILURE_FALLBACK;
-    }
-    final String? raw = task.error;
-    if (raw == null || raw.isEmpty) {
-      return _t('statusFailed');
-    }
-    // `task.error` 不是域枚举而是自由文本：用 `failure.<error>` 查 i18n，
-    // 没有就回退到自由文本（仍是有用信息，而不是把英文键名丢给用户）。
-    final String localized = _t('failure.$raw');
-    if (localized != 'failure.$raw') {
-      return localized;
-    }
-    return raw;
-  }
-
   Future<void> _openLocal(BuildContext context, IxDownloadTask task) async {
-    // Web 上的「打开」只是导航到下载 URL（成品由浏览器接管）；
-    // 非 Web 上传的是真实本地路径，必须走 `Uri.file`，否则 `launchUrl` 解析
-    // 不了 `C:\…` / 空格，转头向用户报"无应用打开"——实际上路径根本没读对。
-    final Uri target = kIsWeb
-        ? (Uri.tryParse(task.savePath) ?? Uri.parse(task.url))
-        : Uri.file(task.savePath);
     try {
+      // Web 上 `savePath` 是**下载地址**（http/https URL），不是文件路径：
+      // 此前一律 `Uri.file()` 会拼出一个打不开的伪路径。
+      // 原生上 `savePath` 是真实文件路径（可能无 scheme / 带 Windows 盘符），
+      // 仍走 `Uri.file()` 规范化；已是 `file://` 形式的则原样使用。
+      final Uri? parsed = Uri.tryParse(task.savePath);
+      final Uri uri;
+      if (parsed != null &&
+          (parsed.scheme == 'http' || parsed.scheme == 'https')) {
+        uri = parsed;
+      } else if (parsed != null && parsed.scheme == 'file') {
+        uri = parsed;
+      } else {
+        uri = Uri.file(task.savePath);
+      }
       final bool ok = await launchUrl(
-        target,
+        uri,
         mode: LaunchMode.externalApplication,
       );
       if (!ok) {
         throw StateError(_t('noAppForFile'));
       }
-    } catch (error) {
-      // 失败兜底：复制路径给用户，并显示带 i18n 键的失败原因（不再吞）。
-      if (!await ogLCopyText(task.savePath, tag: 'Download')) {
-        return;
-      }
+    } catch (_) {
+      await Clipboard.setData(ClipboardData(text: task.savePath));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('downloadOpenFailed', <String, Object?>{
-            'reason': error.toString(),
-          }))),
+          SnackBar(content: Text(_t('cannotOpenCopied'))),
         );
       }
     }
   }
 
   Future<void> _copyPath(BuildContext context, IxDownloadTask task) async {
-    if (!await ogLCopyText(task.savePath, tag: 'Download')) {
-      return;
-    }
+    await Clipboard.setData(ClipboardData(text: task.savePath));
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('pathCopied'))),
+        SnackBar(content: Text(_t('pathCopied'))),
       );
     }
   }

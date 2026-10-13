@@ -14,6 +14,7 @@
 /// - 通知：弹窗说明后跳转系统设置（纯 Dart 无法直接申请）。
 /// 拿不到就如实告诉用户，绝不自称已授权。
 library;
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -24,10 +25,12 @@ import '../app/permissions.dart';
 import '../i18n/og_l_i18n.dart';
 import '../settings.dart';
 import '../surface_bridge.dart';
+
 /// 取 `onboarding` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('onboarding', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'onboarding', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 取 `settings` 分片文案（引导里的「语言 / 外观」直接复用设置页的词条）。
 String _ts(String key) => OgLI18n.instance.t('settings', key);
@@ -111,7 +114,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
     setState(() => _busyPermission = info.permission);
     OgLAppLog.instance.add(
       _t('title'),
-      _t('requestingPermission', {'title': info.title, 'platform': _gateway.platformLabel}),
+      _t('requestingPermission',
+          {'title': info.title, 'platform': _gateway.platformLabel}),
     );
     OgLPermissionStatus status;
     try {
@@ -165,7 +169,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
-                child:  Text(_t('gotIt')),
+                child: Text(_t('gotIt')),
               ),
               if (_gateway.canOpenSettings)
                 FilledButton(
@@ -174,7 +178,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     await _gateway.request(info.permission);
                     await _load();
                   },
-                  child:  Text(_t('openSettings')),
+                  child: Text(_t('openSettings')),
                 ),
             ],
           ),
@@ -217,7 +221,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
-      appBar: widget.review ? AppBar(title:  Text(_t('permissionGuide'))) : null,
+      appBar: widget.review ? AppBar(title: Text(_t('permissionGuide'))) : null,
       body: SafeArea(
         child: Column(
           children: <Widget>[
@@ -278,7 +282,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       child: Row(
         children: <Widget>[
           if (_step > 0)
-            TextButton(onPressed: _back, child:  Text(_t('previous'))),
+            TextButton(onPressed: _back, child: Text(_t('previous'))),
           const Spacer(),
           Text('${_step + 1} / $_stepCount', style: theme.textTheme.bodySmall),
           const Spacer(),
@@ -382,8 +386,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            _t('welcomeDesc') +
-            _t('welcomeDesc2'),
+            _t('welcomeDesc') + _t('welcomeDesc2'),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium,
           ),
@@ -391,8 +394,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
           Card(
             child: ListTile(
               leading: const Icon(Icons.phone_android),
-              title: Text(_t('currentPlatform', {'platform': _gateway.platformLabel})),
-              subtitle:  Text(_t('platformNote')),
+              title: Text(
+                  _t('currentPlatform', {'platform': _gateway.platformLabel})),
+              subtitle: Text(_t('platformNote')),
             ),
           ),
         ],
@@ -476,8 +480,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      _t('tokenVault') +
-                      _t('tokenVault2'),
+                      _t('tokenVault') + _t('tokenVault2'),
                       style: TextStyle(
                         color: theme.colorScheme.onSecondaryContainer,
                       ),
@@ -488,14 +491,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
             ),
           ),
           const SizedBox(height: 12),
-           Card(
+          Card(
             child: ListTile(
               leading: Icon(Icons.folder_outlined),
               title: Text(_t('fileLocation')),
               subtitle: Text(_t('fileLocationDesc')),
             ),
           ),
-           Card(
+          Card(
             child: ListTile(
               leading: Icon(Icons.description_outlined),
               title: Text(_t('traceable')),

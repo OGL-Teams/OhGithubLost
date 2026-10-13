@@ -57,9 +57,7 @@ void main() async {
   await OgLLogFile.init(
     candidates: await ogLLogDirectoryCandidates(),
     appVersion: kOgLAppVersion,
-    buildMode: kReleaseMode
-        ? 'release'
-        : (kProfileMode ? 'profile' : 'debug'),
+    buildMode: kReleaseMode ? 'release' : (kProfileMode ? 'profile' : 'debug'),
     platform: _ogLPlatformName(),
   );
   // 平台与版本：`dart:io` 的 `Platform.operatingSystemVersion` 在 Web 上不存在，
@@ -175,7 +173,8 @@ void main() async {
   //   不破坏分层。
   final bootstrap = await baseLayerModulesOnPlatform(
     onStorageFailure: (String message) {
-      OgLAppLog.instance.add('存储', message, severity: OgLNoticeSeverity.warning);
+      OgLAppLog.instance
+          .add('存储', message, severity: OgLNoticeSeverity.warning);
     },
   );
 

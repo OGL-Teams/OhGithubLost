@@ -22,11 +22,11 @@ import '../base/disk/disk_store.dart';
 import '../base/disk/og_l_storage.dart';
 import '../base/net/net_bridge.dart';
 import '../domain/domain_bridge.dart';
+import '../domain/gh/repo_file_service.dart';
 import '../kernel/bridge_registry.dart';
 import '../kernel/contract/module.dart';
 import 'app/error_surface.dart';
 import 'app/motion.dart';
-import 'app/web_install.dart';
 import 'i18n/og_l_i18n.dart';
 import 'settings.dart';
 import 'theme.dart';
@@ -43,8 +43,8 @@ class SurfaceBridge {
     this.net,
     this.cache,
     this.storageProbe,
-    OgLWebPrefsStore? webPrefs,
-  }) : webStartup = OgLWebStartup(webPrefs ?? OgLMemoryWebPrefs());
+    this.uiPrefs,
+  });
 
   /// 从内核桥表解析（展示层的标准取用方式）。
   static SurfaceBridge of(KernelBridgeRegistry bridges) =>
@@ -67,23 +67,31 @@ class SurfaceBridge {
   /// 展示层不直接依赖底座，因此以函数形式注入。
   final Future<bool> Function()? storageProbe;
 
-  /// Web 启动偏好（「打开时询问添加到桌面」开关 + 加速服务弹窗的已读标记）。
+  /// 界面偏好 KV（**纯展示层状态**：分组展开状态等）。
   ///
-  /// **只在 Web 上有行为**：设置页仅在 `kIsWeb` 时展示对应开关，`main.dart`
-  /// 也只在 Web 上读取它。非 Web 构建里它依然存在，但保持默认值、无人读取
-  /// （因此不是"假选项"，只是一个惰性对象）。
-  final OgLWebStartup webStartup;
+  /// 为什么不塞进 [settings]：`OgLSettings` 是"用户设置"，
+  /// 「哪个分组是展开的」不是设置、也不该被"重置设置"清掉
+  /// （重置后分组开合保持原样，用户不会突然找不到刚才那一组）。
+  final DiskKv? uiPrefs;
 
-  /// 设置项「打开时询问添加到桌面」（**默认开**）。
-  ///
-  /// 存储键 `ogl.web.installPromptEnabled`。只有浏览器里才有人读它；
-  /// 为什么它不放进 `OgLSettings`（那份配置文件属于所有平台，塞两个永远
-  /// 不生效的字段会变成"假选项"）见 `app/web_install.dart` 的 [OgLWebStartup]。
-  bool get webInstallPromptEnabled => webStartup.installPromptEnabled;
+  /// 读一条界面偏好（无记录 / 未接线 / 读失败一律 `null`）。
+  Future<String?> readUiPref(String key) async {
+    try {
+      return await uiPrefs?.read(key);
+    } catch (_) {
+      // 读不到就用默认值：界面偏好缺失不影响任何功能。
+      return null;
+    }
+  }
 
-  /// 改写「打开时询问添加到桌面」（立即生效 + 尽力落盘）。
-  Future<void> setWebInstallPromptEnabled(bool enabled) =>
-      webStartup.setInstallPromptEnabled(enabled);
+  /// 写一条界面偏好（写失败只留诊断日志，不打扰用户）。
+  Future<void> writeUiPref(String key, String value) async {
+    try {
+      await uiPrefs?.write(key, value);
+    } catch (error) {
+      debugPrint('OGL 界面偏好写入失败：$key -> $error');
+    }
+  }
 
   /// 探测存储是否可用（无探针时按可用处理）。
   Future<bool> ensureStorage() async {
@@ -204,7 +212,8 @@ class SurfaceBridge {
       net?.dnsServerChoices ?? const <String, String>{};
 
   /// 当前 DNS 策略摘要（UI 必须向用户展示，不得让用户猜）。
-  String get dnsSummary => net?.dnsSummary ?? OgLI18n.instance.t('common', 'systemResolve');
+  String get dnsSummary =>
+      net?.dnsSummary ?? OgLI18n.instance.t('common', 'systemResolve');
 
   /// 把当前设置里的 DNS 选择应用到网络底座（策略对象可变 → 即时生效）。
   void applyDns() {
@@ -304,12 +313,12 @@ class SurfaceBridge {
   /// 仓库文件的**下载方案**：地址候选 + 请求头（两条路，收口在这里）。
   ///
   /// - **不加速** → `/repos/…/contents/…` 加 `Accept: application/vnd.github.raw`
-  ///   并带 Bearer。这是私有仓库**唯一可行**的取法；该端点实测支持 Range，
-  ///   所以多连接分片下载照常可用。
-  /// - **加速**（仅内置通道 + 公开仓库）→ 把 **raw 链接**交给代理。
-  ///   raw 只在公开仓库才有意义：不需要令牌，且不限流。
-  ///
-  /// 私有仓库**没有加速这条路**：raw 端点没有签名机制，代理拿不到令牌。
+  ///   并带 Bearer。该端点实测支持 Range，所以多连接分片下载照常可用。
+  /// - **加速**（**自定义通道** + 公开仓库，或私有仓库且用户已知情接受）→
+  ///   把 **raw 链接**交给代理。公开仓库不需要令牌、不限流；私有仓库的 raw
+  ///   必须带令牌（代理会原样转发 `Authorization`），因此只有用户
+  ///   知情接受"令牌会交给第三方通道"之后才允许 —— 见
+  ///   `ogLAccelCandidates` 的 `privateAccelAccepted`。
   /// 判定规则见 `util/download_proxy.dart`。
   Future<({List<String> urls, Map<String, String> headers})>
       planRepoFileDownload({
@@ -343,7 +352,9 @@ class SurfaceBridge {
       //   公开仓库则相反 —— 一个头都不带，代理没必要也不需要令牌。
       return (
         urls: candidates,
-        headers: repoPrivate ? await downloadAuthHeaders() : const <String, String>{},
+        headers: repoPrivate
+            ? await downloadAuthHeaders()
+            : const <String, String>{},
       );
     }
     final String apiUrl = 'https://api.github.com/repos/$fullName/contents/'
@@ -359,8 +370,8 @@ class SurfaceBridge {
 
   /// 仓库文件是否会走加速（供界面如实说明当前取法）。
   ///
-  /// 与 [ogLAccelCandidates] 的 raw 族规则保持一致：**内置通道**，且
-  /// （公开仓库）或（私有仓库且用户已[知情接受]），大小未知或超过阈值。
+  /// 与 [ogLAccelCandidates] 的 raw 族规则保持一致：有**自定义通道**，且
+  /// （公开仓库）或（私有仓库且用户已知情接受），大小未知或超过阈值。
   bool repoFileAccelerated({
     required bool repoPrivate,
     int? size,
@@ -383,6 +394,9 @@ class SurfaceBridge {
   /// 全部下载任务快照。
   List<IxDownloadTask> get downloadTasks => domain.downloads.tasks;
 
+  /// 下载后端是否支持**暂停 / 继续**（Web = `false`，页面据此隐藏这两个按钮）。
+  bool get supportsPauseResume => domain.downloads.supportsPauseResume;
+
   /// 清除已完成任务。
   void clearFinishedDownloads() => domain.downloads.clearFinished();
 
@@ -404,6 +418,38 @@ class SurfaceBridge {
   /// 设置下载并发连接数（非法档位由 `settings` 回落默认）。
   Future<void> setDownloadConnections(int value) =>
       settings.setDownloadConnections(value);
+
+  /// AI 助手是否启用（设置页 / 客户端 tab 入口 / AI 子页都按它判可见性）。
+  ///
+  /// 数据源是 AI 设置（`AiSettings.enabled` + provider + 模型），不现造：
+  /// `domain.ai.settings()` 已存在；新增的 `hasAi` 只是把"读一次"封装成
+  /// 一个**同步可见**的派生属性 —— 之前各页面都是各读各的 Future，UI
+  /// 重建节奏也各走各的。
+  ///
+  /// 缓存策略：构造时读一次，结果写进 [_cachedHasAi]。后续页面要"立刻
+  /// 跟上"AI 开关的变更，就调一次 [refreshAi];失败时保留旧值（不是 false）。
+  bool _cachedHasAi = false;
+
+  /// 读 AI 当前是否启用（页面进入时一次性调用即可）。
+  Future<bool> hasAi() async {
+    try {
+      final dynamic s = await domain.ai.settings();
+      _cachedHasAi = s is Object && '${s.enabled}' == 'true';
+    } catch (_) {
+      // 读不到就保留旧值：hasAi 是"该不该让用户看到 AI 入口"的开关，
+      // 读失败不该让入口从屏幕上消失。
+    }
+    return _cachedHasAi;
+  }
+
+  /// 当前缓存值（同步版本；用于 build 里就近决定要不要渲染 AI 入口）。
+  bool get hasAiCached => _cachedHasAi;
+
+  /// 刷新缓存（在 AI 设置保存后调用，例如设置页 / AI 子页写完时）。
+  Future<void> refreshAi() => hasAi();
+
+  /// 仓库文件操作服务（统一文件操作入口）。
+  RepoFileService get repoFiles => domain.repoFiles;
 
   /// 切换界面语言：先落盘设置，再加载对应语言分片。
   ///
@@ -471,15 +517,15 @@ class SurfaceBridge {
   }
 
   @override
-  String toString() =>
-      'SurfaceBridge(mode=${settings.settings.mode.name}, '
+  String toString() => 'SurfaceBridge(mode=${settings.settings.mode.name}, '
       'dns=${settings.settings.dnsMode})';
 }
 
 /// 用 L1 的 KV 实现设置持久化（**唯一**允许把 L3 的存储需求接到 L1 的地方）。
 class KvSettingsPersistence implements OgLSettingsPersistence {
   /// 创建。
-  const KvSettingsPersistence(this._kv, {this.key = OgLSettingsController.storageKey});
+  const KvSettingsPersistence(this._kv,
+      {this.key = OgLSettingsController.storageKey});
 
   final DiskKv _kv;
 
@@ -494,23 +540,6 @@ class KvSettingsPersistence implements OgLSettingsPersistence {
 
   @override
   Future<void> clear() => _kv.remove(key);
-}
-
-/// 用 L1 的 KV 实现 Web 启动偏好的持久化。
-///
-/// 与 [KvSettingsPersistence] 同一套路：展示层不直接依赖底座，KV 由装配层
-/// 以接口形式注入（见 `app/web_install.dart` 的 [OgLWebPrefsStore]）。
-class _KvWebPrefs implements OgLWebPrefsStore {
-  /// 创建。
-  const _KvWebPrefs(this._kv);
-
-  final DiskKv _kv;
-
-  @override
-  Future<String?> read(String key) => _kv.read(key);
-
-  @override
-  Future<void> write(String key, String value) => _kv.write(key, value);
 }
 
 /// 展示层模块（`surface.layer`）。
@@ -560,10 +589,10 @@ class SurfaceLayerModule extends OgLModule {
       net: base.net,
       cache: base.disk.cache,
       storageProbe: _probeStorage,
-      webPrefs: _KvWebPrefs(base.disk.kv),
+      // 界面偏好（分组展开状态）走同一套 KV：与设置数据分开存，
+      // 但共用"底座可替换"的唯一入口。
+      uiPrefs: base.disk.kv,
     );
-    // Web 启动偏好：读一次（读失败用默认值，**不阻断启动**）。
-    await bridge.webStartup.load();
     context.bridges.register(ModuleLayer.surface.key, bridge);
 
     context.diagnostics.info(
@@ -603,21 +632,14 @@ List<OgLModule> surfaceLayerModules() => <OgLModule>[
 /// 3. **①②算过、③不过**：公共目录 ✅ / SAF 文件夹 ✅ / 应用内部 ⚠️
 ///    （如实报告"不过"，但**不阻断**——功能照常）。
 ///
-/// ## Web
-/// 浏览器里没有"用户可见目录"这一概念（本地数据都锁在站点源的沙箱里），
-/// 因此**直接判定为不可写用户可见目录**（`false`），既不探测、也不伪造。
-///
-/// 这一点**不需要在本层写平台分支**：底座已经把实现收敛到 Web 侧
-/// （`base/disk/app_dirs_fs_web.dart`），
-/// 其 `writable()` 在 Web 上恒为 `false`（[OgLAppDirs.publicWritable] 也因此
-/// 恒 `false`：浏览器的 `publicRoot()` 就是 `null`）。这样展示层里
-/// **一个 `dart:io` 都不需要**，Web 构建也不会因为探针而编译不过。
+/// ## 平台差异在哪
+/// 实现细节按平台收敛在底座（`base/disk/app_dirs_fs_io.dart`），
+/// 展示层里**一个 `dart:io` 都不需要**。
 Future<bool> _probeStorage() async {
   OgLAppDirs.invalidate();
   try {
     final OgLStoragePlan plan = await OgLStorage.plan();
     if (!plan.userVisible) {
-      // Web 也在这里返回：浏览器只有"应用内部"一档，用户看不到落盘位置。
       return false;
     }
     // SAF 档：真正可见的是用户**自己授权**的那个文件夹（`plan.root` 只是
@@ -626,7 +648,7 @@ Future<bool> _probeStorage() async {
       return true;
     }
     // 其余档位：对**用户可见的公共目录**做一次真实写入探针
-    // （底座实现：建目录 → 写入 → 删除；Web 上恒 `false`）。
+    // （底座实现：建目录 → 写入 → 删除）。
     return await OgLAppDirs.publicWritable();
   } catch (_) {
     return false;

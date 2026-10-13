@@ -36,9 +36,10 @@ import 'browser_notify.dart';
 import 'error_surface.dart';
 
 /// 取 `shell` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('shell', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'shell', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 系统通知发送器（单例）。
 class OgLSystemNotifier {

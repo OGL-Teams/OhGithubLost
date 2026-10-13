@@ -16,7 +16,8 @@ import '../types.dart';
 import 'ai_settings_page.dart';
 
 /// 取 `ai` 分片文案。
-String _t(String key, [Map<String, String>? args]) => OgLI18n.instance.t('ai', key, args: args);
+String _t(String key, [Map<String, String>? args]) =>
+    OgLI18n.instance.t('ai', key, args: args);
 
 /// AI 聊天页。
 class AiChatPage extends StatefulWidget {
@@ -39,7 +40,8 @@ class _AiChatPageState extends State<AiChatPage> {
   final TextEditingController _input = TextEditingController();
   final ScrollController _scroll = ScrollController();
 
-  AiConversation _conversation = AiConversation(id: '', accountId: '', repo: null);
+  AiConversation _conversation =
+      AiConversation(id: '', accountId: '', repo: null);
   List<AiConversation> _history = <AiConversation>[];
   bool _sending = false;
   bool _loading = true;
@@ -116,7 +118,8 @@ class _AiChatPageState extends State<AiChatPage> {
     setState(() {
       _history = convos;
       if (_conversation.id == c.id) {
-        _conversation = AiConversation(id: '', accountId: accountId, repo: widget.repo);
+        _conversation =
+            AiConversation(id: '', accountId: accountId, repo: widget.repo);
       }
     });
   }
@@ -138,7 +141,8 @@ class _AiChatPageState extends State<AiChatPage> {
       id: cid,
       accountId: accountId,
       repo: widget.repo,
-      title: _conversation.title ?? (text.length > 24 ? '${text.substring(0, 24)}…' : text),
+      title: _conversation.title ??
+          (text.length > 24 ? '${text.substring(0, 24)}…' : text),
       messages: messages,
       createdAt: _conversation.createdAt,
       updatedAt: DateTime.now(),
@@ -163,7 +167,8 @@ class _AiChatPageState extends State<AiChatPage> {
       _sending = true;
       _lastError = null;
     });
-    OgLAppLog.instance.add('AI', messages.last.content, severity: OgLNoticeSeverity.info);
+    OgLAppLog.instance
+        .add('AI', messages.last.content, severity: OgLNoticeSeverity.info);
 
     try {
       final List<AiMessage> transcript = await _ai.complete(
@@ -180,7 +185,8 @@ class _AiChatPageState extends State<AiChatPage> {
         updatedAt: DateTime.now(),
       );
       await _ai.saveConversation(_conversation);
-      OgLAppLog.instance.add('AI', _t('operationFinished'), severity: OgLNoticeSeverity.info);
+      OgLAppLog.instance
+          .add('AI', _t('operationFinished'), severity: OgLNoticeSeverity.info);
     } on AiException catch (e) {
       _lastError = _describeError(e);
       OgLAppLog.instance.add(
@@ -190,7 +196,8 @@ class _AiChatPageState extends State<AiChatPage> {
       );
     } on Object catch (e) {
       _lastError = '$e';
-      OgLAppLog.instance.add('AI', '${_t('error')}：$e', severity: OgLNoticeSeverity.warning);
+      OgLAppLog.instance
+          .add('AI', '${_t('error')}：$e', severity: OgLNoticeSeverity.warning);
     } finally {
       if (mounted) {
         setState(() => _sending = false);
@@ -247,9 +254,12 @@ class _AiChatPageState extends State<AiChatPage> {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.78),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.78),
         decoration: BoxDecoration(
-          color: mine ? theme.colorScheme.primaryContainer : theme.colorScheme.surfaceContainerHigh,
+          color: mine
+              ? theme.colorScheme.primaryContainer
+              : theme.colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(12),
         ),
         child: SelectableText(
@@ -277,7 +287,8 @@ class _AiChatPageState extends State<AiChatPage> {
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (BuildContext _) => AiSettingsPage(surface: widget.surface),
+                builder: (BuildContext _) =>
+                    AiSettingsPage(surface: widget.surface),
               ),
             ),
           ),
@@ -342,8 +353,10 @@ class _AiChatPageState extends State<AiChatPage> {
                       onSubmitted: (_) => _send(),
                       decoration: InputDecoration(
                         hintText: _t('inputHint'),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                       ),
                     ),
                   ),
@@ -374,7 +387,8 @@ class _AiChatPageState extends State<AiChatPage> {
       isScrollControlled: true,
       builder: (BuildContext sheetContext) => DraggableScrollableSheet(
         expand: false,
-        builder: (BuildContext _, ScrollController controller) => ListView.builder(
+        builder: (BuildContext _, ScrollController controller) =>
+            ListView.builder(
           controller: controller,
           itemCount: _history.length,
           itemBuilder: (BuildContext ctx, int i) {

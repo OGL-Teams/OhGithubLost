@@ -28,8 +28,7 @@ class OgLRangeDownloader implements DownloadEngine {
   /// 创建（Web 上无状态；装配根以无参形式构造即可）。
   OgLRangeDownloader();
 
-  static const String _reason =
-      'Web 平台不支持多连接分片下载（浏览器不提供可控并发连接，'
+  static const String _reason = 'Web 平台不支持多连接分片下载（浏览器不提供可控并发连接，'
       '页面也无法把分片写入文件系统）';
 
   @override

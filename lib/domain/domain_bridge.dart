@@ -53,7 +53,8 @@ class DomainBridge {
     IxActionLogs? actionLogs,
     IxPresign? presign,
   })  : downloads = downloads ?? IxDownloadManager(),
-        actionLogs = actionLogs ?? IxActionLogs(tokenProvider: () async => null),
+        actionLogs =
+            actionLogs ?? IxActionLogs(tokenProvider: () async => null),
         presign = presign ?? IxPresign(tokenProvider: () async => null);
 
   /// 认证（多账号 / 令牌）。
@@ -502,6 +503,7 @@ class _SysEnvProbe implements KernelEnvironmentProbe {
     );
   }
 }
+
 /// 装配根提供的**成品导出**实现（逻辑层只认契约，硬件层干活）。
 ///
 /// 存储②档（用户授权了 SAF 文件夹）时，把下载成品**粘贴**进该文件夹；

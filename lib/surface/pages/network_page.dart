@@ -6,6 +6,7 @@
 /// 分节内容由设置页以闭包传入（复用同一套逻辑与文案），本页只负责"壳"：
 /// `AppBar` + 滚动 + 档位化入场动画。
 library;
+
 import 'package:flutter/material.dart';
 
 import '../app/animations.dart';
@@ -14,9 +15,10 @@ import '../settings.dart';
 import '../surface_bridge.dart';
 
 /// 取 `settings` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('settings', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'settings', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 网络设置页。
 class NetworkSettingsPage extends StatelessWidget {

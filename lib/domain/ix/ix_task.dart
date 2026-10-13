@@ -93,8 +93,7 @@ class IxBatchPlan {
   int get count => items.length;
 
   /// 是否含破坏性操作。
-  bool get hasDestructive =>
-      items.any((IxBatchItem item) => item.destructive);
+  bool get hasDestructive => items.any((IxBatchItem item) => item.destructive);
 
   /// 预估总字节。
   int get totalBytes =>
@@ -153,8 +152,7 @@ class IxConfirmationRequired implements Exception {
   final IxBatchPlan plan;
 
   @override
-  String toString() =>
-      'IxConfirmationRequired: 批量操作「${plan.title}」必须先经用户确认';
+  String toString() => 'IxConfirmationRequired: 批量操作「${plan.title}」必须先经用户确认';
 }
 
 /// 单项结果。
@@ -233,7 +231,8 @@ class IxTaskProgress {
   double get ratio => total <= 0 ? 0 : done / total;
 
   @override
-  String toString() => 'IxTaskProgress($done/$total${cancelled ? ', 已取消' : ''})';
+  String toString() =>
+      'IxTaskProgress($done/$total${cancelled ? ', 已取消' : ''})';
 }
 
 /// 任务报告（**逐条**，不得只报"完成"）。
@@ -276,8 +275,7 @@ class IxTaskReport {
   bool get allOk => results.isNotEmpty && succeeded == results.length;
 
   /// 一行摘要（UI 角标 / 通知用）。
-  String get summary =>
-      '成功 $succeeded / 跳过 $skipped / 失败 $failed'
+  String get summary => '成功 $succeeded / 跳过 $skipped / 失败 $failed'
       '${cancelled ? '（已取消）' : ''}';
 
   @override

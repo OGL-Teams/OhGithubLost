@@ -50,8 +50,7 @@ class OgLNoWindow implements OgLWindowCapability {
 /// 必须让人看得见（而不是静默当成移动端）。
 class OgLUnknownWindow extends OgLNoWindow {
   /// 创建兜底实现。
-  OgLUnknownWindow()
-      : super('未知平台（窗口能力不可用）');
+  OgLUnknownWindow() : super('未知平台（窗口能力不可用）');
 
   @override
   Future<void> init({required OgLWindowDecoration decoration}) async {

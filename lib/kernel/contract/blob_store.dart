@@ -52,8 +52,7 @@ class InMemoryBlobStore implements DiskBlobStore {
   final Map<String, String> _data = <String, String>{};
 
   /// 内容快照（测试断言用）。
-  Map<String, String> get snapshot =>
-      Map<String, String>.unmodifiable(_data);
+  Map<String, String> get snapshot => Map<String, String>.unmodifiable(_data);
 
   @override
   Future<String?> read(String key) async => _data[key];

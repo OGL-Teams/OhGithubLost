@@ -311,7 +311,7 @@ class RepositoryCache {
             intent,
             WriteConflict.staleSha,
             '本地基线已过期：期望 ${shortSha(baseSha)}，'
-                '远端 ${shortSha(latest.sha)}（D2）',
+            '远端 ${shortSha(latest.sha)}（D2）',
             sha: latest.sha,
             baseSha: baseSha,
             threeWay: ConflictThreeWay(
@@ -408,7 +408,10 @@ class RepositoryCache {
         'CACHE',
         '缓存淘汰完成',
         code: 'OGL-CONS-002',
-        data: <String, Object?>{'removed': removed, 'remaining': survivors.length},
+        data: <String, Object?>{
+          'removed': removed,
+          'remaining': survivors.length
+        },
       );
     }
     return removed;
@@ -565,9 +568,7 @@ class RepositoryCache {
       return _fail(
         intent,
         WriteConflict.needsConfirmation,
-        intent.force
-            ? '强制覆盖需二次确认（D7）：将跳过本地基线校验'
-            : '危险操作需二次确认（D7）',
+        intent.force ? '强制覆盖需二次确认（D7）：将跳过本地基线校验' : '危险操作需二次确认（D7）',
         code: 'OGL-CONS-207',
       );
     }
@@ -589,7 +590,7 @@ class RepositoryCache {
         intent,
         WriteConflict.staleSha,
         '本地基线已过期：期望 ${shortSha(intent.baseSha)}，'
-            '远端 ${shortSha(latest.sha)}（D2）',
+        '远端 ${shortSha(latest.sha)}（D2）',
         sha: latest.sha,
         baseSha: intent.baseSha,
         threeWay: await _threeWayFor(intent, latest),
@@ -606,7 +607,7 @@ class RepositoryCache {
         intent,
         WriteConflict.staleSha,
         '本地基线仍在，但远端目标已不存在（可能被他人删除）：'
-            '${shortSha(intent.baseSha)}（D2）',
+        '${shortSha(intent.baseSha)}（D2）',
         baseSha: intent.baseSha,
         threeWay: ConflictThreeWay(
           local: intent.content,
@@ -912,7 +913,8 @@ class RepositoryCache {
 
       // 完整性校验：长度 + SHA-256，任一不符即判定损坏并丢弃。
       // 撕裂写（掉电 / 中断）在这里被挡住，坏内容绝不会流向上层或远端。
-      if (content.length != expectedLength || _hashOf(content) != expectedHash) {
+      if (content.length != expectedLength ||
+          _hashOf(content) != expectedHash) {
         _diagnostics.error(
           'CACHE',
           '本地内容完整性校验失败，已丢弃',

@@ -102,6 +102,7 @@ Future<String?> ogLPasteText({String tag = 'OGL'}) async {
 /// [ogLCopyText] —— `ogLCopyText` 命名更短，意图更清晰。本别名保留是为
 /// 不强制改历史命名，且让旧调用点（`release_detail_page` / `gist_detail_page` /
 /// `about_page`）的迁移是"重命名 import 即可"，不动调用方代码。
-@Deprecated('Prefer ogLCopyText; this alias will be removed in the next cleanup pass.')
+@Deprecated(
+    'Prefer ogLCopyText; this alias will be removed in the next cleanup pass.')
 Future<bool> safeClipboardSet(String text, {String tag = 'OGL'}) =>
     ogLCopyText(text, tag: tag);

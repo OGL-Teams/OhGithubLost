@@ -167,9 +167,7 @@ class BootIntegrityVerifier {
       entry: entry,
       ok: ok,
       actualSha256: actual,
-      reason: ok
-          ? null
-          : '指纹不匹配（期望 ${entry.sha256}，实际 $actual）',
+      reason: ok ? null : '指纹不匹配（期望 ${entry.sha256}，实际 $actual）',
     );
   }
 

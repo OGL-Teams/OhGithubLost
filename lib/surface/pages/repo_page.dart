@@ -48,9 +48,10 @@ import 'release_detail_page.dart';
 import 'workflow_dispatch_page.dart';
 
 /// 取 `repo` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('repo', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'repo', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 每页条数（统一）。
 const int _kPageSize = 30;
@@ -214,7 +215,8 @@ class _RepoPageState extends State<RepoPage> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _toggleStar() async {
@@ -225,7 +227,8 @@ class _RepoPageState extends State<RepoPage> {
     final bool target = !_starred;
     try {
       await widget.surface.domain.api.setStarred(_full, target);
-      OgLAppLog.instance.result('仓库', target ? _t('starred') : _t('unstarred'), _full);
+      OgLAppLog.instance
+          .result('仓库', target ? _t('starred') : _t('unstarred'), _full);
       if (mounted) {
         setState(() => _starred = target);
         _toast(target ? _t('starred') : _t('unstarred'));
@@ -246,16 +249,16 @@ class _RepoPageState extends State<RepoPage> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('forkTitle')),
+        title: Text(_t('forkTitle')),
         content: Text(_t('forkDesc', {'full': _full})),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('fork')),
+            child: Text(_t('fork')),
           ),
         ],
       ),
@@ -283,8 +286,7 @@ class _RepoPageState extends State<RepoPage> {
   }
 
   Future<void> _copyCloneUrl() async {
-    if (!await ogLCopyText('https://github.com/$_full.git',
-        tag: 'Repo')) {
+    if (!await ogLCopyText('https://github.com/$_full.git', tag: 'Repo')) {
       return;
     }
     _toast(_t('cloneUrlCopied'));
@@ -294,8 +296,7 @@ class _RepoPageState extends State<RepoPage> {
   Future<void> _pickBranch() async {
     List<GhBranch> branches;
     try {
-      branches = await widget.surface.domain.api
-          .branches(_full, perPage: 100);
+      branches = await widget.surface.domain.api.branches(_full, perPage: 100);
     } catch (error) {
       _toast(_t('branchesFailed', {'error': error}));
       return;
@@ -316,7 +317,8 @@ class _RepoPageState extends State<RepoPage> {
     if (picked == null || !mounted) {
       return;
     }
-    final String next = picked == _kDefaultBranchMark ? _repo.defaultBranch : picked;
+    final String next =
+        picked == _kDefaultBranchMark ? _repo.defaultBranch : picked;
     if (next == _branch) {
       return;
     }
@@ -400,7 +402,8 @@ class _RepoPageState extends State<RepoPage> {
         appBar: AppBar(
           title: OgLSharedTitle(
             tag: 'ogl-repo:${_repo.fullName}',
-            child: Text(_repo.fullName, maxLines: 1, overflow: TextOverflow.ellipsis),
+            child: Text(_repo.fullName,
+                maxLines: 1, overflow: TextOverflow.ellipsis),
           ),
           actions: <Widget>[
             IconButton(
@@ -420,8 +423,7 @@ class _RepoPageState extends State<RepoPage> {
                     unawaited(_copyCloneUrl());
                 }
               },
-              itemBuilder: (BuildContext context) =>
-                   <PopupMenuEntry<String>>[
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 PopupMenuItem<String>(
                   value: 'fork',
                   child: ListTile(
@@ -485,31 +487,32 @@ class _RepoPageState extends State<RepoPage> {
               constraints: const BoxConstraints(minHeight: 48),
               alignment: Alignment.centerLeft,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-            child: Row(
-              children: <Widget>[
-                const Icon(Icons.account_tree_outlined, size: 18),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _branch.isEmpty ? _t('defaultBranch') : _branch,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelLarge,
+              child: Row(
+                children: <Widget>[
+                  const Icon(Icons.account_tree_outlined, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _branch.isEmpty ? _t('defaultBranch') : _branch,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelLarge,
+                    ),
                   ),
-                ),
-                if (_branch == _repo.defaultBranch)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Text(_t('defaultLabel'), style: theme.textTheme.bodySmall),
-                  ),
-                const Icon(Icons.expand_more),
-              ],
+                  if (_branch == _repo.defaultBranch)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Text(_t('defaultLabel'),
+                          style: theme.textTheme.bodySmall),
+                    ),
+                  const Icon(Icons.expand_more),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
+      );
+}
 
 /// 分支弹层的「默认分支」标记值。
 const String _kDefaultBranchMark = '\u0000default';
@@ -549,7 +552,7 @@ class _BranchSheetState extends State<_BranchSheet> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: TextField(
               autofocus: false,
-              decoration:  InputDecoration(
+              decoration: InputDecoration(
                 isDense: true,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.search),
@@ -560,7 +563,7 @@ class _BranchSheetState extends State<_BranchSheet> {
           ),
           Expanded(
             child: shown.isEmpty
-                ?  Center(child: Text(_t('noMatchingBranch')))
+                ? Center(child: Text(_t('noMatchingBranch')))
                 : ListView.builder(
                     itemCount: shown.length,
                     itemBuilder: (BuildContext context, int index) {
@@ -574,14 +577,16 @@ class _BranchSheetState extends State<_BranchSheet> {
                               ? Icons.lock_outline
                               : Icons.account_tree_outlined,
                         ),
-                        title: Text(branch.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        title: Text(branch.name,
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
                         subtitle: Text(
                           '${ghShortSha(branch.sha)}'
                           '${isDefault ? _t('defaultBranchTag') : ''}'
                           '${branch.isProtected ? _t('protectedTag') : ''}',
                         ),
                         trailing: isCurrent
-                            ? Icon(Icons.check, color: theme.colorScheme.primary)
+                            ? Icon(Icons.check,
+                                color: theme.colorScheme.primary)
                             : null,
                         onTap: () => Navigator.of(context).pop(branch.name),
                       );
@@ -622,7 +627,11 @@ const Duration _kPageCacheTtl = Duration(seconds: 6);
 
 /// 通用分页数据源（首屏 + 加载更多 + 下拉刷新）。
 class _Paged<T> extends ChangeNotifier {
-  _Paged({required this.loader, this.pageSize = _kPageSize, this.cacheKey, this.onManualRefresh});
+  _Paged(
+      {required this.loader,
+      this.pageSize = _kPageSize,
+      this.cacheKey,
+      this.onManualRefresh});
 
   final Future<List<T>> Function(int page) loader;
   final int pageSize;
@@ -794,12 +803,13 @@ Widget _pagedBody<T>(
       message: paged.error!,
       action: FilledButton.tonal(
         onPressed: paged.refresh,
-        child:  Text(_t('retry')),
+        child: Text(_t('retry')),
       ),
     );
   }
   if (paged.items.isEmpty) {
-    return _MessagePane(icon: emptyIcon, message: emptyText, action: emptyAction);
+    return _MessagePane(
+        icon: emptyIcon, message: emptyText, action: emptyAction);
   }
   return RefreshIndicator(
     onRefresh: paged.refresh,
@@ -818,7 +828,8 @@ Widget _pagedBody<T>(
                   ? const CircularProgressIndicator()
                   : OutlinedButton(
                       onPressed: paged.loadMore,
-                      child: Text(_t('loadMore', {'count': paged.items.length})),
+                      child:
+                          Text(_t('loadMore', {'count': paged.items.length})),
                     ),
             ),
           );
@@ -905,7 +916,8 @@ class _CodeTabState extends State<_CodeTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_bootstrap()));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => unawaited(_bootstrap()));
   }
 
   @override
@@ -965,7 +977,8 @@ class _CodeTabState extends State<_CodeTab> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _loadReadme() async {
@@ -1076,6 +1089,7 @@ class _CodeTabState extends State<_CodeTab> {
     }
     return out;
   }
+
   Future<void> _goTo(String path) async {
     setState(() => _file = null);
     // 目录写回页面（标签页重建后仍是这个目录）。
@@ -1177,7 +1191,8 @@ class _CodeTabState extends State<_CodeTab> {
                     ? Icons.image_outlined
                     : Icons.preview_outlined,
               ),
-              title: Text(OgLI18n.instance.t('common', ogLPreviewKindKey(kind))),
+              title:
+                  Text(OgLI18n.instance.t('common', ogLPreviewKindKey(kind))),
               trailing: Chip(
                 label: Text(_t('defaultAction')),
                 visualDensity: VisualDensity.compact,
@@ -1195,9 +1210,8 @@ class _CodeTabState extends State<_CodeTab> {
               enabled: ogLCanEditAsText(kind),
               leading: const Icon(Icons.edit_outlined),
               title: Text(OgLI18n.instance.t('common', 'openInEditor')),
-              subtitle: ogLCanEditAsText(kind)
-                  ? null
-                  : Text(_t('binaryNoEdit')),
+              subtitle:
+                  ogLCanEditAsText(kind) ? null : Text(_t('binaryNoEdit')),
               onTap: ogLCanEditAsText(kind)
                   ? () {
                       Navigator.of(sheetContext).pop();
@@ -1313,7 +1327,7 @@ class _CodeTabState extends State<_CodeTab> {
                     controller: _newPath,
                     autofocus: true,
                     onChanged: (String _) => setLocal(() {}),
-                    decoration:  InputDecoration(
+                    decoration: InputDecoration(
                       labelText: _t('pathLabel'),
                       hintText: _t('pathHint'),
                       helperText: _t('pathHintSlash'),
@@ -1322,7 +1336,7 @@ class _CodeTabState extends State<_CodeTab> {
                   ),
                   const SizedBox(height: 12),
                   if (directory)
-                     Text(_t('gitkeepHint'))
+                    Text(_t('gitkeepHint'))
                   else
                     TextField(
                       controller: content,
@@ -1332,13 +1346,13 @@ class _CodeTabState extends State<_CodeTab> {
                         fontFamily: 'monospace',
                         fontSize: 13,
                       ),
-                      decoration:  InputDecoration(
+                      decoration: InputDecoration(
                         labelText: _t('contentRequired'),
                         border: OutlineInputBorder(),
                       ),
                     ),
                   const SizedBox(height: 8),
-                   Text(
+                  Text(
                     _t('pathCharsetHint'),
                     style: TextStyle(fontSize: 12),
                   ),
@@ -1348,11 +1362,11 @@ class _CodeTabState extends State<_CodeTab> {
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child:  Text(_t('cancel')),
+                child: Text(_t('cancel')),
               ),
               FilledButton(
                 onPressed: () => Navigator.of(dialogContext).pop(true),
-                child:  Text(_t('create')),
+                child: Text(_t('create')),
               ),
             ],
           );
@@ -1380,8 +1394,7 @@ class _CodeTabState extends State<_CodeTab> {
       return;
     }
     // 同名条目已存在 → 先拦下（GitHub 同名 PUT 会 422，这里给清晰原因）。
-    final bool exists =
-        _entries.items.any((GhContent e) => e.path == path);
+    final bool exists = _entries.items.any((GhContent e) => e.path == path);
     if (exists) {
       content.dispose();
       _toast(_t('alreadyExists', {'path': path}));
@@ -1401,7 +1414,9 @@ class _CodeTabState extends State<_CodeTab> {
         path,
       );
       content.dispose();
-      _toast(directory ? _t('createdDir', {'path': raw}) : _t('createdPath', {'path': path}));
+      _toast(directory
+          ? _t('createdDir', {'path': raw})
+          : _t('createdPath', {'path': path}));
       await _reload();
     } catch (error) {
       content.dispose();
@@ -1421,19 +1436,19 @@ class _CodeTabState extends State<_CodeTab> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('deleteFileAction')),
+        title: Text(_t('deleteFileAction')),
         content: Text(_t('deleteFileDesc', {'path': entry.path})),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('delete')),
+            child: Text(_t('delete')),
           ),
         ],
       ),
@@ -1452,7 +1467,8 @@ class _CodeTabState extends State<_CodeTab> {
         confirmed: true,
       );
       if (!result.ok) {
-        _toast(_t('branchDeleteFailed', {'error': result.detail ?? result.conflict.name}));
+        _toast(_t('branchDeleteFailed',
+            {'error': result.detail ?? result.conflict.name}));
         return;
       }
       OgLAppLog.instance.result('仓库', _t('branchDeleted'), entry.path);
@@ -1507,22 +1523,22 @@ class _CodeTabState extends State<_CodeTab> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('deleteDirAction')),
+        title: Text(_t('deleteDirAction')),
         content: Text(
           _t('deleteDirDesc', {'path': entry.path, 'count': paths.length}) +
-          _t('deleteDirDesc2'),
+              _t('deleteDirDesc2'),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('delete')),
+            child: Text(_t('delete')),
           ),
         ],
       ),
@@ -1538,7 +1554,8 @@ class _CodeTabState extends State<_CodeTab> {
         deletions: paths,
         message: 'chore: delete directory ${entry.path}',
       );
-      OgLAppLog.instance.result('仓库', _t('dirDeleted'), _t('dirDeletedMeta', {'path': entry.path, 'count': paths.length}));
+      OgLAppLog.instance.result('仓库', _t('dirDeleted'),
+          _t('dirDeletedMeta', {'path': entry.path, 'count': paths.length}));
       _toast(_t('dirDeletedPath', {'path': entry.path}));
       await _reload();
     } catch (error) {
@@ -1564,11 +1581,11 @@ class _CodeTabState extends State<_CodeTab> {
     final bool? ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('renameFileTitle')),
+        title: Text(_t('renameFileTitle')),
         content: TextField(
           controller: target,
           autofocus: true,
-          decoration:  InputDecoration(
+          decoration: InputDecoration(
             labelText: _t('newPath'),
             helperText: _t('pathCharsetHintShort'),
             border: OutlineInputBorder(),
@@ -1577,11 +1594,11 @@ class _CodeTabState extends State<_CodeTab> {
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('rename')),
+            child: Text(_t('rename')),
           ),
         ],
       ),
@@ -1595,8 +1612,7 @@ class _CodeTabState extends State<_CodeTab> {
     if (next == entry.path) {
       return;
     }
-    final String? pathError =
-        ogLValidateRepoEntryPath(next, directory: false);
+    final String? pathError = ogLValidateRepoEntryPath(next, directory: false);
     if (pathError != null) {
       _toast(pathError);
       return;
@@ -1623,7 +1639,8 @@ class _CodeTabState extends State<_CodeTab> {
         deletions: <String>[entry.path],
         message: 'chore: rename ${entry.path} -> $next',
       );
-      OgLAppLog.instance.result('仓库', _t('branchRenamed'), '${entry.path} → $next');
+      OgLAppLog.instance
+          .result('仓库', _t('branchRenamed'), '${entry.path} → $next');
       _toast(_t('renamedTo', {'path': next}));
       await _reload();
     } catch (error) {
@@ -1682,7 +1699,8 @@ class _CodeTabState extends State<_CodeTab> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               _detailRow(theme, _t('pathLabel'), entry.path),
-              _detailRow(theme, _t('typeLabel'), entry.isDirectory ? _t('dir') : _t('file')),
+              _detailRow(theme, _t('typeLabel'),
+                  entry.isDirectory ? _t('dir') : _t('file')),
               if (!entry.isDirectory)
                 _detailRow(theme, _t('sizeLabel'), ghSizeText(entry.size)),
               _detailRow(theme, 'SHA', entry.sha.isEmpty ? '—' : entry.sha),
@@ -1701,11 +1719,11 @@ class _CodeTabState extends State<_CodeTab> {
                 _toast(_t('pathCopied'));
               }
             },
-            child:  Text(_t('copyPath')),
+            child: Text(_t('copyPath')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child:  Text(_t('close')),
+            child: Text(_t('close')),
           ),
         ],
       ),
@@ -1737,9 +1755,11 @@ class _CodeTabState extends State<_CodeTab> {
           children: <Widget>[
             ListTile(
               leading: Icon(
-                ogLFileVisualFor(entry.path, isDirectory: entry.isDirectory).icon,
+                ogLFileVisualFor(entry.path, isDirectory: entry.isDirectory)
+                    .icon,
                 color:
-                    ogLFileVisualFor(entry.path, isDirectory: entry.isDirectory).color,
+                    ogLFileVisualFor(entry.path, isDirectory: entry.isDirectory)
+                        .color,
               ),
               title: Text(ghPathName(entry.path)),
               subtitle: Text(entry.isDirectory ? _t('dir') : _t('file')),
@@ -1748,7 +1768,7 @@ class _CodeTabState extends State<_CodeTab> {
             if (!entry.isDirectory)
               ListTile(
                 leading: const Icon(Icons.open_in_new),
-                title:  Text(OgLI18n.instance.t('common', 'openWith')),
+                title: Text(OgLI18n.instance.t('common', 'openWith')),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   unawaited(_showOpenWith(entry));
@@ -1757,7 +1777,7 @@ class _CodeTabState extends State<_CodeTab> {
             if (!entry.isDirectory)
               ListTile(
                 leading: const Icon(Icons.download_outlined),
-                title:  Text(_t('download')),
+                title: Text(_t('download')),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   unawaited(_downloadEntry(entry));
@@ -1765,7 +1785,7 @@ class _CodeTabState extends State<_CodeTab> {
               ),
             ListTile(
               leading: const Icon(Icons.info_outline),
-              title:  Text(_t('detailInfo')),
+              title: Text(_t('detailInfo')),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 _showEntryDetails(entry);
@@ -1774,7 +1794,7 @@ class _CodeTabState extends State<_CodeTab> {
             if (widget.canWrite && !entry.isDirectory)
               ListTile(
                 leading: const Icon(Icons.drive_file_rename_outline),
-                title:  Text(_t('rename')),
+                title: Text(_t('rename')),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   unawaited(_renameEntry(entry));
@@ -1782,9 +1802,12 @@ class _CodeTabState extends State<_CodeTab> {
               ),
             if (widget.canWrite)
               ListTile(
-                leading: Icon(Icons.delete_outline, color: theme.colorScheme.error),
+                leading:
+                    Icon(Icons.delete_outline, color: theme.colorScheme.error),
                 title: Text(
-                  entry.isDirectory ? _t('deleteDirAction') : _t('deleteFileAction'),
+                  entry.isDirectory
+                      ? _t('deleteDirAction')
+                      : _t('deleteFileAction'),
                   style: TextStyle(color: theme.colorScheme.error),
                 ),
                 onTap: () {
@@ -1807,12 +1830,13 @@ class _CodeTabState extends State<_CodeTab> {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
       child: Row(
         children: <Widget>[
-          TextButton(onPressed: () => _goTo(''), child:  Text(_t('rootDir'))),
+          TextButton(onPressed: () => _goTo(''), child: Text(_t('rootDir'))),
           for (int i = 0; i < parts.length; i++) ...<Widget>[
             Icon(Icons.chevron_right, size: 16, color: scheme.outline),
             TextButton(
-              onPressed:
-                  i == parts.length - 1 ? null : () => _goTo(parts.sublist(0, i + 1).join('/')),
+              onPressed: i == parts.length - 1
+                  ? null
+                  : () => _goTo(parts.sublist(0, i + 1).join('/')),
               child: Text(parts[i]),
             ),
           ],
@@ -1884,8 +1908,8 @@ class _CodeTabState extends State<_CodeTab> {
     }
     final String ref = widget.branch;
     try {
-      final GhContent? content =
-          await widget.surface.domain.api.content(widget.fullName, path, branch: ref);
+      final GhContent? content = await widget.surface.domain.api
+          .content(widget.fullName, path, branch: ref);
       if (content == null) {
         return null;
       }
@@ -1944,7 +1968,7 @@ class _CodeTabState extends State<_CodeTab> {
     final ({Uri? base, String? proxy}) plan = _readmeImagePlan('');
     return ExpansionTile(
       title: const Text('README'),
-      subtitle:  Text(_t('expandCollapse')),
+      subtitle: Text(_t('expandCollapse')),
       childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       children: <Widget>[
         ReadmeView(
@@ -1997,17 +2021,17 @@ class _CodeTabState extends State<_CodeTab> {
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-               PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'copy',
                 child: Text(_t('copyPath')),
               ),
-               PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'browser',
                 child: Text(_t('openInBrowser')),
               ),
               // 删除属写操作：仅在有 push 权限时出现（R3）。
               if (widget.canWrite)
-                 PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'delete',
                   child: Text(_t('deleteFileAction')),
                 ),
@@ -2039,7 +2063,13 @@ class _CodeTabState extends State<_CodeTab> {
   static bool _isImage(String path) {
     final String lower = path.toLowerCase();
     for (final String ext in <String>[
-      '.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.ico',
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.gif',
+      '.webp',
+      '.bmp',
+      '.ico',
     ]) {
       if (lower.endsWith(ext)) {
         return true;
@@ -2072,9 +2102,9 @@ class _CodeTabState extends State<_CodeTab> {
                         padding: EdgeInsets.all(24),
                         child: CircularProgressIndicator(),
                       ),
-            errorBuilder: (BuildContext context, Object error,
-                    StackTrace? stack) =>
-                _MessagePane(
+            errorBuilder:
+                (BuildContext context, Object error, StackTrace? stack) =>
+                    _MessagePane(
               icon: Icons.broken_image_outlined,
               message: _t('imageLoadFailed'),
             ),
@@ -2088,7 +2118,7 @@ class _CodeTabState extends State<_CodeTab> {
         message: _t('fileTooLarge'),
         action: FilledButton.tonal(
           onPressed: () => _openFileInBrowser(file),
-          child:  Text(_t('openInBrowser')),
+          child: Text(_t('openInBrowser')),
         ),
       );
     }
@@ -2099,7 +2129,7 @@ class _CodeTabState extends State<_CodeTab> {
         message: _t('noTextContent'),
         action: FilledButton.tonal(
           onPressed: () => _openFileInBrowser(file),
-          child:  Text(_t('openInBrowser')),
+          child: Text(_t('openInBrowser')),
         ),
       );
     }
@@ -2120,14 +2150,14 @@ class _CodeTabState extends State<_CodeTab> {
         ),
       );
     }
-      // 交给库渲染（自带双向滚动 / 行号 / 高亮），不再自建滚动包裹层。
-      return OgLCodeViewer(
-        code: text,
-        path: file.path,
-        fontSize: codeStyle.fontSize ?? 13,
-        highlight: true,
-        codeTheme: theme,
-      );
+    // 交给库渲染（自带双向滚动 / 行号 / 高亮），不再自建滚动包裹层。
+    return OgLCodeViewer(
+      code: text,
+      path: file.path,
+      fontSize: codeStyle.fontSize ?? 13,
+      highlight: true,
+      codeTheme: theme,
+    );
   }
 
   @override
@@ -2171,7 +2201,7 @@ class _CodeTabState extends State<_CodeTab> {
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
             child: TextField(
               controller: _filter,
-              decoration:  InputDecoration(
+              decoration: InputDecoration(
                 isDense: true,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.filter_alt_outlined),
@@ -2185,15 +2215,16 @@ class _CodeTabState extends State<_CodeTab> {
               listenable: _entries,
               builder: (BuildContext context, Widget? _) {
                 final String q = _filter.text.trim().toLowerCase();
-                final List<GhContent> sorted = List<GhContent>.of(_entries.items)
-                  ..sort((GhContent a, GhContent b) {
-                    if (a.isDirectory != b.isDirectory) {
-                      return a.isDirectory ? -1 : 1;
-                    }
-                    return ghPathName(a.path)
-                        .toLowerCase()
-                        .compareTo(ghPathName(b.path).toLowerCase());
-                  });
+                final List<GhContent> sorted =
+                    List<GhContent>.of(_entries.items)
+                      ..sort((GhContent a, GhContent b) {
+                        if (a.isDirectory != b.isDirectory) {
+                          return a.isDirectory ? -1 : 1;
+                        }
+                        return ghPathName(a.path)
+                            .toLowerCase()
+                            .compareTo(ghPathName(b.path).toLowerCase());
+                      });
                 final List<GhContent> shown = q.isEmpty
                     ? sorted
                     : sorted
@@ -2209,7 +2240,7 @@ class _CodeTabState extends State<_CodeTab> {
                     message: _entries.error!,
                     action: FilledButton.tonal(
                       onPressed: _entries.refresh,
-                      child:  Text(_t('retry')),
+                      child: Text(_t('retry')),
                     ),
                   );
                 }
@@ -2220,7 +2251,7 @@ class _CodeTabState extends State<_CodeTab> {
                     action: widget.canWrite
                         ? FilledButton.tonal(
                             onPressed: _createFile,
-                            child:  Text(_t('newFile')),
+                            child: Text(_t('newFile')),
                           )
                         : null,
                   );
@@ -2236,21 +2267,23 @@ class _CodeTabState extends State<_CodeTab> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
-                          if (_path.isNotEmpty)
-                            ListTile(
-                              leading: const Icon(Icons.arrow_upward),
-                              title:  Text(_t('parentDir')),
-                              onTap: () {
-                                final int cut = _path.lastIndexOf('/');
-                                unawaited(_goTo(cut <= 0 ? '' : _path.substring(0, cut)));
-                              },
-                            ),
-                          if (_path.isEmpty) _readmeTile(),
-                          if (shown.isEmpty)
-                             Padding(
-                              padding: EdgeInsets.all(24),
-                              child: Center(child: Text(_t('noMatchingEntries'))),
-                            )
+                            if (_path.isNotEmpty)
+                              ListTile(
+                                leading: const Icon(Icons.arrow_upward),
+                                title: Text(_t('parentDir')),
+                                onTap: () {
+                                  final int cut = _path.lastIndexOf('/');
+                                  unawaited(_goTo(
+                                      cut <= 0 ? '' : _path.substring(0, cut)));
+                                },
+                              ),
+                            if (_path.isEmpty) _readmeTile(),
+                            if (shown.isEmpty)
+                              Padding(
+                                padding: EdgeInsets.all(24),
+                                child: Center(
+                                    child: Text(_t('noMatchingEntries'))),
+                              )
                           ],
                         ),
                       ),
@@ -2258,38 +2291,39 @@ class _CodeTabState extends State<_CodeTab> {
                       SliverList.builder(
                         itemCount: shown.length,
                         itemBuilder: (BuildContext context, int index) =>
-                              OgLReveal(
-                                delay: OgLAnim.staggerOf(context, index),
-                                child: ListTile(
-                                  leading: Icon(
-                                    ogLFileVisualFor(shown[index].path,
-                                            isDirectory: shown[index].isDirectory)
-                                        .icon,
-                                    color: ogLFileVisualFor(shown[index].path,
-                                            isDirectory: shown[index].isDirectory)
-                                        .color,
-                                  ),
-                                  title: Text(
-                                    ghPathName(shown[index].path),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  subtitle: shown[index].isDirectory
-                                      ? null
-                                      : Text(ghSizeText(shown[index].size)),
-                                  trailing: shown[index].isDirectory
-                                      ? const Icon(Icons.chevron_right)
-                                      : null,
-                                  onTap: () {
-                                    if (shown[index].isDirectory) {
-                                      unawaited(_goTo(shown[index].path));
-                                    } else {
-                                      _openEntryDefault(shown[index]);
-                                    }
-                                  },
-                                  onLongPress: () => unawaited(_showEntryMenu(shown[index])),
-                                ),
-                              ),
+                            OgLReveal(
+                          delay: OgLAnim.staggerOf(context, index),
+                          child: ListTile(
+                            leading: Icon(
+                              ogLFileVisualFor(shown[index].path,
+                                      isDirectory: shown[index].isDirectory)
+                                  .icon,
+                              color: ogLFileVisualFor(shown[index].path,
+                                      isDirectory: shown[index].isDirectory)
+                                  .color,
+                            ),
+                            title: Text(
+                              ghPathName(shown[index].path),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: shown[index].isDirectory
+                                ? null
+                                : Text(ghSizeText(shown[index].size)),
+                            trailing: shown[index].isDirectory
+                                ? const Icon(Icons.chevron_right)
+                                : null,
+                            onTap: () {
+                              if (shown[index].isDirectory) {
+                                unawaited(_goTo(shown[index].path));
+                              } else {
+                                _openEntryDefault(shown[index]);
+                              }
+                            },
+                            onLongPress: () =>
+                                unawaited(_showEntryMenu(shown[index])),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -2322,8 +2356,7 @@ class _IssuesTabState extends State<_IssuesTab> {
 
   /// 列表滚动位置：`ScrollAwareAction` 读它判定「收边 / 弹回 / 近底部」。
   final ScrollController _scroll = ScrollController();
-  late final _Paged<Map<String, dynamic>> _paged =
-      _Paged<Map<String, dynamic>>(
+  late final _Paged<Map<String, dynamic>> _paged = _Paged<Map<String, dynamic>>(
     loader: _load,
     onManualRefresh: () => widget.surface.domain.api.invalidateReadCache(),
   );
@@ -2338,7 +2371,8 @@ class _IssuesTabState extends State<_IssuesTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_paged.refresh()));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => unawaited(_paged.refresh()));
   }
 
   @override
@@ -2359,7 +2393,7 @@ class _IssuesTabState extends State<_IssuesTab> {
     );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('issueCreated'))),
+        SnackBar(content: Text(_t('issueCreated'))),
       );
       await _paged.refresh();
     }
@@ -2370,15 +2404,15 @@ class _IssuesTabState extends State<_IssuesTab> {
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('closeIssue', {'number': number})),
-        content:  Text(_t('closeIssueHint')),
+        content: Text(_t('closeIssueHint')),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('close')),
+            child: Text(_t('close')),
           ),
         ],
       ),
@@ -2422,7 +2456,7 @@ class _IssuesTabState extends State<_IssuesTab> {
         child: FloatingActionButton.extended(
           onPressed: _create,
           icon: const Icon(Icons.add_comment_outlined),
-          label:  Text(_t('newIssue')),
+          label: Text(_t('newIssue')),
         ),
       ),
       body: Column(
@@ -2430,9 +2464,11 @@ class _IssuesTabState extends State<_IssuesTab> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: SegmentedButton<String>(
-              segments:  <ButtonSegment<String>>[
-                ButtonSegment<String>(value: 'open', label: Text(_t('openState'))),
-                ButtonSegment<String>(value: 'closed', label: Text(_t('issueClosed'))),
+              segments: <ButtonSegment<String>>[
+                ButtonSegment<String>(
+                    value: 'open', label: Text(_t('openState'))),
+                ButtonSegment<String>(
+                    value: 'closed', label: Text(_t('issueClosed'))),
                 ButtonSegment<String>(value: 'all', label: Text(_t('all'))),
               ],
               selected: <String>{_state},
@@ -2448,7 +2484,8 @@ class _IssuesTabState extends State<_IssuesTab> {
           Expanded(
             child: ListenableBuilder(
               listenable: _paged,
-              builder: (BuildContext context, Widget? _) => _pagedBody<Map<String, dynamic>>(
+              builder: (BuildContext context, Widget? _) =>
+                  _pagedBody<Map<String, dynamic>>(
                 context,
                 _paged,
                 (BuildContext context, Map<String, dynamic> item, int index) {
@@ -2461,7 +2498,11 @@ class _IssuesTabState extends State<_IssuesTab> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     subtitle: Text(
-                      _t('issueMeta', <String, Object?>{'author': ghLogin(item), 'comments': ghInt(item, 'comments'), 'date': ghDate(item, 'created_at')}),
+                      _t('issueMeta', <String, Object?>{
+                        'author': ghLogin(item),
+                        'comments': ghInt(item, 'comments'),
+                        'date': ghDate(item, 'created_at')
+                      }),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -2476,11 +2517,12 @@ class _IssuesTabState extends State<_IssuesTab> {
                   );
                 },
                 emptyIcon: Icons.task_alt,
-                emptyText: _state == 'all' ? _t('noIssues') : _t('noIssuesFiltered'),
+                emptyText:
+                    _state == 'all' ? _t('noIssues') : _t('noIssuesFiltered'),
                 controller: _scroll,
                 emptyAction: FilledButton.tonal(
                   onPressed: _create,
-                  child:  Text(_t('newIssue')),
+                  child: Text(_t('newIssue')),
                 ),
               ),
             ),
@@ -2503,8 +2545,7 @@ class _PullsTab extends StatefulWidget {
 
 class _PullsTabState extends State<_PullsTab> {
   String _state = 'open';
-  late final _Paged<Map<String, dynamic>> _paged =
-      _Paged<Map<String, dynamic>>(
+  late final _Paged<Map<String, dynamic>> _paged = _Paged<Map<String, dynamic>>(
     loader: _load,
     onManualRefresh: () => widget.surface.domain.api.invalidateReadCache(),
   );
@@ -2519,7 +2560,8 @@ class _PullsTabState extends State<_PullsTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_paged.refresh()));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => unawaited(_paged.refresh()));
   }
 
   @override
@@ -2549,9 +2591,11 @@ class _PullsTabState extends State<_PullsTab> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: SegmentedButton<String>(
-            segments:  <ButtonSegment<String>>[
-              ButtonSegment<String>(value: 'open', label: Text(_t('openState'))),
-              ButtonSegment<String>(value: 'closed', label: Text(_t('issueClosed'))),
+            segments: <ButtonSegment<String>>[
+              ButtonSegment<String>(
+                  value: 'open', label: Text(_t('openState'))),
+              ButtonSegment<String>(
+                  value: 'closed', label: Text(_t('issueClosed'))),
               ButtonSegment<String>(value: 'all', label: Text(_t('all'))),
             ],
             selected: <String>{_state},
@@ -2567,10 +2611,12 @@ class _PullsTabState extends State<_PullsTab> {
         Expanded(
           child: ListenableBuilder(
             listenable: _paged,
-            builder: (BuildContext context, Widget? _) => _pagedBody<Map<String, dynamic>>(
+            builder: (BuildContext context, Widget? _) =>
+                _pagedBody<Map<String, dynamic>>(
               context,
               _paged,
-              (BuildContext context, Map<String, dynamic> item, int index) => ListTile(
+              (BuildContext context, Map<String, dynamic> item, int index) =>
+                  ListTile(
                 leading: const Icon(Icons.call_merge),
                 title: Text(
                   '#${ghInt(item, 'number')} ${ghStr(item, 'title')}',
@@ -2586,7 +2632,8 @@ class _PullsTabState extends State<_PullsTab> {
                 onTap: () => _openPull(item),
               ),
               emptyIcon: Icons.call_merge,
-              emptyText: _state == 'all' ? _t('noPulls') : _t('noPullsFiltered'),
+              emptyText:
+                  _state == 'all' ? _t('noPulls') : _t('noPullsFiltered'),
             ),
           ),
         ),
@@ -2634,7 +2681,8 @@ class _ReleasesTabState extends State<_ReleasesTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_paged.refresh()));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => unawaited(_paged.refresh()));
   }
 
   @override
@@ -2688,7 +2736,7 @@ class _ReleasesTabState extends State<_ReleasesTab> {
               child: FloatingActionButton.extended(
                 onPressed: _create,
                 icon: const Icon(Icons.new_releases_outlined),
-                label:  Text(_t('newRelease')),
+                label: Text(_t('newRelease')),
               ),
             )
           : null,
@@ -2737,7 +2785,7 @@ class _ReleasesTabState extends State<_ReleasesTab> {
           emptyAction: widget.canWrite
               ? FilledButton.tonal(
                   onPressed: _create,
-                  child:  Text(_t('newRelease')),
+                  child: Text(_t('newRelease')),
                 )
               : null,
         ),
@@ -2788,7 +2836,8 @@ class _BranchesTabState extends State<_BranchesTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_paged.refresh()));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => unawaited(_paged.refresh()));
   }
 
   @override
@@ -2805,11 +2854,11 @@ class _BranchesTabState extends State<_BranchesTab> {
     final String? input = await showDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('newBranch')),
+        title: Text(_t('newBranch')),
         content: TextField(
           controller: _createName,
           autofocus: true,
-          decoration:  InputDecoration(
+          decoration: InputDecoration(
             labelText: _t('branchName'),
             hintText: 'feature/xxx',
           ),
@@ -2817,11 +2866,11 @@ class _BranchesTabState extends State<_BranchesTab> {
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(_createName.text),
-            child:  Text(_t('create')),
+            child: Text(_t('create')),
           ),
         ],
       ),
@@ -2853,20 +2902,20 @@ class _BranchesTabState extends State<_BranchesTab> {
     final String? input = await showDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('renameBranch')),
+        title: Text(_t('renameBranch')),
         content: TextField(
           controller: _renameName,
           autofocus: true,
-          decoration:  InputDecoration(labelText: _t('newName')),
+          decoration: InputDecoration(labelText: _t('newName')),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(_renameName.text),
-            child:  Text(_t('rename')),
+            child: Text(_t('rename')),
           ),
         ],
       ),
@@ -2878,7 +2927,8 @@ class _BranchesTabState extends State<_BranchesTab> {
     try {
       await widget.surface.domain.api
           .renameBranch(widget.fullName, branch.name, trimmed);
-      OgLAppLog.instance.result(_t('branches'), _t('branchRenamed'), '${branch.name} → $trimmed');
+      OgLAppLog.instance.result(
+          _t('branches'), _t('branchRenamed'), '${branch.name} → $trimmed');
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
@@ -2893,19 +2943,19 @@ class _BranchesTabState extends State<_BranchesTab> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('deleteBranchTitle')),
+        title: Text(_t('deleteBranchTitle')),
         content: Text(_t('deleteBranchDesc', {'name': branch.name})),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('delete')),
+            child: Text(_t('delete')),
           ),
         ],
       ),
@@ -2914,8 +2964,10 @@ class _BranchesTabState extends State<_BranchesTab> {
       return;
     }
     try {
-      await widget.surface.domain.api.deleteBranch(widget.fullName, branch.name);
-      OgLAppLog.instance.result(_t('branches'), _t('branchDeleted'), branch.name);
+      await widget.surface.domain.api
+          .deleteBranch(widget.fullName, branch.name);
+      OgLAppLog.instance
+          .result(_t('branches'), _t('branchDeleted'), branch.name);
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
@@ -2937,7 +2989,7 @@ class _BranchesTabState extends State<_BranchesTab> {
               child: FloatingActionButton.extended(
                 onPressed: _create,
                 icon: const Icon(Icons.alt_route),
-                label:  Text(_t('newBranch')),
+                label: Text(_t('newBranch')),
               ),
             )
           : null,
@@ -2954,7 +3006,8 @@ class _BranchesTabState extends State<_BranchesTab> {
                     ? Icons.lock_outline
                     : Icons.account_tree_outlined,
               ),
-              title: Text(branch.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+              title: Text(branch.name,
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
               subtitle: Text(
                 '${ghShortSha(branch.sha)}'
                 '${isDefault ? _t('defaultBranchTag') : ''}'
@@ -2972,12 +3025,12 @@ class _BranchesTabState extends State<_BranchesTab> {
                   PopupMenuItem<String>(
                     value: 'rename',
                     enabled: !isDefault,
-                    child:  Text(_t('rename')),
+                    child: Text(_t('rename')),
                   ),
                   PopupMenuItem<String>(
                     value: 'delete',
                     enabled: !isDefault,
-                    child:  Text(_t('delete')),
+                    child: Text(_t('delete')),
                   ),
                 ],
               ),
@@ -2988,7 +3041,7 @@ class _BranchesTabState extends State<_BranchesTab> {
           controller: _scroll,
           emptyAction: FilledButton.tonal(
             onPressed: _create,
-            child:  Text(_t('newBranch')),
+            child: Text(_t('newBranch')),
           ),
         ),
       ),
@@ -3031,7 +3084,8 @@ class _CommitsTabState extends State<_CommitsTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_paged.refresh()));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => unawaited(_paged.refresh()));
   }
 
   @override
@@ -3049,7 +3103,8 @@ class _CommitsTabState extends State<_CommitsTab> {
         _paged,
         (BuildContext context, GhCommit commit, int index) => ListTile(
           leading: const Icon(Icons.history),
-          title: Text(commit.subject, maxLines: 1, overflow: TextOverflow.ellipsis),
+          title: Text(commit.subject,
+              maxLines: 1, overflow: TextOverflow.ellipsis),
           subtitle: Text(
             '${ghCommitAuthor(commit)} · '
             '${commit.date?.toIso8601String().split('T').first ?? ''} · '
@@ -3097,8 +3152,7 @@ class _ActionsTab extends StatefulWidget {
 
 class _ActionsTabState extends State<_ActionsTab> {
   String _filter = 'all';
-  late final _Paged<Map<String, dynamic>> _paged =
-      _Paged<Map<String, dynamic>>(
+  late final _Paged<Map<String, dynamic>> _paged = _Paged<Map<String, dynamic>>(
     loader: _load,
     cacheKey: 'actions:${widget.fullName}:${widget.branch}',
     onManualRefresh: () => widget.surface.domain.api.invalidateReadCache(),
@@ -3115,7 +3169,8 @@ class _ActionsTabState extends State<_ActionsTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_paged.refresh()));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => unawaited(_paged.refresh()));
   }
 
   @override
@@ -3136,7 +3191,7 @@ class _ActionsTabState extends State<_ActionsTab> {
     );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('workflowTriggered'))),
+        SnackBar(content: Text(_t('workflowTriggered'))),
       );
       await _paged.refresh();
     }
@@ -3194,7 +3249,7 @@ class _ActionsTabState extends State<_ActionsTab> {
                   FilledButton.tonalIcon(
                     onPressed: _dispatch,
                     icon: const Icon(Icons.play_arrow),
-                    label:  Text(_t('manualTrigger')),
+                    label: Text(_t('manualTrigger')),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -3203,7 +3258,7 @@ class _ActionsTabState extends State<_ActionsTab> {
                       child: Row(
                         children: <Widget>[
                           for (final MapEntry<String, String> entry
-                              in  <String, String>{
+                              in <String, String>{
                             'all': _t('all'),
                             'running': _t('runInProgress'),
                             'success': _t('runSuccess'),
@@ -3230,14 +3285,15 @@ class _ActionsTabState extends State<_ActionsTab> {
             ),
             Expanded(
               child: shown.isEmpty && _paged.items.isNotEmpty
-                  ?  _MessagePane(
+                  ? _MessagePane(
                       icon: Icons.filter_alt_off_outlined,
                       message: _t('noRunsFiltered'),
                     )
                   : _pagedBody<Map<String, dynamic>>(
                       context,
                       _paged,
-                      (BuildContext context, Map<String, dynamic> run, int index) {
+                      (BuildContext context, Map<String, dynamic> run,
+                          int index) {
                         final String status = ghStr(run, 'status');
                         final String conclusion = ghStr(run, 'conclusion');
                         return ListTile(
@@ -3279,7 +3335,7 @@ class _ActionsTabState extends State<_ActionsTab> {
                       emptyIcon: Icons.play_circle_outline,
                       emptyText: _t('noWorkflowRuns'),
                       items: shown,
-                  ),
+                    ),
             ),
           ],
         );
@@ -3401,7 +3457,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       if (mounted) {
         widget.onRepoChanged(updated);
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(_t('saved'))),
+          SnackBar(content: Text(_t('saved'))),
         );
       }
     } catch (error) {
@@ -3424,7 +3480,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
     final String domain = _cname.text.trim();
     if (domain.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('domainRequired'))),
+        SnackBar(content: Text(_t('domainRequired'))),
       );
       return;
     }
@@ -3441,8 +3497,8 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
           branch: widget.repo.defaultBranch,
         );
       } else {
-        final GhWriteResult result = await widget.surface.domain.api
-            .putContentLocked(
+        final GhWriteResult result =
+            await widget.surface.domain.api.putContentLocked(
           _full,
           'CNAME',
           content: '$domain\n',
@@ -3454,7 +3510,8 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(_t('cnameSaveFailed', {'error': result.detail ?? result.conflict.name})),
+                content: Text(_t('cnameSaveFailed',
+                    {'error': result.detail ?? result.conflict.name})),
               ),
             );
           }
@@ -3464,7 +3521,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       OgLAppLog.instance.result('仓库', _t('cnameSaved'), domain);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(_t('cnameSavedShort'))),
+          SnackBar(content: Text(_t('cnameSavedShort'))),
         );
       }
     } catch (error) {
@@ -3492,7 +3549,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       if (mounted) {
         setState(() => _pagesFuture = _loadPages());
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(_t('pagesEnabledHint'))),
+          SnackBar(content: Text(_t('pagesEnabledHint'))),
         );
       }
     } catch (error) {
@@ -3519,7 +3576,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       if (mounted) {
         setState(() => _pagesFuture = _loadPages());
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(_t('pagesDisabledHint'))),
+          SnackBar(content: Text(_t('pagesDisabledHint'))),
         );
       }
     } catch (error) {
@@ -3539,19 +3596,19 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('deleteRepo')),
+        title: Text(_t('deleteRepo')),
         content: Text(_t('deleteRepoDesc', {'full': _full})),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('deleteForever')),
+            child: Text(_t('deleteForever')),
           ),
         ],
       ),
@@ -3594,116 +3651,117 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
         }
       },
       child: ListView(
-      padding: const EdgeInsets.all(16),
-      children: <Widget>[
-        Text(_t('basicInfo'), style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _name,
-          decoration:  InputDecoration(
-            labelText: _t('repoName'),
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _description,
-          maxLines: 3,
-          decoration:  InputDecoration(
-            labelText: _t('description'),
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerRight,
-          child: FilledButton(
-            onPressed: _busy ? null : _saveBasic,
-            child:  Text(_t('saveBasicInfo')),
-          ),
-        ),
-        const Divider(height: 32),
-        Text('Pages', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        FutureBuilder<Map<String, dynamic>?>(
-          future: _pagesFuture,
-          builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>?> snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return  Text(_t('reading'));
-            }
-            final Map<String, dynamic>? info = snapshot.data;
-            if (info == null) {
-              return  Text(_t('notEnabled'));
-            }
-            final String url = ghStr(info, 'html_url');
-            final String status = ghStr(info, 'status');
-            final String statusPart = status.isEmpty ? _t('enabled') : status;
-            final String urlPart = url.isEmpty
-                ? ''
-                : '\n${_t('address', {'url': url})}';
-            return Text(_t('statusLabel', {
-              'status': '$statusPart$urlPart',
-            }));
-          },
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          children: <Widget>[
-            FilledButton.tonal(
-              onPressed: _busy ? null : _enablePages,
-              child:  Text(_t('enableDefaultBranch')),
+        padding: const EdgeInsets.all(16),
+        children: <Widget>[
+          Text(_t('basicInfo'), style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _name,
+            decoration: InputDecoration(
+              labelText: _t('repoName'),
+              border: OutlineInputBorder(),
             ),
-            OutlinedButton(
-              onPressed: _busy ? null : _disablePages,
-              child:  Text(_t('disable')),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _description,
+            maxLines: 3,
+            decoration: InputDecoration(
+              labelText: _t('description'),
+              border: OutlineInputBorder(),
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _cname,
-          decoration:  InputDecoration(
-            labelText: _t('customDomain'),
-            hintText: 'example.com',
-            border: OutlineInputBorder(),
           ),
-        ),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerRight,
-          child: FilledButton.tonal(
-            onPressed: _busy ? null : _saveCname,
-            child:  Text(_t('saveCname')),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton(
+              onPressed: _busy ? null : _saveBasic,
+              child: Text(_t('saveBasicInfo')),
+            ),
           ),
-        ),
-        const Divider(height: 32),
-        Text(
-          _t('dangerZone'),
-          style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.error),
-        ),
-        const SizedBox(height: 8),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                 Text(_t('deleteRepoWarning')),
-                const SizedBox(height: 12),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: theme.colorScheme.error,
+          const Divider(height: 32),
+          Text('Pages', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          FutureBuilder<Map<String, dynamic>?>(
+            future: _pagesFuture,
+            builder: (BuildContext context,
+                AsyncSnapshot<Map<String, dynamic>?> snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return Text(_t('reading'));
+              }
+              final Map<String, dynamic>? info = snapshot.data;
+              if (info == null) {
+                return Text(_t('notEnabled'));
+              }
+              final String url = ghStr(info, 'html_url');
+              final String status = ghStr(info, 'status');
+              final String statusPart = status.isEmpty ? _t('enabled') : status;
+              final String urlPart =
+                  url.isEmpty ? '' : '\n${_t('address', {'url': url})}';
+              return Text(_t('statusLabel', {
+                'status': '$statusPart$urlPart',
+              }));
+            },
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: <Widget>[
+              FilledButton.tonal(
+                onPressed: _busy ? null : _enablePages,
+                child: Text(_t('enableDefaultBranch')),
+              ),
+              OutlinedButton(
+                onPressed: _busy ? null : _disablePages,
+                child: Text(_t('disable')),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _cname,
+            decoration: InputDecoration(
+              labelText: _t('customDomain'),
+              hintText: 'example.com',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.tonal(
+              onPressed: _busy ? null : _saveCname,
+              child: Text(_t('saveCname')),
+            ),
+          ),
+          const Divider(height: 32),
+          Text(
+            _t('dangerZone'),
+            style: theme.textTheme.titleMedium
+                ?.copyWith(color: theme.colorScheme.error),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(_t('deleteRepoWarning')),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: theme.colorScheme.error,
+                    ),
+                    onPressed: _deleteRepo,
+                    child: Text(_t('deleteRepo')),
                   ),
-                  onPressed: _deleteRepo,
-                  child:  Text(_t('deleteRepo')),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 24),
-      ],
+          const SizedBox(height: 24),
+        ],
       ),
     );
   }

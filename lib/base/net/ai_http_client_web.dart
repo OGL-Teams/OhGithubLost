@@ -18,8 +18,7 @@ import '../../kernel/contract/ai_client.dart';
 
 /// 浏览器 AI HTTP 客户端。
 class AiHttpClientWeb implements AiHttpClient {
-  AiHttpClientWeb({http.Client? client})
-      : _client = client ?? http.Client();
+  AiHttpClientWeb({http.Client? client}) : _client = client ?? http.Client();
 
   final http.Client _client;
 
@@ -33,7 +32,8 @@ class AiHttpClientWeb implements AiHttpClient {
         uri.hasQuery ||
         uri.hasFragment;
     if (bad) {
-      throw AiTransportException('AI 端点必须是纯 HTTPS 地址（不允许 userInfo/query/fragment）');
+      throw AiTransportException(
+          'AI 端点必须是纯 HTTPS 地址（不允许 userInfo/query/fragment）');
     }
   }
 
@@ -81,7 +81,8 @@ class AiHttpClientWeb implements AiHttpClient {
         )
         .timeout(timeout);
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw AiTransportException('AI 端点返回 ${res.statusCode}', statusCode: res.statusCode);
+      throw AiTransportException('AI 端点返回 ${res.statusCode}',
+          statusCode: res.statusCode);
     }
     if (res.bodyBytes.length > _maxBodyBytes) {
       throw const AiTransportException('AI 响应体超过上限（8 MiB）');
@@ -111,7 +112,8 @@ class AiHttpClientWeb implements AiHttpClient {
     }
 
     for (final String raw in body.split('\n')) {
-      final String line = raw.endsWith('\r') ? raw.substring(0, raw.length - 1) : raw;
+      final String line =
+          raw.endsWith('\r') ? raw.substring(0, raw.length - 1) : raw;
       if (line.isEmpty) {
         flush();
       } else if (line.startsWith('data:')) {

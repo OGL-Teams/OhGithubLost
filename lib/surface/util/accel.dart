@@ -29,9 +29,10 @@ library;
 import '../i18n/og_l_i18n.dart';
 
 /// 取 `common` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('common', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'common', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 同意协议的版本号：**文本任何实质修改都必须 +1**，以便重新征求同意。
 ///

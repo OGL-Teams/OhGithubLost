@@ -96,9 +96,7 @@ class GhAccount {
         avatarUrl:
             json['avatarUrl'] is String ? json['avatarUrl'] as String : null,
         scopes: json['scopes'] is List
-            ? (json['scopes'] as List<Object?>)
-                .whereType<String>()
-                .toList()
+            ? (json['scopes'] as List<Object?>).whereType<String>().toList()
             : const <String>[],
         addedAt: json['addedAt'] is String
             ? DateTime.tryParse(json['addedAt'] as String)

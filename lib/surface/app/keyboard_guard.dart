@@ -133,7 +133,8 @@ class _OgLKeyboardGuardState extends State<OgLKeyboardGuard>
       );
     }
     if (!ignore && _ignoring) {
-      OgLLogFile.line('窗口', '键盘 inset 恢复生效（bottom=${bottom.toStringAsFixed(0)}）');
+      OgLLogFile.line(
+          '窗口', '键盘 inset 恢复生效（bottom=${bottom.toStringAsFixed(0)}）');
     }
     _ignoring = ignore;
 

@@ -170,7 +170,8 @@ class IoDiskFileStore implements DiskFileStore {
       if (rest.isEmpty) {
         continue;
       }
-      names.add(rest.contains('/') ? rest.substring(0, rest.indexOf('/')) : rest);
+      names.add(
+          rest.contains('/') ? rest.substring(0, rest.indexOf('/')) : rest);
     }
     return names.toList()..sort();
   }

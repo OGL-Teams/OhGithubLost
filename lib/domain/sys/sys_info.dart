@@ -243,12 +243,14 @@ class SysMemoryInfo {
   Map<String, Object?> toJson() => <String, Object?>{
         if (totalKb != null) 'totalKb': totalKb,
         if (availableKb != null) 'availableKb': availableKb,
-        if (usedRatio != null) 'usedRatio': double.parse(usedRatio!.toStringAsFixed(3)),
+        if (usedRatio != null)
+          'usedRatio': double.parse(usedRatio!.toStringAsFixed(3)),
         'source': source.name,
       };
 
   @override
-  String toString() => 'SysMemoryInfo(total=${totalKb}KB, available=${availableKb}KB)';
+  String toString() =>
+      'SysMemoryInfo(total=${totalKb}KB, available=${availableKb}KB)';
 }
 
 /// 网络策略状态（**由底座推导**，不是新开一路探测）。
@@ -292,7 +294,8 @@ class SysNetworkInfo {
       };
 
   @override
-  String toString() => 'SysNetworkInfo(dns=$dnsMode, mirrors=${mirrorChannels.length})';
+  String toString() =>
+      'SysNetworkInfo(dns=$dnsMode, mirrors=${mirrorChannels.length})';
 }
 
 /// 一次完整采集。
@@ -342,21 +345,23 @@ class SysSnapshot {
 
 /// Android 专有信息探测（真机走 `device_info_plus`；测试注入假实现）。
 typedef AndroidProbe = Future<
-    ({
-      String model,
-      String manufacturer,
-      String release,
-      bool isPhysical,
-    })?> Function();
+        ({
+          String model,
+          String manufacturer,
+          String release,
+          bool isPhysical,
+        })?>
+    Function();
 
 /// 应用信息探测（真机走 `package_info_plus`）。
 typedef AppProbe = Future<
-    ({
-      String appName,
-      String packageName,
-      String version,
-      String buildNumber,
-    })?> Function();
+        ({
+          String appName,
+          String packageName,
+          String version,
+          String buildNumber,
+        })?>
+    Function();
 
 /// 内存探测（读 `/proc/meminfo`）。
 typedef MemoryProbe = Future<({int totalKb, int availableKb})?> Function();
@@ -446,8 +451,7 @@ class SysInfoService {
     final offset = now.timeZoneOffset;
     final sign = offset.isNegative ? '-' : '+';
     final hours = offset.inHours.abs().toString().padLeft(2, '0');
-    final minutes =
-        (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
+    final minutes = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
     return SysRuntimeInfo(
       localeName: SysPlatform.localeName,
       timeZoneName: now.timeZoneName,

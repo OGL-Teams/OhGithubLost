@@ -87,6 +87,7 @@ class RetryPolicy {
   static double _defaultJitter() => _random.nextDouble();
 
   @override
-  String toString() => 'RetryPolicy(max=$maxAttempts, base=${baseDelay.inMilliseconds}ms, '
+  String toString() =>
+      'RetryPolicy(max=$maxAttempts, base=${baseDelay.inMilliseconds}ms, '
       'cap=${maxDelay.inMilliseconds}ms, jitter=$jitterRatio)';
 }

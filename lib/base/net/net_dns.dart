@@ -609,8 +609,8 @@ class DnsCache {
     // 腾位置时先丢"马上就要过期"的，最耐用的那些留下）。
     final now = DateTime.now();
     final expired = _entries.entries
-        .where((MapEntry<String, DnsAnswer> entry) =>
-            entry.value.isExpiredAt(now))
+        .where(
+            (MapEntry<String, DnsAnswer> entry) => entry.value.isExpiredAt(now))
         .map((MapEntry<String, DnsAnswer> entry) => entry.key)
         .toList();
     for (final key in expired) {
@@ -958,13 +958,15 @@ class DnsService {
     );
     // Web：DoH 查询的**结果是真的**，但连接仍由浏览器解析。这一点必须留在
     // 日志里（一次性），否则"解析到了真实 IP"会被读成"自定义 DNS 已接管"。
-    if (!supportsCustomDns && serverId != 'system' &&
-        !serverId.startsWith('system(') && !_noticedDohQueryOnly) {
+    if (!supportsCustomDns &&
+        serverId != 'system' &&
+        !serverId.startsWith('system(') &&
+        !_noticedDohQueryOnly) {
       _noticedDohQueryOnly = true;
       _diagnostics?.info(
         'DNS',
         '本平台用 DoH 查询到真实地址（$serverId），但建立连接仍由浏览器'
-        '自己解析——自定义 DNS 在 Web 上不接管连接',
+            '自己解析——自定义 DNS 在 Web 上不接管连接',
         code: 'OGL-DNS-105',
         data: <String, Object?>{
           'via': serverId,
@@ -1062,8 +1064,7 @@ class DnsService {
   Future<({List<String> addresses, String serverId})> _race(
     List<Future<({List<String> addresses, String serverId})>> attempts,
   ) {
-    final completer =
-        Completer<({List<String> addresses, String serverId})>();
+    final completer = Completer<({List<String> addresses, String serverId})>();
     var remaining = attempts.length;
     Object? lastError;
     for (final attempt in attempts) {

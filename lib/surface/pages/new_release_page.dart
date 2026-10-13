@@ -15,9 +15,10 @@ import '../types.dart';
 import '../widgets/scroll_aware_action.dart';
 
 /// 取 `new_release_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('new_release_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'new_release_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 新建发布页。
 class NewReleasePage extends StatefulWidget {
@@ -174,88 +175,90 @@ class _NewReleasePageState extends State<NewReleasePage> {
         }
       },
       child: Scaffold(
-      appBar: AppBar(title:  Text(_t('title'))),
-      body: OgLReveal(delay: Duration.zero, child: ListView(
-        controller: _scroll,
-        padding: const EdgeInsets.all(16),
-        children: <Widget>[
-          TextField(
-            controller: _tag,
-            autofocus: true,
-            decoration:  InputDecoration(
-              labelText: _t('tagLabel'),
-              hintText: 'v1.0.0',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _name,
-            decoration:  InputDecoration(
-              labelText: _t('titleLabel'),
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _body,
-            maxLines: 6,
-            decoration:  InputDecoration(
-              labelText: _t('bodyLabel'),
-              border: OutlineInputBorder(),
-              alignLabelWithHint: true,
-            ),
-          ),
-          const SizedBox(height: 12),
-          SwitchListTile(
-            title:  Text(_t('draft')),
-            subtitle:  Text(_t('draftDesc')),
-            value: _draft,
-            onChanged: _busy
-                ? null
-                : (bool value) => setState(() => _draft = value),
-          ),
-          SwitchListTile(
-            title:  Text(_t('prerelease')),
-            subtitle:  Text(_t('prereleaseDesc')),
-            value: _prerelease,
-            onChanged: _busy
-                ? null
-                : (bool value) => setState(() => _prerelease = value),
-          ),
-          if (_error != null) ...<Widget>[
-            const SizedBox(height: 12),
-            Card(
-              color: Theme.of(context).colorScheme.errorContainer,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  _error!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onErrorContainer,
+        appBar: AppBar(title: Text(_t('title'))),
+        body: OgLReveal(
+            delay: Duration.zero,
+            child: ListView(
+              controller: _scroll,
+              padding: const EdgeInsets.all(16),
+              children: <Widget>[
+                TextField(
+                  controller: _tag,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    labelText: _t('tagLabel'),
+                    hintText: 'v1.0.0',
+                    border: OutlineInputBorder(),
                   ),
                 ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
-          // 「发布」按钮跟着滚动"让路"：下滑时向屏外收起（只露约 1/4，点击即弹回），
-          // 上滑自动完全弹回。
-          //
-          // 该按钮本身就在内容**末尾**（滚到底才出现），若再叠加"近底部半屏收起"，
-          // 等于把页面主操作藏起来 —— 按用户「收起按照那个页面」的要求，
-          // 本页关闭该规则（bottomReserve: 0），只保留方向规则。
-          ScrollAwareAction(
-            controller: _scroll,
-            edge: AxisDirection.down,
-            bottomReserve: 0,
-            child: FilledButton(
-              onPressed: _busy ? null : _submit,
-              child: Text(_busy ? _t('publishing') : _t('publish')),
-            ),
-          ),
-        ],
-      )),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _name,
+                  decoration: InputDecoration(
+                    labelText: _t('titleLabel'),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _body,
+                  maxLines: 6,
+                  decoration: InputDecoration(
+                    labelText: _t('bodyLabel'),
+                    border: OutlineInputBorder(),
+                    alignLabelWithHint: true,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  title: Text(_t('draft')),
+                  subtitle: Text(_t('draftDesc')),
+                  value: _draft,
+                  onChanged: _busy
+                      ? null
+                      : (bool value) => setState(() => _draft = value),
+                ),
+                SwitchListTile(
+                  title: Text(_t('prerelease')),
+                  subtitle: Text(_t('prereleaseDesc')),
+                  value: _prerelease,
+                  onChanged: _busy
+                      ? null
+                      : (bool value) => setState(() => _prerelease = value),
+                ),
+                if (_error != null) ...<Widget>[
+                  const SizedBox(height: 12),
+                  Card(
+                    color: Theme.of(context).colorScheme.errorContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        _error!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                // 「发布」按钮跟着滚动"让路"：下滑时向屏外收起（只露约 1/4，点击即弹回），
+                // 上滑自动完全弹回。
+                //
+                // 该按钮本身就在内容**末尾**（滚到底才出现），若再叠加"近底部半屏收起"，
+                // 等于把页面主操作藏起来 —— 按用户「收起按照那个页面」的要求，
+                // 本页关闭该规则（bottomReserve: 0），只保留方向规则。
+                ScrollAwareAction(
+                  controller: _scroll,
+                  edge: AxisDirection.down,
+                  bottomReserve: 0,
+                  child: FilledButton(
+                    onPressed: _busy ? null : _submit,
+                    child: Text(_busy ? _t('publishing') : _t('publish')),
+                  ),
+                ),
+              ],
+            )),
       ),
     );
   }

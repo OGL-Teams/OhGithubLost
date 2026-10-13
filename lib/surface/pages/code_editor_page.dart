@@ -22,9 +22,10 @@ import '../types.dart';
 import '../widgets/code_editor_field.dart';
 
 /// 取 `code_editor_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('code_editor_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'code_editor_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 全屏代码编辑器页。
 class CodeEditorPage extends StatefulWidget {
@@ -173,7 +174,8 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   }
 
   void _changeFont(double delta) {
-    setState(() => _fontSize = (_fontSize + delta).clamp(10.0, 24.0).toDouble());
+    setState(
+        () => _fontSize = (_fontSize + delta).clamp(10.0, 24.0).toDouble());
   }
 
   Future<void> _save() async {
@@ -215,7 +217,8 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
           severity: OgLNoticeSeverity.critical,
         );
         if (mounted) {
-          _toast(_t('commitFailedDetail', {'detail': result.detail ?? result.conflict.name}));
+          _toast(_t('commitFailedDetail',
+              {'detail': result.detail ?? result.conflict.name}));
         }
         return;
       }
@@ -249,7 +252,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   Future<bool?> _showConflictDialog(GhWriteResult result) => showDialog<bool>(
         context: context,
         builder: (BuildContext dialogContext) => AlertDialog(
-          title:  Text(_t('remoteUpdated')),
+          title: Text(_t('remoteUpdated')),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,10 +261,10 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
                 Text(_t('baseline', {'sha': _short(result.baseSha)})),
                 Text(_t('remoteLatest', {'sha': _short(result.sha)})),
                 const SizedBox(height: 8),
-                 Text(_t('overwriteWarning')),
+                Text(_t('overwriteWarning')),
                 if (result.remoteContent != null) ...<Widget>[
                   const SizedBox(height: 12),
-                   Text(_t('remoteLatestContent')),
+                  Text(_t('remoteLatestContent')),
                   Container(
                     width: double.infinity,
                     constraints: const BoxConstraints(maxHeight: 200),
@@ -289,14 +292,14 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child:  Text(_t('keepRemote')),
+              child: Text(_t('keepRemote')),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(dialogContext).colorScheme.error,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child:  Text(_t('forceOverwrite')),
+              child: Text(_t('forceOverwrite')),
             ),
           ],
         ),
@@ -305,16 +308,16 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   Future<bool?> _confirmDiscard() => showDialog<bool>(
         context: context,
         builder: (BuildContext dialogContext) => AlertDialog(
-          title:  Text(_t('discardTitle')),
-          content:  Text(_t('discardDesc')),
+          title: Text(_t('discardTitle')),
+          content: Text(_t('discardDesc')),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child:  Text(_t('continueEditing')),
+              child: Text(_t('continueEditing')),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child:  Text(_t('discardChanges')),
+              child: Text(_t('discardChanges')),
             ),
           ],
         ),
@@ -324,14 +327,17 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  static String _short(String? sha) =>
-      sha == null || sha.isEmpty ? '—' : (sha.length <= 8 ? sha : sha.substring(0, 8));
+  static String _short(String? sha) => sha == null || sha.isEmpty
+      ? '—'
+      : (sha.length <= 8 ? sha : sha.substring(0, 8));
 
-  static String _preview(String text) =>
-      text.length <= 4000 ? text : _t('previewTruncated', {'text': text.substring(0, 4000)});
+  static String _preview(String text) => text.length <= 4000
+      ? text
+      : _t('previewTruncated', {'text': text.substring(0, 4000)});
 
   /// 只读预览（弹层）：与编辑器同一套库渲染，便于核对排版与高亮。
   void _previewSheet() {
@@ -359,7 +365,10 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
           child: Text(
-            '${_t('stats', {'lines': _controller.lineCount, 'chars': _controller.text.length})}'
+            '${_t('stats', {
+                  'lines': _controller.lineCount,
+                  'chars': _controller.text.length
+                })}'
             '${_dirty ? _t('unsaved') : ''}',
             style: theme.textTheme.bodySmall,
           ),
@@ -410,11 +419,13 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
             ),
             ValueListenableBuilder<CodeFindValue?>(
               valueListenable: _find,
-              builder: (BuildContext context, CodeFindValue? value, Widget? _) =>
-                  IconButton(
+              builder:
+                  (BuildContext context, CodeFindValue? value, Widget? _) =>
+                      IconButton(
                 icon: Icon(value == null ? Icons.search : Icons.search_off),
                 tooltip: _t('findReplace'),
-                onPressed: () => value == null ? _find.findMode() : _find.close(),
+                onPressed: () =>
+                    value == null ? _find.findMode() : _find.close(),
               ),
             ),
             IconButton(
@@ -444,22 +455,24 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
             ),
           ],
         ),
-        body: OgLReveal(delay: Duration.zero, child: Column(
-          children: <Widget>[
-            Expanded(
-              child: OgLCodeField(
-                controller: _controller,
-                path: widget.path,
-                fontSize: _fontSize,
-                wrap: _wrap,
-                highlight: prefs.highlight,
-                findController: _find,
-                codeTheme: prefs.theme(context),
-              ),
-            ),
-            _statusBar(theme),
-          ],
-        )),
+        body: OgLReveal(
+            delay: Duration.zero,
+            child: Column(
+              children: <Widget>[
+                Expanded(
+                  child: OgLCodeField(
+                    controller: _controller,
+                    path: widget.path,
+                    fontSize: _fontSize,
+                    wrap: _wrap,
+                    highlight: prefs.highlight,
+                    findController: _find,
+                    codeTheme: prefs.theme(context),
+                  ),
+                ),
+                _statusBar(theme),
+              ],
+            )),
       ),
     );
   }

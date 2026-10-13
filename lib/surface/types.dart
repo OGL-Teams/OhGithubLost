@@ -20,6 +20,7 @@ export '../domain/ai/ai_service.dart' show AiException, AiService;
 
 /// 账户：仅暴露状态枚举与账户 DTO，**隐藏** `GhAuthService`。
 export '../domain/gh/gh_auth.dart' hide GhAuthService;
+
 /// 客户端：仅暴露异常类型，**隐藏** `GhClient` 与限流快照的内部构造。
 export '../domain/gh/gh_client.dart' hide GhClient;
 export '../domain/gh/gh_draft.dart';
@@ -27,10 +28,13 @@ export '../domain/gh/gh_models.dart';
 
 /// 下载：暴露任务 / 分类 / 状态，**隐藏**下载管理器。
 export '../domain/ix/ix_download.dart' hide IxDownloadManager;
+
 /// 通知：暴露通知模型，**隐藏**通知中心实现。
 export '../domain/ix/ix_notify.dart' hide IxNotificationCenter;
+
 /// 第一跳解析：页面用它把「需认证的地址」换成短期签名地址（令牌不出设备）。
 export '../domain/ix/ix_presign.dart' show IxPresign;
+
 /// 会话与任务：只暴露状态模型。
 export '../domain/ix/ix_session.dart' hide IxSession;
 export '../domain/ix/ix_task.dart' hide IxTaskRunner;

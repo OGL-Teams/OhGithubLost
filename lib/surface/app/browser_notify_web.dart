@@ -98,8 +98,7 @@ String ogLBrowserNotifyPermission() {
 Future<String> ogLBrowserNotifyPermissionAsync() async {
   try {
     final JSPromise<JSObject> request = _navigatorPermissions
-        .query(<String, Object?>{'name': 'notifications'}.jsify()!
-            as JSObject);
+        .query(<String, Object?>{'name': 'notifications'}.jsify()! as JSObject);
     final JSObject status = await request.toDart;
     // `state` 字段：`granted` / `denied` / `prompt`。
     final JSAny? raw = status.getProperty<JSAny?>('state'.toJS);
@@ -116,7 +115,8 @@ Future<String> ogLBrowserNotifyPermissionAsync() async {
         return ogLBrowserNotifyPermission();
     }
   } catch (error) {
-    debugPrint('OGL 浏览器通知：Permissions API 不可用（回退到 Notification.permission）$error');
+    debugPrint(
+        'OGL 浏览器通知：Permissions API 不可用（回退到 Notification.permission）$error');
     return ogLBrowserNotifyPermission();
   }
 }

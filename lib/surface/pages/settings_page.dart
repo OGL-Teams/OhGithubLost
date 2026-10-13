@@ -254,11 +254,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// 动效档位的说明（与 [OgLSettings.motionLevelIds] 一一对应）。
   List<String> get _motionHints => <String>[
-    _t('motionMinDesc'),
-    _t('motionCurrentDesc'),
-    _t('motionStandardDesc'),
-    _t('motionEnhancedDesc'),
-  ];
+        _t('motionMinDesc'),
+        _t('motionCurrentDesc'),
+        _t('motionStandardDesc'),
+        _t('motionEnhancedDesc'),
+      ];
 
   Future<void> _pickCodeColor(String field, int current, String title) async {
     final int? picked = await _showOgLDialog<int>(
@@ -285,7 +285,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       selected: argb == current,
                       inMutuallyExclusiveGroup: true,
                       label: _t('colorSwatch', <String, Object?>{
-                        'color': '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}',
+                        'color':
+                            '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}',
                       }),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(24),
@@ -332,16 +333,16 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _reset() async {
     final bool? confirmed = await _showOgLDialog<bool>(
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('resetSettings')),
-        content:  Text(_t('resetDesc')),
+        title: Text(_t('resetSettings')),
+        content: Text(_t('resetDesc')),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('reset')),
+            child: Text(_t('reset')),
           ),
         ],
       ),
@@ -357,14 +358,16 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   /// 设置页文案取用（统一 `settings` 分片）。
-  String _t(String key, [Map<String, Object?>? args]) =>
-      OgLI18n.instance.t('settings', key,
-          args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+  String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+      'settings', key,
+      args: args
+          ?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
   /// `common` 分片文案（加速协议 / 通用按钮等）。
-  String _tc(String key, [Map<String, Object?>? args]) =>
-      OgLI18n.instance.t('common', key,
-          args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+  String _tc(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+      'common', key,
+      args: args
+          ?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
   /// 切换界面语言（选择行回调；i18n 立刻重载，提示带回新语言的自称）。
   Future<void> _setLanguage(String code) async {
@@ -412,20 +415,20 @@ class _SettingsPageState extends State<SettingsPage> {
     }
     final bool? confirmed = await _showOgLDialog<bool>(
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('donateHeart')),
+        title: Text(_t('donateHeart')),
         content: Text(
           _t('donateDesc1', {'login': account.login}) +
-          _t('donateDesc2', {'repo': OgLProjectInfo.repoFullName}) +
-          _t('donateDesc3'),
+              _t('donateDesc2', {'repo': OgLProjectInfo.repoFullName}) +
+              _t('donateDesc3'),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('thinkAgain')),
+            child: Text(_t('thinkAgain')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('donateHeart')),
+            child: Text(_t('donateHeart')),
           ),
         ],
       ),
@@ -550,7 +553,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 subtitle: OgLI18n.instance.t('ai', 'privacy'),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (BuildContext _) => AiSettingsPage(surface: widget.surface),
+                    builder: (BuildContext _) =>
+                        AiSettingsPage(surface: widget.surface),
                   ),
                 ),
               ),
@@ -723,6 +727,7 @@ class _SettingsPageState extends State<SettingsPage> {
       ],
     );
   }
+
   /// **代码与文件**分组：高亮 / 高亮主题 / （自定义配色）/ 换行 / 代码字号 / 排序。
   ///
   /// 层级：**依赖主题的子项紧跟父项并缩进** —— 选到"自定义"高亮主题时，
@@ -857,6 +862,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       );
+
   /// 网络 / DNS / 下载并发 / 加速通道。
   ///
   /// 这些内容渲染在**独立的网络设置页**里（见 `network_page.dart`），
@@ -867,7 +873,9 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 子页面不再自造第二种内边距（原来自带默认 16/16，与设置页的 16/12
   /// 不一致），也不再各自手写选择弹窗（选 DNS 的弹窗与设置页的选择行
   /// 是同一个 [ogLShowSettingsChoice]）。
-  List<Widget> _networkTiles(BuildContext context, ThemeData theme, OgLSettings value) => <Widget>[
+  List<Widget> _networkTiles(
+          BuildContext context, ThemeData theme, OgLSettings value) =>
+      <Widget>[
         OgLSettingsSwitchRow(
           title: _t('customDns'),
           subtitle: _t('dnsModeDesc'),
@@ -1011,6 +1019,7 @@ class _SettingsPageState extends State<SettingsPage> {
         trailing: const Icon(Icons.chevron_right, size: 18),
         onTap: onTap,
       );
+
   /// Web 版（**只在浏览器构建里显示**）。
   ///
   /// ## 为什么只显示在 Web 上
@@ -1058,7 +1067,7 @@ class _SettingsPageState extends State<SettingsPage> {
     };
     await _showOgLDialog<void>(
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(OgLI18n.instance.t('shell', 'storageAccess')),
+        title: Text(OgLI18n.instance.t('shell', 'storageAccess')),
         content: SizedBox(
           width: _dialogWidth(dialogContext),
           child: SingleChildScrollView(
@@ -1066,9 +1075,11 @@ class _SettingsPageState extends State<SettingsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text(modeText, style: Theme.of(dialogContext).textTheme.titleSmall),
+                Text(modeText,
+                    style: Theme.of(dialogContext).textTheme.titleSmall),
                 const SizedBox(height: 6),
-                Text('${OgLI18n.instance.t('shell', 'storageWhere')}：${info.path}'),
+                Text(
+                    '${OgLI18n.instance.t('shell', 'storageWhere')}：${info.path}'),
                 if (!info.visible) ...<Widget>[
                   const SizedBox(height: 8),
                   Text(OgLI18n.instance.t('shell', 'storageHintModern')),
@@ -1090,20 +1101,20 @@ class _SettingsPageState extends State<SettingsPage> {
           if (!info.visible)
             TextButton(
               onPressed: () => unawaited(_requestAllFiles(dialogContext)),
-              child:  Text(_t('storageOpenAllFiles')),
+              child: Text(_t('storageOpenAllFiles')),
             ),
           TextButton(
             onPressed: () => unawaited(_pickSafFolder(dialogContext)),
-            child:  Text(_t('storagePickFolder')),
+            child: Text(_t('storagePickFolder')),
           ),
           if (saf != null)
             TextButton(
               onPressed: () => unawaited(_clearSafFolder(dialogContext)),
-              child:  Text(_t('storageClearFolder')),
+              child: Text(_t('storageClearFolder')),
             ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child:  Text(_tc('close')),
+            child: Text(_tc('close')),
           ),
         ],
       ),
@@ -1159,7 +1170,8 @@ class _SettingsPageState extends State<SettingsPage> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   /// 统一弹窗入口：所有弹窗都接**动效档位**（时长 / 曲线取自质量表；
@@ -1231,7 +1243,8 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 设计：**只有一个总开关**；下面是通道列表（内置 + 自定义），可多选一。
   /// 开启总开关前若尚未同意当前版本协议，会先弹出协议并要求勾选同意
   /// （同意版本与时间会落盘，作为凭据）。
-  List<Widget> _accelTiles(BuildContext context, ThemeData theme, OgLSettings value) {
+  List<Widget> _accelTiles(
+      BuildContext context, ThemeData theme, OgLSettings value) {
     final List<Widget> tiles = <Widget>[
       OgLSettingsSwitchRow(
         title: _t('accelTitle'),
@@ -1261,8 +1274,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     contentPadding: kOgLSettingsRowPadding,
                     title: Text(
                       _t('accelScopesHint'),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ),
                   for (final OgLAccelScope scope in OgLAccelScope.values)
@@ -1281,8 +1294,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     contentPadding: kOgLSettingsRowPadding,
                     title: Text(
                       _tc('accelSelfProvided'),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ),
                   // 私有仓库加速 = 把令牌交给第三方代理。这里给一个**永久开关**：
@@ -1356,10 +1369,12 @@ class _SettingsPageState extends State<SettingsPage> {
                       value.accelConsentCurrent
                           ? (value.releaseProxyConsentAt == null
                               ? _t('consented', {
-                                  'version': '${value.releaseProxyConsentVersion}',
+                                  'version':
+                                      '${value.releaseProxyConsentVersion}',
                                 })
                               : _t('consentedAt', {
-                                  'version': '${value.releaseProxyConsentVersion}',
+                                  'version':
+                                      '${value.releaseProxyConsentVersion}',
                                   'at': '${value.releaseProxyConsentAt}',
                                 }))
                           : _t('notConsented'),
@@ -1570,8 +1585,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     const SizedBox(height: 12),
                     CheckboxListTile(
                       value: agreed,
-                      onChanged: (bool? v) => setLocal(() => agreed = v ?? false),
-                      title:  Text(_t('agreeRead')),
+                      onChanged: (bool? v) =>
+                          setLocal(() => agreed = v ?? false),
+                      title: Text(_t('agreeRead')),
                       controlAffinity: ListTileControlAffinity.leading,
                       dense: true,
                       contentPadding: EdgeInsets.zero,
@@ -1584,13 +1600,12 @@ class _SettingsPageState extends State<SettingsPage> {
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child:  Text(_t('disagree')),
+              child: Text(_t('disagree')),
             ),
             FilledButton(
-              onPressed: agreed
-                  ? () => Navigator.of(dialogContext).pop(true)
-                  : null,
-              child:  Text(_t('agreeContinue')),
+              onPressed:
+                  agreed ? () => Navigator.of(dialogContext).pop(true) : null,
+              child: Text(_t('agreeContinue')),
             ),
           ],
         ),
@@ -1613,7 +1628,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final TextEditingController url = TextEditingController();
     final bool? ok = await _showOgLDialog<bool>(
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('addCustomChannel')),
+        title: Text(_t('addCustomChannel')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1632,7 +1647,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const Divider(height: 20),
             TextField(
               controller: name,
-              decoration:  InputDecoration(
+              decoration: InputDecoration(
                 labelText: _t('channelName'),
                 hintText: _t('channelNameHint'),
                 border: OutlineInputBorder(),
@@ -1641,7 +1656,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 12),
             TextField(
               controller: url,
-              decoration:  InputDecoration(
+              decoration: InputDecoration(
                 labelText: _t('channelUrl'),
                 hintText: 'https://example.com/',
                 border: OutlineInputBorder(),
@@ -1652,11 +1667,11 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:  Text(_t('cancel')),
+            child: Text(_t('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child:  Text(_t('add')),
+            child: Text(_t('add')),
           ),
         ],
       ),
@@ -1673,10 +1688,11 @@ class _SettingsPageState extends State<SettingsPage> {
       _toast(error);
       return;
     }
-    final String label = name.text.trim().isEmpty ? _t('customChannel') : name.text.trim();
+    final String label =
+        name.text.trim().isEmpty ? _t('customChannel') : name.text.trim();
     final String id = 'custom-${DateTime.now().millisecondsSinceEpoch}';
-    await widget.surface
-        .upsertAccelChannel(OgLAccelChannel(id: id, name: label, baseUrl: url.text));
+    await widget.surface.upsertAccelChannel(
+        OgLAccelChannel(id: id, name: label, baseUrl: url.text));
     name.dispose();
     url.dispose();
     if (mounted) {
@@ -1760,7 +1776,7 @@ class _SettingsPageState extends State<SettingsPage> {
   /// "许可"卡片）。它们同属"看说明 / 找人帮忙"，合并后根级少三个卡片；
   /// 顺带把危险动作（重置）从"维护"里摘出去 —— 它现在单独在危险区，
   /// 不再和"权限与引导"当邻居。
-Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
+  Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
         title: _t('groupAboutHelp'),
         subtitle: _aboutSummary(),
         leading: const Icon(Icons.help_outline),
@@ -1824,6 +1840,7 @@ Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
           ),
         ],
       );
+
   /// 展示 **Apache-2.0 全文**（从打进资源的 `LICENSE` 读取）。
   ///
   /// 为什么不只显示标识：Apache-2.0 第 4 条要求随分发提供本许可的副本
@@ -1842,7 +1859,8 @@ Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
     }
     await _showOgLDialog<void>(
       builder: (BuildContext dialogContext) => AlertDialog(
-        title: Text('${OgLProjectInfo.licenseId} · ${OgLProjectInfo.licenseName}'),
+        title:
+            Text('${OgLProjectInfo.licenseId} · ${OgLProjectInfo.licenseName}'),
         content: ConstrainedBox(
           // ★ 不写死 `height: 460`：小屏（如 480×800 的设备、被系统放大
           //   字体、或横屏）上 460 会超出 AlertDialog 可用高度，直接溢出。
@@ -1881,7 +1899,7 @@ Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
   Future<void> _showLicenses() async {
     await _showOgLDialog<void>(
       builder: (BuildContext dialogContext) => AlertDialog(
-        title:  Text(_t('licenses')),
+        title: Text(_t('licenses')),
         content: SizedBox(
           width: _dialogWidth(dialogContext),
           child: SingleChildScrollView(
@@ -1905,7 +1923,7 @@ Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.inventory_2_outlined),
-                  title:  Text(_t('thirdPartyDeps')),
+                  title: Text(_t('thirdPartyDeps')),
                   subtitle: Text(
                     _t('depsCount', {'count': kOgLDependencyLicenses.length}),
                   ),
@@ -1924,7 +1942,7 @@ Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child:  Text(_tc('close')),
+            child: Text(_tc('close')),
           ),
         ],
       ),
@@ -1974,7 +1992,8 @@ Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
               final int shown = allLines.length > _logTailShown
                   ? _logTailShown
                   : allLines.length;
-              final List<String> tail = allLines.sublist(allLines.length - shown);
+              final List<String> tail =
+                  allLines.sublist(allLines.length - shown);
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
@@ -2099,7 +2118,8 @@ Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
             // 而不是只报一个装饰性容器（写法对照色板的 Semantics）。
             Semantics(
               label: _t('colorSwatch', <String, Object?>{
-                'color': '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}',
+                'color':
+                    '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}',
               }),
               child: Container(
                 width: 24,
@@ -2115,7 +2135,7 @@ Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
             const Icon(Icons.chevron_right),
           ],
         ),
-        onTap: () => _pickCodeColor(field, argb, _t('chooseColor', {'label': label})),
+        onTap: () =>
+            _pickCodeColor(field, argb, _t('chooseColor', {'label': label})),
       );
-
 }

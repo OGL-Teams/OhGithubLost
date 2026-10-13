@@ -9,9 +9,10 @@ import '../i18n/og_l_i18n.dart';
 import '../types.dart';
 
 /// 取 `common` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('common', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'common', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 取字符串字段（缺省 / 非字符串 → 空串）。
 String ghStr(Map<String, dynamic> node, String key) {

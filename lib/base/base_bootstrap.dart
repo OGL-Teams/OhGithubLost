@@ -34,12 +34,11 @@ import 'net/net_bridge.dart';
 ///
 /// 三种状态分别处理、绝不互相掩盖，由组合根（`main.dart`）统一上报。
 Future<
-        ({
-          List<OgLModule> modules,
-          Object? storageError,
-          String? persistentStorageResult,
-        })>
-    baseLayerModulesOnPlatform({
+    ({
+      List<OgLModule> modules,
+      Object? storageError,
+      String? persistentStorageResult,
+    })> baseLayerModulesOnPlatform({
   NetModule? net,
   String folder = 'ohgithublost',
   String? rootOverride,

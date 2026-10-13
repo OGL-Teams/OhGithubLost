@@ -19,9 +19,10 @@ import 'gist_detail_page.dart';
 import 'new_gist_page.dart';
 
 /// 取 `gists_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('gists_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'gists_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// Gist 列表页。
 class GistsPage extends StatefulWidget {
@@ -87,7 +88,7 @@ class _GistsPageState extends State<GistsPage> {
     if (id.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(_t('missingId'))),
+          SnackBar(content: Text(_t('missingId'))),
         );
       }
       return;
@@ -113,7 +114,7 @@ class _GistsPageState extends State<GistsPage> {
     );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(_t('created'))),
+        SnackBar(content: Text(_t('created'))),
       );
       await _gistsC().load();
     }
@@ -124,7 +125,7 @@ class _GistsPageState extends State<GistsPage> {
     if (url.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(_t('noOpenLink'))),
+          SnackBar(content: Text(_t('noOpenLink'))),
         );
       }
       return;
@@ -135,11 +136,11 @@ class _GistsPageState extends State<GistsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title:  Text(_t('title'))),
+      appBar: AppBar(title: Text(_t('title'))),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _create,
         icon: const Icon(Icons.add),
-        label:  Text(_t('new')),
+        label: Text(_t('new')),
       ),
       body: AsyncView<List<Map<String, dynamic>>>(
         controller: _gistsC(),
@@ -162,25 +163,25 @@ class _GistsPageState extends State<GistsPage> {
               return OgLReveal(
                 delay: OgLAnim.staggerOf(context, index),
                 child: ListTile(
-                leading: const Icon(Icons.article_outlined),
-                title: Text(
-                  _titleOf(gist),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  '${_t('fileCount', {'count': _fileCountOf(gist)})}'
-                  '${isPublic ? _t('public') : _t('private')} · '
-                  '${ghDate(gist, 'updated_at')}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.open_in_new),
-                  tooltip: _t('openInBrowser'),
-                  onPressed: () => unawaited(_openInBrowser(gist)),
-                ),
-                onTap: () => unawaited(_openDetail(gist)),
+                  leading: const Icon(Icons.article_outlined),
+                  title: Text(
+                    _titleOf(gist),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    '${_t('fileCount', {'count': _fileCountOf(gist)})}'
+                    '${isPublic ? _t('public') : _t('private')} · '
+                    '${ghDate(gist, 'updated_at')}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.open_in_new),
+                    tooltip: _t('openInBrowser'),
+                    onPressed: () => unawaited(_openInBrowser(gist)),
+                  ),
+                  onTap: () => unawaited(_openDetail(gist)),
                 ),
               );
             },

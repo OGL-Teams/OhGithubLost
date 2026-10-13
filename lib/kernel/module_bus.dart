@@ -56,16 +56,15 @@ class KernelModuleBus {
   List<OgLModule> get modules => List<OgLModule>.unmodifiable(_modules.values);
 
   /// 能力索引快照（`能力标识 → 模块 ID`）。
-  Map<String, String> get capabilityIndex => Map<String, String>.unmodifiable(_capabilities);
+  Map<String, String> get capabilityIndex =>
+      Map<String, String>.unmodifiable(_capabilities);
 
   /// 按 ID 取模块（不存在返回 `null`）。
   OgLModule? byId(String moduleId) => _modules[moduleId];
 
   /// 模块描述符清单（按 ID 排序，供启动报告使用）。
   List<ModuleDescriptor> descriptors() {
-    final list = _modules.values
-        .map((module) => module.descriptor)
-        .toList()
+    final list = _modules.values.map((module) => module.descriptor).toList()
       ..sort((a, b) => a.id.compareTo(b.id));
     return list;
   }
@@ -167,9 +166,8 @@ class KernelModuleBus {
   String toDependencyGraph() {
     final buffer = StringBuffer();
     for (final descriptor in descriptors()) {
-      final deps = descriptor.requires.isEmpty
-          ? '-'
-          : descriptor.requires.join(', ');
+      final deps =
+          descriptor.requires.isEmpty ? '-' : descriptor.requires.join(', ');
       buffer.writeln('${descriptor.id} [${descriptor.layer.key}] -> $deps');
     }
     return buffer.toString();

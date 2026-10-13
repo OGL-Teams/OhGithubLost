@@ -24,6 +24,7 @@ import '../pages/login_page.dart';
 import '../pages/onboarding_page.dart';
 import '../pages/profile_page.dart';
 import '../pages/search_page.dart';
+import '../pages/settings_page.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../widgets/anim/anim_preload.dart';
@@ -31,7 +32,7 @@ import 'animations.dart';
 import 'back_guard.dart';
 import 'error_surface.dart';
 
-/// 壳内的四个页面（导航值）。
+/// 壳内的五个页面（导航值）。
 enum OgLShellTab {
   /// 仓库（我的仓库 / 星标）。
   home,
@@ -42,8 +43,14 @@ enum OgLShellTab {
   /// AI 助手。
   ai,
 
-  /// 我的（账户 / 设置 / Gist / 危险区）。
+  /// 我的（账户管理 / 多账号切换 / Gist / 草稿 / 危险区）。
   profile,
+
+  /// 设置（外观 / 代码 / 网络 / 关于 / 日志）。
+  ///
+  /// U1：从「我的」页底二次点击提到一级入口 —— 设置是高频页，
+  /// 不该埋在账户管理里再点一次。
+  settings,
 }
 
 /// 客户端主壳（含登录门）。
@@ -83,14 +90,11 @@ class _OgLClientShellState extends State<OgLClientShell> {
     _onboardingDone = widget.surface.settings.settings.onboardingDone;
     // ★ 认证是全局可观察状态：登录 / 失效 / 切号 / 登出都自动联动。
     widget.surface.domain.auth.addListener(_onAuthChanged);
-    // ★ 根部（右键 / 其它全局手势）要把「返回」转交到这里：登记返回链。
-    OgLBackRouter.register(_handleBack);
     _check();
   }
 
   @override
   void dispose() {
-    OgLBackRouter.register(null);
     widget.surface.domain.auth.removeListener(_onAuthChanged);
     super.dispose();
   }
@@ -131,45 +135,75 @@ class _OgLClientShellState extends State<OgLClientShell> {
   /// 返回键状态机（「双击退出」的时序逻辑在 [OgLBackGuard] 里，可单测）。
   final OgLBackGuard _backGuard = OgLBackGuard();
 
+  /// 返回链**重入闸门**：`_handleBack` 处理期间（含 `await` 挂起点）拒绝再次进入。
+  ///
+  /// 系统返回键 / 手势返回**没有节流**，`PopScope` 回调可在极短时间内连发；
+  /// 没有此闸门时，第二次调用会落在第一层尚未处理完的链路上，表现为
+  /// "快速连按穿两层"——第一击刚关掉弹窗 / 二级页，第二击就直接落进壳状态机
+  ///（切 tab / 触发「再按一次退出」）。
+  bool _backHandling = false;
+
   /// 抽屉状态需要它（返回键优先关抽屉，而不是切 tab / 退出）。
+  ///
+  /// 注：本应用当前**无抽屉**（[OgLBackAction.closeDrawer] 分支不可达），
+  /// 该 key 保留，以备将来加入侧边面板。
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   /// 统一返回键处理：二级页/弹窗 → 抽屉 → 回首页 → 双击退出。
   ///
   /// **一次误按绝不退出应用**：这是用户明确抱怨的点（返回键行为不佳）。
   ///
-  /// 弹栈走 `maybePop`：**尊重目标页自己的 PopScope**——表单的「放弃确认」、
-  /// 说明弹窗的"不可返回"都靠它生效（`pop` 会绕过拦截，直接关掉）。
+  /// 入口带重入保护（[_backHandling]）与 [mounted] 检查：前者防"连按穿层"；
+  /// 后者防壳已卸载（element 失效）后仍被调用——`Navigator.maybeOf(context)`
+  /// 在 defunct element 上会抛。
   Future<void> _handleBack() async {
-    final NavigatorState? navigator = Navigator.maybeOf(context);
-    if (navigator != null && navigator.canPop()) {
-      await navigator.maybePop();
+    if (!mounted) {
       return;
     }
-    final OgLBackAction action = _backGuard.decide(
-      atHome: _tab == OgLShellTab.home,
-      drawerOpen: _scaffoldKey.currentState?.isDrawerOpen ?? false,
-      now: DateTime.now(),
-    );
-    switch (action) {
-      case OgLBackAction.popRoute:
-        navigator?.maybePop();
-      case OgLBackAction.closeDrawer:
-        _scaffoldKey.currentState?.closeDrawer();
-      case OgLBackAction.goHome:
-        _select(OgLShellTab.home);
-      case OgLBackAction.armExit:
-        if (!mounted) {
-          return;
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            duration: _backGuard.exitWindow,
-            content: Text(OgLI18n.instance.t('shell', kOgLBackExitHintKey)),
-          ),
-        );
-      case OgLBackAction.exit:
-        await SystemNavigator.pop();
+    if (_backHandling) {
+      return;
+    }
+    _backHandling = true;
+    try {
+      final NavigatorState? navigator = Navigator.maybeOf(context);
+      if (navigator != null && navigator.canPop()) {
+        navigator.pop();
+        return;
+      }
+      // `atHome` 只在**真正的壳**（四页导航已可见）里才算成立：引导页 /
+      // 启动检查 / 登录门阶段 `_tab` 仍是 home，但壳还没构建（[_buildShell]
+      // 提前 return，没有 tab bar）——此时不能按"已在首页"处理，
+      // 否则登录门上的返回键会直接进入「再按一次退出」链路。
+      final bool atHome = _tab == OgLShellTab.home &&
+          _onboardingDone &&
+          _checked &&
+          (_accountId != null || _guest);
+      final OgLBackAction action = _backGuard.decide(
+        atHome: atHome,
+        drawerOpen: _scaffoldKey.currentState?.isDrawerOpen ?? false,
+        now: DateTime.now(),
+      );
+      switch (action) {
+        case OgLBackAction.closeDrawer:
+          // 本应用当前无抽屉，此分支不可达；保留以备将来加入侧边面板。
+          _scaffoldKey.currentState?.closeDrawer();
+        case OgLBackAction.goHome:
+          _select(OgLShellTab.home);
+        case OgLBackAction.armExit:
+          if (!mounted) {
+            return;
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              duration: _backGuard.exitWindow,
+              content: Text(OgLI18n.instance.t('shell', kOgLBackExitHintKey)),
+            ),
+          );
+        case OgLBackAction.exit:
+          await SystemNavigator.pop();
+      }
+    } finally {
+      _backHandling = false;
     }
   }
 
@@ -202,6 +236,8 @@ class _OgLClientShellState extends State<OgLClientShell> {
         return AiChatPage(surface: widget.surface);
       case OgLShellTab.profile:
         return ProfilePage(surface: widget.surface, onAccountsChanged: _check);
+      case OgLShellTab.settings:
+        return SettingsPage(surface: widget.surface, report: widget.report);
     }
   }
 
@@ -233,7 +269,7 @@ class _OgLClientShellState extends State<OgLClientShell> {
       );
     }
     if ((_accountId == null ||
-        widget.surface.domain.auth.state == GhAuthState.expired) &&
+            widget.surface.domain.auth.state == GhAuthState.expired) &&
         !_guest) {
       return LoginPage(
         surface: widget.surface,
@@ -303,6 +339,13 @@ class _OgLClientShellState extends State<OgLClientShell> {
               selectedIcon: const Icon(Icons.person),
               label: OgLI18n.instance.t('shell', 'profile'),
             ),
+            // U1：设置升为一级入口（icons.settings_outlined 是 5 tab 里最
+            // 不抢眼的，符合"功能而非主操作"的产品意图）。
+            NavigationDestination(
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
+              label: OgLI18n.instance.t('shell', 'settings'),
+            ),
           ],
         ),
       );
@@ -319,8 +362,9 @@ class _OgLClientShellState extends State<OgLClientShell> {
             onDestinationSelected: (int value) =>
                 _select(OgLShellTab.values[value]),
             extended: extended,
-            labelType:
-                extended ? NavigationRailLabelType.none : NavigationRailLabelType.all,
+            labelType: extended
+                ? NavigationRailLabelType.none
+                : NavigationRailLabelType.all,
             destinations: <NavigationRailDestination>[
               NavigationRailDestination(
                 icon: const Icon(Icons.folder_outlined),
@@ -340,6 +384,11 @@ class _OgLClientShellState extends State<OgLClientShell> {
                 icon: const Icon(Icons.person_outline),
                 selectedIcon: const Icon(Icons.person),
                 label: Text(OgLI18n.instance.t('shell', 'profile')),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings),
+                label: Text(OgLI18n.instance.t('shell', 'settings')),
               ),
             ],
           ),

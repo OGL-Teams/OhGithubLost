@@ -28,9 +28,10 @@ import '../i18n/og_l_i18n.dart';
 export '../../platform/window_capability.dart' show OgLWindowDecoration;
 
 /// 取 `shell` 分片文案（标题栏窗口控件的无障碍标签）。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('shell', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'shell', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 当前是否为桌面平台（Windows / Linux / macOS）。
 bool get ogLIsDesktopPlatform => ogLWindow.isDesktop;
@@ -208,7 +209,9 @@ class _OgLTitleBarState extends State<OgLTitleBar> with WindowListener {
           child: Icon(
             icon,
             size: 16,
-            color: danger ? theme.colorScheme.error : theme.colorScheme.onSurfaceVariant,
+            color: danger
+                ? theme.colorScheme.error
+                : theme.colorScheme.onSurfaceVariant,
           ),
         ),
       ),
@@ -256,7 +259,8 @@ class _OgLWindowFrameState extends State<OgLWindowFrame> {
 
   @override
   Widget build(BuildContext context) {
-    if (!ogLIsDesktopPlatform || widget.decoration != OgLWindowDecoration.custom) {
+    if (!ogLIsDesktopPlatform ||
+        widget.decoration != OgLWindowDecoration.custom) {
       return widget.child;
     }
     return Column(

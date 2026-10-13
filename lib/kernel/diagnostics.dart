@@ -108,7 +108,8 @@ class KernelStageTiming {
       };
 
   @override
-  String toString() => '$name ${duration.inMilliseconds}ms${ok ? '' : ' FAILED'}';
+  String toString() =>
+      '$name ${duration.inMilliseconds}ms${ok ? '' : ' FAILED'}';
 }
 
 /// 诊断中枢。
@@ -142,7 +143,8 @@ class KernelDiagnostics {
       List<KernelStageTiming>.unmodifiable(_stages);
 
   /// 模块状态快照（`模块 ID → 状态名`）。
-  Map<String, String> get moduleStates => Map<String, String>.unmodifiable(_moduleStates);
+  Map<String, String> get moduleStates =>
+      Map<String, String>.unmodifiable(_moduleStates);
 
   /// 日志尾部（最多 [bufferCapacity] 条）。
   List<KernelLogEntry> get logTail =>
@@ -198,23 +200,28 @@ class KernelDiagnostics {
   }
 
   /// 追踪级日志（verbose 时输出）。
-  void trace(String tag, String message, {String? code, Map<String, Object?>? data}) =>
+  void trace(String tag, String message,
+          {String? code, Map<String, Object?>? data}) =>
       log(KernelLogLevel.trace, tag, message, code: code, data: data);
 
   /// 调试级日志（verbose 时输出）。
-  void debug(String tag, String message, {String? code, Map<String, Object?>? data}) =>
+  void debug(String tag, String message,
+          {String? code, Map<String, Object?>? data}) =>
       log(KernelLogLevel.debug, tag, message, code: code, data: data);
 
   /// 信息级日志。
-  void info(String tag, String message, {String? code, Map<String, Object?>? data}) =>
+  void info(String tag, String message,
+          {String? code, Map<String, Object?>? data}) =>
       log(KernelLogLevel.info, tag, message, code: code, data: data);
 
   /// 警告级日志。
-  void warn(String tag, String message, {String? code, Map<String, Object?>? data}) =>
+  void warn(String tag, String message,
+          {String? code, Map<String, Object?>? data}) =>
       log(KernelLogLevel.warn, tag, message, code: code, data: data);
 
   /// 错误级日志。
-  void error(String tag, String message, {String? code, Map<String, Object?>? data}) =>
+  void error(String tag, String message,
+          {String? code, Map<String, Object?>? data}) =>
       log(KernelLogLevel.error, tag, message, code: code, data: data);
 
   /// 记录一次阶段耗时。

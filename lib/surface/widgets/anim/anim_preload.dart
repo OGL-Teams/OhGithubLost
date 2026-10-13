@@ -168,7 +168,6 @@ OgLAnimPreloadPolicy ogLAnimPreloadPolicyFor(int level) {
   return kOgLAnimPreloadPolicies[level];
 }
 
-
 /// 一项预加载任务（**幂等键 = [id]**）。
 class OgLAnimPreloadJob {
   /// 图片预加载：走 `ImageProvider.resolve`（**不需要 `BuildContext`**，因此不会
@@ -531,7 +530,8 @@ abstract final class OgLAnimPreload {
 
   /// 档位变化后收紧：超出的项一律取消（而不是"留着慢慢跑"）。
   static void _enforceCaps() {
-    while (_queue.length + _running.length > _policy.maxJobs && _queue.isNotEmpty) {
+    while (_queue.length + _running.length > _policy.maxJobs &&
+        _queue.isNotEmpty) {
       final OgLAnimPreloadJob job = _queue.removeLast();
       _pending.remove(job.id);
       job._cancelled = true;
@@ -766,8 +766,9 @@ class _OgLAnimPreloadBoundaryState extends State<OgLAnimPreloadBoundary> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // 档位来自作用域；系统"减少动效"时按最低级（0 = 不预加载）处理。
-    final int level =
-        MediaQuery.disableAnimationsOf(context) ? 0 : OgLMotionScope.levelOf(context);
+    final int level = MediaQuery.disableAnimationsOf(context)
+        ? 0
+        : OgLMotionScope.levelOf(context);
     _level = level;
     OgLAnimPreload.warmCore(level);
     _sync();

@@ -168,7 +168,8 @@ class _ScrollAwareActionState extends State<ScrollAwareAction>
     final OgLOAnimQuality quality = OgLAnim.quality(context);
     _collapseDuration = quality.fast;
     _expandDuration = quality.medium;
-    if (_curveForward != quality.curve || _curveReverse != quality.settleCurve) {
+    if (_curveForward != quality.curve ||
+        _curveReverse != quality.settleCurve) {
       _curve?.dispose();
       _curve = CurvedAnimation(
         parent: _anim,
@@ -203,9 +204,10 @@ class _ScrollAwareActionState extends State<ScrollAwareAction>
   // ── 几何 ──────────────────────────────────────────────────────────────────
 
   /// 滑动轴。
-  Axis get _axis => widget.edge == AxisDirection.up || widget.edge == AxisDirection.down
-      ? Axis.vertical
-      : Axis.horizontal;
+  Axis get _axis =>
+      widget.edge == AxisDirection.up || widget.edge == AxisDirection.down
+          ? Axis.vertical
+          : Axis.horizontal;
 
   /// 收边方向在轴上的符号（+1 = 正方向滑出）。
   double get _sign => switch (widget.edge) {
@@ -249,7 +251,8 @@ class _ScrollAwareActionState extends State<ScrollAwareAction>
     if (controller == null || !controller.hasClients) {
       return;
     }
-    if (!controller.positions.every((ScrollPosition p) => p.hasPixels && p.hasContentDimensions)) {
+    if (!controller.positions
+        .every((ScrollPosition p) => p.hasPixels && p.hasContentDimensions)) {
       return;
     }
     final ScrollPosition position = controller.positions.last;

@@ -260,7 +260,10 @@ List<ConflictAction> resolveConflictActions(WriteConflict conflict) {
     case WriteConflict.none:
       return const <ConflictAction>[];
     case WriteConflict.requiresRead:
-      return const <ConflictAction>[ConflictAction.pullRemote, ConflictAction.retry];
+      return const <ConflictAction>[
+        ConflictAction.pullRemote,
+        ConflictAction.retry
+      ];
     case WriteConflict.staleSha:
       return const <ConflictAction>[
         ConflictAction.viewDiff,
@@ -268,15 +271,27 @@ List<ConflictAction> resolveConflictActions(WriteConflict conflict) {
         ConflictAction.forceOverwrite,
       ];
     case WriteConflict.needsConfirmation:
-      return const <ConflictAction>[ConflictAction.forceOverwrite, ConflictAction.retryLater];
+      return const <ConflictAction>[
+        ConflictAction.forceOverwrite,
+        ConflictAction.retryLater
+      ];
     case WriteConflict.notFound:
-      return const <ConflictAction>[ConflictAction.createInstead, ConflictAction.pullRemote];
+      return const <ConflictAction>[
+        ConflictAction.createInstead,
+        ConflictAction.pullRemote
+      ];
     case WriteConflict.forbidden:
       return const <ConflictAction>[ConflictAction.reauthorize];
     case WriteConflict.server:
-      return const <ConflictAction>[ConflictAction.retryLater, ConflictAction.retry];
+      return const <ConflictAction>[
+        ConflictAction.retryLater,
+        ConflictAction.retry
+      ];
     case WriteConflict.verificationFailed:
-      return const <ConflictAction>[ConflictAction.retry, ConflictAction.pullRemote];
+      return const <ConflictAction>[
+        ConflictAction.retry,
+        ConflictAction.pullRemote
+      ];
   }
 }
 

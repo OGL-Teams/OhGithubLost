@@ -13,22 +13,43 @@ library;
 import '../i18n/og_l_i18n.dart';
 
 /// 取 `common` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('common', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'common', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// `.gitkeep` 文件名（目录占位）。
 const String kOgLGitKeepName = '.gitkeep';
 
 /// Windows 保留名（大小写不敏感；这些名字在 Windows 上无法落盘）。
 const Set<String> _kReservedNames = <String>{
-  'con', 'prn', 'aux', 'nul',
-  'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7', 'com8', 'com9',
-  'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9',
+  'con',
+  'prn',
+  'aux',
+  'nul',
+  'com1',
+  'com2',
+  'com3',
+  'com4',
+  'com5',
+  'com6',
+  'com7',
+  'com8',
+  'com9',
+  'lpt1',
+  'lpt2',
+  'lpt3',
+  'lpt4',
+  'lpt5',
+  'lpt6',
+  'lpt7',
+  'lpt8',
+  'lpt9',
 };
 
 /// 中文 / 全角 / 其他不可见字符（含 CJK、全角标点）。
-final RegExp _kCjk = RegExp(r'[\u2E80-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFFEF]');
+final RegExp _kCjk =
+    RegExp(r'[\u2E80-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFFEF]');
 
 /// 单个路径段允许的字符（不含 `/`）。
 final RegExp _kAllowedSegment = RegExp(r'^[A-Za-z0-9._-]+$');
@@ -73,10 +94,8 @@ String? ogLValidateRepoEntryPath(String raw, {required bool directory}) {
     return _t('pathDoubleSlash');
   }
   final bool trailingSlash = input.endsWith('/');
-  final List<String> segments = input
-      .split('/')
-      .where((String s) => s.isNotEmpty)
-      .toList();
+  final List<String> segments =
+      input.split('/').where((String s) => s.isNotEmpty).toList();
   if (segments.isEmpty) {
     return _t('pathInvalid');
   }

@@ -23,9 +23,10 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 
 /// 取 `settings` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('settings', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'settings', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 法律文本查看页（可切换全部可用语言）。
 class LegalTextPage extends StatefulWidget {
@@ -100,8 +101,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    OgLI18n.instance
-                        .t('onboarding', 'legalStatementOnly'),
+                    OgLI18n.instance.t('onboarding', 'legalStatementOnly'),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onErrorContainer,
                     ),
@@ -146,8 +146,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        OgLI18n.instance
-                            .t('onboarding', 'licenseOfficialCopy'),
+                        OgLI18n.instance.t('onboarding', 'licenseOfficialCopy'),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSecondaryContainer,
                         ),
@@ -163,8 +162,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: Row(
               children: <Widget>[
-                Text(_t('legalLanguages'),
-                    style: theme.textTheme.labelLarge),
+                Text(_t('legalLanguages'), style: theme.textTheme.labelLarge),
                 const SizedBox(width: 12),
                 Expanded(
                   child: DropdownButton<String>(
@@ -204,8 +202,8 @@ class _LegalTextPageState extends State<LegalTextPage> {
                         padding: const EdgeInsets.all(16),
                         child: SelectableText(
                           _body!,
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(height: 1.6),
+                          style:
+                              theme.textTheme.bodySmall?.copyWith(height: 1.6),
                         ),
                       ),
           ),

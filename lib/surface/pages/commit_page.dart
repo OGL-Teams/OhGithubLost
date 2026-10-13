@@ -15,9 +15,10 @@ import '../types.dart';
 import '../util/gh_format.dart';
 
 /// 取 `commit_page` 分片文案。
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('commit_page', key,
-        args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
+    'commit_page', key,
+    args:
+        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 提交详情页。
 class CommitPage extends StatefulWidget {
@@ -92,67 +93,69 @@ class _CommitPageState extends State<CommitPage> {
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      body: OgLReveal(delay: Duration.zero, child: CustomScrollView(
-        slivers: <Widget>[
-          // 头部：常量级 widget 数量，一次性构建即可；
-          // 数据行交给下面的 sliver 懒加载（长列表不再一次性构建）。
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
+      body: OgLReveal(
+          delay: Duration.zero,
+          child: CustomScrollView(
+            slivers: <Widget>[
+              // 头部：常量级 widget 数量，一次性构建即可；
+              // 数据行交给下面的 sliver 懒加载（长列表不再一次性构建）。
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                sliver: SliverToBoxAdapter(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      SelectableText(
-                        commit.sha,
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 12,
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              SelectableText(
+                                commit.sha,
+                                style: const TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '${ghCommitAuthor(commit)} · '
+                                '${commit.date?.toIso8601String().split('T').first ?? ''}',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                              const SizedBox(height: 12),
+                              SelectableText(commit.message),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${ghCommitAuthor(commit)} · '
-                        '${commit.date?.toIso8601String().split('T').first ?? ''}',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 12),
-                      SelectableText(commit.message),
+                      const Divider(height: 32),
+                      Text(_t('changedFiles'),
+                          style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 8)
                     ],
                   ),
                 ),
               ),
-              const Divider(height: 32),
-              Text(_t('changedFiles'), style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8)
-                ],
+              OgLAsyncSliver<List<Map<String, dynamic>>>(
+                controller: _diffC(),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCountOf: (List<Map<String, dynamic>> files) => files.length,
+                itemBuilder: (
+                  BuildContext context,
+                  List<Map<String, dynamic>> files,
+                  int index,
+                ) =>
+                    _fileTile(files[index]),
+                emptyIcon: Icons.history,
+                emptyText: (widget.commit.parentShas.isEmpty
+                    ? _t('initialCommit')
+                    : _t('noChanges')),
               ),
-            ),
-          ),
-          OgLAsyncSliver<List<Map<String, dynamic>>>(
-            controller: _diffC(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCountOf: (List<Map<String, dynamic>> files) => files.length,
-            itemBuilder: (
-              BuildContext context,
-              List<Map<String, dynamic>> files,
-              int index,
-            ) =>
-                _fileTile(files[index]),
-            emptyIcon: Icons.history,
-            emptyText: (widget.commit.parentShas.isEmpty
-                ? _t('initialCommit')
-                : _t('noChanges')),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
-      )),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            ],
+          )),
     );
   }
 

@@ -404,7 +404,8 @@ class GhBranch extends GhRecord {
       };
 
   @override
-  String toString() => 'GhBranch($name@${sha.isEmpty ? '?' : sha.substring(0, 7)})';
+  String toString() =>
+      'GhBranch($name@${sha.isEmpty ? '?' : sha.substring(0, 7)})';
 }
 
 /// 树节点类型。
@@ -515,10 +516,8 @@ class GhTree extends GhRecord {
   factory GhTree.fromJson(Map<String, dynamic> json) => GhTree(
         sha: GhJson.str(json, 'sha'),
         truncated: GhJson.boolean(json, 'truncated'),
-        entries: GhJson
-            .objects(json, 'tree')
-            .map(GhTreeEntry.fromJson)
-            .toList(),
+        entries:
+            GhJson.objects(json, 'tree').map(GhTreeEntry.fromJson).toList(),
         raw: json,
       );
 
@@ -662,8 +661,7 @@ class GhContent extends GhRecord {
       };
 
   @override
-  String toString() =>
-      'GhContent($path, ${isDirectory ? 'dir' : '${size}B'}'
+  String toString() => 'GhContent($path, ${isDirectory ? 'dir' : '${size}B'}'
       '${isTooLarge ? ', TOO LARGE' : ''})';
 }
 
@@ -693,10 +691,7 @@ class GhRelease extends GhRecord {
         isPrerelease: GhJson.boolean(json, 'prerelease'),
         createdAt: GhJson.date(json, 'created_at'),
         publishedAt: GhJson.date(json, 'published_at'),
-        assets: GhJson
-            .objects(json, 'assets')
-            .map(GhAsset.fromJson)
-            .toList(),
+        assets: GhJson.objects(json, 'assets').map(GhAsset.fromJson).toList(),
         raw: json,
       );
 
@@ -839,8 +834,7 @@ class GhCommit extends GhRecord {
       authorName: GhJson.strOrNull(authorJson, 'name'),
       authorLogin: GhJson.strOrNull(userJson, 'login'),
       date: GhJson.date(authorJson, 'date'),
-      parentShas: GhJson
-          .objects(json, 'parents')
+      parentShas: GhJson.objects(json, 'parents')
           .map((Map<String, dynamic> parent) => GhJson.str(parent, 'sha'))
           .toList(),
       raw: json,
@@ -885,7 +879,8 @@ class GhCommit extends GhRecord {
       };
 
   @override
-  String toString() => 'GhCommit(${sha.isEmpty ? '?' : sha.substring(0, 7)} $subject)';
+  String toString() =>
+      'GhCommit(${sha.isEmpty ? '?' : sha.substring(0, 7)} $subject)';
 }
 
 /// 分页信息（从 `Link` 头解析）。
@@ -944,10 +939,7 @@ class GhPage {
         if (trimmed.substring(0, equals).trim() != 'rel') {
           continue;
         }
-        final rel = trimmed
-            .substring(equals + 1)
-            .replaceAll('"', '')
-            .trim();
+        final rel = trimmed.substring(equals + 1).replaceAll('"', '').trim();
         // 刻意用 if/else 而非 switch：break 语义在 Dart 各版本间有过变化，
         // 这里不需要任何"贯穿"行为，写成条件链最不容易出错。
         if (rel == 'next') {
