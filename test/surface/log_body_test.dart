@@ -69,7 +69,7 @@ void main() {
 
   group('下载并发设置（OgLSettings.downloadConnections）', () {
     test('只允许给定档位', () {
-      expect(OgLSettings.downloadConnectionChoices, <int>[1, 2, 4, 8]);
+      expect(OgLSettings.downloadConnectionChoices, <int>[1, 2, 4, 8, 16, 32]);
       expect(
         OgLSettings.downloadConnectionChoices
             .contains(OgLSettings.kOgLDefaultDownloadConnections),
