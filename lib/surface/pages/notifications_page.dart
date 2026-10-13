@@ -13,11 +13,12 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../app/animations.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
+import '../util/clipboard_x.dart';
 import '../widgets/anim/anim_preload.dart';
 
 /// 取 `notifications_page` 分片文案。
@@ -362,16 +363,15 @@ class _NotificationTile extends StatelessWidget {
                                   children: <Widget>[
                                     TextButton.icon(
                                       onPressed: () {
-                                        unawaited(Clipboard.setData(
-                                          ClipboardData(
-                                              text: entry.toDisplay()),
+                                        unawaited(ogLCopyText(
+                                          entry.toDisplay(),
+                                          tag: '日志条目',
                                         ));
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(_t('copiedEvent')),
-                                          ),
-                                        );
+                                        if (context.mounted) {
+                                          OgLNotifier.of(context).info(
+                                            _t('copiedEvent'),
+                                          );
+                                        }
                                       },
                                       icon: const Icon(Icons.content_copy,
                                           size: 16),

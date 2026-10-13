@@ -28,7 +28,8 @@ void main() {
     test('base64 含换行（GitHub 风格）也可解码', () {
       const text = 'line break test';
       final encoded = base64Encode(utf8.encode(text));
-      final withBreaks = '${encoded.substring(0, 8)}\r\n${encoded.substring(8)}\n';
+      final withBreaks =
+          '${encoded.substring(0, 8)}\r\n${encoded.substring(8)}\n';
       expect(GhContent.decodeContent(withBreaks, 'base64'), text);
     });
 

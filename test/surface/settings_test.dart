@@ -69,8 +69,7 @@ void main() {
       expect(back.dnsMode, 'custom');
       expect(back.dnsServerId, 'cloudflare');
       expect(back.dnsPreferDoh, isFalse);
-      final OgLSettings encoded =
-          OgLSettings.fromJson(jsonDecode(s.encode()));
+      final OgLSettings encoded = OgLSettings.fromJson(jsonDecode(s.encode()));
       expect(encoded.dnsServerId, 'cloudflare');
     });
 
@@ -122,11 +121,15 @@ void main() {
       expect(OgLSettings.fromJson(off.toJson()).accelScopes,
           <String>['releaseAsset']);
       // 坏值被过滤；显式空列表保持为空（= 全都关了），不回落成全开。
-      expect(OgLSettings.fromJson(<String, Object?>{
-        'accelScopes': <String>['releaseAsset', 'bogus'],
-      }).accelScopes, <String>['releaseAsset']);
-      expect(OgLSettings.fromJson(<String, Object?>{'accelScopes': <String>[]})
-          .accelScopes, isEmpty);
+      expect(
+          OgLSettings.fromJson(<String, Object?>{
+            'accelScopes': <String>['releaseAsset', 'bogus'],
+          }).accelScopes,
+          <String>['releaseAsset']);
+      expect(
+          OgLSettings.fromJson(<String, Object?>{'accelScopes': <String>[]})
+              .accelScopes,
+          isEmpty);
       // 字段缺失 → 全开（老配置升级后行为不变）。
       expect(OgLSettings.fromJson(<String, Object?>{}).accelScopes,
           kOgLAccelAllScopeIds);

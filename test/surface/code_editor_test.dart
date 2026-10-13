@@ -28,10 +28,32 @@ void main() {
   group('语言 → 高亮规则', () {
     test('已登记语言都有对应规则', () {
       const List<String> languages = <String>[
-        'dart', 'javascript', 'typescript', 'python', 'java', 'kotlin', 'go',
-        'rust', 'c', 'cpp', 'csharp', 'ruby', 'php', 'swift', 'shell', 'json',
-        'yaml', 'toml', 'ini', 'sql', 'xml', 'css', 'markdown', 'lua',
-        'dockerfile', 'makefile',
+        'dart',
+        'javascript',
+        'typescript',
+        'python',
+        'java',
+        'kotlin',
+        'go',
+        'rust',
+        'c',
+        'cpp',
+        'csharp',
+        'ruby',
+        'php',
+        'swift',
+        'shell',
+        'json',
+        'yaml',
+        'toml',
+        'ini',
+        'sql',
+        'xml',
+        'css',
+        'markdown',
+        'lua',
+        'dockerfile',
+        'makefile',
       ];
       for (final String language in languages) {
         expect(ogLHighlightModeOf(language), isNotNull, reason: language);
@@ -77,8 +99,15 @@ void main() {
       final Map<String, TextStyle> theme =
           ogLHighlightThemeOf(kOgLCodeThemeHighContrast);
       for (final String key in <String>[
-        'root', 'keyword', 'string', 'comment', 'number', 'built_in',
-        'title.class_', 'emphasis', 'strong',
+        'root',
+        'keyword',
+        'string',
+        'comment',
+        'number',
+        'built_in',
+        'title.class_',
+        'emphasis',
+        'strong',
       ]) {
         expect(theme.containsKey(key), isTrue, reason: key);
       }
@@ -108,7 +137,8 @@ void main() {
     test('高对比 / 柔和使用固定预设', () {
       expect(resolve(kOgLCodePresetHighContrast).background,
           kOgLCodeThemeHighContrast.background);
-      expect(resolve(kOgLCodePresetSoft).background, kOgLCodeThemeSoft.background);
+      expect(
+          resolve(kOgLCodePresetSoft).background, kOgLCodeThemeSoft.background);
     });
 
     test('自定义预设使用传入颜色', () {

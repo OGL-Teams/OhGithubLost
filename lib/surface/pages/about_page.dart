@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../kernel/kernel.dart';
 import '../app/animations.dart';
+import '../app/notifier.dart';
 import '../app/permission_selftest.dart';
 import '../app/permissions.dart';
 import '../app/project_info.dart';
@@ -36,33 +37,36 @@ class AboutPage extends StatelessWidget {
   /// 启动报告（内核在启动时定格的快照）。
   final KernelReport? report;
 
+  /// 统一提示入口（与设置页同一纪律）：提示长什么样、什么语气只有一处定义
+  /// （见 [OgLNotifier]）。本页是 `StatelessWidget`，因此入口带 `context` 入参，
+  /// 而不是 State 上的 getter。
+  OgLNotifier _notifier(BuildContext context) =>
+      OgLNotifier(ScaffoldMessenger.of(context));
+
   /// 打开仓库页面（赞助 = 给仓库加星，落在 GitHub 上完成）。
   Future<void> _openSponsor(BuildContext context) async {
-    final Uri uri = Uri.parse(OgLProjectInfo.repositoryUrl);
+    final String url = OgLProjectInfo.repositoryUrl;
+    final Uri uri = Uri.parse(url);
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (error) {
+      // 打不开外部浏览器时的兜底：**先真的把链接写进剪贴板**，再提示「已复制」
+      // —— 此前只弹提示不复制，属于谎报成功。
+      await ogLCopyText(url, tag: '链接');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  _t('copied', {'label': Uri.decodeFull(uri.toString())}))),
+        _notifier(context).warning(
+          _t('copied', {'label': Uri.decodeFull(url)}),
         );
       }
     }
   }
 
   Future<void> _copy(BuildContext context, String text, String label) async {
-    if (!await ogLCopyText(text, tag: 'About')) {
-      // 已写通知中心 + 日志；UI 不重复弹"已复制"。
-      return;
-    }
+    await ogLCopyText(text, tag: label);
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_t('copied', {'label': label}))),
-    );
+    _notifier(context).success(_t('copied', {'label': label}));
   }
 
   @override

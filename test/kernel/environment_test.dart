@@ -100,7 +100,8 @@ void main() {
 
     test('单项抛异常 → 该项 ok=false，其余照常执行', () async {
       final registry = KernelProbeRegistry();
-      registry.register(_FakeProbe(id: 'boom', error: const FormatException('坏了')));
+      registry
+          .register(_FakeProbe(id: 'boom', error: const FormatException('坏了')));
       final after = _FakeProbe(id: 'after');
       registry.register(after);
 

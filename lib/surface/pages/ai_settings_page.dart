@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../app/notifier.dart';
 
 /// 取 `ai` 分片文案。
 String _t(String key, [Map<String, String>? args]) =>
@@ -173,7 +174,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
   }
 
   void _toast(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    OgLNotifier.of(context).info(msg);
   }
 
   @override

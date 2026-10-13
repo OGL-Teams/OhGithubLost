@@ -100,8 +100,7 @@ void main() {
     expect(text.contains('内存与磁盘都要有这一行'), isTrue);
     // 5.0：正文里**不再出现 ✔ / ▶ 这类符号字形**（Android 上会被当 emoji
     // 呈现，即用户说的"emoji 撕裂"）；结果与步骤的区分交给 level 字段。
-    expect(text.contains('动作完成：3 条'), isTrue,
-        reason: '成功结果同样入库（用户明确要求）');
+    expect(text.contains('动作完成：3 条'), isTrue, reason: '成功结果同样入库（用户明确要求）');
     expect(text.contains('✔'), isFalse, reason: '正文不得再出现符号字形');
     // 内存侧也保留（关于页要能翻）。
     final List<String> displayed = OgLAppLog.instance.entries

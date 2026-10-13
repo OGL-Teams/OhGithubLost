@@ -79,7 +79,8 @@ void main() {
       });
       expect(i18n.t('shell', 'home'), 'Startseite');
       // de 缺失的键 → 回落 en。
-      i18n.debugInject('de', <String, Map<String, String>>{'shell': <String, String>{}});
+      i18n.debugInject(
+          'de', <String, Map<String, String>>{'shell': <String, String>{}});
       expect(i18n.t('shell', 'home'), 'Home');
       // 两边都没有 → 返回键名。
       expect(i18n.t('shell', 'missing'), 'missing');

@@ -4,6 +4,7 @@
 /// 1. 档位越高，时长越长；
 /// 2. 降到 `0` 时动画完全关闭（时长为零、`OgLReveal` 直接显示）。
 library;
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -218,8 +219,8 @@ void main() {
       expect(OgLOAnimQuality.of(2).settleCurve, Curves.easeOutCubic);
       expect(OgLOAnimQuality.of(3).settleCurve, Curves.easeOutBack);
       // 回弹 = 中途取值超过 1（过冲）；纯减速曲线永远 ≤ 1。
-      expect(OgLOAnimQuality.of(3).settleCurve.transform(0.8),
-          greaterThan(1.0));
+      expect(
+          OgLOAnimQuality.of(3).settleCurve.transform(0.8), greaterThan(1.0));
       expect(OgLOAnimQuality.of(1).settleCurve.transform(0.8),
           lessThanOrEqualTo(1.0));
       expect(OgLOAnimQuality.of(2).settleCurve.transform(0.8),
@@ -232,8 +233,7 @@ void main() {
       expect(OgLAnim.sharedElement(await _pumpAt(tester, 3)), isTrue);
     });
 
-    testWidgets('OgLSpring.run：静默档直接落位（不产生动画）',
-        (WidgetTester tester) async {
+    testWidgets('OgLSpring.run：静默档直接落位（不产生动画）', (WidgetTester tester) async {
       final BuildContext ctx = await _pumpAt(tester, 0);
       final AnimationController c =
           AnimationController(vsync: const TestVSync(), value: 0);
@@ -261,8 +261,7 @@ void main() {
       expect(q0.transitionOffset, 0);
     });
 
-    testWidgets('入场错峰按档位限项：超出上限返回 null（该项不参与动画）',
-        (WidgetTester tester) async {
+    testWidgets('入场错峰按档位限项：超出上限返回 null（该项不参与动画）', (WidgetTester tester) async {
       Future<BuildContext> pump(int level) => _pumpAt(tester, level);
 
       // 档位 1：只让前 3 项动（覆盖面前 3 项 + 主要区域）。

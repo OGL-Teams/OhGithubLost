@@ -85,10 +85,9 @@ void main() {
           '/data/user/0/com.example/files/ogl',
           '/home/user/Documents/ogl',
         ]) {
-          final OgLStoragePlan plan =
-              OgLStoragePlan(mode: mode, root: root);
-          final bool expected = mode == OgLStorageMode.safDir ||
-              OgLAppDirs.isUserVisible(root);
+          final OgLStoragePlan plan = OgLStoragePlan(mode: mode, root: root);
+          final bool expected =
+              mode == OgLStorageMode.safDir || OgLAppDirs.isUserVisible(root);
           expect(
             plan.userVisible,
             expected,

@@ -84,8 +84,7 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
-  testWidgets('AsyncView：软错误保留内容（嵌入滚动视图不崩）',
-      (WidgetTester tester) async {
+  testWidgets('AsyncView：软错误保留内容（嵌入滚动视图不崩）', (WidgetTester tester) async {
     int calls = 0;
     final AsyncController<int> c = AsyncController<int>(
       label: '测试',

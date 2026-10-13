@@ -38,7 +38,10 @@ void main() {
       expect(plan[0].length, 3);
       expect(plan[1].length, 3);
       expect(plan[2].length, 4, reason: '余数进最后一片');
-      expect(plan.map((OgLByteRange r) => r.length).reduce((int a, int b) => a + b),
+      expect(
+          plan
+              .map((OgLByteRange r) => r.length)
+              .reduce((int a, int b) => a + b),
           10);
     });
 

@@ -2,6 +2,8 @@
 ///
 /// 单文件内容可能被服务端截断（`truncated: true`）；此时回退用
 /// `raw_url` 拉全文，**绝不把"被截断的内容"当成完整内容展示**。
+/// 拉全文失败时如实降级：卡片上标注「内容可能被截断」
+/// （见 `_GistFile.truncated`），而不是静默展示残缺内容。
 library;
 
 import 'dart:async';
@@ -10,12 +12,14 @@ import 'package:flutter/material.dart';
 
 import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../widgets/code_editor_field.dart';
+import '../app/notifier.dart';
 
 /// 取 `gist_detail_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -30,12 +34,17 @@ class _GistFile {
     required this.language,
     required this.content,
     required this.size,
+    required this.truncated,
   });
 
   final String name;
   final String language;
   final String content;
   final int size;
+
+  /// 内容**可能被截断**：服务端标了 `truncated` 且 raw 拉全文失败。
+  /// 界面据此在卡片上标注，绝不把它当完整内容展示。
+  final bool truncated;
 }
 
 /// 一个 Gist（文件已解析）。
@@ -113,13 +122,21 @@ class _GistDetailPageState extends State<GistDetailPage> {
             final String name = ghStr(f, 'filename');
             String content = ghStr(f, 'content');
             final bool truncated = f['truncated'] == true;
+            // 服务端标了截断（或内容为空）→ 回退 raw 拉全文。
+            // 拉不到就把"可能被截断"如实带进 `_GistFile`：卡片会标注
+            // 「内容可能被截断」，**绝不把被截断的内容当完整展示**。
+            bool truncatedUnresolved = truncated;
             if (truncated || content.isEmpty) {
               final String raw = ghStr(f, 'raw_url');
               if (raw.isNotEmpty) {
                 try {
                   content = await widget.surface.domain.api.rawText(raw);
+                  truncatedUnresolved = false; // 拿到全文：解除标注。
                 } catch (_) {
-                  // 拉全文失败：保留已拿到的内容（可能为空），由 UI 说明。
+                  // raw 拉全文失败：**显式**置位（不看服务端 flag）——
+                  // 回退失败本身就意味着手上这份内容不能保证完整，
+                  // 由卡片标注「内容可能被截断」，绝不冒充完整内容。
+                  truncatedUnresolved = true;
                 }
               }
             }
@@ -128,6 +145,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
               language: ghStr(f, 'language'),
               content: content,
               size: ghInt(f, 'size'),
+              truncated: truncatedUnresolved,
             ));
           }
         }
@@ -184,11 +202,14 @@ class _GistDetailPageState extends State<GistDetailPage> {
       );
       OgLAppLog.instance.result('Gist', _t('updated'), file.name);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('saved'))),
-        );
+        OgLNotifier.of(context).success(_t('saved'));
       }
-      await _detailC().load();
+      // 控制器可能在 `updateGist` 期间随页面一起被释放（用户退了出去）：
+      // 释放后不再 `_detailC().load()` —— 这既避免无谓请求，也避免在已
+      // dispose 的 State 上**重建**一个再也不会有界面消费的控制器。
+      if (mounted) {
+        await _detailC().load();
+      }
     } catch (error) {
       OgLAppLog.instance.add(
         'Gist',
@@ -196,8 +217,8 @@ class _GistDetailPageState extends State<GistDetailPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('saveFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('saveFailed', {'error': error}),
         );
       }
     } finally {
@@ -245,8 +266,8 @@ class _GistDetailPageState extends State<GistDetailPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('deleteFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('deleteFailed', {'error': error}),
         );
       }
     } finally {
@@ -257,17 +278,9 @@ class _GistDetailPageState extends State<GistDetailPage> {
   }
 
   Future<void> _copy(_GistFile file) async {
-    final bool ok = await ogLCopyText(
-      file.content,
-      tag: 'Gist',
-    );
-    if (!ok) {
-      return;
-    }
+    await ogLCopyText(file.content, tag: 'Gist 文件');
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('copiedFile', {'name': file.name}))),
-      );
+      OgLNotifier.of(context).success(_t('copiedFile', {'name': file.name}));
     }
   }
 
@@ -351,6 +364,31 @@ class _GistDetailPageState extends State<GistDetailPage> {
                                   ghSizeText(file.size),
                                   style: theme.textTheme.bodySmall,
                                 ),
+                                // 内容可能被截断（服务端截断 + raw 回退失败）：
+                                // 在卡片上如实标注，绝不冒充完整内容。
+                                if (file.truncated)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Row(
+                                      children: <Widget>[
+                                        Icon(
+                                          Icons.warning_amber_rounded,
+                                          size: 14,
+                                          color: theme.colorScheme.error,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Flexible(
+                                          child: Text(
+                                            _t('truncatedWarning'),
+                                            style: theme.textTheme.bodySmall
+                                                ?.copyWith(
+                                              color: theme.colorScheme.error,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                               ],
                             ),
                           ),

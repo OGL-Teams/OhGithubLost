@@ -18,6 +18,7 @@ import '../types.dart';
 import '../util/gh_format.dart';
 import '../widgets/anim/anim_preload.dart';
 import 'repo_page.dart';
+import '../app/notifier.dart';
 
 /// 取 `search_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -263,14 +264,12 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> _open(_SearchHit hit) async {
     final GhRepo? repo = hit.repo;
     if (repo == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('noRepoForResult'))),
-      );
+      OgLNotifier.of(context).info(_t('noRepoForResult');
       return;
     }
     _preloadChildRepoRoute(repo);
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
+    final bool? deleted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (BuildContext context) => OgLAnimPreloadBoundary(
           // 子路由作用域：子页自己按同一条 group 登记（currentPage）；
           // 离开（pop）即整组取消本页替它登记的 childLevel 项并归还额度。
@@ -288,8 +287,7 @@ class _SearchPageState extends State<SearchPage> {
       ),
     );
     // 仓库被删除：搜索结果里不该再留着它。
-    // 返回后无条件刷新（不再依赖 pop 返回值）。
-    if (mounted) {
+    if (deleted == true && mounted) {
       await _results?.load();
     }
   }

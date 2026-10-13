@@ -42,11 +42,9 @@ void main() {
     });
 
     final result = await baseLayerModulesOnPlatform(rootOverride: asFile.path);
-    expect(result.storageError, isNotNull,
-        reason: '失败必须回传错误（组合根负责大声上报）');
+    expect(result.storageError, isNotNull, reason: '失败必须回传错误（组合根负责大声上报）');
 
     final disk = result.modules.whereType<DiskModule>().single;
-    expect(disk.kv, isNot(isA<IoDiskKv>()),
-        reason: '失败时必须退回内存实现，而不是假装成功');
+    expect(disk.kv, isNot(isA<IoDiskKv>()), reason: '失败时必须退回内存实现，而不是假装成功');
   });
 }

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 
 import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -126,9 +127,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
       OgLAppLog.instance
           .result('Actions', _t('rerunTriggered'), '#${widget.runId}');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('rerunTriggered'))),
-        );
+        OgLNotifier.of(context).info(_t('rerunTriggered'));
       }
       await _detailC().load();
     } catch (error) {
@@ -138,8 +137,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('rerunFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('rerunFailed', {'error': error}),
         );
       }
     } finally {
@@ -187,8 +186,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('cancelFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('cancelFailed', {'error': error}),
         );
       }
     } finally {
@@ -198,14 +197,12 @@ class _ActionRunPageState extends State<ActionRunPage> {
     }
   }
 
-  /// 轻提示（与页面既有做法一致）。
-  void _toast(String message) {
-    if (!mounted) {
-      return;
-    }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
+  /// 统一提示入口（Phase 5 后半收敛）：**提示长什么样、什么语气只有一处定义**
+  /// （见 [OgLNotifier]，即 `surface/app/notifier.dart`）—— 本页不再自造 SnackBar。
+  ///
+  /// 语气分工：[OgLNotifier.success] 操作已生效 / [OgLNotifier.info] 普通说明 /
+  /// [OgLNotifier.warning] 失败与"被拦下"（权限不足、目标不存在、写回失败…）。
+  OgLNotifier get _notifier => OgLNotifier(ScaffoldMessenger.of(context));
 
   /// 单个构建产物条目：名称 / 大小 / 有效期 + 下载按钮。
   Widget _artifactTile(ThemeData theme, Map<String, dynamic> artifact) {
@@ -247,7 +244,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
     final int id = ghInt(artifact, 'id');
     final String name = ghStr(artifact, 'name');
     if (id <= 0 || name.isEmpty) {
-      _toast(_t('artifactNoUrl'));
+      _notifier.warning(_t('artifactNoUrl'));
       return;
     }
     try {
@@ -282,7 +279,9 @@ class _ActionRunPageState extends State<ActionRunPage> {
       }
     } catch (error) {
       if (mounted) {
-        _toast(_t('artifactAddFailed', <String, Object?>{'error': error}));
+        _notifier.warning(
+          _t('artifactAddFailed', <String, Object?>{'error': error}),
+        );
       }
     }
   }

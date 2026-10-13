@@ -17,6 +17,7 @@ import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import 'gist_detail_page.dart';
 import 'new_gist_page.dart';
+import '../app/notifier.dart';
 
 /// 取 `gists_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -87,35 +88,31 @@ class _GistsPageState extends State<GistsPage> {
     final String id = ghStr(gist, 'id');
     if (id.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('missingId'))),
-        );
+        OgLNotifier.of(context).info(_t('missingId');
       }
       return;
     }
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
+    final bool? changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (BuildContext context) => GistDetailPage(
           surface: widget.surface,
           gistId: id,
         ),
       ),
     );
-    if (mounted) {
+    if (changed == true && mounted) {
       await _gistsC().load();
     }
   }
 
   Future<void> _create() async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
+    final bool? created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (BuildContext context) => NewGistPage(surface: widget.surface),
       ),
     );
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('created'))),
-      );
+    if (created == true && mounted) {
+      OgLNotifier.of(context).info(_t('created');
       await _gistsC().load();
     }
   }
@@ -124,9 +121,7 @@ class _GistsPageState extends State<GistsPage> {
     final String url = ghStr(gist, 'html_url');
     if (url.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('noOpenLink'))),
-        );
+        OgLNotifier.of(context).info(_t('noOpenLink');
       }
       return;
     }

@@ -219,7 +219,8 @@ class _ScriptedTransport implements NetTransport {
         'size': markdown.length,
         'content': base64Encode(utf8.encode(markdown)),
         'encoding': 'base64',
-        'html_url': 'https://github.com/octocat/Hello-World/blob/main/README.md',
+        'html_url':
+            'https://github.com/octocat/Hello-World/blob/main/README.md',
       };
     } else {
       return const NetResponse(
@@ -376,7 +377,8 @@ Future<int> _capture(
   await tester.runAsync(() async {
     final ui.Image image =
         await boundary.toImage(pixelRatio: _pixelRatioFor(logical));
-    final ByteData? data = await image.toByteData(format: ui.ImageByteFormat.png);
+    final ByteData? data =
+        await image.toByteData(format: ui.ImageByteFormat.png);
     image.dispose();
     final Uint8List png = data!.buffer.asUint8List();
     bytes = png.length;
@@ -449,8 +451,7 @@ void main() {
       //   三个维度：页面 × 亮/暗 × 横/竖；另加「平台 × 亮/暗」的首页，
       //   因为 Material 的 `platform` 会改变按钮/输入框等控件的外观。
       // ★ 不能加 const：collection-for 与 `brightness.name` 都不是常量表达式。
-      final List<(String, String, Size)> matrix =
-          <(String, String, Size)>[
+      final List<(String, String, Size)> matrix = <(String, String, Size)>[
         for (final String screen in <String>[
           'login',
           'home',

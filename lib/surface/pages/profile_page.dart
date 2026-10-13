@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 
 import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -17,7 +18,6 @@ import 'drafts_page.dart';
 import 'gists_page.dart';
 import 'login_page.dart';
 import 'repo_page.dart';
-import 'settings_page.dart';
 
 /// 取 `profile_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -102,10 +102,8 @@ class _ProfilePageState extends State<ProfilePage> {
         return;
       }
       if (!ok) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_t('noTokenSwitch', {'login': account.login})),
-          ),
+        OgLNotifier.of(context).warning(
+          _t('noTokenSwitch', {'login': account.login}),
         );
         return;
       }
@@ -123,8 +121,8 @@ class _ProfilePageState extends State<ProfilePage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('switchFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('switchFailed', {'error': error}),
         );
       }
     }
@@ -169,8 +167,8 @@ class _ProfilePageState extends State<ProfilePage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('removeFailed', {'error': error}))),
+        OgLNotifier.of(context).warning(
+          _t('removeFailed', {'error': error}),
         );
       }
     }
@@ -302,22 +300,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 subtitle: Text(_t('gistsDesc')),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _openGists,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: ListTile(
-                leading: const Icon(Icons.settings_outlined),
-                title: Text(_t('settings')),
-                subtitle: Text(_t('settingsDesc')),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext _) =>
-                        SettingsPage(surface: widget.surface),
-                  ),
-                ),
               ),
             ),
             const SizedBox(height: 16),

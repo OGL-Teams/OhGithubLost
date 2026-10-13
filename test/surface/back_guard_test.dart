@@ -39,7 +39,8 @@ void main() {
     final OgLBackGuard guard = OgLBackGuard();
     expect(guard.decide(atHome: true, now: t0), OgLBackAction.armExit);
     expect(
-      guard.decide(atHome: true, now: t0.add(const Duration(milliseconds: 800))),
+      guard.decide(
+          atHome: true, now: t0.add(const Duration(milliseconds: 800))),
       OgLBackAction.exit,
     );
     // 退出后状态清空（再按一次又要重新提示）。
@@ -84,7 +85,8 @@ void main() {
         OgLBackGuard(exitWindow: const Duration(seconds: 1));
     expect(guard.decide(atHome: true, now: t0), OgLBackAction.armExit);
     expect(
-      guard.decide(atHome: true, now: t0.add(const Duration(milliseconds: 400))),
+      guard.decide(
+          atHome: true, now: t0.add(const Duration(milliseconds: 400))),
       OgLBackAction.exit,
     );
   });

@@ -14,18 +14,20 @@ library;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../app/animations.dart';
+import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../app/overlays.dart';
+import '../app/paged_controller.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/accel.dart';
-import '../util/clipboard_x.dart';
 import '../util/file_icons.dart';
 import '../util/file_preview.dart';
 import '../util/gh_format.dart';
@@ -45,6 +47,7 @@ import 'new_issue_page.dart';
 import 'new_release_page.dart';
 import 'pull_page.dart';
 import 'release_detail_page.dart';
+import '../util/clipboard_x.dart';
 import 'workflow_dispatch_page.dart';
 
 /// 取 `repo` 分片文案。
@@ -211,13 +214,12 @@ class _RepoPageState extends State<RepoPage> {
     }
   }
 
-  void _toast(String message) {
-    if (!mounted) {
-      return;
-    }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
+  /// 统一提示入口（Phase 5 后半收敛）：**提示长什么样、什么语气只有一处定义**
+  /// （见 [OgLNotifier]，即 `surface/app/notifier.dart`）—— 本页不再自造 SnackBar。
+  ///
+  /// 语气分工：[OgLNotifier.success] 操作已生效 / [OgLNotifier.info] 普通说明 /
+  /// [OgLNotifier.warning] 失败与"被拦下"（权限不足、目标不存在、写回失败…）。
+  OgLNotifier get _notifier => OgLNotifier(ScaffoldMessenger.of(context));
 
   Future<void> _toggleStar() async {
     if (_starBusy) {
@@ -231,10 +233,10 @@ class _RepoPageState extends State<RepoPage> {
           .result('仓库', target ? _t('starred') : _t('unstarred'), _full);
       if (mounted) {
         setState(() => _starred = target);
-        _toast(target ? _t('starred') : _t('unstarred'));
+        _notifier.success(target ? _t('starred') : _t('unstarred'));
       }
     } catch (error) {
-      _toast(_t('actionFailed', {'error': error}));
+      _notifier.warning(_t('actionFailed', {'error': error}));
     } finally {
       if (mounted) {
         setState(() => _starBusy = false);
@@ -270,9 +272,9 @@ class _RepoPageState extends State<RepoPage> {
     try {
       final GhRepo forked = await widget.surface.domain.api.fork(_full);
       OgLAppLog.instance.result('仓库', _t('forked'), forked.fullName);
-      _toast(_t('forkedAs', {'name': forked.fullName}));
+      _notifier.success(_t('forkedAs', {'name': forked.fullName}));
     } catch (error) {
-      _toast(_t('forkFailed', {'error': error}));
+      _notifier.warning(_t('forkFailed', {'error': error}));
     } finally {
       if (mounted) {
         setState(() => _forkBusy = false);
@@ -286,10 +288,8 @@ class _RepoPageState extends State<RepoPage> {
   }
 
   Future<void> _copyCloneUrl() async {
-    if (!await ogLCopyText('https://github.com/$_full.git', tag: 'Repo')) {
-      return;
-    }
-    _toast(_t('cloneUrlCopied'));
+    await ogLCopyText('https://github.com/$_full.git', tag: '克隆链接');
+    _notifier.success(_t('cloneUrlCopied'));
   }
 
   /// 选择分支（Material 底部弹层 + 搜索）。
@@ -298,7 +298,7 @@ class _RepoPageState extends State<RepoPage> {
     try {
       branches = await widget.surface.domain.api.branches(_full, perPage: 100);
     } catch (error) {
-      _toast(_t('branchesFailed', {'error': error}));
+      _notifier.warning(_t('branchesFailed', {'error': error}));
       return;
     }
     if (!mounted) {
@@ -544,237 +544,75 @@ class _BranchSheetState extends State<_BranchSheet> {
             _filter.isEmpty ||
             b.name.toLowerCase().contains(_filter.toLowerCase()))
         .toList();
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.6,
-      child: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: TextField(
-              autofocus: false,
-              decoration: InputDecoration(
-                isDense: true,
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
-                hintText: _t('searchBranch'),
+    // 底部让位：弹层一直延伸到屏幕底边（useSafeArea 只管顶部 / 左右），
+    // 内容不让开下沿时，最后一条分支会被手势条 / 浏览器下沿盖住。
+    return SafeArea(
+      top: false,
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.6,
+        child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: TextField(
+                autofocus: false,
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.search),
+                  hintText: _t('searchBranch'),
+                ),
+                onChanged: (String value) => setState(() => _filter = value),
               ),
-              onChanged: (String value) => setState(() => _filter = value),
             ),
-          ),
-          Expanded(
-            child: shown.isEmpty
-                ? Center(child: Text(_t('noMatchingBranch')))
-                : ListView.builder(
-                    itemCount: shown.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final GhBranch branch = shown[index];
-                      final bool isCurrent = branch.name == widget.current;
-                      final bool isDefault =
-                          branch.name == widget.defaultBranch;
-                      return ListTile(
-                        leading: Icon(
-                          branch.isProtected
-                              ? Icons.lock_outline
-                              : Icons.account_tree_outlined,
-                        ),
-                        title: Text(branch.name,
-                            maxLines: 1, overflow: TextOverflow.ellipsis),
-                        subtitle: Text(
-                          '${ghShortSha(branch.sha)}'
-                          '${isDefault ? _t('defaultBranchTag') : ''}'
-                          '${branch.isProtected ? _t('protectedTag') : ''}',
-                        ),
-                        trailing: isCurrent
-                            ? Icon(Icons.check,
-                                color: theme.colorScheme.primary)
-                            : null,
-                        onTap: () => Navigator.of(context).pop(branch.name),
-                      );
-                    },
-                  ),
-          ),
-        ],
+            Expanded(
+              child: shown.isEmpty
+                  ? Center(child: Text(_t('noMatchingBranch')))
+                  : ListView.builder(
+                      itemCount: shown.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final GhBranch branch = shown[index];
+                        final bool isCurrent = branch.name == widget.current;
+                        final bool isDefault =
+                            branch.name == widget.defaultBranch;
+                        return ListTile(
+                          leading: Icon(
+                            branch.isProtected
+                                ? Icons.lock_outline
+                                : Icons.account_tree_outlined,
+                          ),
+                          title: Text(branch.name,
+                              maxLines: 1, overflow: TextOverflow.ellipsis),
+                          subtitle: Text(
+                            '${ghShortSha(branch.sha)}'
+                            '${isDefault ? _t('defaultBranchTag') : ''}'
+                            '${branch.isProtected ? _t('protectedTag') : ''}',
+                          ),
+                          trailing: isCurrent
+                              ? Icon(Icons.check,
+                                  color: theme.colorScheme.primary)
+                              : null,
+                          onTap: () => Navigator.of(context).pop(branch.name),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 分页控制器与统一列表渲染
+// 分页快照清理与统一列表渲染
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// 清空所有"按目标缓存"的分页快照。
+/// 清空所有"按目标缓存"的分页快照（快照本体已收敛到 [PagedController]）。
 ///
 /// **切换账号时必须调用**：快照里可能含上一个账号可见的私有数据
 /// （用户要求：切号清除所有缓存）。
-void clearOgLRepoPageCaches() => _recentPage.clear();
-
-/// 一次成功的分页快照（供同目标的标签页重建后"秒开"，避免重复请求）。
-class _CachedPage {
-  const _CachedPage(this.at, this.items, this.done, this.page);
-
-  final DateTime at;
-  final List<Object?> items;
-  final bool done;
-  final int page;
-}
-
-/// 分页快照缓存（按 `cacheKey` 隔离）。
-final Map<String, _CachedPage> _recentPage = <String, _CachedPage>{};
-
-/// 快照有效期：过期即回源。
-const Duration _kPageCacheTtl = Duration(seconds: 6);
-
-/// 通用分页数据源（首屏 + 加载更多 + 下拉刷新）。
-class _Paged<T> extends ChangeNotifier {
-  _Paged(
-      {required this.loader,
-      this.pageSize = _kPageSize,
-      this.cacheKey,
-      this.onManualRefresh});
-
-  final Future<List<T>> Function(int page) loader;
-  final int pageSize;
-
-  /// 用户在"下拉刷新 / 写后重载"（`force` 为真）时回调：
-  /// 用于让**只读端点缓存**失效，确保刷新一定回源（R4）。
-  final Future<void> Function()? onManualRefresh;
-
-  /// 快照键：同一目标（仓库 / 分支 / 目录 / 滤器）共用一个键。
-  ///
-  /// 为什么需要：`TabBarView` 会销毁不可见页，切回来时 State 重建 →
-  /// 每个标签都会重新拉取，短时间内把同一端点连打数次（配额与带宽白烧）。
-  /// 有了快照，重建即秒开、不再重复请求。目录 / 滤器会变化的目标，
-  /// 由调用方在加载前更新本键。
-  String? cacheKey;
-
-  final List<T> items = <T>[];
-  int _page = 1;
-  bool loading = false;
-  bool done = false;
-  bool _everLoaded = false;
-  bool _everFailed = false;
-  String? error;
-
-  /// 已释放标记（释放后不再通知 / 不再回写）。
-  bool _disposed = false;
-
-  /// 刷新排队标记：刷新请求在途时置位，当前请求结束后**重放**。
-  bool _refreshQueued = false;
-
-  /// 请求代次：每次刷新 +1；过期响应（旧代次）一律丢弃。
-  ///
-  /// 修掉两个真实竞态：切「打开 / 已关闭 / 全部」时在途请求未结束 →
-  /// 刷新被静默丢弃（按钮与数据不符）；写后重载与在途加载交错 →
-  /// 重复条目 / 第一页缺失。
-  int _generation = 0;
-
-  /// 释放后不再通知（在途回写静默丢弃）。
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-
-  void _notify() {
-    if (_disposed) {
-      return;
-    }
-    notifyListeners();
-  }
-
-  /// 未显式要求时：首次加载按"自动"处理（可用快照），
-  /// 之后一律按"显式"处理（用户下拉刷新 / 写后重载，必须真的回源）。
-  bool get _shouldForce => _everLoaded || _everFailed;
-
-  Future<void> loadMore() => _load(force: false);
-
-  Future<void> refresh() {
-    // 先作废在途请求：它的响应属于"上一代"（旧筛选 / 旧快照）。
-    _generation++;
-    if (loading) {
-      // 在途请求未结束：**排队重放**，而不是静默丢弃这次刷新。
-      _refreshQueued = true;
-      return Future<void>.value();
-    }
-    return _load(force: _shouldForce, reset: true);
-  }
-
-  Future<void> _load({required bool force, bool reset = false}) async {
-    if (_disposed || loading) {
-      return;
-    }
-    final int generation = _generation;
-    final String? key = cacheKey;
-    if (!force && reset && key != null) {
-      final _CachedPage? cached = _recentPage[key];
-      if (cached != null &&
-          DateTime.now().difference(cached.at) < _kPageCacheTtl) {
-        // 命中快照：直接展示，不发请求（重建的标签页因此"秒开"）。
-        items
-          ..clear()
-          ..addAll(cached.items.whereType<T>());
-        done = cached.done;
-        _page = cached.page;
-        error = null;
-        _everLoaded = true;
-        _notify();
-        return;
-      }
-    }
-    if (reset) {
-      // 用户显式刷新 → 让只读端点缓存失效，保证真的回源（R4）。
-      // GhReadCache.clear 自身不抛异常，这里无需再包 try。
-      if (force && onManualRefresh != null) {
-        await onManualRefresh!();
-      }
-      items.clear();
-      _page = 1;
-      done = false;
-      error = null;
-    } else if (done) {
-      return;
-    }
-    loading = true;
-    error = null;
-    _notify();
-    try {
-      final List<T> list = await loader(_page);
-      if (_disposed || generation != _generation) {
-        // 过期响应：期间用户已刷新 / 切换筛选，这份数据不再可信。
-        return;
-      }
-      items.addAll(list);
-      if (list.length < pageSize) {
-        done = true;
-      }
-      _page++;
-      _everLoaded = true;
-      if (key != null) {
-        _recentPage[key] = _CachedPage(
-          DateTime.now(),
-          List<Object?>.of(items),
-          done,
-          _page,
-        );
-      }
-    } catch (e) {
-      if (_disposed || generation != _generation) {
-        return;
-      }
-      error = '$e';
-      _everFailed = true;
-    } finally {
-      loading = false;
-      _notify();
-      if (_refreshQueued && !_disposed) {
-        // 在途请求结束后重放排队中的刷新（快速操作不再被吞掉）。
-        _refreshQueued = false;
-        unawaited(refresh());
-      }
-    }
-  }
-}
+void clearOgLRepoPageCaches() => PagedController.clearCaches();
 
 /// 统一渲染分页列表（空 / 错 / 载三态 + 加载更多 + 下拉刷新）。
 ///
@@ -785,7 +623,7 @@ class _Paged<T> extends ChangeNotifier {
 /// 同一个滚动视图的位置（`pixels` / `maxScrollExtent` / `viewportDimension`）。
 Widget _pagedBody<T>(
   BuildContext context,
-  _Paged<T> paged,
+  PagedController<T> paged,
   Widget Function(BuildContext context, T item, int index) itemBuilder, {
   required String emptyText,
   IconData emptyIcon = Icons.inbox_outlined,
@@ -798,18 +636,15 @@ Widget _pagedBody<T>(
     return const Center(child: CircularProgressIndicator());
   }
   if (paged.items.isEmpty && paged.error != null) {
-    return _MessagePane(
-      icon: Icons.error_outline,
-      message: paged.error!,
-      action: FilledButton.tonal(
-        onPressed: paged.refresh,
-        child: Text(_t('retry')),
-      ),
-    );
+    // 失败必须可见且可重试（与 AsyncView 同一套面板，Phase 5 后半收敛）。
+    return OgLAsyncErrorPane(message: paged.error!, onRetry: paged.refresh);
   }
   if (paged.items.isEmpty) {
-    return _MessagePane(
-        icon: emptyIcon, message: emptyText, action: emptyAction);
+    return OgLAsyncEmptyPane(
+      icon: emptyIcon,
+      text: emptyText,
+      action: emptyAction,
+    );
   }
   return RefreshIndicator(
     onRefresh: paged.refresh,
@@ -891,7 +726,7 @@ class _CodeTabState extends State<_CodeTab> {
   /// 当前目录：由页面（[RepoPage]）持有 —— 标签页会随 `TabBarView`
   /// 销毁重建，目录必须活在页面级，切走再切回才不会回到根目录。
   String get _path => widget.path;
-  late final _Paged<GhContent> _entries = _Paged<GhContent>(
+  late final PagedController<GhContent> _entries = PagedController<GhContent>(
     loader: _loadPage,
     cacheKey: _keyFor(''),
     onManualRefresh: () => widget.surface.domain.api.invalidateReadCache(),
@@ -904,6 +739,12 @@ class _CodeTabState extends State<_CodeTab> {
 
   GhContent? _file;
   bool _busy = false;
+
+  /// 写操作进行中的状态行（列表顶部显示；空串 = 不显示）。
+  ///
+  /// 由 [RepoFileService] 的进度回调 [_onRepoProgress] 更新；只在
+  /// [_busy] 为真且非空时渲染（见 [build]）。
+  String _operationStatus = '';
   String? _readme;
   bool _readmeTried = false;
 
@@ -973,13 +814,56 @@ class _CodeTabState extends State<_CodeTab> {
     await _entries.refresh();
   }
 
-  void _toast(String message) {
-    if (!mounted) {
+  /// 服务进度回调 → 列表顶部的状态行（[_operationStatus]）。
+  ///
+  /// 阶段名走 i18n（`repo` 分片），计数是动态数据；`done` 只保持当前文本 ——
+  /// 状态行的清理由操作结束的 `finally` 统一做，避免收尾间隙闪一帧转圈。
+  void _onRepoProgress(RepoFileProgress progress) {
+    if (!mounted || progress.phase == RepoFilePhase.done) {
       return;
     }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    final String label = switch (progress.phase) {
+      RepoFilePhase.preparing => _t('opPreparing'),
+      RepoFilePhase.reading => _t('opReading'),
+      RepoFilePhase.uploading => _t('opUploading'),
+      RepoFilePhase.committing => _t('opCommitting'),
+      // 上面的早退已排除 `done`；保留空臂仅为 switch 的穷尽性。
+      RepoFilePhase.done => '',
+    };
+    final String text = progress.total > 0
+        ? '$label ${progress.current}/${progress.total}'
+        : label;
+    setState(() => _operationStatus = text);
   }
+
+  /// 消费服务结果：把**失败项**逐条报给用户（同一文案只报一次）。
+  ///
+  /// [RepoFileService] 永不抛：网络 / 冲突 / 校验失败都折叠在 `result.items`
+  /// 里，这里是把它们摊开显示的唯一位置；整体成败只看 `result.ok`（由调用方
+  /// 判断成功路径）。目录级失败会展开成成百条同因条目（如批次冲突后统一标
+  /// `aborted`），同一条文案只报一次，避免重复 SnackBar 淹没界面。
+  void _reportRepoFailures(
+    RepoFileResult result,
+    String Function(String error) wrap,
+  ) {
+    final Set<String> reported = <String>{};
+    for (final RepoFileItemResult item in result.items) {
+      if (item.ok) {
+        continue;
+      }
+      final String message = wrap(item.error ?? 'failed');
+      if (reported.add(message)) {
+        _notifier.warning(message);
+      }
+    }
+  }
+
+  /// 统一提示入口（Phase 5 后半收敛）：**提示长什么样、什么语气只有一处定义**
+  /// （见 [OgLNotifier]，即 `surface/app/notifier.dart`）—— 本页不再自造 SnackBar。
+  ///
+  /// 语气分工：[OgLNotifier.success] 操作已生效 / [OgLNotifier.info] 普通说明 /
+  /// [OgLNotifier.warning] 失败与"被拦下"（权限不足、目标不存在、写回失败…）。
+  OgLNotifier get _notifier => OgLNotifier(ScaffoldMessenger.of(context));
 
   Future<void> _loadReadme() async {
     if (_readmeTried) {
@@ -1018,15 +902,23 @@ class _CodeTabState extends State<_CodeTab> {
     if (sources.isEmpty) {
       return;
     }
-    // 与渲染层**同一套**取法参数（基址 / 代理前缀）。
-    //
-    // ⚠️ 本树（web）的 [_readmeImagePlan] 只返回 `(base, proxy)`、**没有 headers**：
-    // 渲染层是 `Image.network(url)`（不带认证头），所以这里登记的 `NetworkImage`
-    // 也不带头（`NetworkImage` 的相等性含 headers —— 多传一个空 map 就会变成
-    // 另一条缓存条目，等于白解一遍）。
-    final ({Uri? base, String? proxy}) plan = _readmeImagePlan('');
+    // 与渲染层**同一套**取法参数（基址 / 代理前缀 / 认证头）。
+    final ({
+      Uri? base,
+      String? proxy,
+      Future<Map<String, String>>? headers
+    }) plan = _readmeImagePlan('');
     final String proxy = plan.proxy ?? '';
     final Uri? base = plan.base;
+    Map<String, String> headers = const <String, String>{};
+    final Future<Map<String, String>>? headerFuture = plan.headers;
+    if (headerFuture != null) {
+      try {
+        headers = await headerFuture;
+      } catch (_) {
+        headers = const <String, String>{};
+      }
+    }
     if (!mounted) {
       // 页面已经离开：不为"人已经走了"的页面占额度。
       return;
@@ -1057,7 +949,13 @@ class _CodeTabState extends State<_CodeTab> {
               id: 'readme-img:${widget.fullName}:$url',
               group: _preloadGroupOf(widget.fullName),
               kind: OgLAnimPreloadKind.childLevel,
-              image: NetworkImage(url.toString()),
+              image: NetworkImage(
+                url.toString(),
+                // 与渲染层同一口径：**空 map 等同不带任何头**，空就传 null
+                //（`NetworkImage` 的相等性含 headers —— 传空 map 会变成另一个
+                //  缓存条目，等于白解一遍）。
+                headers: headers.isEmpty ? null : headers,
+              ),
               weightBytes: _kReadmeImageBytes,
             ),
           ) ||
@@ -1116,7 +1014,7 @@ class _CodeTabState extends State<_CodeTab> {
         return;
       }
       if (content == null) {
-        _toast(_t('pathNotFound', {'path': path}));
+        _notifier.warning(_t('pathNotFound', {'path': path}));
         return;
       }
       if (content.isDirectory) {
@@ -1125,7 +1023,7 @@ class _CodeTabState extends State<_CodeTab> {
         setState(() => _file = content);
       }
     } catch (error) {
-      _toast(_t('readFailed', {'error': error}));
+      _notifier.warning(_t('readFailed', {'error': error}));
     } finally {
       if (mounted) {
         setState(() => _busy = false);
@@ -1250,12 +1148,12 @@ class _CodeTabState extends State<_CodeTab> {
         return;
       }
       if (content == null) {
-        _toast(_t('readFailedFileGone'));
+        _notifier.warning(_t('readFailedFileGone'));
         return;
       }
       setState(() => _file = content);
     } catch (error) {
-      _toast(_t('readFailed', {'error': error}));
+      _notifier.warning(_t('readFailed', {'error': error}));
     } finally {
       if (mounted) {
         setState(() => _busy = false);
@@ -1264,8 +1162,8 @@ class _CodeTabState extends State<_CodeTab> {
   }
 
   Future<void> _openEditor(GhContent file) async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
+    final bool? saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (BuildContext context) => CodeEditorPage(
           surface: widget.surface,
           fullName: widget.fullName,
@@ -1276,7 +1174,7 @@ class _CodeTabState extends State<_CodeTab> {
         ),
       ),
     );
-    if (mounted) {
+    if (saved == true && mounted) {
       await _refreshFile(file.path);
       await _reload();
     }
@@ -1306,7 +1204,11 @@ class _CodeTabState extends State<_CodeTab> {
   /// - 路径禁止中文 / 全角 / 特殊字符（见 `util/path_rules.dart`）。
   Future<void> _createFile() async {
     if (!widget.canWrite) {
-      _toast(_t('noWritePerm'));
+      _notifier.warning(_t('noWritePerm'));
+      return;
+    }
+    // 防重复点按：写操作在途时不再开新的新建对话框。
+    if (_busy) {
       return;
     }
     _newPath.text = _path.isEmpty ? '' : '$_path/';
@@ -1377,56 +1279,81 @@ class _CodeTabState extends State<_CodeTab> {
       content.dispose();
       return;
     }
+    // 对话框期间可能已有另一个写操作在途（快速连点 FAB 会叠出多个对话框）：
+    // 确认时再拦一次，保证同一时刻只有一次写。
+    if (_busy) {
+      content.dispose();
+      return;
+    }
     final String raw = _newPath.text.trim();
     final bool directory = raw.endsWith('/');
     final String? pathError =
         ogLValidateRepoEntryPath(raw, directory: directory);
     if (pathError != null) {
       content.dispose();
-      _toast(pathError);
+      _notifier.warning(pathError);
       return;
     }
     final String path = directory ? ogLGitKeepPathFor(raw) : raw;
     final String? contentError = ogLValidateFileContent(path, content.text);
     if (contentError != null) {
       content.dispose();
-      _toast(contentError);
+      _notifier.warning(contentError);
       return;
     }
     // 同名条目已存在 → 先拦下（GitHub 同名 PUT 会 422，这里给清晰原因）。
     final bool exists = _entries.items.any((GhContent e) => e.path == path);
     if (exists) {
       content.dispose();
-      _toast(_t('alreadyExists', {'path': path}));
+      _notifier.warning(_t('alreadyExists', {'path': path}));
       return;
     }
+    setState(() => _busy = true);
     try {
-      await widget.surface.domain.api.putContent(
+      // 新建走文件操作服务（`RepoFileService.create`）：路径与内容先在服务端
+      // 规则里校验，写入带**文件级基线**（create 不覆盖既有文件）。
+      final RepoFileResult result = await widget.surface.repoFiles.create(
         widget.fullName,
+        widget.branch,
         path,
-        content: content.text,
+        content.text,
         message: directory ? 'chore: add directory $raw' : 'chore: add $path',
-        branch: widget.branch,
       );
+      if (!result.ok) {
+        _reportRepoFailures(
+          result,
+          (String error) => _t('branchCreateFailed', {'error': error}),
+        );
+        return;
+      }
       OgLAppLog.instance.result(
         '仓库',
         directory ? _t('dirCreated') : _t('fileCreated'),
         path,
       );
-      content.dispose();
-      _toast(directory
-          ? _t('createdDir', {'path': raw})
-          : _t('createdPath', {'path': path}));
+      _notifier.success(
+        directory
+            ? _t('createdDir', {'path': raw})
+            : _t('createdPath', {'path': path}),
+      );
       await _reload();
     } catch (error) {
+      // 服务契约是"永不抛"；这里兜底，任何漏网异常仍以同一文案提示。
+      _notifier.warning(_t('branchCreateFailed', {'error': error}));
+    } finally {
       content.dispose();
-      _toast(_t('branchCreateFailed', {'error': error}));
+      if (mounted) {
+        setState(() => _busy = false);
+      }
     }
   }
 
   Future<void> _deleteEntry(GhContent entry) async {
     if (!widget.canWrite) {
-      _toast(_t('noWritePerm'));
+      _notifier.warning(_t('noWritePerm'));
+      return;
+    }
+    if (_busy) {
       return;
     }
     if (entry.isDirectory) {
@@ -1456,37 +1383,49 @@ class _CodeTabState extends State<_CodeTab> {
     if (confirmed != true || !mounted) {
       return;
     }
+    if (_busy) {
+      return;
+    }
+    setState(() => _busy = true);
     try {
-      final GhWriteResult result =
-          await widget.surface.domain.api.deleteContentLocked(
+      // 删除走文件操作服务（`RepoFileService.delete`）：服务先探测目标、
+      // 用**文件级基线**删除（乐观锁：不会删错版本），失败折叠进 `items`。
+      final RepoFileResult result = await widget.surface.repoFiles.delete(
         widget.fullName,
+        widget.branch,
         entry.path,
         message: 'chore: delete ${entry.path}',
-        baseSha: entry.sha,
-        branch: widget.branch,
-        confirmed: true,
       );
       if (!result.ok) {
-        _toast(_t('branchDeleteFailed',
-            {'error': result.detail ?? result.conflict.name}));
+        _reportRepoFailures(
+          result,
+          (String error) => _t('branchDeleteFailed', {'error': error}),
+        );
         return;
       }
       OgLAppLog.instance.result('仓库', _t('branchDeleted'), entry.path);
       if (_file?.path == entry.path) {
         setState(() => _file = null);
       }
-      _toast(_t('deletedPath', {'path': entry.path}));
+      _notifier.success(_t('deletedPath', {'path': entry.path}));
       await _reload();
     } catch (error) {
-      _toast(_t('branchDeleteFailed', {'error': error}));
+      // 服务契约是"永不抛"；这里兜底，任何漏网异常仍以同一文案提示。
+      _notifier.warning(_t('branchDeleteFailed', {'error': error}));
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
     }
   }
 
   /// 删除**目录**（含其下全部文件，一次原子提交）。
   ///
   /// 为什么单列：Git 不跟踪空目录，目录本身只是一组文件路径的前缀，
-  /// 因此"删目录"= 删掉该前缀下的**全部 blob**，必须走 `commitFiles`
-  /// 的批量删除才能保证"要么全成、要么全不成"。
+  /// 因此"删目录"= 删掉该前缀下的**全部 blob**。实际删除交给文件操作服务
+  /// （`isDirectory: true`）：服务端重新展开前缀、按 ≤200 个文件一批串行提交
+  /// （基线链式推进），**不再有页面级 200 文件上限**；这里的预扫描只用于
+  /// 确认对话框的文件计数，以及提前拦下截断 / 空目录。
   Future<void> _deleteDirectory(GhContent entry) async {
     final String prefix = '${entry.path}/';
     final List<String> paths = <String>[];
@@ -1496,7 +1435,7 @@ class _CodeTabState extends State<_CodeTab> {
         branch: widget.branch,
       );
       if (tree.truncated) {
-        _toast(_t('dirTooLarge'));
+        _notifier.warning(_t('dirTooLarge'));
         return;
       }
       for (final GhTreeEntry node in tree.entries) {
@@ -1505,16 +1444,11 @@ class _CodeTabState extends State<_CodeTab> {
         }
       }
     } catch (error) {
-      _toast(_t('readDirFailed', {'error': error}));
+      _notifier.warning(_t('readDirFailed', {'error': error}));
       return;
     }
     if (paths.isEmpty) {
-      _toast(_t('noDeletableFiles'));
-      return;
-    }
-    const int maxBatch = 200;
-    if (paths.length > maxBatch) {
-      _toast(_t('dirExceedsBatch', {'count': paths.length, 'max': maxBatch}));
+      _notifier.warning(_t('noDeletableFiles'));
       return;
     }
     if (!mounted) {
@@ -1546,34 +1480,59 @@ class _CodeTabState extends State<_CodeTab> {
     if (confirmed != true || !mounted) {
       return;
     }
+    if (_busy) {
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _operationStatus = _t('opPreparing');
+    });
     try {
-      await widget.surface.domain.api.commitFiles(
+      // 目录递归删除走文件操作服务：服务端展开 → 逐批提交（≤200/批，基线
+      // 链式推进）；进度经 [onProgress] 摊到列表顶部（见 [_onRepoProgress]）。
+      final RepoFileResult result = await widget.surface.repoFiles.delete(
         widget.fullName,
-        branch: widget.branch,
-        upserts: const <String, String>{},
-        deletions: paths,
+        widget.branch,
+        entry.path,
+        isDirectory: true,
         message: 'chore: delete directory ${entry.path}',
+        onProgress: _onRepoProgress,
       );
+      if (!result.ok) {
+        _reportRepoFailures(
+          result,
+          (String error) => _t('deleteDirFailed', {'error': error}),
+        );
+        return;
+      }
       OgLAppLog.instance.result('仓库', _t('dirDeleted'),
           _t('dirDeletedMeta', {'path': entry.path, 'count': paths.length}));
-      _toast(_t('dirDeletedPath', {'path': entry.path}));
+      _notifier.success(_t('dirDeletedPath', {'path': entry.path}));
       await _reload();
     } catch (error) {
-      _toast(_t('deleteDirFailed', {'error': error}));
+      // 服务契约是"永不抛"；这里兜底，任何漏网异常仍以同一文案提示。
+      _notifier.warning(_t('deleteDirFailed', {'error': error}));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _operationStatus = '';
+        });
+      }
     }
   }
 
-  /// 重命名**文件**（内容不变，一次原子提交：新增新路径 + 删除旧路径）。
+  /// 重命名**文件**（一次提交：新增新路径 + 删除旧路径，由文件操作服务完成）。
   ///
   /// 目录重命名不在此支持：它需要逐个文件搬运内容，代价与风险都高，
   /// 会明确提示用户（不静默失败）。
   Future<void> _renameEntry(GhContent entry) async {
     if (!widget.canWrite) {
-      _toast(_t('noWritePerm'));
+      _notifier.warning(_t('noWritePerm'));
       return;
     }
     if (entry.isDirectory) {
-      _toast(_t('renameDirUnsupported'));
+      _notifier.warning(_t('renameDirUnsupported'));
       return;
     }
     final TextEditingController target =
@@ -1614,44 +1573,60 @@ class _CodeTabState extends State<_CodeTab> {
     }
     final String? pathError = ogLValidateRepoEntryPath(next, directory: false);
     if (pathError != null) {
-      _toast(pathError);
+      _notifier.warning(pathError);
       return;
     }
     if (ogLIsGitKeep(next)) {
-      _toast(_t('gitkeepNotRenamable'));
+      _notifier.warning(_t('gitkeepNotRenamable'));
       return;
     }
+    if (_busy) {
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _operationStatus = _t('opPreparing');
+    });
     try {
-      final GhContent? current = await widget.surface.domain.api.content(
+      // 重命名走文件操作服务：服务内部先读旧内容（文本走 `commitFiles`、
+      // 二进制 / 符号链接 / 大文件走 Blobs 或 sha 引用，字节精确），再一次
+      // 提交「写新路径 + 删旧路径」——不经过页面缓存，旧内容不会被回写。
+      final RepoFileResult result = await widget.surface.repoFiles.rename(
         widget.fullName,
+        widget.branch,
         entry.path,
-        branch: widget.branch,
+        next,
+        message: 'chore: rename ${entry.path} -> $next',
+        onProgress: _onRepoProgress,
       );
-      final String? text = current?.text;
-      if (text == null) {
-        _toast(_t('notTextFile'));
+      if (!result.ok) {
+        _reportRepoFailures(
+          result,
+          (String error) => _t('branchRenameFailed', {'error': error}),
+        );
         return;
       }
-      await widget.surface.domain.api.commitFiles(
-        widget.fullName,
-        branch: widget.branch,
-        upserts: <String, String>{next: text},
-        deletions: <String>[entry.path],
-        message: 'chore: rename ${entry.path} -> $next',
-      );
       OgLAppLog.instance
           .result('仓库', _t('branchRenamed'), '${entry.path} → $next');
-      _toast(_t('renamedTo', {'path': next}));
+      _notifier.success(_t('renamedTo', {'path': next}));
       await _reload();
     } catch (error) {
-      _toast(_t('branchRenameFailed', {'error': error}));
+      // 服务契约是"永不抛"；这里兜底，任何漏网异常仍以同一文案提示。
+      _notifier.warning(_t('branchRenameFailed', {'error': error}));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _operationStatus = '';
+        });
+      }
     }
   }
 
   /// 原始下载直链（路径分段做 URL 编码）。
   Future<void> _downloadEntry(GhContent entry) async {
     if (entry.isDirectory) {
-      _toast(_t('noDownloadLink'));
+      _notifier.warning(_t('noDownloadLink'));
       return;
     }
     try {
@@ -1682,7 +1657,7 @@ class _CodeTabState extends State<_CodeTab> {
         _t('addedToDownload', {'name': ghPathName(entry.path)}),
       );
     } catch (error) {
-      _toast(_t('addDownloadFailed', {'error': error}));
+      _notifier.warning(_t('addDownloadFailed', {'error': error}));
     }
   }
 
@@ -1711,12 +1686,10 @@ class _CodeTabState extends State<_CodeTab> {
         actions: <Widget>[
           TextButton(
             onPressed: () async {
-              if (!await ogLCopyText(entry.path, tag: 'Repo')) {
-                return;
-              }
+              await ogLCopyText(entry.path, tag: '路径');
               if (dialogContext.mounted) {
                 Navigator.of(dialogContext).pop();
-                _toast(_t('pathCopied'));
+                _notifier.success(_t('pathCopied'));
               }
             },
             child: Text(_t('copyPath')),
@@ -1864,32 +1837,37 @@ class _CodeTabState extends State<_CodeTab> {
         '${Uri.encodeComponent(widget.branch)}/$encodedPath';
   }
 
-  /// README 图片的取法参数（基址 + 加速前缀）。
+  /// README 图片的取法参数（基址 + 加速前缀 + 认证头）。
   ///
-  /// - **加速（公开仓库 + 用户自备通道）** → 给 `raw` 基址 + 代理前缀，
-  ///   图片走 `代理 + raw`：
+  /// 与 [SurfaceBridge.planRepoFileDownload] **同一套规则**
+  ///（`repoFileAccelerated`）：
+  ///
+  /// - **加速（自定义通道 + 公开仓库，或私有仓库且用户已知情接受）** →
+  ///   给 `raw` 基址 + 代理前缀，图片走 `代理 + raw`：
   ///   raw 不限流，而 Contents API 认证后也只有 5000 次/小时，一次 README
   ///   几十张图很容易吃掉配额。
-  /// - **否则** → 两者都不给，界面退回 `imageLoader`（Contents API 取字节）——
-  ///   这也是私有仓库唯一可行的取法（raw 没有签名机制，不能交给代理）。
-  ({Uri? base, String? proxy}) _readmeImagePlan(String dir) {
+  /// - **否则** → 都不给，界面退回 `imageLoader`（Contents API 取字节）。
+  /// - **私有仓库**：raw 匿名是 404，走加速必须带令牌（通道会原样转发
+  ///   `Authorization`），因此额外给出认证头 Future；公开仓库为 `null`。
+  ({Uri? base, String? proxy, Future<Map<String, String>>? headers})
+      _readmeImagePlan(String dir) {
     // README 图片是**独立的一类**：很多前缀式代理能转发 Release 附件，
     // 却转发不了仓库内图片，所以它有自己的开关。
     //
-    // ★ 私有仓库**一律不走代理**：README 图片由 `Image.network` 加载，
-    //   它没有 headers 参数，无法携带 Authorization，而私有 raw 匿名访问
-    //   是 404（raw 端点没有签名机制）。让私有仓库走代理只会必然失败，
-    //   所以这里直接把私有排除在外，退回下面的 API 取字节路径（那条带令牌）。
-    final bool accel = !widget.repoPrivate &&
-        widget.surface.repoFileAccelerated(
-          repoPrivate: widget.repoPrivate,
-          size: null,
-          scope: OgLAccelScope.readmeImage,
-        );
+    // ★ 私有仓库与下载路径同规则：**知情接受后才允许**（见
+    //   `repoFileAccelerated` 的 privateOk）。`Image.network` 本身支持
+    //   headers（通道会原样转发 `Authorization`），令牌由下面的 headers
+    //   Future 提供，所以这条路对私有仓库同样成立；未接受时照旧退回
+    //   API 取字节（那条带令牌）。
+    final bool accel = widget.surface.repoFileAccelerated(
+      repoPrivate: widget.repoPrivate,
+      size: null,
+      scope: OgLAccelScope.readmeImage,
+    );
     final List<String> prefixes = widget.surface.settings.settings
         .accelPrefixesFor(OgLAccelScope.readmeImage);
     if (!accel || prefixes.isEmpty) {
-      return (base: null, proxy: null);
+      return (base: null, proxy: null, headers: null);
     }
     final String encodedDir = dir
         .split('/')
@@ -1899,7 +1877,11 @@ class _CodeTabState extends State<_CodeTab> {
     final String base = 'https://raw.githubusercontent.com/${widget.fullName}/'
         '${Uri.encodeComponent(widget.branch)}/'
         '${encodedDir.isEmpty ? '' : '$encodedDir/'}';
-    return (base: Uri.parse(base), proxy: prefixes.first);
+    return (
+      base: Uri.parse(base),
+      proxy: prefixes.first,
+      headers: widget.repoPrivate ? widget.surface.downloadAuthHeaders() : null,
+    );
   }
 
   Future<Uint8List?> _readImageBytes(String path) async {
@@ -1965,7 +1947,11 @@ class _CodeTabState extends State<_CodeTab> {
     }
     // 一次求值：取法判定（含加速范围判断）不该在同一个 build 里跑两遍 ——
     // 两次调用之间若设置变化，会拿到不自洽的 base / proxy 组合。
-    final ({Uri? base, String? proxy}) plan = _readmeImagePlan('');
+    final ({
+      Uri? base,
+      String? proxy,
+      Future<Map<String, String>>? headers
+    }) plan = _readmeImagePlan('');
     return ExpansionTile(
       title: const Text('README'),
       subtitle: Text(_t('expandCollapse')),
@@ -1975,6 +1961,7 @@ class _CodeTabState extends State<_CodeTab> {
           markdown: md,
           imageBase: plan.base,
           imageProxyPrefix: plan.proxy,
+          imageHeaders: plan.headers,
           imageLoader: (String p) => _readImageBytes(_repoPath('', p)),
           onOpenLink: (Uri uri) {
             unawaited(openExternalLink(uri, tag: 'README'));
@@ -2045,16 +2032,14 @@ class _CodeTabState extends State<_CodeTab> {
   Future<void> _deleteFromFile(GhContent file) => _deleteEntry(file);
 
   Future<void> _copyPath(String path) async {
-    if (!await ogLCopyText(path, tag: 'Repo')) {
-      return;
-    }
-    _toast(_t('pathCopied'));
+    await ogLCopyText(path, tag: '路径');
+    _notifier.success(_t('pathCopied'));
   }
 
   void _openFileInBrowser(GhContent file) {
     final String? url = file.htmlUrl;
     if (url == null || url.isEmpty) {
-      _toast(_t('noOpenLink'));
+      _notifier.warning(_t('noOpenLink'));
       return;
     }
     unawaited(openLinkOrCopy(context, url, tag: _t('file')));
@@ -2082,9 +2067,9 @@ class _CodeTabState extends State<_CodeTab> {
     if (_isImage(file.path)) {
       final String? url = _rawUrlOf(file);
       if (url == null) {
-        return _MessagePane(
+        return OgLAsyncEmptyPane(
           icon: Icons.image_not_supported_outlined,
-          message: _t('noImageUrl'),
+          text: _t('noImageUrl'),
         );
       }
       return Center(
@@ -2104,18 +2089,18 @@ class _CodeTabState extends State<_CodeTab> {
                       ),
             errorBuilder:
                 (BuildContext context, Object error, StackTrace? stack) =>
-                    _MessagePane(
+                    OgLAsyncEmptyPane(
               icon: Icons.broken_image_outlined,
-              message: _t('imageLoadFailed'),
+              text: _t('imageLoadFailed'),
             ),
           ),
         ),
       );
     }
     if (file.isTooLarge) {
-      return _MessagePane(
+      return OgLAsyncEmptyPane(
         icon: Icons.warning_amber_rounded,
-        message: _t('fileTooLarge'),
+        text: _t('fileTooLarge'),
         action: FilledButton.tonal(
           onPressed: () => _openFileInBrowser(file),
           child: Text(_t('openInBrowser')),
@@ -2124,9 +2109,9 @@ class _CodeTabState extends State<_CodeTab> {
     }
     final String? text = file.text;
     if (text == null) {
-      return _MessagePane(
+      return OgLAsyncEmptyPane(
         icon: Icons.help_outline,
-        message: _t('noTextContent'),
+        text: _t('noTextContent'),
         action: FilledButton.tonal(
           onPressed: () => _openFileInBrowser(file),
           child: Text(_t('openInBrowser')),
@@ -2134,14 +2119,18 @@ class _CodeTabState extends State<_CodeTab> {
       );
     }
     if (file.path.toLowerCase().endsWith('.md')) {
-      final ({Uri? base, String? proxy}) plan =
-          _readmeImagePlan(_dirOf(file.path));
+      final ({
+        Uri? base,
+        String? proxy,
+        Future<Map<String, String>>? headers
+      }) plan = _readmeImagePlan(_dirOf(file.path));
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: ReadmeView(
           markdown: text,
           imageBase: plan.base,
           imageProxyPrefix: plan.proxy,
+          imageHeaders: plan.headers,
           imageLoader: (String p) =>
               _readImageBytes(_repoPath(_dirOf(file.path), p)),
           onOpenLink: (Uri uri) {
@@ -2164,7 +2153,9 @@ class _CodeTabState extends State<_CodeTab> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final GhContent? file = _file;
-    if (_busy) {
+    if (_busy && _operationStatus.isEmpty) {
+      // 其余忙态（打开文件 / 新建）没有可读进度：维持转圈；
+      // 带进度状态的写操作在下方列表顶部显示状态行，不遮住内容。
       return const Center(child: CircularProgressIndicator());
     }
     if (file != null) {
@@ -2196,6 +2187,18 @@ class _CodeTabState extends State<_CodeTab> {
           : null,
       body: Column(
         children: <Widget>[
+          // 写操作进行中：列表顶部摊开进度状态（`_operationStatus`）。
+          if (_busy && _operationStatus.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _operationStatus,
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
+            ),
           if (_path.isNotEmpty) _breadcrumb(context),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
@@ -2235,19 +2238,15 @@ class _CodeTabState extends State<_CodeTab> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (_entries.items.isEmpty && _entries.error != null) {
-                  return _MessagePane(
-                    icon: Icons.error_outline,
+                  return OgLAsyncErrorPane(
                     message: _entries.error!,
-                    action: FilledButton.tonal(
-                      onPressed: _entries.refresh,
-                      child: Text(_t('retry')),
-                    ),
+                    onRetry: _entries.refresh,
                   );
                 }
                 if (sorted.isEmpty) {
-                  return _MessagePane(
+                  return OgLAsyncEmptyPane(
                     icon: Icons.folder_open,
-                    message: _t('dirEmpty'),
+                    text: _t('dirEmpty'),
                     action: widget.canWrite
                         ? FilledButton.tonal(
                             onPressed: _createFile,
@@ -2356,7 +2355,8 @@ class _IssuesTabState extends State<_IssuesTab> {
 
   /// 列表滚动位置：`ScrollAwareAction` 读它判定「收边 / 弹回 / 近底部」。
   final ScrollController _scroll = ScrollController();
-  late final _Paged<Map<String, dynamic>> _paged = _Paged<Map<String, dynamic>>(
+  late final PagedController<Map<String, dynamic>> _paged =
+      PagedController<Map<String, dynamic>>(
     loader: _load,
     onManualRefresh: () => widget.surface.domain.api.invalidateReadCache(),
   );
@@ -2383,18 +2383,16 @@ class _IssuesTabState extends State<_IssuesTab> {
   }
 
   Future<void> _create() async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
+    final bool? created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (BuildContext context) => NewIssuePage(
           surface: widget.surface,
           fullName: widget.fullName,
         ),
       ),
     );
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('issueCreated'))),
-      );
+    if (created == true && mounted) {
+      OgLNotifier.of(context).info(_t('issueCreated');
       await _paged.refresh();
     }
   }
@@ -2427,9 +2425,8 @@ class _IssuesTabState extends State<_IssuesTab> {
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('closeFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('closeFailed', {'error': error});
       }
     }
   }
@@ -2545,7 +2542,8 @@ class _PullsTab extends StatefulWidget {
 
 class _PullsTabState extends State<_PullsTab> {
   String _state = 'open';
-  late final _Paged<Map<String, dynamic>> _paged = _Paged<Map<String, dynamic>>(
+  late final PagedController<Map<String, dynamic>> _paged =
+      PagedController<Map<String, dynamic>>(
     loader: _load,
     onManualRefresh: () => widget.surface.domain.api.invalidateReadCache(),
   );
@@ -2665,7 +2663,7 @@ class _ReleasesTab extends StatefulWidget {
 }
 
 class _ReleasesTabState extends State<_ReleasesTab> {
-  late final _Paged<GhRelease> _paged = _Paged<GhRelease>(
+  late final PagedController<GhRelease> _paged = PagedController<GhRelease>(
     loader: (int page) => widget.surface.domain.api.releases(
       widget.fullName,
       perPage: _kHeavyPageSize,
@@ -2703,16 +2701,15 @@ class _ReleasesTabState extends State<_ReleasesTab> {
       ),
     );
     if (created != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('releaseCreated', {'tag': created.tagName}))),
-      );
+      
+        OgLNotifier.of(context).warning(_t('releaseCreated', {'tag': created.tagName});
       await _paged.refresh();
     }
   }
 
   Future<void> _openDetail(GhRelease release) async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
+    final bool? changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (BuildContext context) => ReleaseDetailPage(
           surface: widget.surface,
           fullName: widget.fullName,
@@ -2720,7 +2717,7 @@ class _ReleasesTabState extends State<_ReleasesTab> {
         ),
       ),
     );
-    if (mounted) {
+    if (changed == true && mounted) {
       await _paged.refresh();
     }
   }
@@ -2818,7 +2815,7 @@ class _BranchesTab extends StatefulWidget {
 }
 
 class _BranchesTabState extends State<_BranchesTab> {
-  late final _Paged<GhBranch> _paged = _Paged<GhBranch>(
+  late final PagedController<GhBranch> _paged = PagedController<GhBranch>(
     loader: (int page) => widget.surface.domain.api.branches(
       widget.fullName,
       perPage: _kPageSize,
@@ -2890,9 +2887,8 @@ class _BranchesTabState extends State<_BranchesTab> {
       widget.onBranchChanged();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('branchCreateFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('branchCreateFailed', {'error': error});
       }
     }
   }
@@ -2932,9 +2928,8 @@ class _BranchesTabState extends State<_BranchesTab> {
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('branchRenameFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('branchRenameFailed', {'error': error});
       }
     }
   }
@@ -2971,9 +2966,8 @@ class _BranchesTabState extends State<_BranchesTab> {
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('branchDeleteFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('branchDeleteFailed', {'error': error});
       }
     }
   }
@@ -3070,7 +3064,7 @@ class _CommitsTab extends StatefulWidget {
 }
 
 class _CommitsTabState extends State<_CommitsTab> {
-  late final _Paged<GhCommit> _paged = _Paged<GhCommit>(
+  late final PagedController<GhCommit> _paged = PagedController<GhCommit>(
     loader: (int page) => widget.surface.domain.api.commits(
       widget.fullName,
       branch: widget.branch,
@@ -3152,7 +3146,8 @@ class _ActionsTab extends StatefulWidget {
 
 class _ActionsTabState extends State<_ActionsTab> {
   String _filter = 'all';
-  late final _Paged<Map<String, dynamic>> _paged = _Paged<Map<String, dynamic>>(
+  late final PagedController<Map<String, dynamic>> _paged =
+      PagedController<Map<String, dynamic>>(
     loader: _load,
     cacheKey: 'actions:${widget.fullName}:${widget.branch}',
     onManualRefresh: () => widget.surface.domain.api.invalidateReadCache(),
@@ -3180,8 +3175,8 @@ class _ActionsTabState extends State<_ActionsTab> {
   }
 
   Future<void> _dispatch() async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
+    final bool? triggered = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (BuildContext context) => WorkflowDispatchPage(
           surface: widget.surface,
           fullName: widget.fullName,
@@ -3189,10 +3184,8 @@ class _ActionsTabState extends State<_ActionsTab> {
         ),
       ),
     );
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('workflowTriggered'))),
-      );
+    if (triggered == true && mounted) {
+      OgLNotifier.of(context).info(_t('workflowTriggered');
       await _paged.refresh();
     }
   }
@@ -3285,9 +3278,9 @@ class _ActionsTabState extends State<_ActionsTab> {
             ),
             Expanded(
               child: shown.isEmpty && _paged.items.isNotEmpty
-                  ? _MessagePane(
+                  ? OgLAsyncEmptyPane(
                       icon: Icons.filter_alt_off_outlined,
-                      message: _t('noRunsFiltered'),
+                      text: _t('noRunsFiltered'),
                     )
                   : _pagedBody<Map<String, dynamic>>(
                       context,
@@ -3405,15 +3398,29 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
         },
       );
 
+  /// 任一字段变化 → 重建：`PopScope` 的 `canPop` 依赖文本内容，
+  /// 否则输入后返回键仍按「未修改」直接放行（静默丢失输入）。
+  void _onFieldChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _name.addListener(_onFieldChanged);
+    _description.addListener(_onFieldChanged);
+    _cname.addListener(_onFieldChanged);
     _pagesFuture = _loadPages();
     unawaited(_loadCname());
   }
 
   @override
   void dispose() {
+    _name.removeListener(_onFieldChanged);
+    _description.removeListener(_onFieldChanged);
+    _cname.removeListener(_onFieldChanged);
     _name.dispose();
     _description.dispose();
     _cname.dispose();
@@ -3456,15 +3463,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       OgLAppLog.instance.result('仓库', _t('basicInfoUpdated'), _full);
       if (mounted) {
         widget.onRepoChanged(updated);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('saved'))),
-        );
+        OgLNotifier.of(context).success(_t('saved');
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('saveFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('saveFailed', {'error': error});
       }
     } finally {
       if (mounted) {
@@ -3479,9 +3483,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
     }
     final String domain = _cname.text.trim();
     if (domain.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('domainRequired'))),
-      );
+      OgLNotifier.of(context).info(_t('domainRequired');
       return;
     }
     setState(() => _busy = true);
@@ -3508,11 +3510,11 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
         );
         if (!result.ok) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(_t('cnameSaveFailed',
-                    {'error': result.detail ?? result.conflict.name})),
-              ),
+            OgLNotifier.of(context).warning(
+              _t('cnameSaveFailed', {
+                'error':
+                    result.detail ?? ghWriteConflictText(result.conflict),
+              }),
             );
           }
           return;
@@ -3520,15 +3522,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       }
       OgLAppLog.instance.result('仓库', _t('cnameSaved'), domain);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('cnameSavedShort'))),
-        );
+        OgLNotifier.of(context).success(_t('cnameSavedShort');
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('cnameSaveFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('cnameSaveFailed', {'error': error});
       }
     } finally {
       if (mounted) {
@@ -3548,15 +3547,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       OgLAppLog.instance.result('仓库', _t('pagesEnabled'), _full);
       if (mounted) {
         setState(() => _pagesFuture = _loadPages());
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('pagesEnabledHint'))),
-        );
+        OgLNotifier.of(context).info(_t('pagesEnabledHint');
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('enableFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('enableFailed', {'error': error});
       }
     } finally {
       if (mounted) {
@@ -3575,15 +3571,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       OgLAppLog.instance.result('仓库', _t('pagesDisabledHint'), _full);
       if (mounted) {
         setState(() => _pagesFuture = _loadPages());
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('pagesDisabledHint'))),
-        );
+        OgLNotifier.of(context).info(_t('pagesDisabledHint');
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('disableFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('disableFailed', {'error': error});
       }
     } finally {
       if (mounted) {
@@ -3626,9 +3619,8 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_t('branchDeleteFailed', {'error': error}))),
-        );
+        
+          OgLNotifier.of(context).warning(_t('branchDeleteFailed', {'error': error});
       }
     }
   }
@@ -3771,32 +3763,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
 // 通用
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// 简单消息面板（图标 + 文案 + 可选动作）。
-class _MessagePane extends StatelessWidget {
-  const _MessagePane({required this.icon, required this.message, this.action});
-
-  final IconData icon;
-  final String message;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(icon, size: 40, color: Theme.of(context).colorScheme.outline),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            if (action != null) ...<Widget>[
-              const SizedBox(height: 16),
-              action!,
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
+// 消息面板：Phase 5 后半已收敛到 `surface/app/async.dart` —— 空态用
+// [OgLAsyncEmptyPane]、失败用 [OgLAsyncErrorPane]（自带重试），与 AsyncView /
+// OgLAsyncSliver 同一套视觉与文案；原私有 `_MessagePane` 与
+// [OgLAsyncEmptyPane] 的实现逐字相同，属重复代码，已删除。

@@ -10,7 +10,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/animations.dart';
+import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -239,8 +241,8 @@ class _DashboardPageState extends State<DashboardPage> {
   /// 打开仓库页；返回 `true` 表示该仓库**已被删除**，此时刷新当前列表。
   Future<void> _openRepo(GhRepo repo) async {
     _preloadChildRepoRoute(repo);
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
+    final bool? deleted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (BuildContext context) => OgLAnimPreloadBoundary(
           group: _repoRouteGroup(repo.fullName),
           // 声明本作用域要参与的两类（子页自己登记 currentPage，父页替它登记
@@ -253,8 +255,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       ),
     );
-    // 返回后无条件刷新（不再依赖 pop 返回值：sheet 的 pop 可能是非 bool 类型）。
-    if (mounted) {
+    if (deleted == true && mounted) {
       await _active.refresh();
     }
   }
@@ -292,9 +293,8 @@ class _DashboardPageState extends State<DashboardPage> {
       return;
     }
     OgLAppLog.instance.result(_t('home'), _t('repoCreated'), created.fullName);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(_t('repoCreatedName', {'name': created.fullName}))),
+    OgLNotifier.of(context).success(
+      _t('repoCreatedName', {'name': created.fullName}),
     );
     await _mine.refresh();
     if (mounted) {
@@ -381,20 +381,15 @@ class _DashboardPageState extends State<DashboardPage> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (p.items.isEmpty && p.error != null) {
-                  return _RepoMessage(
-                    icon: Icons.error_outline,
+                  return OgLAsyncErrorPane(
                     message: p.error!,
-                    action: FilledButton.tonal(
-                      onPressed: p.refresh,
-                      child: Text(_t('retry')),
-                    ),
+                    onRetry: p.refresh,
                   );
                 }
                 if (p.items.isEmpty) {
-                  return _RepoMessage(
+                  return OgLAsyncEmptyPane(
                     icon: Icons.folder_outlined,
-                    message:
-                        _segment == 0 ? _t('emptyMine') : _t('emptyStarred'),
+                    text: _segment == 0 ? _t('emptyMine') : _t('emptyStarred'),
                     action: _segment == 0
                         ? FilledButton(
                             onPressed: _createRepo,
@@ -548,12 +543,6 @@ class _RepoPaged extends ChangeNotifier {
   }
 
   Future<void> refresh() async {
-    // ★ 入口守卫：刷新是 `Future`，可能在 `_disposed` 之后才被调度到这里
-    //   （比如页面已 push 走、`p.refresh` 还被 ListenableBuilder 串着触发）；
-    //   不守住就直接 `_generation++` / 走 `loadMore`，留下"幽灵请求"。
-    if (_disposed) {
-      return Future<void>.value();
-    }
     // 先作废在途请求：它的响应属于"上一代"数据（旧筛选 / 旧快照）。
     _generation++;
     if (loading) {
@@ -570,32 +559,6 @@ class _RepoPaged extends ChangeNotifier {
   }
 }
 
-/// 空/错态面板。
-class _RepoMessage extends StatelessWidget {
-  const _RepoMessage({required this.icon, required this.message, this.action});
-
-  final IconData icon;
-  final String message;
-  final Widget? action;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(icon, size: 40, color: Theme.of(context).colorScheme.outline),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            if (action != null) ...<Widget>[
-              const SizedBox(height: 16),
-              action!,
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
+// 消息面板：Phase 5 后半已收敛到 `surface/app/async.dart` —— 空态用
+// [OgLAsyncEmptyPane]、失败用 [OgLAsyncErrorPane]（自带重试）；原私有
+// `_RepoMessage` 与前者实现逐字相同，属重复代码，已删除。

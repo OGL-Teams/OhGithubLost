@@ -28,6 +28,7 @@ import '../../kernel/kernel.dart';
 import '../../kernel/log/og_l_log_file.dart';
 import '../app/animations.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../app/permissions.dart';
 import '../app/project_info.dart';
 import '../i18n/og_l_i18n.dart';
@@ -36,15 +37,13 @@ import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
 import '../util/accel.dart';
-import '../util/clipboard_x.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
-import 'ai_settings_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
 import 'onboarding_page.dart';
-import 'settings_section_page.dart';
+import '../../util/clipboard_x.dart';
 
 /// 设置页。
 class SettingsPage extends StatefulWidget {
@@ -76,6 +75,12 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 账户行因此反复闪「读取中」。账号增删后（见 [_refreshAccount]）重建它即可。
   Future<GhAccount?>? _accountFuture;
 
+  @override
+  void dispose() {
+    widget.surface.domain.auth.removeListener(_refreshAccount);
+    super.dispose();
+  }
+
   /// 重建账户行 Future（账号状态变化后调用）。
   void _refreshAccount() {
     if (!mounted) {
@@ -88,25 +93,26 @@ class _SettingsPageState extends State<SettingsPage> {
 
   // ── 分组折叠状态（**纯界面状态**，与设置数据分开存）────────────────────
   //
-  // main 版把展开状态落盘在 [SurfaceBridge] 的界面偏好 KV 里
-  // （`readUiPref` / `writeUiPref`，key = `ogl.settings.groupsOpen`），重启后仍在。
-  //
-  // ★ Web 树差异：Web 的 `surface_bridge.dart` 目前**没有**这对接口，
-  //   而它不在本页可改的文件范围内，因此这里退化为**进程内静态集合**：
-  //   同一会话里 pop 再进（设置页每次都是新建 State）、旋转屏幕都还记得住
-  //   展开过的分组，**重启后回到默认（全部收起）**。
-  //   等桥补上界面偏好 KV 后，把 [_openGroups] 换成"读一次 + 每次写一行"
-  //   即可，[_isOpen] / [_toggleGroup] 一字不用改（对照 main 版即可）。
-  //
-  // 为什么不塞进 `OgLSettings`：它会被"重置设置"清掉 —— 重置不该顺带
-  // 把"我刚点开的分组"关上（这条与 main 版一致）。
-  //
-  // 为什么静态：设置页每次都由 `Navigator.push` 新建一个 State，
-  // 实例字段会随 pop 丢掉，"记住上次展开的分组"就无从谈起。
+  // 为什么落盘：设置页有 6 个分组，用户每次进来都要重新展开自己关心那一组，
+  // 是纯粹的重复劳动。状态存在 SurfaceBridge 的界面偏好 KV 里
+  // （key = [_groupsKey]，值 = 展开的分组 id 逗号串），重启后仍在。
+  // 为什么**不进** `OgLSettings`：它会被"重置设置"清掉 —— 重置不该顺带
+  // 把"我刚点开的分组"关上。
 
-  /// 当前展开的分组（进程内保持；见上文差异说明）。
-  final ValueNotifier<Set<String>> _openGroups =
-      ValueNotifier<Set<String>>(<String>{});
+  /// 界面偏好键。
+  static const String _groupsKey = 'ogl.settings.groupsOpen';
+
+  /// 已知分组 id（落盘的白名单：读到陌生 id 直接忽略，避免脏数据越滚越大）。
+  static const List<String> _groupIds = <String>[
+    'interface',
+    'code',
+    'storage',
+    'about',
+    'logs',
+  ];
+
+  /// 当前展开的分组。
+  final Set<String> _openGroups = <String>{};
 
   @override
   void initState() {
@@ -114,27 +120,39 @@ class _SettingsPageState extends State<SettingsPage> {
     _accountFuture = widget.surface.domain.auth.activeAccount();
     // 账号增删（登录页 / 用户页）会通知：重建 Future，账户行跟上变化。
     widget.surface.domain.auth.addListener(_refreshAccount);
+    unawaited(_loadGroups());
   }
 
-  @override
-  void dispose() {
-    widget.surface.domain.auth.removeListener(_refreshAccount);
-    _openGroups.dispose();
-    super.dispose();
+  /// 读取持久化的展开状态（读不到 = 全部收起）。
+  Future<void> _loadGroups() async {
+    final String? raw = await widget.surface.readUiPref(_groupsKey);
+    if (raw == null || !mounted) {
+      return;
+    }
+    final Set<String> open = <String>{
+      for (final String id in raw.split(','))
+        if (_groupIds.contains(id)) id,
+    };
+    setState(() {
+      _openGroups
+        ..clear()
+        ..addAll(open);
+    });
   }
 
   /// 展开状态是否已记录（用于区分"用户收起过"与"默认收起"）。
-  bool _isOpen(String id) => _openGroups.value.contains(id);
+  bool _isOpen(String id) => _openGroups.contains(id);
 
-  /// 切换分组展开状态。
+  /// 切换分组展开状态并落盘。
   void _toggleGroup(String id, bool open) {
-    final Set<String> next = Set<String>.of(_openGroups.value);
-    if (open) {
-      next.add(id);
-    } else {
-      next.remove(id);
-    }
-    _openGroups.value = next;
+    setState(() {
+      if (open) {
+        _openGroups.add(id);
+      } else {
+        _openGroups.remove(id);
+      }
+    });
+    unawaited(widget.surface.writeUiPref(_groupsKey, _openGroups.join(',')));
   }
 
   /// 折叠摘要：明暗模式（分组标题下一行，收起时也知道当前是什么）。
@@ -180,39 +198,6 @@ class _SettingsPageState extends State<SettingsPage> {
     final int count = OgLAppLog.instance.entries.length;
     final String lines = _t('logsLineCount', <String, Object?>{'count': count});
     return '${_t('logsSaving')} · $lines';
-  }
-
-  /// 分类入口（第一层 · 进入式）：一个可点卡片，push 到对应分区页。
-  Widget _categoryTile(
-    ThemeData theme, {
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: ListTile(
-        leading: Icon(icon),
-        title: Text(title),
-        subtitle: subtitle == null ? null : Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
-      ),
-    );
-  }
-
-  /// 打开分区页（第二层 · 折叠式），共享 [_openGroups] 折叠状态。
-  void _openSection(String title, List<Widget Function()> builders) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext _) => SettingsSectionPage(
-          title: title,
-          collapseState: _openGroups,
-          builders: builders,
-        ),
-      ),
-    );
   }
 
   /// 自定义代码配色的可选色板（ARGB）。
@@ -353,7 +338,7 @@ class _SettingsPageState extends State<SettingsPage> {
     await _settings.reset();
     widget.surface.applyDns();
     if (mounted) {
-      _toast(_t('resetDone'));
+      _notifier.success(_t('resetDone'));
     }
   }
 
@@ -376,7 +361,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
     await widget.surface.setLanguage(code);
     if (mounted) {
-      _toast('${_t('language')}: ${OgLI18n.instance.localeLabel}');
+      _notifier.info('${_t('language')}: ${OgLI18n.instance.localeLabel}');
     }
   }
 
@@ -410,7 +395,7 @@ class _SettingsPageState extends State<SettingsPage> {
       return;
     }
     if (account == null) {
-      _toast(_t('starLoginFirst'));
+      _notifier.warning(_t('starLoginFirst'));
       return;
     }
     final bool? confirmed = await _showOgLDialog<bool>(
@@ -441,31 +426,29 @@ class _SettingsPageState extends State<SettingsPage> {
           .isRepoStarred(OgLProjectInfo.repoFullName);
       if (already) {
         if (mounted) {
-          _toast(_t('alreadyStarred'));
+          _notifier.info(_t('alreadyStarred'));
         }
         return;
       }
       await widget.surface.domain.api
           .setStarred(OgLProjectInfo.repoFullName, true);
       if (mounted) {
-        _toast(_t('starredThanks'));
+        _notifier.success(_t('starredThanks'));
       }
     } catch (error) {
       if (mounted) {
-        _toast(_t('actionFailed', {'error': error}));
+        _notifier.warning(_t('actionFailed', {'error': error}));
       }
     }
   }
 
   /// 复制全部日志到剪贴板。
   Future<void> _copyLogs(List<String> lines) async {
-    if (!await ogLCopyText(lines.join('\n'), tag: 'Settings')) {
-      return;
-    }
+    ogLCopyText(lines.join('\n', tag: '日志');
     if (!mounted) {
       return;
     }
-    _toast(_t('copiedLogLines', {'count': lines.length}));
+    _notifier.success(_t('copiedLogLines', {'count': lines.length}));
   }
 
   @override
@@ -483,11 +466,9 @@ class _SettingsPageState extends State<SettingsPage> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: OgLRevealList.of(context, <Widget>[
-              // 根级只有「5 个可折叠分组 + 账户条 + 1 个危险区」，
-              // 浏览器构建里另有 1 张 Web 版开关卡（[SettingsPage._webSection]），
-              // 且分组默认**收起**：进入设置页先看到的是分组清单
-              // （账户 → 界面 → 代码与文件 → 存储与网络 → Web 版 →
-              // 关于与帮助 → 日志），一屏正好 5~7 个可点条目。
+              // 根级只有「5 个可折叠分组 + 账户条 + 1 个危险区」，且分组默认**收起**：
+              // 进入设置页先看到的是分组清单（账户 → 界面 → 代码与文件 →
+              // 存储与网络 → 关于与帮助 → 日志），一屏正好 5~7 个可点条目。
               // 组内条目展开后才出现 —— 不再被长说明文字挤没。
               //
               // 保存失败提示：常驻 `AnimatedSize` 承载条件内容（带过渡；
@@ -500,7 +481,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: saveError == null
                     ? const SizedBox(width: double.infinity)
                     : Card(
-                        margin: const EdgeInsets.only(bottom: 10),
+                        margin: const EdgeInsets.only(bottom: 12),
                         color: theme.colorScheme.errorContainer,
                         child: Padding(
                           padding: const EdgeInsets.all(12),
@@ -514,70 +495,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
               ),
               _accountCard(theme),
-              _categoryTile(
-                theme,
-                icon: Icons.tune,
-                title: _t('groupInterface'),
-                subtitle: _interfaceSummary(value),
-                onTap: () => _openSection(
-                  _t('groupInterface'),
-                  <Widget Function()>[() => _interfaceGroup(value)],
-                ),
-              ),
-              _categoryTile(
-                theme,
-                icon: Icons.code,
-                title: _t('codeAndFiles'),
-                subtitle: _codeSummary(value),
-                onTap: () => _openSection(
-                  _t('codeAndFiles'),
-                  <Widget Function()>[() => _codeGroup(context, theme, value)],
-                ),
-              ),
-              _categoryTile(
-                theme,
-                icon: Icons.storage_outlined,
-                title: _t('groupStorageNetwork'),
-                onTap: () => _openSection(
-                  _t('groupStorageNetwork'),
-                  <Widget Function()>[
-                    () => _storageGroup(theme, value),
-                    () => _webSection(theme),
-                  ],
-                ),
-              ),
-              _categoryTile(
-                theme,
-                icon: Icons.smart_toy_outlined,
-                title: OgLI18n.instance.t('ai', 'title'),
-                subtitle: OgLI18n.instance.t('ai', 'privacy'),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext _) =>
-                        AiSettingsPage(surface: widget.surface),
-                  ),
-                ),
-              ),
-              _categoryTile(
-                theme,
-                icon: Icons.help_outline,
-                title: _t('groupAboutHelp'),
-                subtitle: _aboutSummary(),
-                onTap: () => _openSection(
-                  _t('groupAboutHelp'),
-                  <Widget Function()>[() => _aboutGroup(theme)],
-                ),
-              ),
-              _categoryTile(
-                theme,
-                icon: Icons.article_outlined,
-                title: _t('logs'),
-                subtitle: _logsSummary(),
-                onTap: () => _openSection(
-                  _t('logs'),
-                  <Widget Function()>[() => _logsGroup(theme)],
-                ),
-              ),
+              _interfaceGroup(value),
+              _codeGroup(context, theme, value),
+              _storageGroup(theme, value),
+              _aboutGroup(theme),
+              _logsGroup(theme),
               // 危险区：与上面所有分组**双重拉开**（留白 + 分隔线 + 告警配色），
               // 免得"收尾顺手点一下"就把设置全清了。
               const SizedBox(height: 8),
@@ -915,7 +837,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       // 一个可选项都没有（预览 / 中枢未起来）时先给一句提示，
                       // 而不是弹一个空气泡。
                       onTap: widget.surface.dnsServerChoices.isEmpty
-                          ? () => _toast(_t('noDnsServers'))
+                          ? () => _notifier.warning(_t('noDnsServers'))
                           : null,
                       onSelected: (String id) => unawaited(_applyDnsServer(id)),
                     ),
@@ -940,7 +862,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _applyDnsServer(String serverId) async {
     await widget.surface.setDnsServer(serverId);
     if (mounted) {
-      _toast(_t('dnsSaved'));
+      _notifier.success(_t('dnsSaved'));
     }
   }
 
@@ -971,7 +893,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _storageGroup(ThemeData theme, OgLSettings value) => OgLSettingsGroup(
         title: _t('groupStorageNetwork'),
         subtitle: _storageSummary(value),
-        leading: const Icon(Icons.storage),
+        leading: const Icon(Icons.storage_outlined),
         expanded: _isOpen('storage'),
         onToggle: (bool open) => _toggleGroup('storage', open),
         expandLabel: _t('expandGroup'),
@@ -1016,38 +938,8 @@ class _SettingsPageState extends State<SettingsPage> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: const Icon(Icons.chevron_right, size: 18),
+        trailing: const Icon(Icons.chevron_right, size: 24),
         onTap: onTap,
-      );
-
-  /// Web 版（**只在浏览器构建里显示**）。
-  ///
-  /// ## 为什么只显示在 Web 上
-  /// 「打开时询问添加到桌面」在原生平台**没有任何对应行为**。按项目纪律
-  /// 「只留真选项」，不显示比显示一个点了不生效的假开关更诚实；
-  /// 非 Web 上 [OgLWebStartup.installPromptEnabled] 保持默认值且无人读取，
-  /// 因此也不构成"假选项"。
-  ///
-  /// ## 它接到哪里
-  /// 开关读写的 [`OgLWebStartup`]（`surface/app/web_install.dart`）；
-  /// 真正弹提示的是 `main.dart` 的启动接线（`_ogLScheduleWebSurface`），
-  /// 那里会先看这个开关，再决定要不要询问"添加到桌面"。
-  Widget _webSection(ThemeData theme) => _section(
-        theme,
-        title: _t('webSectionTitle'),
-        subtitle: _t('webSectionDesc'),
-        children: <Widget>[
-          SwitchListTile(
-            title: Text(_t('webInstallPrompt')),
-            subtitle: Text(_t('webInstallPromptDesc')),
-            value: widget.surface.webInstallPromptEnabled,
-            onChanged: (bool on) {
-              // 立即生效；写盘在后台进行（写失败不影响本次会话）。
-              unawaited(widget.surface.setWebInstallPromptEnabled(on));
-              setState(() {});
-            },
-          ),
-        ],
       );
 
   /// 存储弹窗。
@@ -1134,10 +1026,10 @@ class _SettingsPageState extends State<SettingsPage> {
       return;
     }
     if (status == OgLPermissionStatus.granted) {
-      _toast(_t('storageAllFilesGranted'));
+      _notifier.success(_t('storageAllFilesGranted'));
     } else {
       // 未拿到授权 → 下载落点受限，属"需要用户留意"，用告警语气而不是普通提示。
-      _toast(OgLI18n.instance.t('shell', 'storageHintModern'));
+      _notifier.warning(OgLI18n.instance.t('shell', 'storageHintModern'));
     }
   }
 
@@ -1149,9 +1041,9 @@ class _SettingsPageState extends State<SettingsPage> {
       return;
     }
     if (ok) {
-      _toast(_t('storageModeSaf'));
+      _notifier.success(_t('storageModeSaf'));
     } else {
-      _toast(OgLI18n.instance.t('shell', 'storageHintModern'));
+      _notifier.warning(OgLI18n.instance.t('shell', 'storageHintModern'));
     }
   }
 
@@ -1161,18 +1053,16 @@ class _SettingsPageState extends State<SettingsPage> {
     await widget.surface.clearSafDirectory();
     if (mounted) {
       // 授权被撤销 = 下载落点重新受限，属"被拦下"，用告警语气（不是成功）。
-      _toast(_t('storageClearFolder'));
+      _notifier.warning(_t('storageClearFolder'));
     }
   }
 
-  /// 轻提示。
-  void _toast(String message) {
-    if (!mounted) {
-      return;
-    }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
+  /// 统一提示入口（Phase 5 后半收敛）：**提示长什么样、什么语气只有一处定义**
+  /// （见 [OgLNotifier]，即 `surface/app/notifier.dart`）—— 本页不再自造 SnackBar。
+  ///
+  /// 语气分工：[OgLNotifier.success] 操作已生效 / [OgLNotifier.info] 普通说明 /
+  /// [OgLNotifier.warning] 失败与"被拦下"（权限不足、目标不存在、写回失败…）。
+  OgLNotifier get _notifier => OgLNotifier(ScaffoldMessenger.of(context));
 
   /// 统一弹窗入口：所有弹窗都接**动效档位**（时长 / 曲线取自质量表；
   /// 档位 0 为零时长 = 立即打开）。收口后不再各处手写 `showDialog`。
@@ -1232,7 +1122,7 @@ class _SettingsPageState extends State<SettingsPage> {
     await widget.surface.setDownloadConnections(picked);
     if (mounted) {
       // 并发数已落盘生效 → 成功语气（不是普通说明）。
-      _toast(
+      _notifier.success(
         _t('connectionsCount', <String, Object?>{'count': picked}),
       );
     }
@@ -1487,7 +1377,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         'accelPrivateWarnPoint3',
                       ])
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
+                          padding: const EdgeInsets.only(bottom: 8),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -1553,15 +1443,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   const Divider(height: 24),
                   Text(ogLAccelAgreement()),
-                  const Divider(height: 28),
-                  // 通道的法律定位：它是**本应用提供的网络服务**，
-                  // 不保证可用性、也不保证不收集数据。开启后不再重复提示。
-                  Text(
-                    _tc('accelServiceTitle'),
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(_tc('accelServiceBody')),
                   const Divider(height: 28),
                   // 语言效力：以中文文本为准。放在正文最后、勾选之前。
                   Text(
@@ -1685,7 +1566,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (error != null) {
       name.dispose();
       url.dispose();
-      _toast(error);
+      _notifier.warning(error);
       return;
     }
     final String label =
@@ -1696,7 +1577,7 @@ class _SettingsPageState extends State<SettingsPage> {
     name.dispose();
     url.dispose();
     if (mounted) {
-      _toast(_t('channelAdded', {'label': label}));
+      _notifier.success(_t('channelAdded', {'label': label}));
     }
   }
 
@@ -1706,7 +1587,7 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 一眼知道"现在是谁登录着"（退出登录在「用户页」，那里才是危险动作的归属地）。
   Widget _accountCard(ThemeData theme) => Card(
         clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -2063,30 +1944,6 @@ class _SettingsPageState extends State<SettingsPage> {
         ],
       );
   // ───────────────────────── 通用零件 ─────────────────────────
-
-  /// 根级分组卡片：标题 + 摘要，**常展开**（层级规范：根级不折叠）。
-  Widget _section(
-    ThemeData theme, {
-    required String title,
-    required List<Widget> children,
-    String subtitle = '',
-  }) =>
-      Card(
-        clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.only(bottom: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            ListTile(
-              title: Text(title, style: theme.textTheme.titleMedium),
-              subtitle: subtitle.isEmpty
-                  ? null
-                  : Text(subtitle, style: theme.textTheme.bodySmall),
-            ),
-            ...children,
-          ],
-        ),
-      );
 
   /// 分组内的二级小标题。
   Widget _subTitle(ThemeData theme, String text) => Padding(

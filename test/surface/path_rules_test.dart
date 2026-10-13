@@ -7,6 +7,7 @@
 /// 4. 加速通道地址必须是 `https://`（明文 http 会被 Android 9+ 拦截）；
 /// 5. 加速地址拼接是纯函数、不会二次加前缀。
 library;
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -36,10 +37,12 @@ void main() {
   setUpAll(_loadZh);
   group('仓库路径规则', () {
     test('合法路径通过', () {
-      expect(ogLValidateRepoEntryPath('src/main.dart', directory: false), isNull);
+      expect(
+          ogLValidateRepoEntryPath('src/main.dart', directory: false), isNull);
       expect(ogLValidateRepoEntryPath('docs/api/', directory: true), isNull);
       expect(ogLValidateRepoEntryPath('.gitignore', directory: false), isNull);
-      expect(ogLValidateRepoEntryPath('a/b/c_d-e.txt', directory: false), isNull);
+      expect(
+          ogLValidateRepoEntryPath('a/b/c_d-e.txt', directory: false), isNull);
     });
 
     test('禁止中文 / 全角', () {
@@ -80,7 +83,8 @@ void main() {
       expect(ogLValidateRepoEntryPath('', directory: false), isNotNull);
       expect(ogLValidateRepoEntryPath('a//b.txt', directory: false), isNotNull);
       expect(ogLValidateRepoEntryPath('/a.txt', directory: false), isNotNull);
-      expect(ogLValidateRepoEntryPath('a/../b.txt', directory: false), isNotNull);
+      expect(
+          ogLValidateRepoEntryPath('a/../b.txt', directory: false), isNotNull);
       expect(ogLValidateRepoEntryPath('a /b.txt', directory: false), isNotNull);
       expect(ogLValidateRepoEntryPath('CON', directory: false), isNotNull);
       // 目录必须以 / 结尾；文件不能以 / 结尾。
@@ -143,8 +147,7 @@ void main() {
     });
 
     test('候选地址：未启用加速 → 直连', () {
-      const String target =
-          'https://github.com/o/r/releases/download/v1/a.zip';
+      const String target = 'https://github.com/o/r/releases/download/v1/a.zip';
       expect(
         ogLAccelCandidates(
           url: target,

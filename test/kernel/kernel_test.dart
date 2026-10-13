@@ -250,9 +250,8 @@ void main() {
       final fixture = await _buildFixture(specs: _defaultSpecs());
       final manifest = BootManifest.fromJson(
         jsonDecode(fixture.fs.files[fixture.manifestPath] != null
-                ? utf8.decode(fixture.fs.files[fixture.manifestPath]!)
-                : '{}')
-            as Map<String, Object?>,
+            ? utf8.decode(fixture.fs.files[fixture.manifestPath]!)
+            : '{}') as Map<String, Object?>,
       );
       final verifier = BootIntegrityVerifier(
         fileSystem: fixture.fs,
@@ -267,7 +266,8 @@ void main() {
           utf8.decode(fixture.fs.files[fixture.manifestPath]!) as dynamic;
       final json = jsonDecode(raw) as Map<String, Object?>;
       // 篡改模块指纹，但保留原签名。
-      final modules = (json['modules']! as List<Object?>).cast<Map<String, Object?>>();
+      final modules =
+          (json['modules']! as List<Object?>).cast<Map<String, Object?>>();
       modules.first['sha256'] = 'deadbeef';
       final manifest = BootManifest.fromJson(json);
       final verifier = BootIntegrityVerifier(
@@ -342,7 +342,8 @@ void main() {
       expect(result.safeMode, isTrue);
       expect(result.excludedModules, <String>['domain.api']);
       expect(harness.warnings.count, 1);
-      expect(harness.warnings.mostSevere?.code, BootWarningCodes.moduleIntegrityFailed);
+      expect(harness.warnings.mostSevere?.code,
+          BootWarningCodes.moduleIntegrityFailed);
       expect(harness.warnings.hasDanger, isTrue);
     });
 
@@ -513,7 +514,8 @@ void main() {
 
       final order = bus.resolveOrder().map((m) => m.descriptor.id).toList();
       expect(order, <String>['base.net', 'domain.api']);
-      expect(bus.toDependencyGraph(), contains('domain.api [domain] -> base.net'));
+      expect(
+          bus.toDependencyGraph(), contains('domain.api [domain] -> base.net'));
     });
 
     test('依赖缺失 / 循环依赖 / ID 重复 / 能力重复 / 描述符非法', () {
@@ -541,7 +543,8 @@ void main() {
       final dupBus = buildBus();
       dupBus.register(_FakeModule(id: 'base.net', layer: ModuleLayer.base));
       expect(
-        () => dupBus.register(_FakeModule(id: 'base.net', layer: ModuleLayer.base)),
+        () => dupBus
+            .register(_FakeModule(id: 'base.net', layer: ModuleLayer.base)),
         throwsA(isA<KernelModuleBusError>()),
       );
 
@@ -582,8 +585,9 @@ void main() {
         di: KernelDi(),
         diagnostics: diagnostics,
         bridges: KernelBridgeRegistry(),
-      )..register(api)
-       ..register(net);
+      )
+        ..register(api)
+        ..register(net);
       final ordered = bus.resolveOrder();
       final context = KernelContext(
         di: KernelDi(),
@@ -617,8 +621,9 @@ void main() {
         di: KernelDi(),
         diagnostics: diagnostics,
         bridges: KernelBridgeRegistry(),
-      )..register(api)
-       ..register(net);
+      )
+        ..register(api)
+        ..register(net);
       final ordered = bus.resolveOrder();
       final context = KernelContext(
         di: KernelDi(),

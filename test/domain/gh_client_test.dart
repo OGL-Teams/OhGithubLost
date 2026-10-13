@@ -68,7 +68,8 @@ void main() {
       );
       await auth.switchTo('1');
 
-      final holding = ScriptedTransport(<Object>[_json(<String, dynamic>{}), _json(<String, dynamic>{})]);
+      final holding = ScriptedTransport(
+          <Object>[_json(<String, dynamic>{}), _json(<String, dynamic>{})]);
       final bridge = NetBridge(transport: holding, observer: NetObserver());
       final client = GhClient(net: bridge, auth: auth);
       await client.getObject('/user');
@@ -113,10 +114,9 @@ void main() {
     });
 
     test('403 且额度耗尽 → GhRateLimitException（主限流）', () async {
-      final reset = DateTime.now()
-          .add(const Duration(hours: 1))
-          .millisecondsSinceEpoch ~/
-          1000;
+      final reset =
+          DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/
+              1000;
       final client = _client(_bridge(<NetResponse>[
         _json(null, status: 403, headers: <String, String>{
           'x-ratelimit-limit': '5000',
@@ -126,8 +126,8 @@ void main() {
       ]));
       await expectLater(
         client.getObject('/user'),
-        throwsA(isA<GhRateLimitException>()
-            .having((GhRateLimitException e) => e.secondary, 'secondary', false)),
+        throwsA(isA<GhRateLimitException>().having(
+            (GhRateLimitException e) => e.secondary, 'secondary', false)),
       );
     });
 
@@ -139,8 +139,8 @@ void main() {
       ]));
       await expectLater(
         client.getObject('/user'),
-        throwsA(isA<GhRateLimitException>()
-            .having((GhRateLimitException e) => e.secondary, 'secondary', true)),
+        throwsA(isA<GhRateLimitException>().having(
+            (GhRateLimitException e) => e.secondary, 'secondary', true)),
       );
     });
 
@@ -196,12 +196,13 @@ void main() {
 
   group('限流避让', () {
     test('已知额度耗尽 → 不再发请求，直接报何时恢复', () async {
-      final reset = DateTime.now()
-          .add(const Duration(hours: 2))
-          .millisecondsSinceEpoch ~/
-          1000;
+      final reset =
+          DateTime.now().add(const Duration(hours: 2)).millisecondsSinceEpoch ~/
+              1000;
       final holding = ScriptedTransport(<Object>[
-        _json(<String, dynamic>{'ok': true}, headers: <String, String>{
+        _json(<String, dynamic>{
+          'ok': true
+        }, headers: <String, String>{
           'x-ratelimit-limit': '5000',
           'x-ratelimit-remaining': '0',
           'x-ratelimit-reset': '$reset',
@@ -504,7 +505,9 @@ void main() {
 
     test('GhPage 从响应头解析（端到端）', () async {
       final client = _client(_bridge(<NetResponse>[
-        _json(<String, dynamic>{'ok': true}, headers: <String, String>{
+        _json(<String, dynamic>{
+          'ok': true
+        }, headers: <String, String>{
           'link': '<https://api.github.com/x?page=3>; rel="next"',
         }),
       ]));

@@ -9,13 +9,15 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../app/animations.dart';
 import '../app/async.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
-import '../util/clipboard_x.dart';
+import '../app/notifier.dart';
+import '../../util/clipboard_x.dart';
 
 /// 取 `drafts_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -115,20 +117,8 @@ class _DraftsPageState extends State<DraftsPage> {
       branch: draft.branch.isEmpty ? null : draft.branch,
     );
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_t('deleted'))),
-      );
+      OgLNotifier.of(context).info(_t('deleted'));
       await _controller().load();
-    }
-  }
-
-  /// 复制草稿内容到剪贴板；复制成功后才关闭对话框（失败可见）。
-  Future<void> _copyDraft(GhDraft draft, BuildContext dialogContext) async {
-    if (!await ogLCopyText(draft.content, tag: 'Drafts')) {
-      return;
-    }
-    if (dialogContext.mounted) {
-      Navigator.of(dialogContext).pop();
     }
   }
 
@@ -149,7 +139,8 @@ class _DraftsPageState extends State<DraftsPage> {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              unawaited(_copyDraft(draft, dialogContext));
+              unawaited(ogLCopyText(draft.content, tag: '复制内容'));
+              Navigator.of(dialogContext).pop();
             },
             child: Text(_t('copyContent')),
           ),
