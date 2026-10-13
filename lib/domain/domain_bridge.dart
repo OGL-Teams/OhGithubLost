@@ -27,6 +27,7 @@ import 'gh/gh_api.dart';
 import 'gh/gh_auth.dart';
 import 'gh/gh_client.dart';
 import 'gh/gh_read_cache.dart';
+import 'gh/repo_file_service.dart';
 import 'ix/ix_action_logs.dart';
 import 'ix/ix_download.dart';
 import 'ix/ix_notify.dart';
@@ -52,10 +53,12 @@ class DomainBridge {
     IxDownloadManager? downloads,
     IxActionLogs? actionLogs,
     IxPresign? presign,
+    RepoFileService? repoFiles,
   })  : downloads = downloads ?? IxDownloadManager(),
         actionLogs =
             actionLogs ?? IxActionLogs(tokenProvider: () async => null),
-        presign = presign ?? IxPresign(tokenProvider: () async => null);
+        presign = presign ?? IxPresign(tokenProvider: () async => null),
+        _repoFiles = repoFiles ?? RepoFileService(api: api);
 
   /// 认证（多账号 / 令牌）。
   final GhAuthService auth;
@@ -92,6 +95,12 @@ class DomainBridge {
 
   /// 第一跳解析（把需认证的地址换成短期签名地址；**令牌不出设备**）。
   final IxPresign presign;
+
+  /// 仓库文件操作服务（create / delete / rename / copy / batch）。
+  final RepoFileService _repoFiles;
+
+  /// 仓库文件操作服务（**统一文件操作入口**：移动 / 复制 / 批量，逐项明细 + 进度）。
+  RepoFileService get repoFiles => _repoFiles;
 
   /// 从内核桥表解析中枢桥（展示层的标准取用方式）。
   static DomainBridge of(KernelBridgeRegistry bridges) =>
@@ -335,6 +344,10 @@ class IxModule extends OgLModule {
       engine: OgLRangeDownloader(),
       // 成品导出（存储②档：把成品粘贴到用户选的 SAF 文件夹）。
       storageExporter: const _OgLStorageExporter(),
+      // ★ 落盘目录裁决器（装配根注入）：Web 后端实现为**空操作**
+      //   （下载交给浏览器，页面无落盘目录可裁决）；注入只为两平台留同一装配形状。
+      downloadDirProvider: () async =>
+          '${(await OgLStorage.plan()).root}/download',
     );
     actionLogs = IxActionLogs(
       tokenProvider: () async => (await auth.activeToken())?.value,

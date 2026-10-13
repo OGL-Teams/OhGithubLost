@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../kernel/kernel.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../pages/ai_chat_page.dart';
 import '../pages/dashboard_page.dart';
@@ -193,12 +194,8 @@ class _OgLClientShellState extends State<OgLClientShell> {
           if (!mounted) {
             return;
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              duration: _backGuard.exitWindow,
-              content: Text(OgLI18n.instance.t('shell', kOgLBackExitHintKey)),
-            ),
-          );
+          OgLNotifier.of(context)
+              .info(OgLI18n.instance.t('shell', kOgLBackExitHintKey));
         case OgLBackAction.exit:
           await SystemNavigator.pop();
       }

@@ -42,6 +42,10 @@ Uri pathForSpec(String localPath) => Uri.file(localPath);
 ///
 /// **仅供集成分支使用**——它把 `pathForSpec` 收进 backend 的协议方法里，
 /// 其它方法在本文件**留白**（抛 `UnimplementedError`）以强制补齐。
+///
+/// ★ 契约形态与本仓库 `main` 分支对齐：`pathFor` 返回 **`String`**（落盘
+///   路径文本），UI 层再按需 `Uri.file(...)`；`downloadDirProvider` 在
+///   原生端决定"写公共 ogl 目录还是应用私有目录"，本占位为空操作。
 class IoDownloadBackend implements IxDownloadBackend {
   /// 创建。集成分支应传入"由库算出的本地路径"查询函数
   /// （`DownloadTask.filePath()`），不要自己拼目录。
@@ -67,7 +71,13 @@ class IoDownloadBackend implements IxDownloadBackend {
       throw UnimplementedError('IoDownloadBackend.supportsPauseResume');
 
   @override
-  Future<Uri?> pathFor(IxDownloadSpec spec) async {
+  set downloadDirProvider(Future<String?> Function()? provider) {
+    // 集成时：注入 `() async => '${(await OgLStorage.plan()).root}/download'`
+    // （见 main 分支的 domain_bridge）。占位分支无落盘目录可裁决 → 空操作。
+  }
+
+  @override
+  Future<String> pathFor(IxDownloadSpec spec) async {
     final String Function(IxDownloadSpec spec)? resolve = _localPathOf;
     if (resolve == null) {
       throw UnimplementedError(
@@ -75,7 +85,7 @@ class IoDownloadBackend implements IxDownloadBackend {
         '（由 background_downloader 的 task.filePath() 给出真实落盘路径）',
       );
     }
-    return pathForSpec(resolve(spec));
+    return resolve(spec);
   }
 
   @override

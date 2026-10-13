@@ -27,6 +27,7 @@ import '../kernel/bridge_registry.dart';
 import '../kernel/contract/module.dart';
 import 'app/error_surface.dart';
 import 'app/motion.dart';
+import 'app/web_install.dart';
 import 'i18n/og_l_i18n.dart';
 import 'settings.dart';
 import 'theme.dart';
@@ -44,7 +45,8 @@ class SurfaceBridge {
     this.cache,
     this.storageProbe,
     this.uiPrefs,
-  });
+    OgLWebPrefsStore? webPrefs,
+  }) : webStartup = OgLWebStartup(webPrefs ?? OgLMemoryWebPrefs());
 
   /// 从内核桥表解析（展示层的标准取用方式）。
   static SurfaceBridge of(KernelBridgeRegistry bridges) =>
@@ -73,6 +75,24 @@ class SurfaceBridge {
   /// 「哪个分组是展开的」不是设置、也不该被"重置设置"清掉
   /// （重置后分组开合保持原样，用户不会突然找不到刚才那一组）。
   final DiskKv? uiPrefs;
+
+  /// Web 启动偏好（「打开时询问添加到桌面」开关 + 加速服务弹窗的已读标记）。
+  ///
+  /// **只在 Web 上有行为**：设置页仅在 `kIsWeb` 时展示对应开关，`main.dart`
+  /// 也只在 Web 上读取它。非 Web 构建里它依然存在，但保持默认值、无人读取
+  /// （因此不是"假选项"，只是一个惰性对象）。
+  final OgLWebStartup webStartup;
+
+  /// 设置项「打开时询问添加到桌面」（**默认开**）。
+  ///
+  /// 存储键 `ogl.web.installPromptEnabled`。只有浏览器里才有人读它；
+  /// 为什么它不放进 `OgLSettings`（那份配置文件属于所有平台，塞两个永远
+  /// 不生效的字段会变成"假选项"）见 `app/web_install.dart` 的 [OgLWebStartup]。
+  bool get webInstallPromptEnabled => webStartup.installPromptEnabled;
+
+  /// 改写「打开时询问添加到桌面」（立即生效 + 尽力落盘）。
+  Future<void> setWebInstallPromptEnabled(bool enabled) =>
+      webStartup.setInstallPromptEnabled(enabled);
 
   /// 读一条界面偏好（无记录 / 未接线 / 读失败一律 `null`）。
   Future<String?> readUiPref(String key) async {
@@ -433,8 +453,11 @@ class SurfaceBridge {
   /// 读 AI 当前是否启用（页面进入时一次性调用即可）。
   Future<bool> hasAi() async {
     try {
-      final dynamic s = await domain.ai.settings();
-      _cachedHasAi = s is Object && '${s.enabled}' == 'true';
+      // 类型化读取（`AiSettings` 经 `types.dart` 导出）：不要用 dynamic +
+      // `is Object` 的写法 —— 后者会把 `enabled` 的静态解析打断，编译期直接报
+      // "The getter 'enabled' isn't defined for the type 'Object'"。
+      final AiSettings s = await domain.ai.settings();
+      _cachedHasAi = s.enabled;
     } catch (_) {
       // 读不到就保留旧值：hasAi 是"该不该让用户看到 AI 入口"的开关，
       // 读失败不该让入口从屏幕上消失。

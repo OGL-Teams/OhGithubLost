@@ -12,13 +12,13 @@ import 'package:flutter/material.dart';
 import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/gh_format.dart';
 import '../widgets/anim/anim_preload.dart';
 import 'repo_page.dart';
-import '../app/notifier.dart';
 
 /// 取 `search_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(

@@ -106,3 +106,20 @@ String ghSizeText(int bytes) {
   }
   return '${(kb / 1024).toStringAsFixed(1)} MB';
 }
+
+/// 写冲突分类 → 用户可读文案。
+///
+/// `GhWriteConflict` 的枚举名（`staleSha` / `verificationFailed` …）是给
+/// 开发者看的：直接展示给用户既看不懂、也帮不上忙。这里做**唯一映射**，
+/// 冲突提示一律经它，杜绝枚举名泄漏到界面。
+String ghWriteConflictText(GhWriteConflict conflict) => switch (conflict) {
+      GhWriteConflict.none => _t('writeConflictNone'),
+      GhWriteConflict.requiresRead => _t('writeConflictRequiresRead'),
+      GhWriteConflict.staleSha => _t('writeConflictStaleSha'),
+      GhWriteConflict.needsConfirmation => _t('writeConflictNeedsConfirmation'),
+      GhWriteConflict.notFound => _t('writeConflictNotFound'),
+      GhWriteConflict.forbidden => _t('writeConflictForbidden'),
+      GhWriteConflict.server => _t('writeConflictServer'),
+      GhWriteConflict.verificationFailed =>
+        _t('writeConflictVerificationFailed'),
+    };

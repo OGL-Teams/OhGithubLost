@@ -839,6 +839,14 @@ class GhApi implements CacheRemote {
           ))
           .then((_) {});
 
+  /// 分支顶端提交 SHA（公开只读）。
+  ///
+  /// 供**写入方**在 [commitFiles] 前解析基线：读与写之间若有人推进了分支，
+  /// `expectedHeadSha` 不匹配会以 409 拒绝，而不是盲目再落一次提交。
+  /// 解析失败返回空串（调用方决定是否降级为不带基线的写，不在此处猜）。
+  Future<String> branchHeadSha(String fullName, String branch) =>
+      _headShaOf(fullName, branch);
+
   /// 批量提交（Git Data API：blob → tree → commit → ref，**原子**）。
   ///
   /// 这是"多文件一次提交"的正路：要么全成、要么全不成，

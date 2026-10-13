@@ -6,22 +6,29 @@
 /// **全局统一处理（含二级页 / 弹窗 / 抽屉）**。
 ///
 /// ## 策略（优先级从上到下）
-/// 1. 有可弹出的路由（二级页 / 弹窗）→ 交给 `Navigator` 弹栈；
-/// 2. 抽屉/侧边面板打开 → 先关它；
+/// 1. 有可弹出的路由（二级页 / 弹窗）→ 由**调用方**在进入本状态机之前
+///    直接交给 `Navigator` 弹栈（`decide` 不参与这一步，见
+///    `client_shell.dart` 的 `_handleBack`）；
+/// 2. 抽屉/侧边面板打开 → 先关它（**本应用当前无抽屉**：此分支不可达，
+///    保留以备将来加入侧边面板，见 [OgLBackAction.closeDrawer]）；
 /// 3. 不在首页 tab → 回到首页 tab（**不退出**）；
-/// 4. 已在首页 → 第一次提示「再按一次退出」，窗口内再按一次才退出。
+/// 4. 已在首页 → 第一次提示「再按一次退出」，窗口内再按一次才退出
+///    （"在首页"以**壳已可见**为前提：引导页 / 登录门阶段不算）。
 ///
 /// 逻辑（状态机）与 UI 分离，方便单测：见 [OgLBackGuard]。
 library;
 
-import 'dart:async';
-
 /// 返回键应当执行的动作。
+///
+/// 注：不存在 `popRoute` —— 路由弹栈由调用方（`_handleBack`）在
+/// `Navigator.canPop()` 为真时**提前处理**，`decide` 永远不会返回
+/// 这类动作（v7.3.1 前这里有一个从未被返回过的 `popRoute` 枚举值，
+/// 已删除；相关 case 也一并删掉，而不是留一段不可达的死代码）。
 enum OgLBackAction {
-  /// 交给导航器弹栈（二级页 / 弹窗）。
-  popRoute,
-
   /// 先关掉抽屉 / 侧边面板。
+  ///
+  /// **本应用当前无抽屉，此分支不可达；保留以备将来加入侧边面板。**
+  ///（枚举值不能删：各调用点的 `switch` 依赖它保持穷尽性。）
   closeDrawer,
 
   /// 回到首页 tab（不退出应用）。
@@ -54,8 +61,10 @@ class OgLBackGuard {
 
   /// 判定本次返回键的动作。
   ///
-  /// - [atHome]：当前是否已在首页 tab；
-  /// - [drawerOpen]：是否有抽屉/面板开着；
+  /// - [atHome]：当前是否已在首页 tab（**且壳已可见**：引导页 / 登录门
+  ///   阶段不算"在首页"，判定见调用方）；
+  /// - [drawerOpen]：是否有抽屉/面板开着（本应用当前无抽屉，调用方恒传
+  ///   `false` / 不可达状态；保留参数以备将来接入侧边面板）；
   /// - [now]：当前时间（测试注入，避免依赖真实时钟）。
   OgLBackAction decide({
     required bool atHome,
@@ -85,36 +94,3 @@ class OgLBackGuard {
 
 /// 提示文案键（`shell` 分片）：再按一次退出。
 const String kOgLBackExitHintKey = 'backExitHint';
-
-/// 「返回请求」的登记点（当前壳的返回处理函数）。
-///
-/// ## 为什么需要它
-/// Web 版把**鼠标右键**也接进返回链：监听必须挂在**根部**
-/// （`MaterialApp.builder`，位于 Navigator / Overlay **之上**）——否则弹窗打开时，
-/// 事件会被弹窗的遮罩挡在下面，挂在壳里根本收不到。而返回链的实现
-/// （弹窗 → 抽屉 → 回首页 → 双击退出）在壳里（`client_shell._handleBack`）。
-/// 两者之间用这个极小登记点相连：壳挂载时 [register]，根部右键时 [forward]。
-abstract final class OgLBackRouter {
-  static Future<void> Function()? _handler;
-
-  /// 登记当前壳的返回处理函数（壳卸载时传 `null` 清除）。
-  static void register(Future<void> Function()? handler) {
-    _handler = handler;
-  }
-
-  /// 是否已有可转发的处理器。
-  static bool get available => _handler != null;
-
-  /// 转发一次「返回」请求。
-  ///
-  /// 没有登记（壳未挂载 / 已卸载）时返回 `false`：调用方据此不做事，
-  /// 不静默"假装处理了"。
-  static bool forward() {
-    final Future<void> Function()? handler = _handler;
-    if (handler == null) {
-      return false;
-    }
-    unawaited(handler());
-    return true;
-  }
-}

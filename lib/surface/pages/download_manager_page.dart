@@ -207,7 +207,10 @@ class DownloadManagerPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  task.errorText,
+                  // ★ Web 特有：下载后端把失败原因以 i18n 键上报
+                  //   （`downloadFailed.*`，见 ix_download_backend_web.dart），
+                  //   在这里翻译；其它平台的描述文本原样展示。
+                  _errorTextOf(task),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall
@@ -294,6 +297,15 @@ class DownloadManagerPage extends StatelessWidget {
       };
 
   /// 状态展示名（**走 i18n**，理由同上）。
+  /// 失败文本（Web：`downloadFailed.*` 键 → 本页翻译；其余原样）。
+  static String _errorTextOf(IxDownloadTask task) {
+    final String raw = task.errorText;
+    if (raw.startsWith('downloadFailed.')) {
+      return _t(raw);
+    }
+    return raw;
+  }
+
   static String _statusLabel(IxDownloadStatus status) => switch (status) {
         IxDownloadStatus.queued => _t('statusQueued'),
         IxDownloadStatus.running => _t('statusRunning'),

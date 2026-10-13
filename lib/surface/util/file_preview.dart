@@ -25,9 +25,6 @@ enum OgLPreviewKind {
   /// 音频：交系统播放器（Contents API 拿不到大文件字节，无法内置播放）。
   audio,
 
-  /// 其它文本：走既有代码查看器。
-  text,
-
   /// 未知：不提供预览，只提供下载 / 浏览器打开。
   unknown,
 }
@@ -137,6 +134,5 @@ String ogLPreviewKindKey(OgLPreviewKind kind) => switch (kind) {
       OgLPreviewKind.svg => 'previewSvg',
       OgLPreviewKind.xml => 'previewXml',
       OgLPreviewKind.audio => 'previewAudio',
-      OgLPreviewKind.text => 'previewText',
       OgLPreviewKind.unknown => 'previewUnknown',
     };

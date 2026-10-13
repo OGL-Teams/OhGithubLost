@@ -5,12 +5,12 @@
 library;
 
 import '../../kernel/contract/module.dart';
-import 'web_net_transport.dart';
 import 'net_dns.dart';
 import 'net_mirror.dart';
 import 'net_retry.dart';
 import 'net_transport.dart';
 import 'net_types.dart';
+import 'web_net_transport.dart';
 
 /// 网络连接门面。
 class NetBridge {

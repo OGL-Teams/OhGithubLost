@@ -217,6 +217,8 @@ class _AiChatPageState extends State<AiChatPage> {
         return _t('enabled');
       case 'httpError':
         return '${_t('error')}（HTTP ${e.detail}）';
+      case 'transport':
+        return '${_t('error')}（${e.detail}）';
       default:
         return '${_t('error')}（${e.code}）';
     }

@@ -54,13 +54,13 @@ class AiSseEvent {
 ///
 /// 与 `AiException`（domain 层的业务错误）区分开：本异常表示「网络 / 超时 /
 /// 非 2xx」，`detail` 只允许出现脱敏后的信息。
-class AiTransportException implements AiException {
+class AiTransportException implements Exception {
   const AiTransportException(this.message, {this.statusCode});
 
   final String message;
   final int? statusCode;
 
-  /// 兼容 [AiException.code]：调用方用同一套 `on AiException` 捕获。
+  /// 兼容 `AiException.code`：调用方可以用统一的 `code` 取值方式读它。
   @override
   String get code => 'transport';
 

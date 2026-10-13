@@ -225,6 +225,7 @@ class ReadmeView extends StatelessWidget {
     this.maxImages = 40,
     this.imageLoader,
     this.imageProxyPrefix,
+    this.imageHeaders,
     super.key,
   });
 
@@ -244,11 +245,20 @@ class ReadmeView extends StatelessWidget {
   ///
   /// 为什么不直接用 Contents API：`.imageLoader` 那条路会消耗 API 配额
   /// （认证后 5000 次/小时），而一次 README 就可能要几十张图；`raw` 端点
-  /// 则不限流。因此**内置通道 + 公开仓库**时改走 raw + 代理。
+  /// 则不限流。因此**自定义通道 + 公开仓库**（或私有仓库且用户已知情接受）
+  /// 时改走 raw + 代理。
   ///
-  /// 私有仓库**不能用这条路**：`raw` 没有签名机制，必须直接带令牌，交给代理
-  /// 就等于泄露令牌 —— 那时这里保持 `null`，退回 `imageLoader`（API 取字节）。
+  /// 私有仓库走这条路**必须带令牌**：`raw` 没有签名机制，匿名访问是 404；
+  /// 通道会原样转发 `Authorization`，所以由调用方通过 [imageHeaders] 提供
+  /// 认证头（`Image.network` 支持 headers）。拿不到令牌时调用方不该启用
+  /// [imageProxyPrefix]，退回 `imageLoader`（API 取字节）。
   final String? imageProxyPrefix;
+
+  /// 加速图片的**认证头**（`Future`：令牌要读一次安全保险库）。
+  ///
+  /// 仅"私有仓库 + 已启用加速"时非空 —— 那时 raw 必须带令牌，否则必然 404。
+  /// 为 `null` 或解析成空 map 时不带任何头（公开仓库的常态）。
+  final Future<Map<String, String>>? imageHeaders;
 
   /// 截断阈值（字符数）。
   final int maxChars;
@@ -312,9 +322,11 @@ class ReadmeView extends StatelessWidget {
             (alt == null || alt.trim().isEmpty) ? uri.path : alt.trim();
         final TextStyle fallback =
             body.copyWith(color: scheme.onSurfaceVariant);
-        // ① 加速路径：公开仓库 + 用户自备通道时，仓库内图片走 **raw + 代理**。
-        //    私有仓库不走这里 —— `Image.network` 无法携带令牌，而私有 raw
-        //    匿名是 404。
+        // ① 加速路径：**自定义通道 + 公开仓库**（或私有仓库且用户已知情接受）
+        //    时，仓库内图片走 **raw + 代理**。
+        //    私有仓库的 raw 必须带令牌（匿名是 404）：令牌由 [imageHeaders]
+        //    以 `Authorization` 头给出（`Image.network` 支持 headers，通道会
+        //    原样转发）；没有它就是取不到内容，调用方应保持 proxy 为空。
         //    比 API 取字节更好：raw 不限流（API 认证后也只有 5000 次/小时）。
         final String proxy = imageProxyPrefix ?? '';
         if (proxy.isNotEmpty && !uri.hasScheme) {
@@ -324,6 +336,7 @@ class ReadmeView extends StatelessWidget {
               url: Uri.parse('$proxy$raw'),
               alt: label,
               fallbackStyle: fallback,
+              headers: imageHeaders,
             );
           }
         }
@@ -393,19 +406,25 @@ class _ReadmeImage extends StatelessWidget {
   })  : _path = path,
         _scope = scope,
         _url = null,
-        _loader = loader;
+        _loader = loader,
+        _headers = null;
 
   /// 直连：绝对 http/https 地址。
   const _ReadmeImage.net({
     required Uri url,
     required this.alt,
     required this.fallbackStyle,
+    Future<Map<String, String>>? headers,
   })  : _url = url,
+        _headers = headers,
         _scope = '',
         _path = null,
         _loader = null;
 
   final String? _path;
+
+  /// 请求头（仅"私有仓库 + 加速"时非空：raw 必须带令牌，否则必然 404）。
+  final Future<Map<String, String>>? _headers;
 
   /// 字节缓存的命名空间（仓库 + 分支）；直连图片为空串。
   final String _scope;
@@ -476,17 +495,35 @@ class _ReadmeImage extends StatelessWidget {
   }
 
   Widget _network() {
-    return Image.network(
-      _url.toString(),
-      fit: BoxFit.contain,
-      alignment: Alignment.centerLeft,
-      errorBuilder: (BuildContext context, Object error, StackTrace? stack) =>
-          Text(_t('readmeImageAlt', {'alt': alt}), style: fallbackStyle),
-      loadingBuilder:
-          (BuildContext context, Widget child, ImageChunkEvent? progress) =>
-              progress == null ? child : const _ReadmeImageSpinner(),
+    final Future<Map<String, String>>? headers = _headers;
+    if (headers == null) {
+      return _image(const <String, String>{});
+    }
+    // 私有仓库 + 加速：令牌要读一次安全保险库，先等它到位再发起图片请求
+    //（否则 raw 匿名必然 404，用户看到的是莫名其妙的替代文本）。
+    return FutureBuilder<Map<String, String>>(
+      future: headers,
+      builder: (BuildContext context, AsyncSnapshot<Map<String, String>> snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const _ReadmeImageSpinner();
+        }
+        return _image(snap.data ?? const <String, String>{});
+      },
     );
   }
+
+  Widget _image(Map<String, String> headers) => Image.network(
+        _url.toString(),
+        fit: BoxFit.contain,
+        alignment: Alignment.centerLeft,
+        // 空 map = 一个头都不带（公开仓库的常态；取不到令牌时如实退化为匿名）。
+        headers: headers.isEmpty ? null : headers,
+        errorBuilder: (BuildContext context, Object error, StackTrace? stack) =>
+            Text(_t('readmeImageAlt', {'alt': alt}), style: fallbackStyle),
+        loadingBuilder:
+            (BuildContext context, Widget child, ImageChunkEvent? progress) =>
+                progress == null ? child : const _ReadmeImageSpinner(),
+      );
 
   Widget _frame(Widget child) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
