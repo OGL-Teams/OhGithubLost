@@ -18,7 +18,7 @@
 <img width="49%" alt="Star history" src="https://fastly.jsdelivr.net/gh/OGL-Teams/OhGithubLost@stats/stats/star-history.png">
 <img width="49%" alt="Commit history" src="https://fastly.jsdelivr.net/gh/OGL-Teams/OhGithubLost@stats/stats/commit-history.png">
 
-<sub>图表由 `stats` 分支每小时自动更新</sub>
+<sub>5K 极客风图表 · `stats` 分支每 10 分钟自动更新 · 更新后自动清 jsDelivr 缓存</sub>
 
 </div>
 

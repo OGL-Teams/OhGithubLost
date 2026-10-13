@@ -61,10 +61,12 @@ class AiTransportException implements Exception {
   final int? statusCode;
 
   /// 兼容 `AiException.code`：调用方可以用统一的 `code` 取值方式读它。
-  @override
+  ///
+  /// 注：不加 `@override` —— 本类只 `implements Exception`，`code` 不是
+  /// 被覆盖的成员（加了会触发 `override_on_non_overriding_member`，
+  /// CI 是 `--fatal-infos` 直接红）。
   String get code => 'transport';
 
-  @override
   String get detail => message;
 
   @override
