@@ -305,26 +305,30 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                   IconButton(
                     tooltip: _t('pause'),
                     icon: const Icon(Icons.pause),
-                    onPressed: () => unawaited(widget.surface.pauseDownload(task.id)),
+                    onPressed: () =>
+                        unawaited(widget.surface.pauseDownload(task.id)),
                   ),
                 if (surface.supportsPauseResume && paused)
                   IconButton(
                     tooltip: _t('resume'),
                     icon: const Icon(Icons.play_arrow),
-                    onPressed: () => unawaited(widget.surface.resumeDownload(task.id)),
+                    onPressed: () =>
+                        unawaited(widget.surface.resumeDownload(task.id)),
                   ),
                 if (task.status == IxDownloadStatus.failed ||
                     task.status == IxDownloadStatus.canceled)
                   IconButton(
                     tooltip: _t('retry'),
                     icon: const Icon(Icons.refresh),
-                    onPressed: () => unawaited(widget.surface.retryDownload(task.id)),
+                    onPressed: () =>
+                        unawaited(widget.surface.retryDownload(task.id)),
                   ),
                 if (active || task.status == IxDownloadStatus.queued || paused)
                   IconButton(
                     tooltip: _t('cancel'),
                     icon: const Icon(Icons.close),
-                    onPressed: () => unawaited(widget.surface.cancelDownload(task.id)),
+                    onPressed: () =>
+                        unawaited(widget.surface.cancelDownload(task.id)),
                   ),
                 if (done) ...<Widget>[
                   IconButton(
