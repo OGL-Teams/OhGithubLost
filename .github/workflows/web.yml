@@ -20,12 +20,16 @@ name: Web
 
 on:
   push:
-    branches: [web, main]
-    # ★ 忽略 CI 自己提交的 app/ 产物 —— 避免"构建→提交→再构建"的自触发。
+    branches: [web]
+    # ★ main 分支**不再**触发 Web 构建：web 是独立分支，专门为纯 Web
+    #   准备（去掉 flutter_secure_storage / background_downloader 等原生依赖）。
+    #   而 main 保留这些原生依赖（jni → dart:ffi），dart2wasm 编译必然失败
+    #   （dart:ffi 在 web 不可用）—— 历史上 main 的 Web 构建一直红。
+    #   忽略 CI 自己提交的 app/ 产物 —— 避免"构建→提交→再构建"的自触发。
     #   注意：**不能**靠提交信息里的 `[skip ci]` 来防自触发 ——
     #   Netlify 同样会跳过带 `[skip ci]` 的提交，导致 app/ 产物永远
     #   部署不到站点（v7.4.2 上线时踩过这个坑）。
-    #   这里改用 paths-ignore；另外用 GITHUB_TOKEN 推送本身也不会
+    #   这里改用 paths-ignore；另外用 REST API 推送本身也不会
     #   触发新的 Actions 运行。
     paths-ignore:
       - 'app/**'
