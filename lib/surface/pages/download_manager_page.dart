@@ -300,7 +300,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
               runSpacing: 0,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: <Widget>[
-                if (surface.supportsPauseResume &&
+                if (widget.surface.supportsPauseResume &&
                     (active || task.status == IxDownloadStatus.queued))
                   IconButton(
                     tooltip: _t('pause'),
@@ -308,7 +308,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                     onPressed: () =>
                         unawaited(widget.surface.pauseDownload(task.id)),
                   ),
-                if (surface.supportsPauseResume && paused)
+                if (widget.surface.supportsPauseResume && paused)
                   IconButton(
                     tooltip: _t('resume'),
                     icon: const Icon(Icons.play_arrow),
