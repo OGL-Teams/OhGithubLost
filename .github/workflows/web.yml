@@ -170,13 +170,14 @@ jobs:
       #   导致产物永远上不了站点。防自触发改用 workflow 的 `paths-ignore`。
       - name: 提交 app/
         env:
-          # 用仓库所有者的 PAT 推送：web 分支有分支保护（只允许 yingo-server 推送），
-          # GITHUB_TOKEN 的 bot 身份会被拒（GH006）；此 secret 让 push 归属 yingo-server。
-          OGL_WEB_PUSH_TOKEN: ${{ secrets.OGL_WEB_PUSH_TOKEN }}
+          # 用仓库所有者的 PAT 走 REST API 推送：web 分支有分支保护。
+          # ★ 为什么不用 git push：branch protection 的 restrictions 对
+          #   **git push 的 PAT 认证**识别不可靠（实测 token 身份正确仍是
+          #   GH006），而 REST API 的 `PATCH /git/refs` 能正确识别 token
+          #   归属（yingo-server）并放行。GITHUB_TOKEN 是 bot 身份会被拒。
+          GH_TOKEN: ${{ secrets.OGL_WEB_PUSH_TOKEN }}
         run: |
           set -eu
-          echo "=== secret 身份诊断 ==="
-          curl -s -H "Authorization: token ${OGL_WEB_PUSH_TOKEN}" https://api.github.com/user | python3 -c 'import json,sys; d=json.load(sys.stdin); print("login:", d.get("login"), "| id:", d.get("id"))' || echo "诊断失败"
           git config user.name  'ogl-web-bot'
           git config user.email 'ogl-web-bot@users.noreply.github.com'
           git add -A app
@@ -185,10 +186,16 @@ jobs:
             exit 0
           fi
           git commit -m "chore(web): 发布 ${{ steps.ver.outputs.version }} 到 app/wasm/ + app/js/"
-          # ★ PAT 认证用 `https://<TOKEN>@github.com`（token 作为用户名）；
-          #   `x-access-token:` 前缀是 GitHub App installation token 专用，
-          #   对 PAT 会当作用户名 `x-access-token` → 认证失败 → GH006。
-          git push "https://${OGL_WEB_PUSH_TOKEN}@github.com/OGL-Teams/OhGithubLost.git" HEAD:web
+          TREE=$(git rev-parse HEAD^{tree})
+          PARENT=$(git rev-parse HEAD^)
+          COMMIT=$(gh api -X POST repos/OGL-Teams/OhGithubLost/git/commits \
+            -f message="chore(web): 发布 ${{ steps.ver.outputs.version }} 到 app/wasm/ + app/js/" \
+            -f tree="$TREE" \
+            -f 'parents[]'="$PARENT" \
+            --jq .sha)
+          gh api -X PATCH repos/OGL-Teams/OhGithubLost/git/refs/heads/web \
+            -f sha="$COMMIT" -f force=false
+          echo "已通过 REST API 更新 web 分支：$COMMIT"
 
       # ── 预热 jsDelivr ──────────────────────────────────────────────────
       # 站点运行时会在「fastly.jsdelivr / 同源 / cdn.jsdelivr」里挑最快的源。
