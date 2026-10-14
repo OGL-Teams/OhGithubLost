@@ -25,6 +25,7 @@ export '../domain/gh/gh_auth.dart' hide GhAuthService;
 export '../domain/gh/gh_client.dart' hide GhClient;
 export '../domain/gh/gh_draft.dart';
 export '../domain/gh/gh_models.dart';
+export '../domain/gh/repo_file_service.dart' hide RepoFileService;
 
 /// 下载：暴露任务 / 分类 / 状态，**隐藏**下载管理器。
 export '../domain/ix/ix_download.dart' hide IxDownloadManager;
