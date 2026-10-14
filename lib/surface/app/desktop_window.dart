@@ -19,12 +19,15 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
+// ★ Web 构建隔离：`window_manager` 入口库无条件 `import 'dart:io'`
+//   且不声明 web 平台 → 直接 import 会让 dart2wasm/dart2js 编译失败。
+//   走平台隔离壳：原生拿真实 `WindowListener`，Web 拿同名空实现
+//   （Web 上标题栏调用点本身已被 `ogLIsDesktopPlatform` 短路）。
+import '../../platform/window_listener_shim.dart';
 
 import '../../platform/platform.dart';
 import '../../platform/window_capability.dart';
 import '../i18n/og_l_i18n.dart';
-import 'error_surface.dart';
 
 export '../../platform/window_capability.dart' show OgLWindowDecoration;
 
@@ -64,11 +67,7 @@ Future<void> _guard(Future<void> Function() action) async {
   try {
     await action();
   } catch (error) {
-    OgLAppLog.instance.add(
-      '桌面窗口',
-      '操作失败（已降级为系统装饰）：$error',
-      severity: OgLNoticeSeverity.warning,
-    );
+    debugPrint('OGL 桌面窗口：操作失败（已降级为系统装饰）：$error');
   }
 }
 
