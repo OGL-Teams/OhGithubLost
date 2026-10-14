@@ -172,7 +172,7 @@ jobs:
         env:
           # 用仓库所有者的 PAT 推送：web 分支有分支保护（只允许 yingo-server 推送），
           # GITHUB_TOKEN 的 bot 身份会被拒（GH006）；此 secret 让 push 归属 yingo-server。
-          OGL_PUSH_TOKEN: ${{ secrets.OGL_PUSH_TOKEN }}
+          OGL_WEB_PUSH_TOKEN: ${{ secrets.OGL_WEB_PUSH_TOKEN }}
         run: |
           set -eu
           git config user.name  'ogl-web-bot'
@@ -186,7 +186,7 @@ jobs:
           # ★ PAT 认证用 `https://<TOKEN>@github.com`（token 作为用户名）；
           #   `x-access-token:` 前缀是 GitHub App installation token 专用，
           #   对 PAT 会当作用户名 `x-access-token` → 认证失败 → GH006。
-          git push "https://${OGL_PUSH_TOKEN}@github.com/OGL-Teams/OhGithubLost.git" HEAD:web
+          git push "https://${OGL_WEB_PUSH_TOKEN}@github.com/OGL-Teams/OhGithubLost.git" HEAD:web
 
       # ── 预热 jsDelivr ──────────────────────────────────────────────────
       # 站点运行时会在「fastly.jsdelivr / 同源 / cdn.jsdelivr」里挑最快的源。
