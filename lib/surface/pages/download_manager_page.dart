@@ -53,7 +53,7 @@ void ogLShowDownloadQueued(
 }
 
 /// 下载管理页。
-class DownloadManagerPage extends StatelessWidget {
+class DownloadManagerPage extends StatefulWidget {
   /// 创建页面。
   const DownloadManagerPage({required this.surface, super.key});
 
@@ -61,12 +61,30 @@ class DownloadManagerPage extends StatelessWidget {
   final SurfaceBridge surface;
 
   @override
+  State<DownloadManagerPage> createState() => _DownloadManagerPageState();
+}
+
+class _DownloadManagerPageState extends State<DownloadManagerPage> {
+  /// 上次被移除的任务（供「撤销移除」恢复列表位置）。
+  ///
+  /// 只保留一条：移除是高频误触操作，但撤销多步会变成"历史管理"，
+  /// 超出本页职责。移除后立即出现撤销入口，下一次移除覆盖它。
+  IxDownloadTask? _lastRemoved;
+
+  @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final SurfaceBridge surface = widget.surface;
     return Scaffold(
       appBar: AppBar(
         title: Text(_t('title')),
         actions: <Widget>[
+          // 失败/取消的任务逐个点「重试」太累：一键重来全部失败项。
+          IconButton(
+            tooltip: _t('retryAllFailed'),
+            icon: const Icon(Icons.restart_alt),
+            onPressed: () => _retryAllFailed(surface),
+          ),
           IconButton(
             tooltip: _t('clearFinished'),
             icon: const Icon(Icons.cleaning_services_outlined),
@@ -74,44 +92,107 @@ class DownloadManagerPage extends StatelessWidget {
           ),
         ],
       ),
-      body: ListenableBuilder(
-        listenable: surface.downloadsListenable,
-        builder: (BuildContext context, Widget? _) {
-          final List<IxDownloadTask> tasks = surface.downloadTasks;
-          if (tasks.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Icon(
-                    Icons.download_outlined,
-                    size: 48,
-                    color: theme.colorScheme.outline,
+      body: Column(
+        children: <Widget>[
+          // 撤销条：移除后立刻出现，点一下把任务放回列表。
+          if (_lastRemoved != null)
+            Material(
+              color: theme.colorScheme.secondaryContainer,
+              child: ListTile(
+                dense: true,
+                leading: Icon(Icons.undo,
+                    size: 18, color: theme.colorScheme.onSecondaryContainer),
+                title: Text(
+                  _t('removedItem', {'name': _lastRemoved!.fileName}),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSecondaryContainer,
                   ),
-                  const SizedBox(height: 12),
-                  Text(_t('empty')),
-                  const SizedBox(height: 4),
-                  Text(
-                    _t('emptyHint'),
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
+                ),
+                trailing: TextButton(
+                  onPressed: _undoRemove,
+                  child: Text(_t('undoRemove')),
+                ),
               ),
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.all(12),
-            itemCount: tasks.length,
-            separatorBuilder: (BuildContext context, int index) =>
-                const SizedBox(height: 8),
-            itemBuilder: (BuildContext context, int index) => OgLReveal(
-              delay: OgLAnim.staggerOf(context, index),
-              child: _taskCard(context, theme, tasks[index]),
             ),
-          );
-        },
+          Expanded(
+            child: ListenableBuilder(
+              listenable: surface.downloadsListenable,
+              builder: (BuildContext context, Widget? _) {
+                final List<IxDownloadTask> tasks = surface.downloadTasks;
+                if (tasks.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Icon(
+                          Icons.download_outlined,
+                          size: 48,
+                          color: theme.colorScheme.outline,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(_t('empty')),
+                        const SizedBox(height: 4),
+                        Text(
+                          _t('emptyHint'),
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return ListView.separated(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: tasks.length,
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const SizedBox(height: 8),
+                  itemBuilder: (BuildContext context, int index) => OgLReveal(
+                    delay: OgLAnim.staggerOf(context, index),
+                    child: _taskCard(context, theme, tasks[index]),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  /// 一键重试**全部**失败 / 已取消的任务（逐个点太累）。
+  Future<void> _retryAllFailed(SurfaceBridge surface) async {
+    final List<IxDownloadTask> failed = surface.downloadTasks
+        .where((IxDownloadTask t) =>
+            t.status == IxDownloadStatus.failed ||
+            t.status == IxDownloadStatus.canceled)
+        .toList();
+    if (failed.isEmpty) {
+      OgLNotifier.of(context).info(_t('noFailedToRetry'));
+      return;
+    }
+    for (final IxDownloadTask task in failed) {
+      await surface.retryDownload(task.id);
+    }
+    if (mounted) {
+      OgLNotifier.of(context).success(_t('retriedCount', {'n': failed.length}));
+    }
+  }
+
+  /// 记录被移除的任务（供撤销条显示）。
+  void _noteRemoved(IxDownloadTask task) {
+    setState(() => _lastRemoved = task);
+  }
+
+  /// 撤销上次移除：把任务重新入列（重新走一遍下载）。
+  ///
+  /// 说明：本页只保存**元数据**（id / 文件名 / 地址），真正重新下载由
+  /// 中枢层 `retry` 完成——所以撤销 = 重新入队，不是"恢复已完成的文件"。
+  Future<void> _undoRemove() async {
+    final IxDownloadTask? task = _lastRemoved;
+    if (task == null) {
+      return;
+    }
+    setState(() => _lastRemoved = null);
+    await widget.surface.retryDownload(task.id);
   }
 
   Widget _taskCard(BuildContext context, ThemeData theme, IxDownloadTask task) {
@@ -260,7 +341,10 @@ class DownloadManagerPage extends StatelessWidget {
                 IconButton(
                   tooltip: _t('remove'),
                   icon: const Icon(Icons.delete_outline),
-                  onPressed: () => unawaited(surface.removeDownload(task.id)),
+                  onPressed: () async {
+                    _noteRemoved(task);
+                    await surface.removeDownload(task.id);
+                  },
                 ),
               ],
             ),

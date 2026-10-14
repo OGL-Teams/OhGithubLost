@@ -28,5 +28,10 @@
   "categoryOther": "Sonstiges",
   "verified": "Verifiziert",
   "unverified": "Nicht verifiziert",
-  "verifyFailed": "Integritätsprüfung fehlgeschlagen"
+  "verifyFailed": "Integritätsprüfung fehlgeschlagen",
+  "retryAllFailed": "Alle fehlgeschlagenen erneut versuchen",
+  "noFailedToRetry": "Keine fehlgeschlagenen Aufgaben",
+  "undoRemove": "Entfernen rückgängig",
+  "removedItem": "Entfernt: {name}",
+  "retriedCount": "{n} fehlgeschlagene Aufgaben erneut versucht"
 }

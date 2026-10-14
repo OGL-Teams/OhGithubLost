@@ -21,16 +21,38 @@ class AiHttpClientIo implements AiHttpClient {
   /// 非流式响应的字节上限（超出即判异常，避免恶意端点打爆内存）。
   static const int _maxBodyBytes = 8 * 1024 * 1024;
 
+  /// 端点校验：**只拒绝真正不安全的形态**，不再强制 `https`。
+  ///
+  /// 为什么放宽（用户实测的痛点）：本机自建 / 内网反向代理 / 调试用的
+  /// OpenAI 兼容端点**普遍是 `http://`**（例如 `http://127.0.0.1:11434`
+  /// 的 Ollama、`http://host:8080/v1` 的 one-api）。旧实现一见非 https
+  /// 就抛 [AiTransportException]，而设置页只 catch 业务异常 → 表现成
+  /// 「未捕获异常 / 直接崩」，用户根本不知道自己填错了什么。
+  ///
+  /// 现在的分层：
+  /// - 协议**不是** http/https（如 `ftp:`、空串）→ 拒绝（必错）；
+  /// - 带 `userInfo`（`user:pass@host`，会泄露凭据进日志）/ `query`
+  ///   / `fragment`（端点不该带这些）→ 拒绝（构造约定）；
+  /// - host 为空 → 拒绝；
+  /// - `http://` 且 host 是**本机/回环**（localhost / 127.0.0.1 / ::1）→
+  ///   **放行**（本机传输不经过网络，明文可接受）；
+  /// - 其它 `http://` → **放行**（跨国/内网场景常见），由调用方（设置页）
+  ///   给出"明文传输"的可见提示，但**不阻止用户使用**。
   void _validateEndpoint(String url) {
-    final Uri uri = Uri.tryParse(url) ?? Uri();
-    final bool bad = uri.scheme != 'https' ||
-        uri.host.isEmpty ||
-        uri.userInfo.isNotEmpty ||
-        uri.hasQuery ||
-        uri.hasFragment;
-    if (bad) {
-      throw AiTransportException(
-          'AI 端点必须是纯 HTTPS 地址（不允许 userInfo/query/fragment）');
+    final Uri uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) {
+      throw const AiTransportException(
+          'AI 端点地址无效（示例：https://api.openai.com/v1）');
+    }
+    final String scheme = uri.scheme.toLowerCase();
+    if (scheme != 'http' && scheme != 'https') {
+      throw const AiTransportException('AI 端点协议必须是 http 或 https（不支持 ftp、ws 等）');
+    }
+    if (uri.userInfo.isNotEmpty) {
+      throw const AiTransportException('AI 端点不允许携带用户名与密码（user:pass@）');
+    }
+    if (uri.hasQuery || uri.hasFragment) {
+      throw const AiTransportException('AI 端点不允许携带 ?查询参数 或 #片段');
     }
   }
 

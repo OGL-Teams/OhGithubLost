@@ -28,5 +28,10 @@
   "categoryOther": "Другое",
   "verified": "Проверено",
   "unverified": "Не проверено",
-  "verifyFailed": "Проверка целостности не пройдена"
+  "verifyFailed": "Проверка целостности не пройдена",
+  "retryAllFailed": "Повторить все неудачные",
+  "noFailedToRetry": "Нет неудачных задач для повтора",
+  "undoRemove": "Отменить удаление",
+  "removedItem": "Удалено: {name}",
+  "retriedCount": "Повторено неудачных задач: {n}"
 }

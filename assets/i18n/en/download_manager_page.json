@@ -28,5 +28,10 @@
   "categoryOther": "Other",
   "verified": "Verified",
   "unverified": "Not verified",
-  "verifyFailed": "Integrity check failed"
+  "verifyFailed": "Integrity check failed",
+  "retryAllFailed": "Retry all failed",
+  "noFailedToRetry": "No failed tasks to retry",
+  "undoRemove": "Undo remove",
+  "removedItem": "Removed: {name}",
+  "retriedCount": "Retried {n} failed tasks"
 }

@@ -28,5 +28,10 @@
   "categoryOther": "Autre",
   "verified": "Vérifié",
   "unverified": "Non vérifié",
-  "verifyFailed": "Échec du contrôle d’intégrité"
+  "verifyFailed": "Échec du contrôle d’intégrité",
+  "retryAllFailed": "Réessayer tous les échecs",
+  "noFailedToRetry": "Aucune tâche échouée à réessayer",
+  "undoRemove": "Annuler la suppression",
+  "removedItem": "Supprimé : {name}",
+  "retriedCount": "{n} tâches échouées relancées"
 }

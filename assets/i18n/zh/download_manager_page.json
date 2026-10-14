@@ -28,5 +28,10 @@
   "categoryOther": "其它",
   "verified": "已校验",
   "unverified": "未校验",
-  "verifyFailed": "完整性校验未通过"
+  "verifyFailed": "完整性校验未通过",
+  "retryAllFailed": "重试全部失败",
+  "noFailedToRetry": "没有失败的任务需要重试",
+  "undoRemove": "撤销移除",
+  "removedItem": "已移除：{name}",
+  "retriedCount": "已重试 {n} 个失败任务"
 }

@@ -6,7 +6,7 @@
   "protocol": "Protocole",
   "model": "Modèle",
   "baseUrl": "Point de terminaison",
-  "urlHint": "Point de terminaison HTTPS (compatible OpenAI / Claude / Gemini)",
+  "urlHint": "http or https endpoint (local / intranet / OpenAI-compatible / Claude / Gemini)",
   "apiKey": "Clé API",
   "keySaved": "Clé enregistrée",
   "keyHint": "Conservée uniquement dans le stockage sécurisé de cet appareil, jamais journalisée",
@@ -34,5 +34,11 @@
   "noKey": "Aucune clé API configurée",
   "audit": "Journal d’activité",
   "operationFinished": "Opération terminée",
-  "retry": "Réessayer"
+  "retry": "Réessayer",
+  "urlRequired": "Endpoint URL is required",
+  "urlInvalid": "Invalid endpoint URL (example: https://api.openai.com/v1)",
+  "urlSchemeInvalid": "Scheme must be http or https",
+  "urlNoUserInfo": "Endpoint must not contain username:password",
+  "urlNoQuery": "Endpoint must not contain ?query or #fragment",
+  "plaintextHint": "Using plaintext http: your key and messages may be visible to others on the same network. Local addresses do not show this warning."
 }
