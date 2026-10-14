@@ -14,12 +14,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ohgithublost/kernel/log/og_l_log_file.dart';
 import 'package:ohgithublost/surface/app/error_surface.dart';
 
-String _todayStamp() {
-  final DateTime now = DateTime.now();
-  String two(int v) => v.toString().padLeft(2, '0');
-  return '${now.year}${two(now.month)}${two(now.day)}';
-}
-
 void main() {
   late Directory temp;
 
@@ -41,7 +35,11 @@ void main() {
     await OgLLogFile.init(candidates: <String>[dir]);
     expect(OgLLogFile.isEnabled, isTrue, reason: '临时目录一定可写');
     expect(OgLLogFile.filePath, isNotNull);
-    expect(OgLLogFile.filePath!.endsWith('ogl-${_todayStamp()}.log'), isTrue);
+    // 校验"实际落盘的文件名"而非"此刻墙钟"：跨午夜时 `DateTime.now()` 与
+    // 后端取时不一致会 flaky（R7）。文件名必须形如 ogl-YYYYMMDD.log。
+    final String fileName = OgLLogFile.filePath!.split('/').last;
+    expect(RegExp(r'^ogl-\d{8}\.log$').hasMatch(fileName), isTrue,
+        reason: '日志文件名应形如 ogl-YYYYMMDD.log');
 
     OgLLogFile.line('测试', '第一行', level: 'INFO');
     OgLLogFile.line('测试', '出错行', level: 'ERR');
@@ -79,14 +77,20 @@ void main() {
   test('超限滚动：同一天的旧文件被挪到 .1.log', () async {
     final String dir = '${temp.path}/rotate';
     Directory(dir).createSync(recursive: true);
-    final File today = File('$dir/ogl-${_todayStamp()}.log');
+
+    // 先用一次 init 拿到后端当天**实际**生成的文件名，再关闭句柄造超大旧文件
+    // 触发滚动。这样不再依赖"测试侧墙钟 == 后端取时"（跨午夜会 flaky，R7）。
+    await OgLLogFile.init(candidates: <String>[dir]);
+    final String todayPath = OgLLogFile.filePath!;
+    await OgLLogFile.close();
+
     // 造一个"比上限还大"的旧文件（不真的写 2MB 内容之外的东西）。
-    today.writeAsStringSync('x' * (OgLLogFile.maxBytes + 10));
+    File(todayPath).writeAsStringSync('x' * (OgLLogFile.maxBytes + 10));
 
     await OgLLogFile.init(candidates: <String>[dir]);
-    expect(File('$dir/ogl-${_todayStamp()}.log.1.log').existsSync(), isTrue,
+    expect(File('$todayPath.1.log').existsSync(), isTrue,
         reason: '旧文件应被滚到 .1.log');
-    expect(today.existsSync(), isTrue, reason: '新文件继续写同一天的文件名');
+    expect(File(todayPath).existsSync(), isTrue, reason: '新文件继续写同一天的文件名');
   });
 
   test('OgLAppLog 与落盘器联通：应用日志会出现在文件里', () async {

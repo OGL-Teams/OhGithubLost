@@ -1745,7 +1745,11 @@ class _SettingsPageState extends State<SettingsPage> {
     try {
       text = await rootBundle.loadString('LICENSE');
     } catch (error) {
-      debugPrint('OGL 许可：读取 LICENSE 失败：$error');
+      OgLAppLog.instance.add(
+        '许可',
+        '读取 LICENSE 失败：$error',
+        severity: OgLNoticeSeverity.warning,
+      );
     }
     if (!mounted) {
       return;

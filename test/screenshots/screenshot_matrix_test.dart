@@ -27,9 +27,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ohgithublost/base/disk/disk_store.dart';
+import 'package:ohgithublost/base/net/ai_http_client_io.dart';
 import 'package:ohgithublost/base/net/net_bridge.dart';
 import 'package:ohgithublost/base/net/net_transport.dart';
 import 'package:ohgithublost/base/net/net_types.dart';
+import 'package:ohgithublost/domain/ai/ai_service.dart';
 import 'package:ohgithublost/domain/domain_bridge.dart';
 import 'package:ohgithublost/domain/gh/gh_api.dart';
 import 'package:ohgithublost/domain/gh/gh_auth.dart';
@@ -258,6 +260,8 @@ Future<SurfaceBridge> _buildBridge() async {
   final IxNotificationCenter notifications = IxNotificationCenter();
   final SysInfoService sysInfo = SysInfoService();
   final SysAccessGuard sysAccess = SysAccessGuard(store: kv);
+  final AiService ai = AiService(
+      store: kv, vault: vault, http: const AiHttpClientIo(), tools: const []);
   final DomainBridge domain = DomainBridge(
     auth: auth,
     api: api,
@@ -267,6 +271,7 @@ Future<SurfaceBridge> _buildBridge() async {
     notifications: notifications,
     sysInfo: sysInfo,
     sysAccess: sysAccess,
+    ai: ai,
   );
   final OgLSettingsController settings = OgLSettingsController(
     persistence: OgLInMemorySettingsPersistence(),
@@ -403,6 +408,12 @@ void main() {
   if (!kWriteShots) {
     // 默认模式：一次轻量冒烟（不落盘）——保证普通 CI 也验证管线可用。
     testWidgets('截屏冒烟（默认模式不落盘）', (WidgetTester tester) async {
+      // `_pumpScreen` 会改 `tester.view.physicalSize / devicePixelRatio`，
+      // 冒烟分支此前未还原，泄漏到其它用例会 flaky —— 这里补上还原（R7）。
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
       // 截屏希望保留阴影；测试框架默认关闭它，因此这里临时打开并**必须还原**
       // （否则触发 "painting debug variable was changed by the test" 断言）。
       debugDisableShadows = false;
