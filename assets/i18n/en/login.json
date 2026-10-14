@@ -31,7 +31,7 @@
   "tokenHint": "Paste a Token with repo permissions",
   "tokenLabel": "Personal Access Token",
   "tokenRequired": "Please paste a Token first",
-  "tokenShapeInvalid": "Invalid Token format (must start with ghp_, gho_, ghu_, or github_pat_)",
+  "tokenShapeInvalid": "Invalid Token format (must start with ghp_, gho_, ghu_, ghs_, ghr_, or github_pat_)",
   "vaultNote": "Token is stored only in local secure vault (Android Keystore / iOS Keychain / Desktop Key Service); requests are sent only to api.github.com.",
   "verifyFailed": "Verification failed: {error}",
   "verifying": "Verifying…",

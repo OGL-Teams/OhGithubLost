@@ -31,7 +31,7 @@
   "tokenHint": "Token mit repo-Berechtigung einfügen",
   "tokenLabel": "Persönliches Access Token",
   "tokenRequired": "Bitte zuerst Token einfügen",
-  "tokenShapeInvalid": "Tokenformat ungültig (muss mit ghp_, gho_, ghu_ oder github_pat_ beginnen)",
+  "tokenShapeInvalid": "Tokenformat ungültig (muss mit ghp_, gho_, ghu_, ghs_, ghr_ oder github_pat_ beginnen)",
   "vaultNote": "Token wird nur im lokalen sicheren Safe gespeichert (Android Keystore / iOS Keychain / Desktop-Verwaltung); Anfragen werden nur an api.github.com gesendet.",
   "verifyFailed": "Validierung fehlgeschlagen: {error}",
   "verifying": "Wird validiert…",

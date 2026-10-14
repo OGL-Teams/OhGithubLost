@@ -1,0 +1,175 @@
+# OGL · 平台私有文件规格（Platform Spec）
+#
+# ============================================================================
+# 这个文件是什么
+# ----------------------------------------------------------------------------
+# **写不了 Dart 的平台私有文件**，集中在这里声明，由 action 在构建期注入。
+#
+# 为什么要分两类：
+#   ① 能用 Dart 表达的 → 写 Dart。实现见 `lib/platform/`（每平台一份文件），
+#      原调用点保留**桥接**（如 `lib/surface/app/desktop_window.dart`）。
+#   ② 物理上写不了 Dart 的 → **本文件**。它们要么在**安装/编译期**才生效，
+#      运行时改不动；要么是二进制资源。
+#
+# 本文件只覆盖第 ② 类。**凡是这里没写的，能力就必须在 `lib/platform/` 里
+# 用 Dart 实现**（构建期注入不是逃生舱）。
+#
+# ============================================================================
+# 为什么不把平台文件直接入库（既有纪律，勿破坏）
+# ----------------------------------------------------------------------------
+# 平台工程（build.gradle / AndroidManifest.xml / CMakeLists.txt …）由
+# `flutter create` 在**构建时**按当前 SDK 版本现场生成。入库会与 SDK 漂移
+# （框架升级后模板变化，脚手架就对不上了）。所以本文件是"意图"，
+# 由 `tool/inject_platform_spec.py` 翻译成**当下那一版**脚手架里的具体改动。
+#
+# ============================================================================
+# 格式
+# ----------------------------------------------------------------------------
+# targets:  目标平台标识（对应 `lib/platform/platform.dart` 的枚举名）
+# job:      注入步骤 id（多段内容用多段）
+# why:      为什么不能用 Dart —— 必填，是这个文件存在的理由
+# id:       幂等标记；已存在则跳过（保证重跑安全）
+#
+spec_version: 1
+specs:
+
+# ============================================================================
+# Android
+# ============================================================================
+- target: android
+  id: android-compile-sdk
+  job: android-compile-sdk
+  why: >
+    Gradle 构建期属性。`permission_handler_android` 要求宿主 compileSdk
+    高于 Flutter 模板默认值，而该值只能在 Gradle 解析阶段确定；运行时
+    拿到的是已编译好的 APK，改它没有任何意义。
+  steps:
+    - file: android/app/build.gradle
+      # 幂等：已含该标记即视为已注入
+      marker: "OGL_PLATFORM_SPEC compileSdk"
+      patch: compile_sdk
+    - file: android/app/build.gradle
+      marker: "OGL_PLATFORM_SPEC desugaring"
+      patch: core_library_desugaring
+      # 仅 flutter_local_notifications 需要（java.time）
+      note: >
+        `flutter_local_notifications` 使用 java.time，Android 低版本需要
+        core library desugaring。这是**依赖**决定的，不是我们自己要的。
+
+- target: android
+  id: android-manifest-permissions
+  job: android-manifest-permissions
+  why: >
+    权限在**安装期**声明，运行期申请无法补上 manifest 里没写的权限：
+    Android 只会按 manifest 授予，缺声明时 `requestPermissions` 直接返回
+    DENIED 且不给理由（这正是 4.4.0「令牌验证连接失败」的根因）。
+  steps:
+    - file: android/app/src/main/AndroidManifest.xml
+      marker: "<!-- OGL_PLATFORM_SPEC permissions -->"
+      patch: android_permissions
+      permissions:
+        # 网络：Release 主清单**默认没有** INTERNET（模板只给 debug/profile）
+        - android.permission.INTERNET
+        # 通知（Android 13+ 需要运行时申请，但 manifest 也必须先声明）
+        - android.permission.POST_NOTIFICATIONS
+        # 存储：SAF / 分区存储
+        - android.permission.READ_EXTERNAL_STORAGE
+        - android.permission.WRITE_EXTERNAL_STORAGE
+        - android.permission.MANAGE_EXTERNAL_STORAGE
+        # 旧版分区存储兼容（targetSdk<30 才生效，留着无害）
+        - android:requestLegacyExternalStorage
+
+- target: android
+  id: android-icon
+  job: android-icon
+  why: >
+    启动图标是**资源文件**（矢量 XML / 自适应图标），由 Launcher 在安装
+    时读取；运行时无法替换已安装应用的图标。
+  steps:
+    - file: android/app/src/main/res/drawable/ic_launcher_foreground.xml
+      marker: "<!-- OGL_PLATFORM_SPEC icon -->"
+      patch: write_vector_xml
+      source: assets/icon/ogl_icon.svg
+    - file: android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+      patch: write_adaptive_icon_xml
+    - file: android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+      patch: write_adaptive_icon_xml
+    - file: android/app/src/main/AndroidManifest.xml
+      marker: "android:label=\"OGL\""
+      patch: set_app_label
+      value: OGL
+
+# ============================================================================
+# Windows
+# ============================================================================
+- target: windows
+  id: windows-compat-macro
+  job: windows-compat-macro
+  why: >
+    编译期宏。`permission_handler_windows` 使用已被新版 MSVC 判为错误的
+    `<experimental/coroutine>`，只能用 `add_compile_definitions` 抑制，
+    必须在**编译前**生效。
+  steps:
+    - file: windows/CMakeLists.txt
+      marker: "OGL_PLATFORM_SPEC coroutine"
+      patch: add_compile_definitions
+      definitions:
+        - _SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING
+        - _HAS_EXCEPTIONS=0
+
+- target: windows
+  id: windows-icon
+  job: windows-icon
+  why: >
+    任务栏 / 资源管理器图标是 **ICO 资源文件**，由系统在读 EXE 时解析；
+    运行时只能改窗口标题，改不了图标。
+  steps:
+    - file: windows/runner/resources/app_icon.ico
+      patch: write_ico
+      source: assets/icon/ogl_icon.svg
+      size: 256
+      frames: 1
+
+# ============================================================================
+# Linux
+# ============================================================================
+- target: linux
+  id: linux-icon
+  job: linux-icon
+  why: >
+    桌面项 / Dock 读的是 **PNG 母版**（按 hicolor 尺寸约定放置），
+    运行时无接口可写。
+  steps:
+    - file: linux/runner/resources/app_icon.png
+      patch: write_png
+      source: assets/icon/ogl_icon.svg
+      size: 2048
+
+# ============================================================================
+# macOS（当前不构建，保留规格以备恢复）
+# ============================================================================
+- target: macos
+  id: macos-entitlements
+  job: macos-entitlements
+  why: >
+    沙箱 entitlements 在**代码签名**时固化；缺 `network.client` 时 Release
+    包会直接被拒出网，且这个决定发生在编译之前。
+  steps:
+    - file: macos/Runner/Release.entitlements
+      marker: "com.apple.security.network.client"
+      patch: add_entitlement
+      key: com.apple.security.network.client
+      value: true
+    - file: macos/Runner/DebugProfile.entitlements
+      marker: "com.apple.security.network.client"
+      patch: add_entitlement
+      key: com.apple.security.network.client
+      value: true
+
+# ============================================================================
+# 明确不做的事（防止有人把 Dart 能写的又塞回注入）
+# ============================================================================
+# - Windows / Linux / macOS 的**窗口标题**、标题栏模式、最大化/最小化/关闭
+#   → 已在 `lib/platform/window_*.dart` 用 Dart 实现（windowManager）。
+# - 图标以外的任何"资源" → 同上，能 Dart 就 Dart。
+# - Release 产物的版本号 → `--build-name/--build-number` 编译参数，不注入。

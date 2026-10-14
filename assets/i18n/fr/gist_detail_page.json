@@ -19,6 +19,7 @@
   "saveFailed": "Échec de l'enregistrement : {error}",
   "saved": "Enregistré",
   "title": "Détail du Gist",
+  "truncatedWarning": "Contenu peut-être tronqué (échec de la récupération du texte complet)",
   "updateFailed": "Échec de la mise à jour : {error}",
   "updated": "Mis à jour",
   "public": "Public",

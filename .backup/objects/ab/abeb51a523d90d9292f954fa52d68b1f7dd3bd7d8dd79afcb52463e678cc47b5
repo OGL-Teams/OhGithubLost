@@ -1,0 +1,39 @@
+# OhGithubLost v6.0.1
+
+内置加速通道换新代理 + 新增**实验性** Web（wasm）构建管线。
+New acceleration proxy for the built-in channel, plus an **experimental** Web (wasm) pipeline.
+
+## 新增 / Added
+- **实验性 Web（wasm）构建管线**（`.github/workflows/web.yml` · `tool/web_build.py`）：
+  独立工作流编译 `flutter build web --release --wasm`，产物发布到仓库 `app/`。
+  - **浏览器 API 守卫（动态注入）**：在编译前把 `web_api_guard.js` 注入
+    `web/index.html`，启动前逐项检查 wasm / 网络 / 存储 / 解码所需浏览器 API，
+    缺任何一项即抛错并给出可读原因。
+  - **编译期门禁**：预检已知阻塞 wasm 的依赖，编译后核对产物完整性。
+  - **`app/` 先清空后重建**：每次构建只保留最新一套 web 文件。
+  - **完全解耦**：web 失败不影响任何正式平台的构建与发布。
+  An experimental Web (wasm) pipeline, decoupled from the five-platform release.
+- 编译期预检（`--preflight`）：点名 `jni` / `ffi` / `saf_util` / `saf_stream`
+  等使用 `dart:ffi`、会阻塞 wasm 编译的依赖。
+  Build-time preflight naming the `dart:ffi` dependencies that block wasm compilation.
+
+## 变更 / Changed
+- **内置加速通道改走 `gh.felicity.ac.cn` 转发完整 GitHub 链接**：优先前缀由
+  `https://gh.344977.xyz/` 改为 `https://gh.felicity.ac.cn/https://github.com/`，
+  拼出 `https://gh.felicity.ac.cn/https://github.com/…` 形式的地址；
+  `https://gh.felicity.ac.cn/` 保留为降级备选，仍按序探测并静默降级，
+  最后永远保留直连兜底。对用户仍是**一个**不可删改的「内置通道」。
+  The built-in acceleration channel now forwards the full GitHub link through
+  `gh.felicity.ac.cn`; the bare host stays as a silent-fallback option and direct
+  download remains the last resort.
+- 更新日志站（`changed/`）全部 Release 下载链接改为同一形式，生成器同步更新。
+  All changelog-site download links now use the same form.
+
+## 已知限制 / Known limitations
+- **Web（wasm）当前编译不通过（实验性，预期内）**：`saf_util` / `saf_stream`
+  依赖 `jni` 与 `ffi`，wasm 不支持 `dart:ffi`；该腿失败不影响正式发布。
+  > The wasm build currently fails because `saf_util` / `saf_stream` depend on
+  > `dart:ffi`, which wasm does not support; this experimental leg never blocks
+  > the official release.
+- 加速通道仅作用于 Release 附件；仓库文件 / Gist 等下载不经过它。
+  The acceleration channel applies to Release assets only.

@@ -1,0 +1,41 @@
+# OhGithubLost v6.0.0
+
+跨平台差异面硬化 + 桌面自研窗口 + 设置页层级整改 + 仓库浏览修复。
+Cross-platform hardening, a self-drawn desktop window, a re-layered settings page, and repo-browsing fixes.
+
+## 新增 / Added
+- 桌面自绘窗口：自研标题栏（拖拽 / 双击最大化 / 最小化·最大化·关闭），可在设置菜单回退系统窗口管理器。
+  Custom desktop window: our own title bar (drag / double-click maximize / min / max / close), with a fallback to the system window manager in Settings.
+- 桌面图标与原生标题：Windows 生成 256 单帧 ICO，Linux 生成 2048 PNG 母版，原生窗口标题统一为 `OhGithubLost`。
+  Desktop icon & native title: a single-frame 256 ICO for Windows, a 2048 PNG master for Linux; the native title is `OhGithubLost` everywhere.
+- Linux 安装包：`.deb` / `.rpm` / `.AppImage`，在 Release 中裸放直传。
+  Linux packages: `.deb`, `.rpm` and `.AppImage`, uploaded raw in the Release.
+- Windows 长路径三层处理：`\\?\` 前缀绕过 → 超限收纳为 `TooLongRoad_<8位>.zip` → 根目录 `.ogl_toolong.json` 索引，读 / 写 / 删 / 列全部可还原。
+  Windows long paths in three layers: `\\?\` prefix bypass → overflow packed into `TooLongRoad_<8-hex>.zip` → `.ogl_toolong.json` index; read / write / delete / list all round-trip.
+
+## 修复 / Fixed
+- **README / Markdown 里的链接点了没反应**：相对地址（`LICENSE`、`docs/x.md`、`#锚点`、裸域名）先按仓库基址解析成绝对地址再交给系统浏览器；解析不了会明确提示。
+  **Links in README / Markdown did nothing**: relative targets are now resolved against the repository base before opening, and unresolvable ones are reported instead of failing silently.
+- **README 图片不显示**：改为经 **GitHub Contents API** 取字节后用 `Image.memory` 渲染，不经过 `raw.githubusercontent.com`，避开 DNS 污染；`<img src=…>` 也会渲染；单次上限 40 张，失败退化为 alt 文本。
+  **README images never showed**: they are now fetched through the **GitHub Contents API** and rendered with `Image.memory`, avoiding `raw.githubusercontent.com` DNS pollution; `<img src=…>` is rendered too, capped at 40 images per view with an alt-text fallback.
+- Windows 缓存崩溃：缓存 blob 文件名原样拼接编码键，其中 `|` 是 Windows 非法文件名字符；改为 `sha256(编码键)`。
+  Windows cache crash: blob names embedded the raw encoded key and `|` is illegal on Windows; now `sha256(key)`.
+- 设置页退出登录入口重复（危险区已在用户页）。
+  Duplicate sign-out entry in Settings.
+
+## 变更 / Changed
+- 设置页重新分层：根级一律取消折叠、严格排序；分类下拉移入二级且默认收起。
+  Settings re-layered: no collapsing at the root and a strict order; category dropdowns moved down a level and collapsed by default.
+- 赞助入口并入「关于」页。
+  The sponsor entry moved into About.
+
+## 已知限制 / Known limitations
+- **glibc ≥ 2.35**（对应 Ubuntu 22.04 一代及以上；Linux 产物在 `ubuntu-22.04` / `ubuntu-24.04-arm` 宿主上直接构建以锁定该下限）。
+>  **glibc >= 2.35** (Ubuntu 22.04 era and newer; Linux artifacts are built directly on `ubuntu-22.04` / `ubuntu-24.04-arm` hosts to pin that floor).
+- Windows 建议开启长路径支持（非必须，超限有收纳回退）；桌面 32 位、musl、Windows 7 / 8.1 均不支持，请勿做无用尝试。
+  Windows: enabling long-path support is recommended (not required). Desktop 32-bit, musl and Windows 7 / 8.1 are unsupported — please do not waste time trying.
+
+## 产物 / Artifacts
+- Android：`arm64-v8a`、`armeabi-v7a`、`x86_64`、`universal` APK、AAB
+- Windows：`x64`、`arm64`
+- Linux：`x64`、`arm64`（deb / rpm / AppImage 裸放）

@@ -31,7 +31,7 @@
   "tokenHint": "粘贴带 repo 权限的令牌",
   "tokenLabel": "个人访问令牌",
   "tokenRequired": "请先粘贴令牌",
-  "tokenShapeInvalid": "令牌格式不对（应以 ghp_、gho_、ghu_ 或 github_pat_ 开头）",
+  "tokenShapeInvalid": "令牌格式不对（应以 ghp_、gho_、ghu_、ghs_、ghr_ 或 github_pat_ 开头）",
   "vaultNote": "令牌只保存在本机安全保险库（Android Keystore / iOS Keychain / 桌面密钥服务）；请求只发往 api.github.com。",
   "verifyFailed": "验证失败：{error}",
   "verifying": "正在验证…",

@@ -1,0 +1,134 @@
+# ============================================================================
+# OhGithubLost（OGL）· 项目依赖清单
+#
+# 依赖削减原则（保守重写后）：
+#   - 展示层（surface）不再引入任何"视觉框架"依赖，
+#     页面一律直接使用 Flutter 自带 Material 3 组件；
+#   - 只保留"真的被 import 到"的包（由 CI 静态检查兜底）。
+#
+# 架构分层映射：
+#   kernel/boot   → cryptography（Ed25519 引导清单签名校验）
+#   base/net      → dart:io HttpClient（传输引擎：超时 / 重定向 / 连接策略）
+#   base/disk     → path_provider · flutter_secure_storage
+#   base/disk     → crypto（SHA256 摘要）
+#   surface/readme → flutter_markdown（README / 正文渲染）
+#   surface/util   → url_launcher（外链打开）
+# ============================================================================
+
+name: ohgithublost
+description: "OGL · OhGithubLost — GitHub 仓库管理器（Flutter 多平台重构版）"
+publish_to: 'none'
+version: 6.0.1+60100
+
+homepage: https://github.com/yingo-server/OhGithubLost
+repository: https://github.com/yingo-server/OhGithubLost
+issue_tracker: https://github.com/yingo-server/OhGithubLost/issues
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.24.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ── 本地化（长按菜单 / 系统组件文案中文化）──────────────────────────
+  flutter_localizations:
+    sdk: flutter
+
+  # ── 底座 · 网络连接 ─────────────────────────────────────────────────
+  # （无外部依赖：传输层直接使用 dart:io 的 HttpClient；2026-10-03 移除 dio）
+
+  # ── 底座 · 硬盘逻辑 ─────────────────────────────────────────────────
+  path_provider: ^2.1.6            # 跨平台目录规划
+  flutter_secure_storage: ^11.2.0  # 安全保险库（令牌，Keystore/DPAPI/libsecret）
+  crypto: ^3.0.7                   # SHA256 等摘要
+
+  # ── 启动层 · 信任校验 ───────────────────────────────────────────────
+  cryptography: ^2.9.0             # Ed25519 引导清单签名验证
+
+  # ── 展示层 · 渲染与外链 ─────────────────────────────────────────────
+  flutter_markdown: ^0.7.7+1       # README / 议题 / 评论渲染
+  url_launcher: ^6.3.2             # 外链 / 打开文件
+
+  # ── 展示层 · 代码编辑与高亮（**成熟库**）──────────────────────────────
+  # 编辑器内核：行号 / 查找替换 / 撤销重做 / 折叠 / 快捷键 / 大文本；
+  # 语法高亮：highlight.js 的 Dart 移植（近百种语言与主题）。
+  # 此前这两块都是本项目自研（自写词法器 + 自写查找替换 + 叠加图层编辑区）。
+  re_editor: ^0.10.0
+  re_highlight: ^0.0.3
+
+  # ── 展示层 · 权限（真实系统请求）────────────────────────────────────
+  # 成熟库：运行时权限弹窗 + 各平台正确的系统设置入口（Android/iOS/macOS）。
+  # 注：permission_handler_android 要求宿主 compileSdk 高于 Flutter 默认值，
+  #    构建期由 tool/platform_spec.yaml 声明并在构建期注入（见 build.yml）。
+  permission_handler: ^13.0.2
+
+  # ── 展示层 · 桌面窗口（自绘标题栏 / 原生标题 / 可回退系统装饰）────────
+  # 仅桌面（Windows / Linux / macOS）生效；移动端不参与。
+  window_manager: ^0.5.2
+  # ── 底座 · Android SAF（分区存储下的"用户可见文件夹"授权）─────────────
+  # 背景：Android 11+ 拿不到「所有文件访问」时，普通应用无法往 /storage/emulated/0
+  # 写文件；此时唯一合规的"用户可见"落点是 SAF——让用户**自己选一个文件夹**，
+  # 系统给出可长期持有的授权 URI。
+  #   saf_util   → 目录选择 + 持久化授权 + DocumentFile 操作
+  #   saf_stream → 读写/复制（`pasteLocalFile`：把本地文件粘进 SAF 目录）
+  # 注：仅 Android 生效；其余平台这两个包不参与构建。
+  saf_util: ^3.1.1
+  saf_stream: ^4.0.2
+  # ── 中枢层 · 下载与二进制 ───────────────────────────────────────────
+  background_downloader: ^9.6.3     # 多平台后台下载（断点续传 / 队列 / 通知）
+  archive: ^3.6.1                   # Actions 日志 zip 解压
+  # ── 展示层 · 系统级通知 ─────────────────────────────────────────────
+  # 后台时的"系统通知"通道（下载完成 / 任务结束 / 严重错误）。
+  # 注：Android 需要 core library desugaring，构建期由
+  #     tool/inject_android_gradle.py 幂等注入（见 build.yml）。
+  flutter_local_notifications: ^22.3.1
+  # ── 中枢层 · 工作流参数解析 ─────────────────────────────────────────
+  # 手动触发工作流前，从 `.github/workflows/*.yml` 解析 `on.workflow_dispatch.inputs`
+  # （必选参数 / 默认值 / 选项），据此生成表单。纯 Dart，无平台依赖。
+  yaml: ^3.1.2
+
+  # 已移除（未被任何代码 import，重写时一并裁掉）：
+  #   provider · shared_preferences · file_picker
+  #   window_manager · cached_network_image · mocktail
+  #
+  # 注意：device_info_plus **暂不引入**（iOS 构建链报 NSProcessInfo 选择器缺失），
+  # 真机探针需要时再选与构建链兼容的版本。
+
+dependency_overrides:
+  # background_downloader 依赖 connectivity_plus '>=6.1.3 <8.0.0'，
+  # 但 7.x 的 macOS/iOS Swift 使用了 runner SDK 尚未提供的
+  # `NWPath.isUltraConstrained`，导致 iOS / macOS 构建失败；
+  # 故固定到 6.1.4（仍满足 background_downloader 的约束）。
+  connectivity_plus: 6.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  # ── 唯一声明的外部资源：i18n 语言包 ────────────────────────────────────
+  # 例外说明：产品要求"界面可切换约 15 种语言、翻译以 JSON 分片维护"，
+  # 因此这里**只**声明 assets/i18n 下的语言 JSON；其余（图标/主题/引导清单）
+  # 仍全部由框架字形与代码生成，仓库不引入其它资源文件。
+  # 目录按语言分别声明：Flutter 只会把声明到的目录打进包。
+  assets:
+    - assets/i18n/zh/
+    - assets/i18n/zh_TW/
+    - assets/i18n/en/
+    - assets/i18n/ja/
+    - assets/i18n/ko/
+    - assets/i18n/fr/
+    - assets/i18n/de/
+    - assets/i18n/es/
+    - assets/i18n/pt/
+    - assets/i18n/ru/
+    - assets/i18n/ar/
+    - assets/i18n/hi/
+    - assets/i18n/th/
+    - assets/i18n/vi/
+    - assets/i18n/id/

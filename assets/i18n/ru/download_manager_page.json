@@ -3,13 +3,9 @@
   "cannotOpenCopied": "Не удалось открыть напрямую, скопирован путь к файлу",
   "clearFinished": "Очистить завершённые",
   "copyPath": "Скопировать путь",
-  "downloadFailed.authHeaderNotAllowed": "Браузер не разрешает заголовок Authorization для кросс-доменных запросов",
-  "downloadFailed.popupBlocked": "Браузер заблокировал всплывающее окно загрузки",
-  "downloadFailed.browserLaunchFailed": "Нет приложения для открытия ссылки загрузки",
-  "downloadFailed.notSupported": "Действие не поддерживается на текущей платформе",
-  "downloadOpenFailed": "Не удалось открыть загруженный файл: {reason}",
   "empty": "Задач на загрузку пока нет",
   "emptyHint": "Нажмите «Скачать» на Release-приложении или файле репозитория, чтобы добавить",
+  "handedToBrowser": "Передано браузеру",
   "multiConnection": "Мультиподключение",
   "noAppForFile": "Нет приложения для обработки этого файла",
   "open": "Открыть",
@@ -32,5 +28,10 @@
   "categoryOther": "Другое",
   "verified": "Проверено",
   "unverified": "Не проверено",
-  "verifyFailed": "Проверка целостности не пройдена"
+  "verifyFailed": "Проверка целостности не пройдена",
+  "retryAllFailed": "Повторить все неудачные",
+  "noFailedToRetry": "Нет неудачных задач для повтора",
+  "undoRemove": "Отменить удаление",
+  "removedItem": "Удалено: {name}",
+  "retriedCount": "Повторено неудачных задач: {n}"
 }

@@ -3,13 +3,9 @@
   "cannotOpenCopied": "無法直接開啟，已複製檔案路徑",
   "clearFinished": "清理已結束",
   "copyPath": "複製路徑",
-  "downloadFailed.authHeaderNotAllowed": "瀏覽器不允許為跨域請求設定 Authorization 標頭",
-  "downloadFailed.popupBlocked": "瀏覽器攔截了下載彈窗",
-  "downloadFailed.browserLaunchFailed": "沒有可用的應用程式開啟下載連結",
-  "downloadFailed.notSupported": "目前平台不支援該操作",
-  "downloadOpenFailed": "開啟下載檔案失敗：{reason}",
   "empty": "還沒有下載工作",
   "emptyHint": "在 Release 附件或儲存庫檔案上點「下載」即可加入",
+  "handedToBrowser": "已交給瀏覽器下載",
   "multiConnection": "多連線",
   "noAppForFile": "沒有可處理該檔案的應用程式",
   "open": "開啟",
@@ -32,5 +28,10 @@
   "categoryOther": "其他",
   "verified": "已校驗",
   "unverified": "未校驗",
-  "verifyFailed": "完整性校驗未通過"
+  "verifyFailed": "完整性校驗未通過",
+  "retryAllFailed": "重試全部失敗",
+  "noFailedToRetry": "沒有失敗的任務需要重試",
+  "undoRemove": "撤銷移除",
+  "removedItem": "已移除：{name}",
+  "retriedCount": "已重試 {n} 個失敗任務"
 }

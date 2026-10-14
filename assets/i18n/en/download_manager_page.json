@@ -3,13 +3,9 @@
   "cannotOpenCopied": "Cannot open directly, file path copied",
   "clearFinished": "Clear finished",
   "copyPath": "Copy Path",
-  "downloadFailed.authHeaderNotAllowed": "Browser does not allow setting Authorization header for cross-origin requests",
-  "downloadFailed.popupBlocked": "Browser blocked the download pop-up",
-  "downloadFailed.browserLaunchFailed": "No app available to launch the download link",
-  "downloadFailed.notSupported": "This action is not supported on the current platform",
-  "downloadOpenFailed": "Failed to open downloaded file: {reason}",
   "empty": "No download tasks yet",
   "emptyHint": "Tap \"Download\" on Release attachments or repo files to add",
+  "handedToBrowser": "Handed to the browser",
   "multiConnection": "Multiple connections",
   "noAppForFile": "No app available to handle this file",
   "open": "Open",
@@ -32,5 +28,10 @@
   "categoryOther": "Other",
   "verified": "Verified",
   "unverified": "Not verified",
-  "verifyFailed": "Integrity check failed"
+  "verifyFailed": "Integrity check failed",
+  "retryAllFailed": "Retry all failed",
+  "noFailedToRetry": "No failed tasks to retry",
+  "undoRemove": "Undo remove",
+  "removedItem": "Removed: {name}",
+  "retriedCount": "Retried {n} failed tasks"
 }

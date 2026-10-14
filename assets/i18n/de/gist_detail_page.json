@@ -19,6 +19,7 @@
   "saveFailed": "Speichern fehlgeschlagen: {error}",
   "saved": "Gespeichert",
   "title": "Gist-Details",
+  "truncatedWarning": "Inhalt möglicherweise abgeschnitten (Volltext-Abruf fehlgeschlagen)",
   "updateFailed": "Aktualisieren fehlgeschlagen: {error}",
   "updated": "Aktualisiert",
   "public": "Öffentlich",

@@ -32,6 +32,7 @@
 
 import argparse
 import json
+import math
 import os
 import re
 import struct
@@ -121,6 +122,7 @@ _FONT_ROWS = {
     '+': '00000 00100 00100 11111 00100 00100 00000',
     '%': '11001 11010 00010 00100 01000 01011 10011',
     ',': '00000 00000 00000 00000 01100 01100 11000',
+    '_': '00000 00000 00000 00000 00000 00000 11111',
     ' ': '00000 00000 00000 00000 00000 00000 00000',
 }
 
@@ -146,9 +148,14 @@ def _canvas(width, height, color):
 def _rect(rows, x0, y0, x1, y1, color):
     height = len(rows)
     width = len(rows[0]) // 3
-    for y in range(max(0, int(y0)), min(height, int(y1))):
-        for x in range(max(0, int(x0)), min(width, int(x1))):
-            rows[y][3 * x:3 * x + 3] = bytes(color)
+    y0 = max(0, int(y0)); y1 = min(height, int(y1))
+    x0 = max(0, int(x0)); x1 = min(width, int(x1))
+    if y0 >= y1 or x0 >= x1:
+        return
+    a, b = x0 * 3, x1 * 3
+    block = bytes(color) * (x1 - x0)
+    for y in range(y0, y1):
+        rows[y][a:b] = block
 
 
 def _line(rows, x0, y0, x1, y1, color, thick=2):
@@ -225,6 +232,7 @@ def _fill_columns(rows, xs, ys, base_y, color):
     width = len(rows[0]) // 3
     height = len(rows)
     base = max(0, min(height, int(base_y)))
+    pixel = bytes(color)
     j = 0
     for x in range(int(xs[0]), int(xs[-1]) + 1):
         if x < 0 or x >= width:
@@ -236,7 +244,7 @@ def _fill_columns(rows, xs, ys, base_y, color):
         y_top = ys[j] + (ys[j + 1] - ys[j]) * t
         y0 = max(0, min(height, int(round(y_top))))
         for y in range(y0, base):
-            rows[y][3 * x:3 * x + 3] = bytes(color)
+            rows[y][3 * x:3 * x + 3] = pixel
 
 
 def _write_png(path, rows):
@@ -250,16 +258,20 @@ def _write_png(path, rows):
 
     ihdr = struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0)
     blob = (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr)
-            + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b''))
+            + chunk(b'IDAT', zlib.compress(raw, 6)) + chunk(b'IEND', b''))
     os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
-    with open(path, 'wb') as handle:
+    # 原子写：先写临时文件再 os.replace，避免磁盘满/权限错误留下半张坏图
+    # （旧实现 open(path,'wb') 先 truncate，中途崩 = README 长期挂坏图）。
+    tmp = path + '.tmp'
+    with open(tmp, 'wb') as handle:
         handle.write(blob)
+    os.replace(tmp, path)
 
 
 # ── 坐标轴数学（纯函数，可单测）────────────────────────────────────────────
 def nice_axis_max(value):
     """把数据上限抬到"整齐"刻度：1 / 2 / 2.5 / 5 × 10^n（至少 1）。"""
-    if value <= 0:
+    if not math.isfinite(value) or value <= 0:
         return 1.0
     exponent = 0
     scaled = float(value)
@@ -296,7 +308,15 @@ def axis_ticks_for(axis_max, integer_series=True, count=5):
 
 
 def format_value(value):
-    """刻度数值：整数不带小数点，小数最多 1 位。"""
+    """刻度数值：整数不带小数点，小数最多 1 位；大数用 K/M 紧凑记数。"""
+    if not math.isfinite(value):
+        return '0'
+    if abs(value) >= 1e9:
+        return ('%.1f' % (value / 1e9)).rstrip('0').rstrip('.') + 'G'
+    if abs(value) >= 1e6:
+        return ('%.1f' % (value / 1e6)).rstrip('0').rstrip('.') + 'M'
+    if abs(value) >= 1e3:
+        return ('%.1f' % (value / 1e3)).rstrip('0').rstrip('.') + 'K'
     if abs(value - round(value)) < 1e-9:
         return str(int(round(value)))
     return ('%.1f' % value).rstrip('0').rstrip('.')
@@ -317,16 +337,20 @@ def x_positions(times, left, width):
     """
     if not times:
         return []
-    lo, hi = times[0], times[-1]
+    finite = [t for t in times if math.isfinite(t)]
+    if not finite:
+        return [left + width / 2.0 for _ in times]
+    lo, hi = min(finite), max(finite)
     span = hi - lo
     if span <= 0:
         return [left + width / 2.0 for _ in times]
-    return [left + (t - lo) / float(span) * width for t in times]
+    return [left + (t - lo) / float(span) * width if math.isfinite(t)
+            else left + width / 2.0 for t in times]
 
 
 def _nice_step_at_least(value):
     """不小于 value 的"整齐"步长：1 / 2 / 2.5 / 5 × 10^n。"""
-    if value <= 0:
+    if not math.isfinite(value) or value <= 0:
         return 1.0
     exponent = 0
     scaled = float(value)
@@ -483,22 +507,20 @@ def label_positions(plot_left, plot_w, centers, widths, gap=28):
             step = (plot_w - widths[0]) / float(count - 1)
             positions = [int(plot_left + i * step) for i in range(count)]
     if overlaps(positions):
-        # 兜底二：抽稀（保首尾），直到容量足够
-        keep = [0, count - 1]
-        for i in range(1, count - 1):
-            if i % 2 == 1:
-                keep.insert(-1, i)
-        while len(keep) > 2:
-            widths_kept = [widths[i] for i in keep]
-            total = sum(widths_kept) + gap * (len(keep) - 1)
+        # 兜底二：容量不足 → 等间隔抽稀（保首尾），被剔除的返回 None，
+        # 由调用方跳过绘制（旧实现把被剔标签位置原样放回 → 照旧重叠）。
+        for k in range(count, 1, -1):
+            idx = [int(round(i * (count - 1) / float(k - 1)))
+                   for i in range(k)]
+            if len(set(idx)) < len(idx):
+                continue
+            total = sum(widths[i] for i in idx) + gap * (k - 1)
             if total <= plot_w:
-                step = (plot_w - widths_kept[-1]) / float(len(keep) - 1)
-                fixed = [int(plot_left + i * step) for i in range(len(keep))]
-                mapping = {k: fixed[j] for j, k in enumerate(keep)}
-                return [mapping.get(i, positions[i]) for i in range(count)]
-            for j in range(1, len(keep) - 1, 2):
-                keep.pop(j)
-                break
+                step = (plot_w - widths[idx[-1]]) / float(k - 1)
+                result = [None] * count
+                for j, i in enumerate(idx):
+                    result[i] = int(plot_left + j * step)
+                return result
     return positions
 
 
@@ -583,6 +605,8 @@ def parse_point(item):
     try:
         stamp = datetime.fromisoformat(raw_time.replace('Z', '+00:00'))
     except ValueError:
+        return None
+    if not math.isfinite(stamp.timestamp()):
         return None
     if stamp.tzinfo is None:
         stamp = stamp.replace(tzinfo=timezone.utc)
@@ -677,11 +701,12 @@ def render_chart(points, key, color, path, title, unit, source, repo=''):
     # 纵轴单位（轴顶左侧；深色版下用 MUTED 保证在近黑底上可读）
     _text(rows, 12, plot_top - 100, unit, COLOR_MUTED)
 
-    # ── 网格：10 条主刻度 + 相邻中点 1 条次线（10 条主刻度已足够密）──
+    # ── 网格：10 条主刻度 + 每间隙 3 条次线（4 等分，细腻度）──
     for i in range(len(y_ticks) - 1):
-        y_minor = y_of((y_ticks[i] + y_ticks[i + 1]) / 2.0)
-        _rect(rows, plot_left, int(round(y_minor)),
-              plot_left + plot_w, int(round(y_minor)) + 2, COLOR_GRID_MINOR)
+        for j in range(1, 4):
+            y_minor = y_of(y_ticks[i] + (y_ticks[i + 1] - y_ticks[i]) * j / 4.0)
+            _rect(rows, plot_left, int(round(y_minor)),
+                  plot_left + plot_w, int(round(y_minor)) + 3, COLOR_GRID_MINOR)
     for tick in y_ticks:
         y = int(round(y_of(tick)))
         _rect(rows, plot_left, y, plot_left + plot_w, y + 4, COLOR_GRID)
@@ -719,12 +744,13 @@ def render_chart(points, key, color, path, title, unit, source, repo=''):
             # 标签宽度已按 10 个做过容量校验（time_labels_for 内部降级），
             # 这里只做纯居中的均匀排布；label_positions 仅作最后的防撞保险。
             x_positions_list = label_positions(plot_left, plot_w, centers, widths)
-        # 次网格：相邻主刻度 1 条中点线（10 条主刻度已足够密）
+        # 次网格：每间隙 3 条次线（4 等分）
         if span > 0:
             for i in range(count_x - 1):
-                mx = plot_left + plot_w * (i + 0.5) / float(count_x - 1)
-                _rect(rows, int(round(mx)), plot_top + 3,
-                      int(round(mx)) + 3, plot_bottom, COLOR_GRID_MINOR)
+                for j in range(1, 4):
+                    mx = plot_left + plot_w * (i + j / 4.0) / float(count_x - 1)
+                    _rect(rows, int(round(mx)), plot_top + 3,
+                          int(round(mx)) + 3, plot_bottom, COLOR_GRID_MINOR)
         for index, stamp in enumerate(tick_times):
             if span <= 0:
                 x = plot_left + plot_w / 2.0
@@ -732,8 +758,9 @@ def render_chart(points, key, color, path, title, unit, source, repo=''):
                 x = plot_left + (stamp - times[0]) / span * plot_w
             _rect(rows, int(round(x)) - 3, plot_bottom + 6,
                   int(round(x)) + 3, plot_bottom + 26, COLOR_AXIS)
-            _text(rows, x_positions_list[index], plot_bottom + 42,
-                  labels[index], COLOR_MUTED)
+            if x_positions_list[index] is not None:
+                _text(rows, x_positions_list[index], plot_bottom + 42,
+                      labels[index], COLOR_MUTED)
 
     # ── 数据：面积填充 → 辉光 → 过渡 → 亮芯 → 采样点 → 当前值准星 ──
     if len(points) >= 2:
@@ -897,6 +924,26 @@ def selftest():
     wide_labels = time_labels_for([0.0, 3600.0], plot_w5k, count=10)
     check('短跨度保持 MM-DD HH:MM', all(len(x) == 11 for x in wide_labels))
 
+    # 边界护栏（inf/nan 不再死循环或抛异常）
+    import math as _m
+    check('nice_axis_max(inf) 不死循环', nice_axis_max(float('inf')) == 1.0)
+    check('nice_axis_max(nan) == 1', nice_axis_max(float('nan')) == 1.0)
+    check('format_value(nan/inf) 不抛', format_value(float('nan')) == '0'
+          and format_value(float('inf')) == '0')
+    check('format_value 大数紧凑记数', format_value(1200000) == '1.2M')
+    check('x_positions 倒序不塌缩', x_positions([100.0, 50.0, 0.0], 0.0, 100.0)
+          == [100.0, 50.0, 0.0])
+    check('x_positions 含 NaN 不崩', all(_m.isfinite(v)
+          for v in x_positions([0.0, float('nan'), 10.0], 0.0, 100.0)))
+    # 抽稀兜底：放不下时被剔除的位置为 None（调用方跳过），而非重叠
+    tight = label_positions(0, 1000, [i * 100 for i in range(10)], [300] * 10)
+    check('抽稀兜底无重叠', all(
+        tight[i] is None or tight[i + 1] is None or tight[i] + 300 + 28 <= tight[i + 1]
+        for i in range(9)))
+    # 平滑：尖峰后不反弹（单调三次不过冲）
+    _, spk = smooth_path([0.0, 1.0, 2.0, 3.0], [0.0, 10.0, 0.0, 10.0], 8)
+    check('尖峰平滑不过冲', all(0.0 - 1e-6 <= v <= 10.0 + 1e-6 for v in spk))
+
     # 混色工具：边界与中值（模拟 alpha 的实现在换肤后是新依赖）
     check('混色 t=0 == 基色', _blend((0, 0, 0), (255, 255, 255), 0) == (0, 0, 0))
     check('混色 t=1 == 目标色', _blend((0, 0, 0), (255, 255, 255), 1)
@@ -1000,7 +1047,7 @@ def main():
     if not (args.repo and args.history and args.out_dir):
         parser.error('需要 --repo / --history / --out-dir（或 --selftest）')
 
-    token = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN') or ''
+    token = (os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN') or '').strip()
     if not token:
         print('缺少 GH_TOKEN / GITHUB_TOKEN', file=sys.stderr)
         return 2
@@ -1010,6 +1057,9 @@ def main():
         commits = fetch_commits(args.repo, token)
     except urllib.error.HTTPError as error:
         print('接口请求失败：HTTP %s' % error.code, file=sys.stderr)
+        return 3
+    except (urllib.error.URLError, OSError, ValueError, KeyError) as error:
+        print('接口请求失败：%s' % error, file=sys.stderr)
         return 3
 
     points = load_history(args.history)

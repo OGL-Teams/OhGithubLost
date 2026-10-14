@@ -31,7 +31,7 @@
   "tokenHint": "Collez un jeton avec permission repo",
   "tokenLabel": "Jeton d'accès personnel",
   "tokenRequired": "Veuillez d'abord coller le jeton",
-  "tokenShapeInvalid": "Format de jeton invalide (doit commencer par ghp_, gho_, ghu_ ou github_pat_)",
+  "tokenShapeInvalid": "Format de jeton invalide (doit commencer par ghp_, gho_, ghu_, ghs_, ghr_ ou github_pat_)",
   "vaultNote": "Le jeton est conservé uniquement dans la coffre-fort locale sécurisée (Android Keystore / iOS Keychain / service de clés de bureau) ; les requêtes ne partent que vers api.github.com.",
   "verifyFailed": "Échec de la vérification : {error}",
   "verifying": "Vérification en cours…",

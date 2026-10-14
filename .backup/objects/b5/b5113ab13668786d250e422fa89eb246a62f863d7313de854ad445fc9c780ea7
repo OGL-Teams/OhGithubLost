@@ -1,0 +1,243 @@
+# ============================================================================
+# OGL · Web（wasm）实验性构建
+#
+# 定位与红线：
+# - **实验性**：web 只是五平台之外的补充产物，**编译失败绝不影响发布**。
+#   因此本工作流与 build.yml **完全解耦**：独立触发、continue-on-error、
+#   失败不阻塞 build.yml 的 release 任务，也不产出任何 Release 附件。
+# - 独立工作流而非 build.yml 里的矩阵腿：矩阵失败会污染 build job 的
+#   result（进而影响 release 依赖），且 web 需要"失败后仍能保留旧 app/"。
+#
+# 流程：
+#   1. 生成 web 平台脚手架（仓库零外部资源，见 build.yml 顶部说明）；
+#   2. **动态注入**浏览器 API 守卫（tool/web_build.py --prepare）：
+#      编译期核对脚手架与 wasm 前提，运行时逐项检查浏览器 API，缺则抛错；
+#   3. `flutter build web --release --wasm`（注入引导清单 dart_define.json）；
+#   4. 产物校验（tool/web_build.py --verify）：bootstrap / wasm / 引擎 / 守卫；
+#   5. 发布到仓库 `app/`：**先清空目录**再拷贝，只保留最新一套 web 文件；
+#   6. 用 GitHub REST（Git Data API）把 `app/` 提交回 main —— 本机 git 不可用。
+#
+# 注意：`app/` 是构建产物目录，体积较大；每个 commit 只保留当前版本，
+# 避免仓库无限膨胀（历史版本可在 Actions artifact 里找）。
+# ============================================================================
+name: web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - 'web/**'
+      - 'tool/web_build.py'
+      - '.github/workflows/web.yml'
+  pull_request:
+    paths:
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - 'tool/web_build.py'
+      - '.github/workflows/web.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: '3.47.5'
+
+jobs:
+  build_web:
+    name: Web（wasm · 实验性）
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # ★ 实验性红线：这一腿失败只是"web 没更新"，**不阻塞任何发布**。
+    #   （本工作流不被 build.yml 的 release 任务依赖，已结构性解耦。）
+    continue-on-error: true
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: 环境信息
+        run: flutter --version
+
+      - name: 获取依赖
+        run: flutter pub get
+
+      # web 脚手架同样在**构建时生成**，不提交进仓库（与其它平台一致）。
+      - name: 生成 web 平台脚手架
+        shell: bash
+        run: |
+          flutter create --platforms=web --org com.yingo --project-name ohgithublost .
+          rm -f test/widget_test.dart
+
+      # 插件注册文件按平台目录生成，故脚手架之后再 pub get 一次。
+      - name: 重新获取依赖（补齐 web 插件注册）
+        run: flutter pub get
+
+      # ★ 浏览器 API 守卫（动态注入）：
+      #   - 写 web/web_api_guard.js 并把 <script> 注入 web/index.html；
+      #   - 校验脚手架完整性（flutter_bootstrap.js 必须在）；
+      #   - 缺任何 wasm / 网络 / 存储 / 解码前提即**抛错**（CI 变红）。
+      - name: 注入浏览器 API 守卫（wasm 与浏览器能力门禁）
+        shell: bash
+        run: python3 tool/web_build.py --prepare
+
+      # 引导清单注入件与其它平台共用；release 包缺它会拒绝启动。
+      # 这里不依赖 build.yml 的 manifest job（避免跨工作流依赖失败传播），
+      # 而是本地用占位注入保证 wasm 编译能走通。
+      - name: 生成引导清单注入件（wasm 编译用）
+        run: |
+          python3 - <<'PY'
+          import json
+          # web 实验产物：用**占位**清单，仅保证 --dart-define-from-file
+          # 通路可用；正式签名清单由 build.yml 的 manifest job 生成。
+          json.dump({'OGL_BOOT_MANIFEST': ''},
+                    open('dart_define.json', 'w'), ensure_ascii=False)
+          print('dart_define.json 就绪')
+          PY
+
+      - name: 构建 Web（release · wasm）
+        shell: bash
+        run: |
+          flutter build web --release --wasm \
+            --base-href /app/ \
+            --dart-define-from-file=dart_define.json
+
+      # 编译不等于能跑：核对 bootstrap / wasm / 引擎 / 守卫注入，缺一即抛错。
+      - name: 产物校验（wasm / 引擎 / API 守卫）
+        shell: bash
+        run: python3 tool/web_build.py --verify
+
+      - name: 上传产物（artifact · 保留 7 天）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-wasm
+          path: build/web/**
+          if-no-files-found: warn
+          retention-days: 7
+
+      # ★ 发布到仓库 `app/`：**先清空目录**再拷贝，只保留最新一套 web 文件。
+      #   目录整体重建（tool/web_build.py --publish 内部 rmtree + copytree），
+      #   上一版的 wasm / canvaskit 缓存文件不会残留。
+      - name: 发布到仓库 app/（先清空后重建）
+        shell: bash
+        run: python3 tool/web_build.py --publish
+
+      - name: 记录产物清单
+        run: |
+          echo '=== app/ 产物 ==='
+          ls -la app/ | head -40
+          du -sh app/
+
+      # 本机 git 不可用（历史原因），因此用 GitHub REST 的 Git Data API
+      # 把 app/ 目录提交回 main；与 _setup/ogl_sync.py 同一套思路，
+      # 但这里只提交 app/ 下的文件，不影响仓库其它内容。
+      - name: 提交 app/ 回 main（Git Data API · 绕开 git）
+        id: commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TITLE: 'build(web): 实验性 wasm 产物（自动更新 app/）'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, fnmatch, json, os, urllib.request
+
+          token = os.environ['GH_TOKEN']
+          api = 'https://api.github.com'
+          repo = os.environ['GITHUB_REPOSITORY']
+          root = os.environ['GITHUB_WORKSPACE']
+          app = os.path.join(root, 'app')
+
+          IGNORE_DIRS = {'.git', 'build', '.dart_tool', '__pycache__'}
+          IGNORE_EXT = ('.pyc',)
+
+          def req(path, method='GET', body=None):
+              data = None
+              headers = {'Authorization': 'Bearer ' + token,
+                         'Accept': 'application/vnd.github+json',
+                         'User-Agent': 'ogl-web-bot'}
+              if body is not None:
+                  data = json.dumps(body).encode()
+                  headers['Content-Type'] = 'application/json'
+              r = urllib.request.Request(api + path, data=data,
+                                         headers=headers, method=method)
+              with urllib.request.urlopen(r, timeout=120) as resp:
+                  raw = resp.read()
+                  return json.loads(raw) if raw else None
+
+          def blob_sha(data):
+              import hashlib
+              return hashlib.sha1(b'blob %d\x00' % len(data) + data).hexdigest()
+
+          # ① 远端 main 当前 tree
+          head = req('/repos/%s/commits/main' % repo)
+          tree = req('/repos/%s/git/trees/%s?recursive=1' % (repo, head['sha']))
+          remote = {n['path']: n['sha'] for n in tree.get('tree', [])
+                    if n['type'] == 'blob'}
+
+          # ② 本地 app/ 下的文件（app/ 目录本身已由 --publish 清空重建）
+          local = {}
+          for dp, dns, fs in os.walk(app):
+              dns[:] = [d for d in dns if d not in IGNORE_DIRS]
+              for f in fs:
+                  if f.endswith(IGNORE_EXT):
+                      continue
+                  full = os.path.join(dp, f)
+                  rel = 'app/' + os.path.relpath(full, app).replace(os.sep, '/')
+                  with open(full, 'rb') as fh:
+                      local[rel] = blob_sha(fh.read())
+
+          added = sorted(p for p in local if p not in remote)
+          changed = sorted(p for p in local
+                           if p in remote and local[p] != remote[p])
+          removed = sorted(p for p in remote
+                           if p.startswith('app/') and p not in local)
+          todo = added + changed
+          if not todo and not removed:
+              print('app/ 与远端一致，无需提交')
+              raise SystemExit(0)
+
+          # ③ 上传 blob
+          shas = {}
+          for rel in todo:
+              with open(os.path.join(root, rel), 'rb') as fh:
+                  data = fh.read()
+              b = req('/repos/%s/git/blobs' % repo, 'POST', {
+                  'content': base64.b64encode(data).decode(),
+                  'encoding': 'base64'})
+              shas[rel] = b['sha']
+              print('  M %s' % rel)
+
+          # ④ tree：改/增用新 sha，删用 sha=None
+          entries = [{'path': rel, 'mode': '100644', 'type': 'blob',
+                      'sha': shas[rel]} for rel in todo]
+          for rel in removed:
+              entries.append({'path': rel, 'mode': '100644',
+                              'type': 'blob', 'sha': None})
+              print('  D %s' % rel)
+
+          new_tree = req('/repos/%s/git/trees' % repo, 'POST', {
+              'base_tree': head['tree']['sha'], 'tree': entries})
+          commit = req('/repos/%s/git/commits' % repo, 'POST', {
+              'message': os.environ.get('TITLE', 'build(web)'),
+              'tree': new_tree['sha'], 'parents': [head['sha']]})
+          req('/repos/%s/git/refs/heads/main' % repo, 'PATCH',
+              {'sha': commit['sha'], 'force': False})
+          print('已提交 app/：%s（+ %d / ~ %d / - %d）'
+                % (commit['sha'][:12], len(added), len(changed),
+                   len(removed)))
+          print('CI: https://github.com/%s/actions' % repo)
+          PY

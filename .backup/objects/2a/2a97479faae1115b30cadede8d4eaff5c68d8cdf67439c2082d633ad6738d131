@@ -1,0 +1,97 @@
+name: CI
+
+# 质量门：静态分析 + 单元测试
+# 任何 push / PR / 手动触发都会执行；CI 未通过禁止合入。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: 质量门（analyze + test）
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.5'
+          channel: stable
+          cache: true
+
+      - name: 环境信息
+        run: flutter --version
+
+      - name: 获取依赖
+        run: flutter pub get
+
+      # 结构与多语言审计：把「四层依赖方向」「界面文案是否全部本地化」
+      # 变成**可执行的门禁**（违反即失败），而不是只写在文档里靠人记。
+      - name: 分层审计（依赖只能向下）
+        run: python3 tool/layer_audit.py --fatal
+
+      - name: i18n 审计（界面文案 0 遗漏 / 分片键集合一致）
+        run: python3 tool/i18n_scan.py --check
+
+      - name: 动效分级审计（动画必须听档位质量表）
+        run: python3 tool/motion_audit.py --fatal
+
+      - name: 性能反模式审计（shrinkWrap / 宽 MediaQuery.of）
+        run: python3 tool/perf_audit.py --fatal
+
+      - name: 图表自检（统计曲线的坐标系 / 刻度 / 降采样）
+        run: python3 tool/stats_chart.py --selftest
+
+      # 平台私有文件注入器自检：必须在 CI 里守住"注入不是逃生舱"这条纪律
+      # （缺 `why` 的注入项会被拒绝；幂等性也在此验证）。
+      - name: 平台注入器自检（幂等 / 缺 why 拒绝）
+        run: python3 tool/inject_platform_spec_selftest.py
+
+      - name: 静态分析（警告即失败）
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: 单元测试（含渲染快照）
+        run: flutter test --reporter expanded
+
+      # 渲染快照产物：把主壳在 N 套主题 × N 种屏幕形态下真实渲染成 PNG 上传。
+      # 这样"界面到底长什么样"第一次变成可看、可比、可回溯的事实。
+      - name: 上传 UI 渲染快照
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-shots
+          path: build/ui_shots/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
+  # AI 审计（Agnes）：对「正则规则覆盖不到」的盲区做高智能度复核。
+  # 规则审计（上面 quality job）是确定的、零成本的；AI 审计是启发式的、
+  # 补盲区的 —— 两者互补，不是替代。
+  ai_audit:
+    name: AI 审计（Agnes · 补正则盲区）
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # 注：secrets 上下文不能用于 job 的 if: 条件（Actions 限制），
+    # 因此这里始终运行；密钥经 env 传入，脚本内部判空则跳过并显式标注。
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 准备依赖
+        run: pip install --quiet --disable-pip-version-check pyyaml requests 2>/dev/null || true
+
+      - name: AI 审计（架构 / 安全 / i18n / 性能 / 变更记录）
+        env:
+          AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
+          OGL_AI_MODEL: agnes-2.5-flash
+        run: python3 tool/ai_audit.py

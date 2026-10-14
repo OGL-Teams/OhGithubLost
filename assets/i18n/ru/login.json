@@ -31,7 +31,7 @@
   "tokenHint": "Вставьте Token с правами repo",
   "tokenLabel": "Персональный доступный Token",
   "tokenRequired": "Сначала вставьте Token",
-  "tokenShapeInvalid": "Неверный формат Token (должен начинаться с ghp_, gho_, ghu_ или github_pat_)",
+  "tokenShapeInvalid": "Неверный формат Token (должен начинаться с ghp_, gho_, ghu_, ghs_, ghr_ или github_pat_)",
   "vaultNote": "Token хранится только в локальном защищённом хранилище (Android Keystore / iOS Keychain / ключевые сервисы десктопа); запросы отправляются только на api.github.com.",
   "verifyFailed": "Ошибка проверки: {error}",
   "verifying": "Проверяется…",

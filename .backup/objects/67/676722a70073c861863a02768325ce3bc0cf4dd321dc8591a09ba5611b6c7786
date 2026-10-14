@@ -1,0 +1,50 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+pubspec.lock
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 平台工程目录（由 CI 的 `flutter create` 现场生成，永不入库）
+android/
+ios/
+linux/
+macos/
+windows/
+web/
+app/
+!android/.gitkeep
+
+# Android 构建缓存
+android/.gradle/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+
+# 构建产物
+*.apk
+*.aab
+*.zip
+*.tar.gz
+
+# 构建时生成的引导清单注入件（CI 产物，勿入库）
+dart_define.json
+boot_manifest.json
+
+# 密钥与私密文件（禁止入库；CI 用 Actions Secrets 还原）
+.github/signing/ogl-boot-ed25519.key
+.github/signing/ogl-debug.keystore.b64
+
+# 会话临时 / 备份
+.backup/
+__pycache__/
+*.pyc

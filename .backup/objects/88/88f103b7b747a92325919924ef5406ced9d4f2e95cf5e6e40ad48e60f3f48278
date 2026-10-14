@@ -1,0 +1,619 @@
+# ============================================================================
+# OGL · 五平台全架构构建（Release）+ 一键发布
+#
+# 设计要点：
+# 1. **全架构**：每个平台按"能构建的每一种架构"各出一件产物；
+# 2. **零外部资源**：仓库不含 assets，故这里无需任何"下载字体/图标/清单"的步骤；
+# 3. **必过项与尽力项分开**：稳定目标失败即红；预览期 runner / 实验性架构
+#    标记 best_effort（continue-on-error），红了不阻塞主线但日志可见；
+# 4. 产物按"平台·架构"分别上传，用户直接下自己那一份；
+# 5. **一键发布**：手动触发（workflow_dispatch）时选择发布通道
+#    （stable / beta / alpha）+ 版本号 + 版本名 + 说明；
+#    全平台构建成功后由 release 任务自动创建 GitHub Release：
+#      - stable            → 正式版（tag v{版本名}）
+#      - beta / alpha      → Pre-release（tag v{版本名}-{通道}）
+#    版本名 / 版本号会灌进 Android 产物（versionName / versionCode）。
+# ============================================================================
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: '发布通道（stable=正式版；beta / alpha=预发布）'
+        required: true
+        default: 'stable'
+        type: choice
+        options:
+          - stable
+          - beta
+          - alpha
+      version_number:
+        description: '版本号 versionCode（必填·正整数，如 20000）'
+        required: true
+        type: string
+      version_name:
+        description: '版本名 versionName（必填·如 2.0.0；将写入所有平台产物）'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release 说明（可留空，留空用自动模板）'
+        required: false
+        default: ''
+        type: string
+
+concurrency:
+  # 发布构建（workflow_dispatch）与普通 push 构建分不同组：
+  # 新 push 不会取消进行中的正式发布构建。
+  group: build-${{ github.event_name == 'workflow_dispatch' && 'dispatch' || 'push' }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+env:
+  FLUTTER_VERSION: '3.47.5'
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 引导清单（Boot Manifest）生成 + Ed25519 签名。产物 `dart_define.json`
+  # 由各构建腿下载并以 `--dart-define-from-file` 注入；没有它，release 包会在
+  # 启动时拒绝启动（开发旁路只对调试构建开放）。见 `tool/boot_manifest.py`。
+  # ---------------------------------------------------------------------------
+  manifest:
+    name: 生成引导清单（Ed25519签名）
+    runs-on: ubuntu-latest
+    steps:
+      # ★ 发布参数护栏：手动触发时版本号必须**显式给出**。
+      # 旧版给 version_name 默认值 `0.1.0`，于是"忘了填"就会产出 0.1.0 的包
+      # （真事故：APK 显示 0.1.0，而 App 内部版本来自代码常量，看起来"正常"）。
+      # 现在默认值已删除，这里再做一道硬校验，空值/非法值一律拒绝。
+      - name: 校验发布参数（手动触发必填）
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          VN: ${{ inputs.version_name }}
+          VNUM: ${{ inputs.version_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "${VN:-}" ] || { echo '::error::version_name 必填（不再有 0.1.0 默认值）'; exit 1; }
+          echo "$VN" | grep -Eq '^[0-9]+\.[0-9]+(\.[0-9]+)?$' || { echo "::error::version_name 需形如 2.0 或 2.0.0，当前：$VN"; exit 1; }
+          echo "$VNUM" | grep -Eq '^[1-9][0-9]*$' || { echo "::error::version_number 需为正整数，当前：$VNUM"; exit 1; }
+          echo "发布参数校验通过：version_name=$VN version_number=$VNUM"
+
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装签名依赖
+        run: python3 -m pip install --quiet --disable-pip-version-check cryptography
+
+      # ★ 私钥不随仓库保管：从 Secret `OGL_BOOT_KEY` 还原到 runner 临时目录。
+      # 首次配置 / 轮换方式见 `.github/signing/README.md`。
+      - name: 还原签名私钥（Actions Secret）
+        env:
+          OGL_BOOT_KEY: ${{ secrets.OGL_BOOT_KEY }}
+        run: |
+          [ -n "$OGL_BOOT_KEY" ] || { echo '缺少 OGL_BOOT_KEY Secret（见 .github/signing/README.md）'; exit 1; }
+          printf '%s' "$OGL_BOOT_KEY" > "$RUNNER_TEMP/ogl-boot-ed25519.key"
+
+      - name: 生成并注入 .dart_define.json
+        env:
+          VERSION_INPUT: ${{ inputs.version_name }}
+        run: |
+          python3 tool/boot_manifest.py \
+            --version "$VERSION_INPUT" \
+            --build-id "$GITHUB_SHA" \
+            --key "$RUNNER_TEMP/ogl-boot-ed25519.key" \
+            --out dart_define.json
+
+      - name: 上传注入件
+        uses: actions/upload-artifact@v4
+        with:
+          name: boot-manifest
+          path: |
+            dart_define.json
+            boot_manifest.json
+          retention-days: 14
+
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    needs: [manifest]
+    continue-on-error: ${{ matrix.best_effort == true }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Android · arm64-v8a
+            os: ubuntu-latest
+            build: apk
+            args: --release --split-per-abi --target-platform android-arm64
+            artifact: build/app/outputs/flutter-apk/*arm64-v8a*.apk
+          - label: Android · armeabi-v7a
+            os: ubuntu-latest
+            build: apk
+            args: --release --split-per-abi --target-platform android-arm
+            artifact: build/app/outputs/flutter-apk/*armeabi-v7a*.apk
+          - label: Android · x86_64
+            os: ubuntu-latest
+            build: apk
+            args: --release --split-per-abi --target-platform android-x64
+            artifact: build/app/outputs/flutter-apk/*x86_64*.apk
+          - label: Android · universal-APK
+            os: ubuntu-latest
+            build: apk
+            args: --release
+            artifact: build/app/outputs/flutter-apk/app-release.apk
+          - label: Android · AAB
+            os: ubuntu-latest
+            build: appbundle
+            args: --release
+            artifact: build/app/outputs/bundle/release/*.aab
+          - label: Windows · x64
+            os: windows-latest
+            build: windows
+            args: --release
+            artifact: build/windows/x64/runner/Release/**
+          - label: Windows · arm64
+            # `flutter build windows` 无 --target-platform 选项（CI 实证：
+            # "Could not find an option named --target-platform"），
+            # 只能在 arm64 宿主上原生构建 → 使用 windows-11-arm runner。
+            # 5.6.0 起**不再 best-effort**：这条腿失败即阻塞发布。
+            os: windows-11-arm
+            build: windows
+            args: --release
+            artifact: build/windows/arm64/runner/Release/**
+          # 注：Windows/Linux **没有 32 位桌面目标**（Flutter 桌面只提供
+          # x64 与 arm64，官方无 ia32 引擎）——32 位仅 Android 有（armeabi-v7a）。
+          - label: Linux · x64
+            # ★ 6.0.1 起不再用 ubuntu:20.04 容器构建（20.04 已 EOL，archive 源
+            #   极慢/超时，曾把 Linux 腿挂死 5h50m）。改为在 **ubuntu-22.04**
+            #   宿主上直接构建：glibc 下限由 2.31 抬到 **2.35**
+            #   （Ubuntu 22.04 / Debian 12 / Fedora 36 及以后满足）。
+            os: ubuntu-22.04
+            build: linux
+            args: --release
+            artifact: build/linux/x64/release/bundle/**
+          - label: Linux · arm64
+            # Flutter 官方不发布 linux-arm64 宿主 SDK（releases 404）；
+            # 且 x64→arm64 交叉构建不受支持（CI 实证："Cross-build from
+            # Linux x64 host to Linux arm64 target is not currently supported"）。
+            # 因此改为 arm64 宿主原生构建 + git 方式装 Flutter（绕过归档缺失）。
+            # 5.6.0 起**不再 best-effort**：这条腿失败即阻塞发布。
+            os: ubuntu-24.04-arm
+            build: linux
+            args: --release
+            artifact: build/linux/arm64/release/bundle/**
+          # macOS / iOS 自 5.6.0 起**弃用**（不再构建、不再发布）；
+          # 最后支持的版本是 **v5.3.0**（README 已标注）。
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 下载引导清单注入件
+        uses: actions/download-artifact@v4
+        with:
+          name: boot-manifest
+
+      - name: 安装 Flutter
+        # arm64 宿主（Linux/Windows）没有官方 SDK 归档，走下面独立的 git 安装。
+        if: matrix.os != 'ubuntu-24.04-arm' && matrix.os != 'windows-11-arm'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: 安装 Flutter（arm64 宿主 · git 方式）
+        if: matrix.os == 'ubuntu-24.04-arm' || matrix.os == 'windows-11-arm'
+        shell: bash
+        run: |
+          git clone --depth 1 --branch ${{ env.FLUTTER_VERSION }} \
+            https://github.com/flutter/flutter.git "$HOME/flutter-sdk"
+          # Windows（pwsh）只认原生路径：用 cygpath 转换后再写给 GITHUB_PATH，
+          # 否则下一步 `flutter --version` 会报 "not recognized as a name"（CI 实证）。
+          if command -v cygpath >/dev/null 2>&1; then
+            echo "$(cygpath -w "$HOME/flutter-sdk/bin")" >> "$GITHUB_PATH"
+          else
+            echo "$HOME/flutter-sdk/bin" >> "$GITHUB_PATH"
+          fi
+
+      - name: 环境信息
+        run: flutter --version
+
+      - name: 获取依赖
+        run: flutter pub get
+
+      # ★ 平台工程脚手架在**构建时生成**，不提交进仓库。
+      # 这样仓库里没有任何平台相关的外部文件（AndroidManifest / xcodeproj /
+      # CMakeLists … 全部由 Flutter 按当前 SDK 版本生成），既满足"零外部资源"，
+      # 也避免了"仓库里的脚手架与 SDK 版本漂移"。
+      # 生成物里的示例测试会引用不存在的 MyApp，这里顺手删掉。
+      #
+      # 顺序很关键：**生成脚手架必须在 `pub get` 之前**。
+      # 插件注册文件（GeneratedPluginRegistrant / Podfile 的插件段 / CMake 的
+      # 插件列表）是按"平台目录是否存在"来生成的；先 pub get 后 create 会让
+      # 这些文件缺内容，表现为 Linux/Windows 链接期找不到插件符号。
+      - name: 生成平台工程脚手架
+        # ★ Windows 默认 shell 是 pwsh，而下面的 `flutter create` / `rm -f`
+        #   是 bash 语法；pwsh 会把 `-f` 判为歧义参数并直接退出（CI 实证）。
+        shell: bash
+        run: |
+          flutter create --platforms=android,ios,linux,macos,windows --org com.yingo --project-name ohgithublost .
+          rm -f test/widget_test.dart
+
+      - name: 注入 Android compileSdk（permission_handler 要求）
+        # ★ permission_handler_android 要求宿主 compileSdk 高于 Flutter 模板默认值；
+        #   平台目录由 CI 现场生成，故在构建期对生成物做幂等注入
+        #   （见 tool/inject_android_gradle.py）。
+        if: matrix.build == 'apk' || matrix.build == 'appbundle'
+        shell: bash
+        run: python3 tool/inject_android_gradle.py || exit 1
+
+      - name: 注入 Windows 兼容宏（permission_handler_windows）
+        # ★ permission_handler_windows 使用旧的 <experimental/coroutine>，
+        #   新版 MSVC 把它判为错误；在构建期幂等注入抑制宏
+        #   （见 tool/inject_windows_cmake.py）。
+        # ★ Windows runner 上 `python3` 不一定存在（通常只有 `python`），
+        #   故这里探测解释器，避免"命令找不到"直接把整条腿打红。
+        if: matrix.build == 'windows'
+        shell: bash
+        env:
+          # Windows 控制台默认码页非 UTF-8：Python 打印非 ASCII 会抛
+          # UnicodeEncodeError（曾把整条腿打红）。这里强制 UTF-8 输出。
+          PYTHONIOENCODING: utf-8
+        run: |
+          PY=python3
+          command -v python3 >/dev/null 2>&1 || PY=python
+          echo "python: $PY"
+          "$PY" tool/inject_windows_cmake.py || exit 1
+
+      - name: 注入平台网络权限（release 必需）
+        # ★ Android：Flutter 模板的 INTERNET 权限只在 debug/profile 清单里，
+        #   release 主清单**没有** → 不注入则安装包能启动但任何网络请求直接失败。
+        #   （CI 实证：release APK 的 AndroidManifest.xml 中查无 INTERNET ——
+        #    这正是"令牌验证连接失败"的根因。）
+        # ★ macOS：沙箱的 Release entitlements 需要 network.client，
+        #   否则同样拒绝出网。
+        if: matrix.build != 'windows'
+        shell: bash
+        run: |
+          # ① Android：工具入库（幂等、带自检），见 tool/inject_android_manifest.py
+          python3 tool/inject_android_manifest.py || exit 1
+          # ①-b 图标：**矢量 XML**（透明背景）+ 自适应图标 + label=OGL
+          #     （见 tool/inject_android_icon.py；几何源 assets/icon/ogl_icon.svg）
+          python3 tool/inject_android_icon.py || exit 1
+          # ② macOS：沙箱 Release entitlements 需要 network.client
+          python3 - <<'PY'
+          import os
+          for e in ('macos/Runner/Release.entitlements',
+                    'macos/Runner/DebugProfile.entitlements'):
+              if os.path.exists(e):
+                  t = open(e, encoding='utf-8').read()
+                  if 'com.apple.security.network.client' not in t:
+                      t = t.replace('</dict>',
+                                    '\t<key>com.apple.security.network.client</key>\n\t<true/>\n</dict>')
+                      open(e, 'w', encoding='utf-8').write(t)
+                      print(e, 'network.client 已注入')
+          PY
+
+      - name: 注入桌面原生壳（图标 + 原生窗口标题）
+        # ★ 窗口标题与任务栏图标**不是 Flutter 绘制的**，由操作系统读取：
+        #   Windows 看 main.cpp / Runner.rc，Linux 看 my_application.cc。
+        #   图标几何源是 assets/icon/ogl_icon.svg，由 tool/desktop_icon.py
+        #   （零第三方依赖）现场光栅化：Windows 出 256 单帧 ICO，Linux 出 2048 PNG。
+        if: matrix.build == 'windows' || matrix.build == 'linux'
+        shell: bash
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          PY=python3
+          command -v python3 >/dev/null 2>&1 || PY=python
+          "$PY" tool/inject_desktop_shell.py || exit 1
+
+      # GTK 工具链：Flutter Linux 桌面构建的**必需**依赖。
+      # 缺 libgtk-3-dev 时 CMake 会报
+      # `FindPkgConfig ... The following required packages were not found`。
+      - name: 安装 Linux 桌面依赖
+        if: matrix.build == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev libsecret-1-dev liblzma-dev libstdc++-12-dev libglu1-mesa \
+            gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
+      # 脚手架生成后**再跑一次** pub get：让插件按平台目录补齐注册文件。
+      - name: 重新获取依赖（补齐插件注册）
+        run: flutter pub get
+
+      # ★ 还原 Android 固定签名证书（可覆盖安装）。
+      # 证书不随仓库保管：从 Secret `OGL_ANDROID_KEYSTORE`（base64 文本）还原到
+      # 标准位置（$HOME/.android/debug.keystore），所有构建同一证书。
+      # 【轮换注意】证书更换后，旧签名安装包需先卸载一次才能安装新证书版本。
+      - name: Linux · 容器内构建（ubuntu:20.04 · glibc 2.31 下限）
+        if: matrix.build == 'linux'
+        shell: bash
+        run: |
+          set -u
+          SDK_ROOT="$(dirname "$(dirname "$(readlink -f "$(command -v flutter)")")")"
+          PUB="${PUB_CACHE:-$HOME/.pub-cache}"
+          mkdir -p "$PUB"
+          echo "宿主 SDK = $SDK_ROOT"
+          echo "宿主 pub = $PUB"
+
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "::warning title=Linux 无容器::docker 不可用，回退宿主构建（glibc 下限升高）"
+            flutter build linux --release ${{ matrix.args }}
+            exit 0
+          fi
+
+          # 关键：容器内必须挂到**与宿主完全相同**的路径。
+          # 因为 .dart_tool/package_config.json 里存的是宿主绝对路径，
+          # 一旦挂到别的目录，所有 import 都会 "No such file or directory"。
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/w" \
+            -v "$SDK_ROOT:$SDK_ROOT" \
+            -v "$PUB:$PUB" \
+            -w /w \
+            -e PUB_CACHE="$PUB" \
+            -e OGL_SDK="$SDK_ROOT" \
+            -e OGL_ARGS="${{ matrix.args }}" \
+            ubuntu:20.04 bash -lc "
+              set -e
+              printf 'Acquire::Check-Valid-Until \"false\";\nAcquire::Retries \"3\";\n' > /etc/apt/apt.conf.d/99ogl
+              apt-get update -qq
+              apt-get install -y -qq --no-install-recommends \
+                git curl unzip xz-utils ca-certificates binutils \
+                clang cmake ninja-build pkg-config \
+                libgtk-3-dev liblzma-dev libstdc++-9-dev >/dev/null
+              export PATH=\"\$OGL_SDK/bin:\$PATH\"
+              git config --global --add safe.directory /w
+              git config --global --add safe.directory \"\$OGL_SDK\"
+              flutter --version
+              flutter build linux --release \$OGL_ARGS
+            " || {
+              echo "::warning title=Linux 容器构建失败::已回退宿主构建，glibc 下限将升高"
+              flutter pub get
+              flutter build linux --release ${{ matrix.args }}
+            }
+
+          # 容器以 root 写入，收尾把属主还回来（否则后续步骤/宿主回退无法覆盖文件）。
+          sudo chown -R "$(id -u):$(id -g)" . 2>/dev/null || true
+
+          # 如实打印产物真实 glibc 需求上限（验收用）
+          BIN="$(find build/linux -type f -path '*release/bundle/*' -executable 2>/dev/null | head -1)"
+          if [ -n "$BIN" ]; then
+            echo "产物：$BIN"
+            echo "glibc 需求上限：$(objdump -T "$BIN" 2>/dev/null | grep -o 'GLIBC_[0-9.]*' | sort -V | tail -1)"
+            echo "架构：$(file -b "$BIN" 2>/dev/null || echo '?')"
+          fi
+
+      - name: 还原 Android 签名证书（Actions Secret · 可覆盖安装）
+        if: matrix.build == 'apk' || matrix.build == 'appbundle'
+        shell: bash
+        env:
+          OGL_ANDROID_KEYSTORE: ${{ secrets.OGL_ANDROID_KEYSTORE }}
+        run: |
+          [ -n "$OGL_ANDROID_KEYSTORE" ] || { echo '缺少 OGL_ANDROID_KEYSTORE Secret（见 .github/signing/README.md）'; exit 1; }
+          mkdir -p "$HOME/.android"
+          printf '%s' "$OGL_ANDROID_KEYSTORE" | base64 -d > "$HOME/.android/debug.keystore"
+          keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android | tail -3
+
+      # ★ 预装 CMake（防御性）。个别插件含原生代码，Gradle 会在构建中途用 SDK
+      # Manager 下载 cmake；若恰逢网络截断会报 "Archive is not a ZIP archive"
+      # 整条腿失败（run 36872184715 实证）。这里提前装好，失败不阻塞
+      # （构建时 Gradle 还会自行重试）。
+      - name: 预装 CMake（防中途下载损坏）
+        if: matrix.build == 'apk' || matrix.build == 'appbundle'
+        continue-on-error: true
+        shell: bash
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "cmake;3.22.1" >/dev/null 2>&1 \
+            && echo 'CMake 预装完成' || echo 'CMake 预装未完成（不阻塞）'
+
+      - name: 构建 ${{ matrix.label }}（非发布：按 pubspec 版本）
+        if: github.event_name != 'workflow_dispatch' && matrix.build != 'linux'
+        run: >-
+          flutter build ${{ matrix.build }} ${{ matrix.args }}
+          --dart-define-from-file=dart_define.json
+
+      - name: 构建 ${{ matrix.label }}（发布：全平台注入版本号）
+        # ★ 所有平台都灌入 versionName / versionCode（旧版只给 Android，导致
+        #   Windows/Linux/macOS/iOS 产物仍停留在 pubspec 版本，跨平台不一致）。
+        if: github.event_name == 'workflow_dispatch' && matrix.build != 'linux'
+        run: >-
+          flutter build ${{ matrix.build }} ${{ matrix.args }}
+          --build-name=${{ inputs.version_name }}
+          --build-number=${{ inputs.version_number }}
+          --dart-define-from-file=dart_define.json
+
+      - name: 重签 APK（固定证书 · 保证可覆盖安装）
+        # 背景（实证）：Flutter 模板的 release 用 Gradle "debug" 签名配置，
+        # 而 runner 上 AGP 未必采用我们铺到 ~/.android/debug.keystore 的那把 ——
+        # 两个构建的证书互不相同（DD:53:… vs AC:F7:…），覆盖安装仍然报
+        # "签名不一致"。所以这里在构建后**显式重签**：
+        #   zipalign → apksigner sign（仓库固定 keystore）→ 逐包校验指纹。
+        if: matrix.build == 'apk'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          KS="$HOME/.android/debug.keystore"
+          echo "build-tools: $BT"
+          shopt -s nullglob
+          for APK in build/app/outputs/flutter-apk/*.apk; do
+            echo "== 重签 $APK"
+            "$BT/zipalign" -p -f 4 "$APK" "$APK.aligned"
+            "$BT/apksigner" sign \
+              --ks "$KS" --ks-pass pass:android --key-pass pass:android \
+              --v1-signing-enabled true --v2-signing-enabled true \
+              --out "$APK.signed" "$APK.aligned"
+            mv "$APK.signed" "$APK"
+            rm -f "$APK.aligned"
+            python3 tool/verify_apk_cert.py --apk "$APK" --keystore "$KS"
+          done
+
+      - name: 版本号护栏（Android：versionName 必须等于发布版本）
+        # ★ 针对"发布出来却是 0.1.0"的事故加的硬护栏：
+        # 逐个 APK 读它的 versionName，与输入框的 version_name 比对，不一致即失败。
+        if: matrix.build == 'apk' && github.event_name == 'workflow_dispatch'
+        env:
+          WANT: ${{ inputs.version_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          AAPT="$BT/aapt"
+          [ -x "$AAPT" ] || AAPT="$BT/aapt2"
+          shopt -s nullglob
+          found=0
+          for APK in build/app/outputs/flutter-apk/*.apk; do
+            found=1
+            GOT="$("$AAPT" dump badging "$APK" 2>/dev/null | sed -n "s/.*versionName='\([^']*\)'.*/\1/p" | head -1)"
+            echo "APK=$APK versionName=$GOT 期望=$WANT"
+            if [ "$GOT" != "$WANT" ]; then
+              echo "::error::APK versionName 与发布版本不一致：$GOT != $WANT（$APK）"
+              exit 1
+            fi
+          done
+          [ "$found" = "1" ] || { echo '::error::未找到 APK 产物'; exit 1; }
+
+      - name: 网络权限护栏（Android：release 必须含 INTERNET）
+        # 注意：矩阵里 Android 腿的 build 值是 apk / appbundle（不是 'android'）；
+        # 早期条件写错导致本护栏从未执行（已修正为 apk 腿逐一开包验证）。
+        if: matrix.build == 'apk'
+        run: |
+          for APK in build/app/outputs/flutter-apk/*.apk; do
+            python3 -c "import sys,zipfile;d=zipfile.ZipFile(sys.argv[1]).read('AndroidManifest.xml');need=[n for n in ('INTERNET','POST_NOTIFICATIONS','MANAGE_EXTERNAL_STORAGE','WRITE_EXTERNAL_STORAGE','requestLegacyExternalStorage') if n.encode('utf-16-le') not in d];assert not need,('缺权限/属性: '+','.join(need)+' <- '+sys.argv[1]);print('护栏通过: '+sys.argv[1])" "$APK" || exit 1
+          done
+
+      - name: 引导清单注入校验（防空注入回归）
+        # 用与构建同一份 `dart_define.json` 跑聚焦测试：注入必须非空、
+        # 可解析、且签名能被内嵌公钥验证 —— 防"注入静默失败 → 发布包拒绝启动"。
+        if: matrix.label == 'Android · arm64-v8a'
+        run: |
+          flutter test \
+            --dart-define="OGL_BOOT_MANIFEST=$(python3 -c 'import json;print(json.load(open("dart_define.json"))["OGL_BOOT_MANIFEST"])')" \
+            test/kernel/boot_define_injection_test.dart
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.label }}
+          path: ${{ matrix.artifact }}
+          if-no-files-found: warn
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # 发布任务：仅手动触发（workflow_dispatch）且全部必过矩阵成功后执行。
+  #   - 标签：v{版本名}；beta / alpha 追加 -{通道}（版本名已含通道则不重复）。
+  #   - 预发布：通道非 stable 即标 Pre-release。
+  #   - 产物：APK / AAB 加版本前缀原样上传，其余平台打包为 zip。
+  # 说明：best_effort 腿失败不影响本任务（continue-on-error 不污染 result）。
+  # ---------------------------------------------------------------------------
+  release:
+    name: 发布 Release
+    needs: [build]
+    if: github.event_name == 'workflow_dispatch' && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VN: ${{ inputs.version_name }}
+      CH: ${{ inputs.channel }}
+      VNUM: ${{ inputs.version_number }}
+    steps:
+      - name: 下载全部产物
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: 准备压缩工具
+        # 7z 在 ubuntu runner 上一般已预装；显式装一次，缺失也能补上。
+        run: sudo apt-get update -qq && sudo apt-get install -y p7zip-full >/dev/null || true
+      - name: 安装 Linux 打包工具
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y rpm file >/dev/null || true
+      - name: Linux 安装包（deb / rpm / AppImage · 裸放直传）
+        # 三种格式**自身已深度压缩**，不再套外层压缩包。
+        # AppImage 用 `--appimage-extract-and-run` 绕过 CI 无 FUSE 的限制；
+        # 任何一步不可用都只告警、不失败（不让它拖垮整个发布）。
+        shell: bash
+        run: python3 tool/linux_packages.py --dist dist --out out --version "${VN}" || true
+
+      - name: 整理产物（**只发压缩包** · zip + 7z · 极限压缩）
+        shell: bash
+        run: |
+          set -u
+          mkdir -p out
+          shopt -s nullglob
+          # 5.6.0 起：**只提供压缩包 release**——不再直传 APK / AAB / 平台目录。
+          # 每条产物同时出 **zip** 与 **7z** 两种，且都用**极限压缩**
+          # （zip -9 / 7z -mx=9），尽量把体积压到最小。
+          # 例外：Linux 走**裸放**的 deb / rpm / AppImage（见上一步）。
+          cd dist
+          for d in */; do
+            n="${d%/}"
+            case "$n" in
+              Linux.*) echo "跳过压缩（已裸放）：$n"; continue ;;
+            esac
+            nv="OGL-v${VN}-${n}"
+            # 在目录内部打包：压缩包里是文件本身，不套一层目录。
+            (cd "$n" && zip -r -9 -q "../../out/${nv}.zip" .)
+            (cd "$n" && 7z a -t7z -mx=9 -mmt=on -bso0 -bsp0 "../../out/${nv}.7z" . >/dev/null)
+            echo "包: ${nv}.zip / ${nv}.7z"
+          done
+          cd ..
+          echo '=== 最终产物（仅压缩包） ==='
+          ls -la out/
+
+      - name: 计算标签
+        id: tag
+        shell: bash
+        run: |
+          set -u
+          V=${VN#v}
+          if [ "$CH" = "stable" ]; then
+            T="v$V"
+          elif echo "$V" | grep -qi "$CH"; then
+            T="v$V"
+          else
+            T="v$V-$CH"
+          fi
+          echo "tag=$T" >> "$GITHUB_OUTPUT"
+          echo "→ 标签: $T"
+
+      - name: 生成发布说明
+        shell: bash
+        env:
+          NOTES: ${{ inputs.release_notes }}
+        run: |
+          set -u
+          if [ -n "$NOTES" ]; then
+            printf '%s\n' "$NOTES" > notes.md
+          else
+            {
+              echo "OGL（OhGithubLost）自动构建发布。"
+              echo ""
+              echo "- 通道：**$CH**"
+              echo "- 版本：**${VN}**（build ${VNUM}）"
+              echo "- 产物（**仅压缩包**，zip 与 7z 双份、极限压缩）："
+              echo "  Android（arm64-v8a / armeabi-v7a / x86_64 / universal APK / AAB）、Windows（x64 / arm64）、Linux（x64 / arm64）"
+              echo ""
+              echo "> macOS / iOS 自 5.6.0 起**不再提供**；最后支持的版本是 **v5.3.0**。"
+            } > notes.md
+          fi
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          body_path: notes.md
+          prerelease: ${{ inputs.channel != 'stable' }}
+          draft: false
+          files: out/*
+          fail_on_unmatched_files: false

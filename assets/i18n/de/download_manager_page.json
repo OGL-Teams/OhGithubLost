@@ -3,13 +3,9 @@
   "cannotOpenCopied": "Kann nicht direkt geöffnet werden; Dateipfad kopiert",
   "clearFinished": "Abgeschlossene aufräumen",
   "copyPath": "Pfad kopieren",
-  "downloadFailed.authHeaderNotAllowed": "Browser erlaubt keinen Authorization-Header für Cross-Origin-Anfragen",
-  "downloadFailed.popupBlocked": "Browser hat das Download-Pop-up blockiert",
-  "downloadFailed.browserLaunchFailed": "Keine App zum Öffnen des Download-Links verfügbar",
-  "downloadFailed.notSupported": "Diese Aktion wird auf der aktuellen Plattform nicht unterstützt",
-  "downloadOpenFailed": "Öffnen der heruntergeladenen Datei fehlgeschlagen: {reason}",
   "empty": "Keine Download-Aufgaben",
   "emptyHint": "Klicken Sie auf \"Herunterladen\" bei Release-Attachements oder Repo-Dateien, um hinzuzufügen",
+  "handedToBrowser": "An den Browser übergeben",
   "multiConnection": "Multi-Verbindung",
   "noAppForFile": "Keine App zur Verarbeitung dieser Datei",
   "open": "Öffnen",
@@ -32,5 +28,10 @@
   "categoryOther": "Sonstiges",
   "verified": "Verifiziert",
   "unverified": "Nicht verifiziert",
-  "verifyFailed": "Integritätsprüfung fehlgeschlagen"
+  "verifyFailed": "Integritätsprüfung fehlgeschlagen",
+  "retryAllFailed": "Alle fehlgeschlagenen erneut versuchen",
+  "noFailedToRetry": "Keine fehlgeschlagenen Aufgaben",
+  "undoRemove": "Entfernen rückgängig",
+  "removedItem": "Entfernt: {name}",
+  "retriedCount": "{n} fehlgeschlagene Aufgaben erneut versucht"
 }

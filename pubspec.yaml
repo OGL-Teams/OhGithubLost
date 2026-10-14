@@ -8,8 +8,9 @@
 #
 # 架构分层映射：
 #   kernel/boot   → cryptography（Ed25519 引导清单签名校验）
-#   base/net      → package:http 的 BrowserClient（浏览器传输引擎：超时 / 重定向）
-#   base/disk     → crypto（SHA256 摘要）· Web 侧存储零外部依赖（localStorage + 内存文件表）
+#   base/net      → dart:io HttpClient（传输引擎：超时 / 重定向 / 连接策略）
+#   base/disk     → path_provider · flutter_secure_storage
+#   base/disk     → crypto（SHA256 摘要）
 #   surface/readme → flutter_markdown（README / 正文渲染）
 #   surface/util   → url_launcher（外链打开）
 # ============================================================================
@@ -17,7 +18,7 @@
 name: ohgithublost
 description: "OGL · OhGithubLost — GitHub 仓库管理器（Flutter 多平台重构版）"
 publish_to: 'none'
-version: 8.3.0+80300
+version: 8.4.0+80400
 
 homepage: https://github.com/OGL-Teams/OhGithubLost
 repository: https://github.com/OGL-Teams/OhGithubLost
@@ -35,20 +36,16 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # ── 底座 · 网络连接 ─────────────────────────────────────────────────
-  # 传输层：**Web 用 package:http 的 BrowserClient** —— 浏览器里没有 dart:io，
-  # 而 http 是纯 Dart 且自带浏览器实现（fetch/XHR）。
-  # 本分支为纯 Web 构建：这是唯一的传输实现（`web_net_transport.dart`）。
-  http: ^1.2.2
-
   # ── 底座 · 硬盘逻辑 ─────────────────────────────────────────────────
-  # 浏览器里没有文件系统与系统密钥库：目录规划 / KV / 文件表由
-  # `platform_web_impl.dart`（localStorage + 内存文件表）承担；
-  # path_provider / flutter_secure_storage 已随原生侧实现一并移除。
+  path_provider: ^2.1.6            # 跨平台目录规划
+  flutter_secure_storage: ^11.2.0  # 安全保险库（令牌，Keystore/DPAPI/libsecret）
   crypto: ^3.0.7                   # SHA256 等摘要
 
   # ── 启动层 · 信任校验 ───────────────────────────────────────────────
   cryptography: ^2.9.0             # Ed25519 引导清单签名验证
+
+  # ── Web 传输引擎（dart2js / wasm 下走 browser_client）───────────────
+  http: ^1.2.2                     # fetch/XHR 门面（Web 侧所有网络出口）
 
   # ── 展示层 · 渲染与外链 ─────────────────────────────────────────────
   flutter_markdown: ^0.7.7+1       # README / 议题 / 评论渲染
@@ -76,13 +73,18 @@ dependencies:
 
   # ── 展示层 · 桌面窗口（自绘标题栏 / 原生标题 / 可回退系统装饰）────────
   # 仅桌面（Windows / Linux / macOS）生效；移动端不参与。
-  # 注：本分支保留 —— `window_windows/linux/macos.dart` 与 `platform.dart`
-  #     的枚举仍在（保持 switch 穷尽），它们仍 import 本包。
   window_manager: ^0.5.2
+  # ── 底座 · Android SAF（分区存储下的"用户可见文件夹"授权）─────────────
+  # 背景：Android 11+ 拿不到「所有文件访问」时，普通应用无法往 /storage/emulated/0
+  # 写文件；此时唯一合规的"用户可见"落点是 SAF——让用户**自己选一个文件夹**，
+  # 系统给出可长期持有的授权 URI。
+  #   saf_util   → 目录选择 + 持久化授权 + DocumentFile 操作
+  #   saf_stream → 读写/复制（`pasteLocalFile`：把本地文件粘进 SAF 目录）
+  # 注：仅 Android 生效；其余平台这两个包不参与构建。
+  saf_util: ^3.1.1
+  saf_stream: ^4.0.2
   # ── 中枢层 · 下载与二进制 ───────────────────────────────────────────
-  # 下载交给浏览器（`ix_download_backend_web.dart`）：原 background_downloader
-  # （Android/iOS 后台下载）已随原生侧实现移除；SAF 同理（浏览器没有 SAF，
-  # saf_util / saf_stream 一并移除，落盘档位恒为 `internal`）。
+  background_downloader: ^9.6.3     # 多平台后台下载（断点续传 / 队列 / 通知）
   archive: ^3.6.1                   # Actions 日志 zip 解压
   # ── 展示层 · 系统级通知 ─────────────────────────────────────────────
   # 后台时的"系统通知"通道（下载完成 / 任务结束 / 严重错误）。
@@ -96,45 +98,22 @@ dependencies:
 
   # 已移除（未被任何代码 import，重写时一并裁掉）：
   #   provider · shared_preferences · file_picker
-  #   cached_network_image · mocktail
-  #
-  # v7.2.1（Web 分支）随原生侧实现一并移除（经 lib/ 全量 rg 确认零引用）：
-  #   saf_util · saf_stream · background_downloader
-  #   path_provider · flutter_secure_storage
-  #
-  # 仍被保留文件 import、故保留（不随本分支删除）：
-  #   window_manager · permission_handler · flutter_local_notifications
+  #   window_manager · cached_network_image · mocktail
   #
   # 注意：device_info_plus **暂不引入**（iOS 构建链报 NSProcessInfo 选择器缺失），
   # 真机探针需要时再选与构建链兼容的版本。
 
-# 注：原 `dependency_overrides: connectivity_plus: 6.1.4`（为 background_downloader
-# 固定版本）已随 background_downloader 的移除一并删除（connectivity_plus 零引用）。
+dependency_overrides:
+  # background_downloader 依赖 connectivity_plus '>=6.1.3 <8.0.0'，
+  # 但 7.x 的 macOS/iOS Swift 使用了 runner SDK 尚未提供的
+  # `NWPath.isUltraConstrained`，导致 iOS / macOS 构建失败；
+  # 故固定到 6.1.4（仍满足 background_downloader 的约束）。
+  connectivity_plus: 6.1.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-
-# ── 依赖覆盖：为 dart2wasm 打通被 transitive dep 卡住的链路 ───────────────
-# 问题链：re_editor → isolate_manager ^4.1.5+1 → isolate_contactor ^4.0.0
-#   isolate_contactor 4.1.0 的 Web 实现（isolate_contactor_web.dart）import
-#   `dart:html`，而 **dart2wasm 不支持 dart:html**（只支持 package:web +
-#   dart:js_interop）→ `flutter build web --wasm` 直接编译失败。
-#
-# 为什么不能只把 isolate_contactor 抬到 4.2.0：4.2.0 虽已迁到 package:web，
-#   但它约束 `web: ^0.5.1`（0.x 的 caret 锁死 minor → 实际要 <0.6.0），
-#   而本项目 `http 1.x` 需要 `web: ^1.0.0` → 直接冲突，pub 只能退回 4.1.0。
-#
-# 修法：把 isolate_manager 覆盖到 6.x ——
-#   · 6.x 已**彻底删除** isolate_contactor 依赖，自身直接用 `package:web`
-#     （约束 `web: ^1.0.0`，与 http 1.x 相容）；
-#   · 对外 API 与 re_editor 的用法完全一致：
-#       IsolateManager.create(fn, concurrent: n) / .compute(p, callback:) / .stop()
-#   · 经核验，6.x 的 lib/ 内**零** `dart:html` 引用。
-# 覆盖只影响版本求解，不修改任何第三方源码；re_editor 无需改动。
-dependency_overrides:
-  isolate_manager: ^6.3.2
 
 flutter:
   uses-material-design: true

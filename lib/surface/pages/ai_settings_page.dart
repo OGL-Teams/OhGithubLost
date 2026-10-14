@@ -136,6 +136,13 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
   }
 
   Future<void> _save() async {
+    // 保存前先本地校验：让用户看到**具体哪一项**不合法，而不是保存后
+    // 才从传输层收到一句笼统的失败。
+    final String? invalid = _endpointError(_url.text);
+    if (invalid != null) {
+      _toast('${_t('error')}：$invalid');
+      return;
+    }
     setState(() => _saving = true);
     final AiService ai = widget.surface.domain.ai;
     try {
@@ -173,6 +180,49 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
       setState(() => _hasKey = false);
       _toast(_t('saved'));
     }
+  }
+
+  /// 端点即时校验：**返回空串表示可用**，否则返回给用户的可读原因。
+  ///
+  /// 与传输层（`ai_http_client_io._validateEndpoint`）保持**同一套判据**，
+  /// 但在 UI 层提前一步给出反馈——用户改一个字符就能看到问题，
+  /// 而不是点保存才被抛一脸异常（旧实现的实际表现）。
+  String? _endpointError(String raw) {
+    final String url = raw.trim();
+    if (url.isEmpty) {
+      return _t('urlRequired');
+    }
+    final Uri? uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) {
+      return _t('urlInvalid');
+    }
+    final String scheme = uri.scheme.toLowerCase();
+    if (scheme != 'http' && scheme != 'https') {
+      return _t('urlSchemeInvalid');
+    }
+    if (uri.userInfo.isNotEmpty) {
+      return _t('urlNoUserInfo');
+    }
+    if (uri.hasQuery || uri.hasFragment) {
+      return _t('urlNoQuery');
+    }
+    return null;
+  }
+
+  /// 是否明文端点（`http://` 且非本机）——用于给出**知情提示**（不阻止）。
+  bool get _isPlaintext =>
+      _endpointError(_url.text) == null &&
+      _baseUrl.startsWith('http://') &&
+      !_isLoopback(_baseUrl);
+
+  /// 本机/回环地址：明文传输未出设备，无需告警。
+  static bool _isLoopback(String url) {
+    final Uri? uri = Uri.tryParse(url);
+    final String host = uri?.host.toLowerCase() ?? '';
+    return host == 'localhost' ||
+        host == '127.0.0.1' ||
+        host == '::1' ||
+        host == '[::1]';
   }
 
   void _toast(String msg) {
@@ -227,11 +277,36 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                 TextField(
                   controller: _url,
                   keyboardType: TextInputType.url,
+                  // 输入时即时反馈：改一个字符就能看到问题，不用等保存。
+                  onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     labelText: _t('baseUrl'),
                     hintText: _t('urlHint'),
+                    errorText: _endpointError(_url.text),
+                    errorMaxLines: 2,
                   ),
                 ),
+                // 明文端点：**知情提示**（不阻止使用，但说清风险）。
+                if (_isPlaintext)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Icon(Icons.warning_amber_rounded,
+                            size: 18, color: theme.colorScheme.error),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _t('plaintextHint'),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _key,

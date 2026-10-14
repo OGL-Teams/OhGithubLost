@@ -1,0 +1,44 @@
+# Netlify 站点配置 · OhGithubLost 更新日志
+#
+# 作用：把仓库里的 `changed/`（Jekyll 更新日志站点）发布到 Netlify，
+#      作为 GitHub Pages 之外的镜像 / 加速入口，内容与 Pages 完全一致。
+#
+# 接入步骤（在 Netlify 后台）：
+#   1. Add new site → Import an existing project → 选 yingo-server/OhGithubLost
+#   2. Build command 与 Publish directory 保持本文件中的设置（或直接让
+#      Netlify 读取本文件）
+#   3. 部署完成后，把 *.netlify.app 域名回填到 changed/_config.yml 的 url 字段
+#
+# 注意：构建期间不会执行任何仓库脚本，只有 Jekyll 静态编译。
+
+[build]
+  # `changed/` 是仓库根下的子目录，Netlify 默认只把仓库根当站点根，
+  # 故把 base 指向该子目录，_config.yml 与 _posts/ 的相对路径即可保持不变。
+  base = "changed"
+  publish = "changed/_site"
+  command = "jekyll build"
+
+[build.environment]
+  JEKYLL_ENV = "production"
+
+# ── 缓存 ────────────────────────────────────────────────────────────────
+# 页面随每次发布变化，因此 HTML 一律不缓存（must-revalidate 交给浏览器校验），
+# 保证订阅者总能第一时间看到新版本说明。
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# 静态资源内容带内容指纹，可长期缓存 + immutable，重复访问直接命中边缘。
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ── 安全响应头 ──────────────────────────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"

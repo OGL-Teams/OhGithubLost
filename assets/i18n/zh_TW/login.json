@@ -31,7 +31,7 @@
   "tokenHint": "貼上帶 repo 權限的 Token",
   "tokenLabel": "個人存取 Token",
   "tokenRequired": "請先貼上 Token",
-  "tokenShapeInvalid": "Token 格式不對（應以 ghp_、gho_、ghu_ 或 github_pat_ 開頭）",
+  "tokenShapeInvalid": "Token 格式不對（應以 ghp_、gho_、ghu_、ghs_、ghr_ 或 github_pat_ 開頭）",
   "vaultNote": "Token 只儲存在本機安全保險庫（Android Keystore / iOS Keychain / 桌面金鑰服務）；請求只發往 api.github.com。",
   "verifyFailed": "驗證失敗：{error}",
   "verifying": "正在驗證…",

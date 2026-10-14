@@ -6,7 +6,7 @@
   "protocol": "通訊協定",
   "model": "模型",
   "baseUrl": "介面位址",
-  "urlHint": "純 HTTPS 位址（OpenAI 相容 / Claude / Gemini）",
+  "urlHint": "http 或 https 地址（本机 / 内网 / OpenAI 兼容 / Claude / Gemini）",
   "apiKey": "API 金鑰",
   "keySaved": "金鑰已儲存",
   "keyHint": "僅存於本機安全儲存，絕不寫入日誌",
@@ -34,5 +34,11 @@
   "noKey": "未設定 API 金鑰",
   "audit": "操作紀錄",
   "operationFinished": "操作完成",
-  "retry": "重試"
+  "retry": "重試",
+  "urlRequired": "请填写接口地址",
+  "urlInvalid": "接口地址无效（示例：https://api.openai.com/v1）",
+  "urlSchemeInvalid": "协议必须是 http 或 https",
+  "urlNoUserInfo": "地址不允许包含用户名与密码",
+  "urlNoQuery": "地址不允许包含 ?参数 或 #片段",
+  "plaintextHint": "当前为明文 http 传输：密钥与对话内容可能被同网络设备看到。本机地址不会出现此提示。"
 }

@@ -6,7 +6,7 @@
   "protocol": "Протокол",
   "model": "Модель",
   "baseUrl": "Эндпоинт",
-  "urlHint": "HTTPS-эндпоинт (совместимый с OpenAI / Claude / Gemini)",
+  "urlHint": "http or https endpoint (local / intranet / OpenAI-compatible / Claude / Gemini)",
   "apiKey": "Ключ API",
   "keySaved": "Ключ сохранён",
   "keyHint": "Хранится только в защищённом хранилище устройства, никогда не логируется",
@@ -34,5 +34,11 @@
   "noKey": "Ключ API не настроен",
   "audit": "Журнал действий",
   "operationFinished": "Операция завершена",
-  "retry": "Повторить"
+  "retry": "Повторить",
+  "urlRequired": "Endpoint URL is required",
+  "urlInvalid": "Invalid endpoint URL (example: https://api.openai.com/v1)",
+  "urlSchemeInvalid": "Scheme must be http or https",
+  "urlNoUserInfo": "Endpoint must not contain username:password",
+  "urlNoQuery": "Endpoint must not contain ?query or #fragment",
+  "plaintextHint": "Using plaintext http: your key and messages may be visible to others on the same network. Local addresses do not show this warning."
 }

@@ -19,6 +19,7 @@
   "saveFailed": "Save failed: {error}",
   "saved": "Saved",
   "title": "Gist Details",
+  "truncatedWarning": "Content may be truncated (full-text fallback failed)",
   "updateFailed": "Update failed: {error}",
   "updated": "Updated",
   "public": "Public",

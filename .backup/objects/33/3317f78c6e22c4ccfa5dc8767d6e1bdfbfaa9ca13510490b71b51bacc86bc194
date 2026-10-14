@@ -1,0 +1,36 @@
+# OGL 更新日志站点 · Jekyll 配置
+# GitHub Pages 原生支持 Jekyll，无需额外构建；推送到本目录即自动发布。
+
+title: OhGithubLost · 更新日志
+description: >-
+  从 v0.1.0 到 v6.0.0 的逐版本更新日志（GitHub 仓库管理客户端 OGL）。
+  Changelog for OhGithubLost, a GitHub repository manager client.
+baseurl: ""            # 项目 Pages 子路径（<user>.github.io/<repo>/ 时填 /<repo>）
+url: ""                # 生产域名（Pages 自动注入）
+
+# 主题：minima（Jekyll 默认日志/博客主题，简洁、适合按时间排列的更新日志）
+theme: minima
+
+# 站点结构：把 release_notes/ 的版本说明复制为 _posts（见生成脚本）
+# 这里配置默认 front matter
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+      author: OGL
+
+# 排序：新版本在前
+future: false
+show_excerpts: false
+
+# 不发布的内容
+exclude:
+  - README.md
+  - generate_posts.py
+  # Gemfile 只用于 Netlify 构建期解析依赖，不属于站点内容
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - "*.sh"

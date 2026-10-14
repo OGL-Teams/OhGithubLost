@@ -3,13 +3,9 @@
   "cannotOpenCopied": "Impossible d'ouvrir directement, chemin du fichier copié",
   "clearFinished": "Nettoyer les terminés",
   "copyPath": "Copier le chemin",
-  "downloadFailed.authHeaderNotAllowed": "Le navigateur n'autorise pas l'en-tête Authorization pour les requêtes cross-origin",
-  "downloadFailed.popupBlocked": "Le navigateur a bloqué la fenêtre de téléchargement",
-  "downloadFailed.browserLaunchFailed": "Aucune application disponible pour ouvrir le lien de téléchargement",
-  "downloadFailed.notSupported": "Cette action n'est pas prise en charge sur la plateforme actuelle",
-  "downloadOpenFailed": "Échec de l'ouverture du fichier téléchargé : {reason}",
   "empty": "Aucune tâche de téléchargement",
   "emptyHint": "Cliquez sur « Télécharger » sur une pièce jointe de Release ou un fichier de dépôt pour l'ajouter",
+  "handedToBrowser": "Confié au navigateur",
   "multiConnection": "Multi-connexions",
   "noAppForFile": "Aucune application pour traiter ce fichier",
   "open": "Ouvrir",
@@ -32,5 +28,10 @@
   "categoryOther": "Autre",
   "verified": "Vérifié",
   "unverified": "Non vérifié",
-  "verifyFailed": "Échec du contrôle d’intégrité"
+  "verifyFailed": "Échec du contrôle d’intégrité",
+  "retryAllFailed": "Réessayer tous les échecs",
+  "noFailedToRetry": "Aucune tâche échouée à réessayer",
+  "undoRemove": "Annuler la suppression",
+  "removedItem": "Supprimé : {name}",
+  "retriedCount": "{n} tâches échouées relancées"
 }

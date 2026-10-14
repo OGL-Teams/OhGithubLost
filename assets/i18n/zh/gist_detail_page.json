@@ -19,6 +19,7 @@
   "saveFailed": "保存失败：{error}",
   "saved": "已保存",
   "title": "Gist 详情",
+  "truncatedWarning": "内容可能被截断（全文回退失败）",
   "updateFailed": "更新失败：{error}",
   "updated": "已更新",
   "public": "公开",

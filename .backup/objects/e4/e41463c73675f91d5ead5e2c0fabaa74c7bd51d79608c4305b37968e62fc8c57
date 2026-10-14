@@ -1,0 +1,27 @@
+# OGL 更新日志站点 · Ruby 依赖（Netlify 构建用）
+#
+# ★ 为什么锁版本：
+#   Netlify 自带的 Jekyll 是「随镜像漂移」的，不锁的话今天能构建、
+#   下次镜像一升级就可能构建失败或排版变化，日志站点属于对外内容，
+#   不能让它随构建环境变脸。
+#
+# ★ 为什么锁成这组版本：
+#   这组（jekyll 3.10.0 + minima 2.5.1）正是 GitHub Pages
+#   `github-pages 232` 内部锁定的版本（见该 gem 的依赖：jekyll = 3.10.0、
+#   minima = 2.5.1）。锁成同一组，Netlify 与 GitHub Pages 的产物
+#   才是逐字节一致的，同一份源、两个渠道、相同排版。
+#   升级时两边一起升，不要只升一边。
+
+source "https://rubygems.org"
+
+gem "jekyll", "3.10.0"
+gem "minima", "2.5.1"
+
+# minima 依赖这两个插件，会自动带入；显式写出是为了让版本解析结果固定，
+# 避免 bundler 选到更新的版本导致排版与 Pages 不一致。
+gem "jekyll-feed", "0.17.0"
+gem "jekyll-seo-tag", "2.8.0"
+
+# Ruby 3.4 起 stdlib 拆包（csv 等）+ psych 4 变更，jekyll 3.x 在其上有兼容问题；
+# Ruby 3.2 是 github-pages 232 同期使用的版本，故一并锁定。
+ruby "3.2.4"

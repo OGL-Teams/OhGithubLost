@@ -19,10 +19,17 @@ library;
 import 'package:flutter/foundation.dart';
 
 import 'window_capability.dart';
-import 'window_linux.dart';
-import 'window_macos.dart';
+// ★ Web 构建隔离：`window_linux.dart` 依赖 window_manager（拖 dart:io）
+//   → 走条件导入，Web 侧命中同名空实现。
+import 'window_linux.dart' if (dart.library.js_interop) 'window_linux_web.dart';
+// ★ Web 构建隔离：`window_macos.dart` 依赖 window_manager（拖 dart:io）
+//   → 走条件导入，Web 侧命中同名空实现。
+import 'window_macos.dart' if (dart.library.js_interop) 'window_macos_web.dart';
 import 'window_mobile.dart';
-import 'window_windows.dart';
+// ★ Web 构建隔离：`window_windows.dart` 依赖 window_manager（拖 dart:io）
+//   → 走条件导入，Web 侧命中同名空实现。
+import 'window_windows.dart'
+    if (dart.library.js_interop) 'window_windows_web.dart';
 
 /// 当前平台（用于诊断与展示）。
 enum OgLTargetPlatform {
