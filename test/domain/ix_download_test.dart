@@ -174,4 +174,26 @@ void main() {
       expect(IxPresign.normalizeDigest(123), isNull);
     });
   });
+
+  group('文件名净化补充边界（R6 补齐）', () {
+    test('隐藏文件形态的保留名同样被改名', () {
+      expect(ogLSafeDownloadFileName('.con.txt'), '_con.txt');
+      expect(ogLSafeDownloadFileName('.aux'), '_aux');
+    });
+
+    test('保留名混在路径里也先截到末段再判', () {
+      expect(ogLSafeDownloadFileName(r'C:\nul.txt'), '_nul.txt');
+      expect(ogLSafeDownloadFileName('x/y/com1.log'), '_com1.log');
+    });
+
+    test('扩展名长度边界：16 个字符含点保留、17 丢弃', () {
+      expect(ogLSafeDownloadFileName('name.${'e' * 15}'), 'name.${'e' * 15}');
+      expect(ogLSafeDownloadFileName('name.${'e' * 16}'), 'name');
+    });
+
+    test('尾随空格在净化中被去掉', () {
+      expect(ogLSafeDownloadFileName('report.txt   '), 'report.txt');
+      expect(ogLSafeDownloadFileName('  archive.zip\t'), 'archive.zip');
+    });
+  });
 }

@@ -19,7 +19,10 @@ const String _injected = String.fromEnvironment('OGL_BOOT_MANIFEST');
 void main() {
   test('注入存在时必须可解析、且签名与信任根吻合', () async {
     if (_injected.isEmpty) {
-      // 未注入（常规 CI / 本地测试）：本测试不适用。
+      // 未注入（常规 CI / 本地测试）：显式跳过而不是「空 return」。
+      // 空 return 会让测试「假绿」——静默通过，掩盖「注入环节根本没跑到」。
+      // 显式 skip 让 CI 报告里能看出「这条腿没跑注入校验」，可追溯。
+      markTestSkipped('未注入 OGL_BOOT_MANIFEST（构建腿专用测试）');
       return;
     }
     final decoded = jsonDecode(_injected);
