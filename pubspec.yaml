@@ -95,7 +95,7 @@ dependencies:
 
   # 已移除（未被任何代码 import，重写时一并裁掉）：
   #   provider · shared_preferences · file_picker
-  #   window_manager · cached_network_image · mocktail
+  #   cached_network_image · mocktail
   #
   # 注意：device_info_plus **暂不引入**（iOS 构建链报 NSProcessInfo 选择器缺失），
   # 真机探针需要时再选与构建链兼容的版本。
