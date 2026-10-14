@@ -183,7 +183,10 @@ jobs:
             exit 0
           fi
           git commit -m "chore(web): 发布 ${{ steps.ver.outputs.version }} 到 app/wasm/ + app/js/"
-          git push "https://x-access-token:${OGL_PUSH_TOKEN}@github.com/OGL-Teams/OhGithubLost.git" HEAD:web
+          # ★ PAT 认证用 `https://<TOKEN>@github.com`（token 作为用户名）；
+          #   `x-access-token:` 前缀是 GitHub App installation token 专用，
+          #   对 PAT 会当作用户名 `x-access-token` → 认证失败 → GH006。
+          git push "https://${OGL_PUSH_TOKEN}@github.com/OGL-Teams/OhGithubLost.git" HEAD:web
 
       # ── 预热 jsDelivr ──────────────────────────────────────────────────
       # 站点运行时会在「fastly.jsdelivr / 同源 / cdn.jsdelivr」里挑最快的源。
