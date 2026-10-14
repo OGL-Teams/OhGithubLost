@@ -408,6 +408,12 @@ void main() {
   if (!kWriteShots) {
     // 默认模式：一次轻量冒烟（不落盘）——保证普通 CI 也验证管线可用。
     testWidgets('截屏冒烟（默认模式不落盘）', (WidgetTester tester) async {
+      // `_pumpScreen` 会改 `tester.view.physicalSize / devicePixelRatio`，
+      // 冒烟分支此前未还原，泄漏到其它用例会 flaky —— 这里补上还原（R7）。
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
       // 截屏希望保留阴影；测试框架默认关闭它，因此这里临时打开并**必须还原**
       // （否则触发 "painting debug variable was changed by the test" 断言）。
       debugDisableShadows = false;

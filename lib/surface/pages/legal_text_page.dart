@@ -19,6 +19,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 
@@ -68,7 +69,11 @@ class _LegalTextPageState extends State<LegalTextPage> {
       }
     } catch (error) {
       body = '';
-      debugPrint('OGL 法律文本：读取 $code 失败：$error');
+      OgLAppLog.instance.add(
+        '法律文本',
+        '读取 $code 失败：$error',
+        severity: OgLNoticeSeverity.warning,
+      );
     }
     if (!mounted || code != _locale) {
       // 过期响应：期间用户已切到别的语言，写回会让正文与所选语言不符。

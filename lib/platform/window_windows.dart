@@ -71,6 +71,9 @@ class OgLWindowsWindow implements OgLWindowCapability {
     try {
       await action();
     } catch (error) {
+      // 本实现为 `const` 构造、无 KernelDiagnostics 注入点，且平台层不得
+      // 引入全局单例；此处是"静默降级"路径，保留 debugPrint 留痕（release
+      // 下被剥离不影响功能，见 R7 审计）。
       debugPrint('OGL Windows 窗口：操作失败（已忽略）：$error');
     }
   }

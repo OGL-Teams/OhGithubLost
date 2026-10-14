@@ -40,6 +40,9 @@ abstract final class OgLSafBridge {
       final String? text = uri?.toString();
       return (text == null || text.isEmpty) ? null : text;
     } catch (error) {
+      // 本桥为纯静态工具类、无 KernelDiagnostics 注入点，且底座层不得
+      // 引入全局单例；此处失败已如实返回 null，保留 debugPrint 留痕
+      // （release 下被剥离不影响功能，见 R7 审计）。
       debugPrint('OGL 存储：选择 SAF 文件夹失败：$error');
       return null;
     }
@@ -65,6 +68,8 @@ abstract final class OgLSafBridge {
       );
       return true;
     } catch (error) {
+      // 纯静态工具类、无 KernelDiagnostics 注入点；失败已如实返回 false，
+      // 保留 debugPrint 留痕（release 下被剥离不影响功能，见 R7 审计）。
       debugPrint('OGL 存储：导出到 SAF 失败：$error');
       return false;
     }
@@ -96,6 +101,8 @@ abstract final class OgLSafBridge {
         await file.writeAsString(uri, flush: true);
       }
     } catch (error) {
+      // 纯静态工具类、无 KernelDiagnostics 注入点；写失败不阻断流程，
+      // 保留 debugPrint 留痕（release 下被剥离不影响功能，见 R7 审计）。
       debugPrint('OGL 存储：写入 SAF 配置失败：$error');
     }
   }

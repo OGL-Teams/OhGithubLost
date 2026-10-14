@@ -65,7 +65,6 @@ Future<bool> ogLCopyText(String text, {String tag = 'OGL'}) async {
       detail: '$error\n$stack',
       severity: OgLNoticeSeverity.warning,
     );
-    debugPrint('OGL 剪贴板：复制失败（$tag） $error');
     return false;
   }
 }
@@ -91,7 +90,6 @@ Future<String?> ogLPasteText({String tag = 'OGL'}) async {
       detail: '$error\n$stack',
       severity: OgLNoticeSeverity.warning,
     );
-    debugPrint('OGL 剪贴板：读取失败（$tag） $error');
     return null;
   }
 }

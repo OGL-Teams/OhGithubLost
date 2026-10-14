@@ -54,6 +54,9 @@ class OgLUnknownWindow extends OgLNoWindow {
 
   @override
   Future<void> init({required OgLWindowDecoration decoration}) async {
+    // 平台识别失败属异常情况，必须留痕；本实现为 `const` 构造、无
+    // KernelDiagnostics 注入点，且平台层不得引入全局单例，故保留 debugPrint
+    // （release 下被剥离不影响功能，见 R7 审计）。
     debugPrint('OGL 窗口：当前平台不在已支持列表内，窗口能力全部降级为空操作。');
   }
 }

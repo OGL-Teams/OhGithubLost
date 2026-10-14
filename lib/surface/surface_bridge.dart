@@ -89,7 +89,11 @@ class SurfaceBridge {
     try {
       await uiPrefs?.write(key, value);
     } catch (error) {
-      debugPrint('OGL 界面偏好写入失败：$key -> $error');
+      OgLAppLog.instance.add(
+        '界面偏好',
+        '写入失败：$key -> $error',
+        severity: OgLNoticeSeverity.warning,
+      );
     }
   }
 

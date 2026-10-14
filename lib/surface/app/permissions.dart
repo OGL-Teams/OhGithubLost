@@ -30,6 +30,7 @@ import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../i18n/og_l_i18n.dart';
+import 'error_surface.dart';
 
 /// 取 `shell` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -147,7 +148,11 @@ Future<bool> _openAppSettings() async {
     return await openAppSettings();
   } catch (error) {
     // 该平台不支持时如实返回 false，由 UI 告知用户手动前往，绝不假装成功。
-    debugPrint('OGL 权限网关：打开系统设置失败：$error');
+    OgLAppLog.instance.add(
+      '权限',
+      '打开系统设置失败：$error',
+      severity: OgLNoticeSeverity.warning,
+    );
     return false;
   }
 }

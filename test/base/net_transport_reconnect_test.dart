@@ -83,7 +83,8 @@ class _ClosingHttpServer {
       // 已断开。
     }
     // 宣称 keep-alive，却在短暂空闲后关闭（模拟服务端 / 中间设备的空闲回收）。
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    // 空闲窗口放宽到 50ms：避免慢机器上"响应未读完就 destroy"与读竞态导致 flaky。
+    await Future<void>.delayed(const Duration(milliseconds: 50));
     try {
       client.destroy();
     } catch (_) {
@@ -127,14 +128,17 @@ void main() {
     );
 
     for (int i = 0; i < 4; i++) {
-      final NetResponse response = await transport.send(NetRequest(
-        method: NetMethod.get,
-        url: server.url,
-        label: 'poc-$i',
-      ));
+      final NetResponse response = await transport
+          .send(NetRequest(
+            method: NetMethod.get,
+            url: server.url,
+            label: 'poc-$i',
+          ))
+          .timeout(const Duration(seconds: 10));
       expect(response.statusCode, 200, reason: '第 ${i + 1} 次请求必须成功');
-      // 停顿一下，越过服务端"空闲即关闭"的窗口（正是复用的窗口）。
-      await Future<void>.delayed(const Duration(milliseconds: 30));
+      // 停顿足够久（100ms）以越过服务端"空闲即关闭"的窗口（正是复用的窗口）；
+      // 30ms 在慢 CI 上会与 20ms 的服务端关闭时序竞态，抖成 flaky。
+      await Future<void>.delayed(const Duration(milliseconds: 100));
     }
     expect(server.served, greaterThanOrEqualTo(2));
   });

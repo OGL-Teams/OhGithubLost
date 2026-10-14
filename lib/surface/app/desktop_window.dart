@@ -24,6 +24,7 @@ import 'package:window_manager/window_manager.dart';
 import '../../platform/platform.dart';
 import '../../platform/window_capability.dart';
 import '../i18n/og_l_i18n.dart';
+import 'error_surface.dart';
 
 export '../../platform/window_capability.dart' show OgLWindowDecoration;
 
@@ -63,7 +64,11 @@ Future<void> _guard(Future<void> Function() action) async {
   try {
     await action();
   } catch (error) {
-    debugPrint('OGL 桌面窗口：操作失败（已降级为系统装饰）：$error');
+    OgLAppLog.instance.add(
+      '桌面窗口',
+      '操作失败（已降级为系统装饰）：$error',
+      severity: OgLNoticeSeverity.warning,
+    );
   }
 }
 
