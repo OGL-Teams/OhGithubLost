@@ -1,0 +1,273 @@
+name: Web
+
+# Web（JS/Wasm）双构建、按版本发布到 `app/`、并更新入口页。
+#
+# ## 目录约定（见 tool/web_publish.py）
+#   app/index.html     入口页：iframe 包裹**当前版本**，地址长期不变
+#   app/versions.json  已发布版本清单（新版本在前）
+#   app/wasm/<版本>/   dart2wasm 主载产物（现代浏览器走这条）
+#   app/js/<版本>/     dart2js 兜底产物（旧浏览器 / IE 路径）
+#
+# ## 与五平台发布的关系
+# 互不影响：本工作流的成败**不阻塞** build.yml 的五平台发布（两者无 needs 关系）。
+# 自 7.0 起 Web 是正式平台之一，因此在 main 与 web 两条分支上都会构建。
+#
+# ## 启动信任链（Ed25519 引导清单）
+# 与 build.yml 同款：CI 从 Secret `OGL_BOOT_KEY` 还原私钥 → 生成签名清单 →
+# `--dart-define-from-file` 注入 → `main.dart` 启动时校验签名。
+# 没有这一步，release 构建的 `kOgLBootManifestJson` 为空 → 拒绝启动
+# （`bootRejected: 引导清单缺失: boot/manifest.json`）。
+
+on:
+  push:
+    branches: [web, main]
+    # ★ 忽略 CI 自己提交的 app/ 产物 —— 避免"构建→提交→再构建"的自触发。
+    #   注意：**不能**靠提交信息里的 `[skip ci]` 来防自触发 ——
+    #   Netlify 同样会跳过带 `[skip ci]` 的提交，导致 app/ 产物永远
+    #   部署不到站点（v7.4.2 上线时踩过这个坑）。
+    #   这里改用 paths-ignore；另外用 GITHUB_TOKEN 推送本身也不会
+    #   触发新的 Actions 运行。
+    paths-ignore:
+      - 'app/**'
+  workflow_dispatch:
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.47.5'
+  # dart2wasm 现代浏览器覆盖率已经 ≥ 95%，CI 同时产出 js 兜底主要给
+  # 老 Safari / 没有 wasm GC 的浏览器用。双构建使 CI 时间 +50%~80%、
+  # artifact 体积 +50%（~7 MB → ~10 MB），但避免单一产物策略失败时
+  # 整体不可用。关闭后只走 dart2js 单构建（旧行为）。
+  WASM_SUPPORTED: 'true'
+
+jobs:
+  build-web:
+    name: 构建并发布 Web（wasm + js 双产物）
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # 单构建（dart2js），wasm 待 transitive dep 升级
+    permissions:
+      contents: write
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装签名依赖
+        run: python3 -m pip install --quiet --disable-pip-version-check cryptography
+
+      # ★ 私钥不随仓库保管：从 Secret `OGL_BOOT_KEY` 还原到 runner 临时目录。
+      - name: 还原签名私钥（Actions Secret）
+        env:
+          OGL_BOOT_KEY: ${{ secrets.OGL_BOOT_KEY }}
+        run: |
+          [ -n "$OGL_BOOT_KEY" ] || { echo '缺少 OGL_BOOT_KEY Secret（见 .github/signing/README.md）'; exit 1; }
+          printf '%s' "$OGL_BOOT_KEY" > "$RUNNER_TEMP/ogl-boot-ed25519.key"
+
+      - name: 安装 Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: 取依赖
+        run: flutter pub get
+
+      # 平台目录不提交，由 CI 现场生成。web/ 已在仓库里（PWA 脚手架 + 图标），
+      # `flutter create` 只补齐缺失项，不覆盖已有文件。
+      - name: 生成平台目录
+        run: flutter create --platforms=web --org com.yingo --project-name ohgithublost .
+
+      - name: 生成并注入 .dart_define.json（Ed25519 签名引导清单）
+        env:
+          VERSION_INPUT: ${{ inputs.version_name }}
+        run: |
+          python3 tool/boot_manifest.py \
+            --version "${{ github.ref_name }}" \
+            --build-id "$GITHUB_SHA" \
+            --key "$RUNNER_TEMP/ogl-boot-ed25519.key" \
+            --out dart_define.json
+
+      # ── 双构建策略 ─────────────────────────────────────────────────────
+      # dart2js 输出 main.dart.js ≈ 5.2 MB（gzip 后仍 1.7 MB），浏览器
+      # 必须先下载、再 parse、再 JIT-like 执行，**首次可交互** 受三者拖累。
+      # dart2wasm 输出 main.dart.wasm（通常 < 1 MB，gzip ≈ 600 KB），
+      # 浏览器可以直接流式编译 + AOT 风格的常量池就地初始化 —— 同等网速
+      # 下首次加载减少 50%~70%。`flutter_bootstrap.js` 在编译期注入，
+      # 会自动嗅探 WebAssembly 支持并降级到 js（旧浏览器 / IE 路径）。
+      #
+      # 因此产物分两份：
+      #   build/web-wasm/  ← dart2wasm 主载（现代浏览器走这条）
+      #   build/web-js/    ← dart2js 兜底（无 wasm GC / 老 Safari）
+      #
+      # ── 为什么用 mv 而不是 --output ────────────────────────────────────
+      # `flutter build web --output <dir>` 在 3.x 行为：传入目录已存在则
+      # 报错（"The directory already exists"），需要在每次构建前删干净，
+      # 否则留下上次构建产物。`build/web` → `build/web-wasm` → 再构建
+      # 到 `build/web` → `build/web-js` 的 mv 链路可以保证第二次构建一定
+      # 命中空目录，不需要 rm -rf 防御，CI 更稳。
+      #
+      # ── 双构建：wasm 主载 + js 兜底 ─────────────────────────────────────
+      # dart2wasm → main.dart.wasm（<1MB），现代浏览器直取；
+      # dart2js  → main.dart.js（~5MB），无 wasm GC 的老浏览器兜底。
+      # 入口页 app/index.html 用双层嗅探（基础 wasm + GC 提案）决定 iframe 指向。
+      - name: 构建 wasm 主载（dart2wasm）
+        run: >-
+          flutter build web --release --wasm
+          --no-web-resources-cdn
+          --no-tree-shake-icons
+          --dart-define-from-file=dart_define.json
+          && mv build/web build/web-wasm
+
+      - name: 构建 js 兜底（dart2js）
+        run: >-
+          flutter build web --release
+          --no-web-resources-cdn
+          --no-tree-shake-icons
+          --dart-define-from-file=dart_define.json
+          && mv build/web build/web-js
+
+      - name: 读出版本号
+        id: ver
+        run: |
+          set -eu
+          V=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "版本：$V"
+
+      - name: 验证双产物
+        run: |
+          set -eu
+          for d in build/web-wasm build/web-js; do
+            [ -d "$d" ] || { echo "缺构建产物：$d" >&2; exit 1; }
+            [ -f "$d/index.html" ] || { echo "$d 缺 index.html" >&2; exit 1; }
+            [ -d "$d/canvaskit" ] || { echo "$d 缺 canvaskit/（--no-web-resources-cdn 未生效）" >&2; exit 1; }
+          done
+          [ -f build/web-wasm/main.dart.wasm ] || { echo "wasm 主载缺 main.dart.wasm" >&2; exit 1; }
+          [ -f build/web-js/main.dart.js ] || { echo "js 兜底缺 main.dart.js" >&2; exit 1; }
+          echo "双产物校验通过：wasm $(du -sh build/web-wasm | awk '{print $1}') / js $(du -sh build/web-js | awk '{print $1}')"
+
+      # 双桶发布：wasm 先（权威写者，负责 versions.json + 入口页），js 后。
+      - name: 按版本发布到 app/wasm/
+        run: python3 tool/web_publish.py build/web-wasm "${{ steps.ver.outputs.version }}" --subdir wasm
+
+      - name: 按版本发布到 app/js/
+        run: python3 tool/web_publish.py build/web-js "${{ steps.ver.outputs.version }}" --subdir js
+
+      - name: 上传 js 产物（便于排查）
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ogl-web-js
+          path: build/web-js
+          if-no-files-found: warn
+          retention-days: 14
+
+      # 提交回分支：app/ 下的版本目录与入口页需要长期可访问。
+      # ★ 提交信息里**不要**加 `[skip ci]` —— Netlify 会连带跳过部署，
+      #   导致产物永远上不了站点。防自触发改用 workflow 的 `paths-ignore`。
+      - name: 提交 app/
+        env:
+          # 用仓库所有者的 PAT 走 REST API 推送：web 分支有分支保护。
+          # ★ 为什么不用 git push：branch protection 的 restrictions 对
+          #   **git push 的 PAT 认证**识别不可靠（实测 token 身份正确仍是
+          #   GH006），而 REST API 的 `PATCH /git/refs` 能正确识别 token
+          #   归属（yingo-server）并放行。GITHUB_TOKEN 是 bot 身份会被拒。
+          GH_TOKEN: ${{ secrets.OGL_WEB_PUSH_TOKEN }}
+        run: |
+          set -eu
+          git config user.name  'ogl-web-bot'
+          git config user.email 'ogl-web-bot@users.noreply.github.com'
+          git add -A app
+          if git diff --cached --quiet; then
+            echo 'app/ 无变化，跳过提交'
+            exit 0
+          fi
+          python3 - "${{ steps.ver.outputs.version }}" <<'PYEOF'
+          import sys, json, os, base64, time, urllib.request, urllib.error, subprocess
+          ver = sys.argv[1]
+          tok = os.environ['GH_TOKEN']
+          REPO = 'OGL-Teams/OhGithubLost'
+
+          def api(method, path, body=None, tries=5):
+              req = urllib.request.Request('https://api.github.com' + path,
+                  headers={'Authorization': 'token ' + tok,
+                           'Accept': 'application/vnd.github+json'},
+                  method=method)
+              data = json.dumps(body).encode() if body is not None else None
+              if data:
+                  req.add_header('Content-Type', 'application/json')
+              for i in range(tries):
+                  try:
+                      raw = urllib.request.urlopen(req, data=data, timeout=180).read()
+                      return json.loads(raw) if raw.strip() else {}
+                  except urllib.error.HTTPError as e:
+                      err = e.read().decode()[:200]
+                      if i == tries - 1:
+                          raise RuntimeError('%s %s -> HTTP %s %s' % (method, path, e.code, err))
+                      time.sleep(2 ** i)
+                  except Exception as e:
+                      if i == tries - 1:
+                          raise
+                      time.sleep(2 ** i)
+
+          head = api('GET', '/repos/%s/commits/web' % REPO)
+          base_sha = head['sha']
+          base_tree = head['commit']['tree']['sha']
+          changed = subprocess.run(['git', 'diff', '--cached', '--name-only'],
+                                   capture_output=True, text=True).stdout.split()
+          if not changed:
+              print('无变化，跳过')
+              sys.exit(0)
+          nodes = []
+          for rel in changed:
+              content = open(rel, 'rb').read()
+              b = api('POST', '/repos/%s/git/blobs' % REPO,
+                      {'content': base64.b64encode(content).decode(), 'encoding': 'base64'})
+              nodes.append({'path': rel, 'mode': '100644', 'type': 'blob', 'sha': b['sha']})
+          nt = api('POST', '/repos/%s/git/trees' % REPO,
+                   {'base_tree': base_tree, 'tree': nodes})
+          commit = api('POST', '/repos/%s/git/commits' % REPO, {
+              'message': 'chore(web): 发布 %s 到 app/wasm/ + app/js/' % ver,
+              'tree': nt['sha'], 'parents': [base_sha]})
+          api('PATCH', '/repos/%s/git/refs/heads/web' % REPO, {'sha': commit['sha']})
+          print('已更新 web 分支: %s (%d 个文件)' % (commit['sha'], len(changed)))
+          PYEOF
+
+      # ── 预热 jsDelivr ──────────────────────────────────────────────────
+      # 站点运行时会在「fastly.jsdelivr / 同源 / cdn.jsdelivr」里挑最快的源。
+      # jsDelivr 对**没被请求过**的文件要回源 GitHub，首次要 6~19s
+      # （v7.4.4 上线实测）；一旦边缘缓存命中就只有 1.6~2.3s。
+      # 所以这里由 CI 主动拉一遍关键文件，把边缘缓存"焐热"，
+      # 真实用户直接走命中路径。
+      #
+      # 用 curl 自带的 --retry 做等待（GitHub raw 对新提交有几十秒可见性延迟），
+      # 不额外写 sleep。
+      - name: 预热 jsDelivr（让 CDN 边缘先回源一遍）
+        if: success()
+        run: |
+          set -u
+          V='${{ steps.ver.outputs.version }}'
+          D=$(printf '%s' "$V" | tr -cd '0-9')
+          GB='https://fastly.jsdelivr.net/gh/OGL-Teams/OhGithubLost@web/app'
+          echo "预热版本 $V（目录 $D）"
+          # 先确认 jsDelivr 已能看到这次提交（version.json 只有 js 桶有）
+          curl -sL -o /dev/null \
+            --retry 8 --retry-delay 20 --retry-all-errors --max-time 60 \
+            "$GB/js/$D/version.json" || true
+          for f in \
+            "wasm/$D/flutter_bootstrap.js" \
+            "wasm/$D/main.dart.mjs" \
+            "wasm/$D/main.dart.wasm" \
+            "wasm/$D/canvaskit/skwasm.wasm" \
+            "wasm/$D/canvaskit/canvaskit.wasm" \
+            "js/$D/main.dart.js" \
+            "js/$D/canvaskit/canvaskit.wasm" \
+            "js/$D/canvaskit/chromium/canvaskit.wasm"
+          do
+            code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 240 "$GB/$f" || echo ERR)
+            echo "  预热 $f → $code"
+          done
+          echo '预热完成（失败不影响发布，运行时会自动回退同源）'
