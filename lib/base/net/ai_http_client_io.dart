@@ -39,7 +39,7 @@ class AiHttpClientIo implements AiHttpClient {
   /// - 其它 `http://` → **放行**（跨国/内网场景常见），由调用方（设置页）
   ///   给出"明文传输"的可见提示，但**不阻止用户使用**。
   void _validateEndpoint(String url) {
-    final Uri uri = Uri.tryParse(url);
+    final Uri? uri = Uri.tryParse(url);
     if (uri == null || uri.host.isEmpty) {
       throw const AiTransportException(
           'AI 端点地址无效（示例：https://api.openai.com/v1）');

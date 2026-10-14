@@ -253,7 +253,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
             const SizedBox(height: 6),
             Row(
               children: <Widget>[
-                if (surface.domain.downloads.isRanged(task.id))
+                if (widget.surface.domain.downloads.isRanged(task.id))
                   Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: Tooltip(
@@ -305,26 +305,26 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                   IconButton(
                     tooltip: _t('pause'),
                     icon: const Icon(Icons.pause),
-                    onPressed: () => unawaited(surface.pauseDownload(task.id)),
+                    onPressed: () => unawaited(widget.surface.pauseDownload(task.id)),
                   ),
                 if (surface.supportsPauseResume && paused)
                   IconButton(
                     tooltip: _t('resume'),
                     icon: const Icon(Icons.play_arrow),
-                    onPressed: () => unawaited(surface.resumeDownload(task.id)),
+                    onPressed: () => unawaited(widget.surface.resumeDownload(task.id)),
                   ),
                 if (task.status == IxDownloadStatus.failed ||
                     task.status == IxDownloadStatus.canceled)
                   IconButton(
                     tooltip: _t('retry'),
                     icon: const Icon(Icons.refresh),
-                    onPressed: () => unawaited(surface.retryDownload(task.id)),
+                    onPressed: () => unawaited(widget.surface.retryDownload(task.id)),
                   ),
                 if (active || task.status == IxDownloadStatus.queued || paused)
                   IconButton(
                     tooltip: _t('cancel'),
                     icon: const Icon(Icons.close),
-                    onPressed: () => unawaited(surface.cancelDownload(task.id)),
+                    onPressed: () => unawaited(widget.surface.cancelDownload(task.id)),
                   ),
                 if (done) ...<Widget>[
                   IconButton(
@@ -343,7 +343,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                   icon: const Icon(Icons.delete_outline),
                   onPressed: () async {
                     _noteRemoved(task);
-                    await surface.removeDownload(task.id);
+                    await widget.surface.removeDownload(task.id);
                   },
                 ),
               ],
