@@ -185,17 +185,56 @@ jobs:
             echo 'app/ 无变化，跳过提交'
             exit 0
           fi
-          git commit -m "chore(web): 发布 ${{ steps.ver.outputs.version }} 到 app/wasm/ + app/js/"
-          TREE=$(git rev-parse HEAD^{tree})
-          PARENT=$(git rev-parse HEAD^)
-          COMMIT=$(gh api -X POST repos/OGL-Teams/OhGithubLost/git/commits \
-            -f message="chore(web): 发布 ${{ steps.ver.outputs.version }} 到 app/wasm/ + app/js/" \
-            -f tree="$TREE" \
-            -f 'parents[]'="$PARENT" \
-            --jq .sha)
-          gh api -X PATCH repos/OGL-Teams/OhGithubLost/git/refs/heads/web \
-            -f sha="$COMMIT" -f force=false
-          echo "已通过 REST API 更新 web 分支：$COMMIT"
+          python3 - "${{ steps.ver.outputs.version }}" <<'PYEOF'
+          import sys, json, os, base64, time, urllib.request, urllib.error, subprocess
+          ver = sys.argv[1]
+          tok = os.environ['GH_TOKEN']
+          REPO = 'OGL-Teams/OhGithubLost'
+
+          def api(method, path, body=None, tries=5):
+              req = urllib.request.Request('https://api.github.com' + path,
+                  headers={'Authorization': 'token ' + tok,
+                           'Accept': 'application/vnd.github+json'},
+                  method=method)
+              data = json.dumps(body).encode() if body is not None else None
+              if data:
+                  req.add_header('Content-Type', 'application/json')
+              for i in range(tries):
+                  try:
+                      raw = urllib.request.urlopen(req, data=data, timeout=180).read()
+                      return json.loads(raw) if raw.strip() else {}
+                  except urllib.error.HTTPError as e:
+                      err = e.read().decode()[:200]
+                      if i == tries - 1:
+                          raise RuntimeError('%s %s -> HTTP %s %s' % (method, path, e.code, err))
+                      time.sleep(2 ** i)
+                  except Exception as e:
+                      if i == tries - 1:
+                          raise
+                      time.sleep(2 ** i)
+
+          head = api('GET', '/repos/%s/commits/web' % REPO)
+          base_sha = head['sha']
+          base_tree = head['commit']['tree']['sha']
+          changed = subprocess.run(['git', 'diff', '--cached', '--name-only'],
+                                   capture_output=True, text=True).stdout.split()
+          if not changed:
+              print('无变化，跳过')
+              sys.exit(0)
+          nodes = []
+          for rel in changed:
+              content = open(rel, 'rb').read()
+              b = api('POST', '/repos/%s/git/blobs' % REPO,
+                      {'content': base64.b64encode(content).decode(), 'encoding': 'base64'})
+              nodes.append({'path': rel, 'mode': '100644', 'type': 'blob', 'sha': b['sha']})
+          nt = api('POST', '/repos/%s/git/trees' % REPO,
+                   {'base_tree': base_tree, 'tree': nodes})
+          commit = api('POST', '/repos/%s/git/commits' % REPO, {
+              'message': 'chore(web): 发布 %s 到 app/wasm/ + app/js/' % ver,
+              'tree': nt['sha'], 'parents': [base_sha]})
+          api('PATCH', '/repos/%s/git/refs/heads/web' % REPO, {'sha': commit['sha']})
+          print('已更新 web 分支: %s (%d 个文件)' % (commit['sha'], len(changed)))
+          PYEOF
 
       # ── 预热 jsDelivr ──────────────────────────────────────────────────
       # 站点运行时会在「fastly.jsdelivr / 同源 / cdn.jsdelivr」里挑最快的源。
