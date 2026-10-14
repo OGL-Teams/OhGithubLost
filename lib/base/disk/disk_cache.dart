@@ -96,14 +96,20 @@ class UnavailableCacheRemote implements CacheRemote {
 class _KeyedMutex {
   final Map<String, Future<void>> _tails = <String, Future<void>>{};
 
+  /// 前序任务失败时的留痕回调（由宿主注入；`null` = 不记录）。
+  ///
+  /// swallow 前序失败是**有意的**（保证本任务仍执行），但完全静默会让
+  /// 「为什么这次写没生效」无从排查。
+  void Function(String key, Object error)? onPreviousFailed;
+
   Future<T> run<T>(String key, Future<T> Function() action) async {
     final previous = _tails[key] ?? Future<void>.value();
     final completer = Completer<void>();
     _tails[key] = completer.future;
     try {
       await previous;
-    } catch (_) {
-      // 前序任务的成败不影响本任务的执行顺序。
+    } catch (error) {
+      onPreviousFailed?.call(key, error);
     }
     try {
       return await action();
@@ -215,6 +221,7 @@ class RepositoryCache {
     Duration? maxAge,
   }) async {
     _ensureKey(key);
+    _wireMutexDiagnostics();
     return _mutex.run(
       key.encode(),
       () => _readLocked(key, refresh: refresh, maxAge: maxAge),
@@ -512,6 +519,24 @@ class RepositoryCache {
   // ───────────────────────── 内部实现 ─────────────────────────
 
   final _KeyedMutex _mutex = _KeyedMutex();
+
+  bool _mutexWired = false;
+
+  /// 接上前序任务失败的留痕（首次使用时惰性接线）。
+  void _wireMutexDiagnostics() {
+    if (_mutexWired) {
+      return;
+    }
+    _mutexWired = true;
+    _mutex.onPreviousFailed = (String key, Object error) {
+      _diagnostics.debug(
+        'CONS',
+        '前序缓存任务失败（按设计继续）：$error',
+        code: 'OGL-CONS-MUTEX-PREV',
+        data: <String, Object?>{'key': key},
+      );
+    };
+  }
 
   Future<CacheEntry?> _readLocked(
     CacheKey key, {

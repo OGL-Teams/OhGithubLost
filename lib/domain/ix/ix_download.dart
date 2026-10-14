@@ -716,7 +716,14 @@ class IxDownloadManager extends ChangeNotifier {
           headers: spec.headers.isEmpty ? null : spec.headers,
         );
       } catch (error) {
-        // 该通道不可用 → 静默试下一个（不打扰用户）。
+        // 该通道不可用 → 静默试下一个（不打扰用户；**留 debug 痕**，
+        // 否则排查「为什么没走加速」时没有任何线索）。
+        _diagnostics?.debug(
+          'DL',
+          '候选地址不可用，已跳过：$candidate（$error）',
+          code: 'OGL-DL-202-D',
+          data: <String, Object?>{'taskId': id},
+        );
         continue;
       }
       reachable ??= candidate;
@@ -1166,6 +1173,30 @@ class IxDownloadManager extends ChangeNotifier {
   /// 顺序很重要：校验不通过时必须**跳过 SAF 导出**，否则被替换的文件会落到
   /// 用户可见的目录里。
   Future<void> _finishTask(String id) async {
+    // ★ 顶层兜底：本方法是 fire-and-forget（`unawaited(_finishTask(id))`），
+    //   完整性校验分支里的 `_backend.deleteFile` 抛错时**无人处理**——
+    //   表现为「下载完成了但状态卡在下载中」。这里兜住并如实置失败。
+    try {
+      await _finishTaskInner(id);
+    } catch (error) {
+      _diagnostics?.error(
+        'DL',
+        '下载收尾异常：${_snapshots[id]?.fileName ?? id}（$error）',
+        code: 'OGL-DL-407',
+        data: <String, Object?>{'taskId': id},
+      );
+      final IxDownloadTask? snap = _snapshots[id];
+      if (snap != null) {
+        _snapshots[id] = snap.copyWith(
+          status: IxDownloadStatus.failed,
+          error: IxDownloadError(IxDownloadErrorKind.unknown, '$error'),
+        );
+        _safeNotify();
+      }
+    }
+  }
+
+  Future<void> _finishTaskInner(String id) async {
     // ★ 幂等守卫：库事件（`_onEvent`）与分片路径（`_runRanged`）**两个入口**
     //   都会走到这里；已判定完成的任务不再重复收尾（否则同一份成品会被重复
     //   校验、重复触发导出）。
@@ -1240,7 +1271,15 @@ class IxDownloadManager extends ChangeNotifier {
       //   「下载 → 导出 → 从列表移除 → 再下载」会复用同一个 id；旧实现只在
       //   失败路径移除，于是第二次 `add(id)` 返回 false，成品**永不导出**。
       _exportedToSaf.remove(id);
-    } catch (_) {
+    } catch (error) {
+      // 兑现文档承诺的「只在日志留痕」：旧实现完全静默，导出失败时
+      // 用户看不到、排查也没有入口。
+      _diagnostics?.warn(
+        'DL',
+        '导出到所选文件夹失败：${snap.fileName}（$error）',
+        code: 'OGL-DL-301',
+        data: <String, Object?>{'taskId': id},
+      );
       _exportedToSaf.remove(id);
     }
   }

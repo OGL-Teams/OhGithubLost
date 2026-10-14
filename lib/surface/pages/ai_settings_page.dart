@@ -128,6 +128,13 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
         // 优先展示可读详情（如「端点必须是 HTTPS」）：code 只是类别。
         _toast('${_t('error')}：${e.detail.isEmpty ? e.code : e.detail}');
       }
+    } on Object catch (e) {
+      // 解析层（jsonDecode / parseModelList）遇 200+非 JSON 响应会抛
+      // FormatException / TypeError —— 不属于 AiException，必须兜住，
+      // 否则是「未捕获异步错误」（onPressed 未 await）。
+      if (mounted) {
+        _toast('${_t('error')}：$e');
+      }
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -164,8 +171,13 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
       }
     } on AiException catch (e) {
       if (mounted) {
-        // 优先展示可读详情（如「端点必须是 HTTPS」）：code 只是类别。
         _toast('${_t('error')}：${e.detail.isEmpty ? e.code : e.detail}');
+      }
+    } on Object catch (e) {
+      // writeKey → SecureDiskVault → flutter_secure_storage 可能抛
+      // PlatformException（Android Keystore 失败等）——不属于 AiException。
+      if (mounted) {
+        _toast('${_t('error')}：$e');
       }
     } finally {
       if (mounted) {
@@ -175,10 +187,18 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
   }
 
   Future<void> _removeKey() async {
-    await widget.surface.domain.ai.clearKey();
-    if (mounted) {
-      setState(() => _hasKey = false);
-      _toast(_t('saved'));
+    try {
+      await widget.surface.domain.ai.clearKey();
+      if (mounted) {
+        setState(() => _hasKey = false);
+        _toast(_t('saved'));
+      }
+    } on Object catch (e) {
+      // clearKey → vault 删除可能抛 PlatformException（旧实现无任何 catch，
+      // 表现为「点了没反应」）。
+      if (mounted) {
+        _toast('${_t('error')}：$e');
+      }
     }
   }
 
