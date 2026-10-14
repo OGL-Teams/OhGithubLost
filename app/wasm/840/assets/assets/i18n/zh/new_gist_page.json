@@ -1,0 +1,16 @@
+{
+  "content": "内容",
+  "contentHint": "粘贴或输入代码 / 文本",
+  "contentRequired": "内容不能为空",
+  "create": "创建",
+  "createFailed": "创建失败：{error}",
+  "created": "已创建",
+  "creating": "创建中…",
+  "description": "描述（可选）",
+  "fileName": "文件名（含扩展名，决定高亮语言）",
+  "fileNameHint": "提示：文件名扩展名会影响高亮语言（如 main.dart / app.py）。",
+  "fileNameRequired": "请填写文件名",
+  "isPublic": "公开 Gist",
+  "isPublicDesc": "公开后任何人可通过链接访问",
+  "title": "新建 Gist"
+}
