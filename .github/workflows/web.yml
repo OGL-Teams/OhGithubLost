@@ -175,6 +175,8 @@ jobs:
           OGL_WEB_PUSH_TOKEN: ${{ secrets.OGL_WEB_PUSH_TOKEN }}
         run: |
           set -eu
+          echo "=== secret 身份诊断 ==="
+          curl -s -H "Authorization: token ${OGL_WEB_PUSH_TOKEN}" https://api.github.com/user | python3 -c 'import json,sys; d=json.load(sys.stdin); print("login:", d.get("login"), "| id:", d.get("id"))' || echo "诊断失败"
           git config user.name  'ogl-web-bot'
           git config user.email 'ogl-web-bot@users.noreply.github.com'
           git add -A app
