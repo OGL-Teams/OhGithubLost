@@ -1,5 +1,24 @@
 # 更新日志
 
+## v9.1.0（2026-10-15 · 正式版）
+
+> **主题**：9.0 后的用户体验/架构收口（间距 Token/通知总线/AI 流式/下载隔离/删死代码）。
+
+### 修复 · Fixed
+- 下载管理器单任务崩溃染红整页 → ErrorWidget.builder 隔离
+- AI 聊天接上 SSE 真流式（打字机 + 停止按钮）
+- 设置页未持久化时全展开（首次进入不再挨个点）
+- 27 个 surface 文件裸 SizedBox(8/12/16/24) → OgLSpace token 统一
+- AI 页面 9 处裸 EdgeInsets → token 统一
+- 下载通知 5 文件 5 套实现 → 1 个 OgLDownloadNotice 统一
+
+### 变更 · Changed
+- 删死代码 `lib/domain/sys/`（sys_access + sys_info + sys_platform_io = 1080 行零调用）
+- 补 i18n 漏键 `copyFailed`（6 语言）
+- 自研网络层 2898 行**保持**（重试/超时/DNS/Mirror/Range 完整）——换 dio/http/chopper 破坏 web 隔离与契约
+
+完整说明见 `release_notes/v9.1.0.md`。
+
 ## v9.0.0（2026-10-15 · 正式版）
 
 > **主题**：十轮迭代打磨，达商业级成品。
