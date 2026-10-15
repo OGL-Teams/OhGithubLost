@@ -13,6 +13,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/gh_format.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `commit_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -118,13 +119,13 @@ class _CommitPageState extends State<CommitPage> {
                                   fontSize: 12,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: OgLSpace.sm),
                               Text(
                                 '${ghCommitAuthor(commit)} · '
                                 '${commit.date?.toIso8601String().split('T').first ?? ''}',
                                 style: theme.textTheme.bodySmall,
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: OgLSpace.md),
                               SelectableText(commit.message),
                             ],
                           ),
@@ -133,7 +134,7 @@ class _CommitPageState extends State<CommitPage> {
                       const Divider(height: 32),
                       Text(_t('changedFiles'),
                           style: theme.textTheme.titleMedium),
-                      const SizedBox(height: 8)
+                      const SizedBox(height: OgLSpace.sm)
                     ],
                   ),
                 ),
@@ -153,7 +154,7 @@ class _CommitPageState extends State<CommitPage> {
                     ? _t('initialCommit')
                     : _t('noChanges')),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              const SliverToBoxAdapter(child: SizedBox(height: OgLSpace.xl)),
             ],
           )),
     );

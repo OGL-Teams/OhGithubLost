@@ -14,6 +14,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_space.dart';
 import '../widgets/readme_view.dart';
 
 /// 取 `pull_page` 分片文案。
@@ -122,14 +123,14 @@ class _PullPageState extends State<PullPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Text(title, style: theme.textTheme.titleLarge),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: OgLSpace.sm),
                       Text(
                         'by ${ghLogin(widget.pull)} · '
                         '${ghDate(widget.pull, 'created_at')} · '
                         '${_stateText()}',
                         style: theme.textTheme.bodySmall,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: OgLSpace.md),
                       if (body.trim().isNotEmpty)
                         Card(
                           child: Padding(
@@ -145,7 +146,7 @@ class _PullPageState extends State<PullPage> {
                       const Divider(height: 32),
                       Text(_t('changedFiles'),
                           style: theme.textTheme.titleMedium),
-                      const SizedBox(height: 8)
+                      const SizedBox(height: OgLSpace.sm)
                     ],
                   ),
                 ),
@@ -163,7 +164,7 @@ class _PullPageState extends State<PullPage> {
                 emptyIcon: Icons.description_outlined,
                 emptyText: _t('noChangedFiles'),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              const SliverToBoxAdapter(child: SizedBox(height: OgLSpace.xl)),
             ],
           )),
     );

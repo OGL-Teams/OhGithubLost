@@ -191,7 +191,7 @@ class _NewReleasePageState extends State<NewReleasePage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _name,
                   decoration: InputDecoration(
@@ -199,7 +199,7 @@ class _NewReleasePageState extends State<NewReleasePage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _body,
                   maxLines: 6,
@@ -209,7 +209,7 @@ class _NewReleasePageState extends State<NewReleasePage> {
                     alignLabelWithHint: true,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 SwitchListTile(
                   title: Text(_t('draft')),
                   subtitle: Text(_t('draftDesc')),
@@ -227,7 +227,7 @@ class _NewReleasePageState extends State<NewReleasePage> {
                       : (bool value) => setState(() => _prerelease = value),
                 ),
                 if (_error != null) ...<Widget>[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: OgLSpace.md),
                   Card(
                     color: Theme.of(context).colorScheme.errorContainer,
                     child: Padding(
@@ -241,7 +241,7 @@ class _NewReleasePageState extends State<NewReleasePage> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 // 「发布」按钮跟着滚动"让路"：下滑时向屏外收起（只露约 1/4，点击即弹回），
                 // 上滑自动完全弹回。
                 //

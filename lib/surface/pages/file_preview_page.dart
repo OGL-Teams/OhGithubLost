@@ -28,6 +28,7 @@ import '../util/download_proxy.dart';
 import '../util/file_preview.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 import 'download_manager_page.dart';
 import 'settings_page.dart';
@@ -340,13 +341,13 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(Icons.data_usage, size: 40, color: theme.colorScheme.outline),
-            const SizedBox(height: 12),
+            const SizedBox(height: OgLSpace.md),
             Text(
               _t('fileTooLargeTitle'),
               textAlign: TextAlign.center,
               style: theme.textTheme.titleMedium,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: OgLSpace.sm),
             Text(
               // 私有仓库 + 未接受加速：多给一句实话，别让人白去设置里找开关。
               // 已接受的私有仓库与公开仓库同等待遇，不需要这句解释。
@@ -365,7 +366,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
               icon: const Icon(Icons.link),
               label: Text(_t('useRawLink')),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: OgLSpace.sm),
             OutlinedButton.icon(
               onPressed: () => unawaited(_openSettings()),
               icon: const Icon(Icons.settings_outlined),
@@ -489,7 +490,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
                 size: 40,
                 color: theme.colorScheme.outline,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: OgLSpace.md),
               Text(
                 _t('previewAudioHint'),
                 textAlign: TextAlign.center,
@@ -509,7 +510,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
                   label: Text(_t('previewAudioPlay')),
                 ),
               if (rawUrl != null && rawUrl.isNotEmpty && !widget.repoPrivate)
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
               OutlinedButton.icon(
                 onPressed:
                     (_busy || _queued) ? null : () => unawaited(_enqueueFile()),
@@ -543,13 +544,10 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
       );
       if (mounted) {
         setState(() => _queued = true);
-        ogLShowDownloadQueued(
-          context,
-          widget.surface,
-          _t('addedToDownload', <String, Object?>{
-            'name': ghPathName(widget.path),
-          }),
-        );
+        OgLDownloadNotice.instance.show(context, widget.surface,
+            message: _t('addedToDownload', <String, Object?>{
+              'name': ghPathName(widget.path),
+            }));
       }
     } catch (error) {
       if (mounted) {
@@ -571,7 +569,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Icon(icon, size: 40, color: theme.colorScheme.outline),
-              const SizedBox(height: 12),
+              const SizedBox(height: OgLSpace.md),
               Text(
                 message,
                 textAlign: TextAlign.center,
@@ -590,7 +588,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
         child: Row(
           children: <Widget>[
             Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(width: 8),
+            const SizedBox(width: OgLSpace.sm),
             Expanded(
               child: Text(
                 message,

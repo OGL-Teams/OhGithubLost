@@ -17,6 +17,7 @@ import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `workflow_dispatch_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -453,7 +454,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
               padding: const EdgeInsets.all(16),
               children: <Widget>[
                 Text(_t('title'), style: theme.textTheme.titleSmall),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Card(
                   child: Column(
                     children: <Widget>[
@@ -479,9 +480,9 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 Text(_t('refLabel'), style: theme.textTheme.titleSmall),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 TextField(
                   controller: _ref,
                   decoration: const InputDecoration(
@@ -489,7 +490,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                     hintText: 'main',
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 Row(
                   children: <Widget>[
                     Expanded(
@@ -504,9 +505,9 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 ..._formSection(theme),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
                   title:
@@ -528,7 +529,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Text(
                   _t('dispatchHint') + _t('dispatchHint2'),
                   style: theme.textTheme.bodySmall,

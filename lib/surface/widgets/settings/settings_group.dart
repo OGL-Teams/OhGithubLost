@@ -86,7 +86,7 @@ Future<T?> ogLShowSettingsChoice<T>({
                 children: <Widget>[
                   if (option.leading != null) ...<Widget>[
                     option.leading!,
-                    const SizedBox(width: 12),
+                    const SizedBox(width: OgLSpace.md),
                   ],
                   Expanded(
                     child: Column(
@@ -188,7 +188,7 @@ class OgLSettingsGroup extends StatelessWidget {
                         data: IconThemeData(color: theme.colorScheme.primary),
                         child: leading!,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: OgLSpace.md),
                     ],
                     Expanded(
                       child: Column(

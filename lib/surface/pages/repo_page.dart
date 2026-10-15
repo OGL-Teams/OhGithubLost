@@ -34,6 +34,7 @@ import '../util/file_preview.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/path_rules.dart';
+import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/readme_view.dart';
@@ -490,7 +491,7 @@ class _RepoPageState extends State<RepoPage> {
               child: Row(
                 children: <Widget>[
                   const Icon(Icons.account_tree_outlined, size: 18),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: OgLSpace.sm),
                   Expanded(
                     child: Text(
                       _branch.isEmpty ? _t('defaultBranch') : _branch,
@@ -1236,7 +1237,7 @@ class _CodeTabState extends State<_CodeTab> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: OgLSpace.md),
                   if (directory)
                     Text(_t('gitkeepHint'))
                   else
@@ -1253,7 +1254,7 @@ class _CodeTabState extends State<_CodeTab> {
                         border: OutlineInputBorder(),
                       ),
                     ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: OgLSpace.sm),
                   Text(
                     _t('pathCharsetHint'),
                     style: TextStyle(fontSize: 12),
@@ -1651,11 +1652,8 @@ class _CodeTabState extends State<_CodeTab> {
       if (!mounted) {
         return;
       }
-      ogLShowDownloadQueued(
-        context,
-        widget.surface,
-        _t('addedToDownload', {'name': ghPathName(entry.path)}),
-      );
+      OgLDownloadNotice.instance.show(context, widget.surface,
+          message: _t('addedToDownload', {'name': ghPathName(entry.path)}));
     } catch (error) {
       _notifier.warning(_t('addDownloadFailed', {'error': error}));
     }
@@ -3243,7 +3241,7 @@ class _ActionsTabState extends State<_ActionsTab> {
                     icon: const Icon(Icons.play_arrow),
                     label: Text(_t('manualTrigger')),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: OgLSpace.md),
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -3641,7 +3639,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
         padding: const EdgeInsets.all(16),
         children: <Widget>[
           Text(_t('basicInfo'), style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           TextField(
             controller: _name,
             decoration: InputDecoration(
@@ -3649,7 +3647,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
               border: OutlineInputBorder(),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: OgLSpace.md),
           TextField(
             controller: _description,
             maxLines: 3,
@@ -3658,7 +3656,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
               border: OutlineInputBorder(),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: OgLSpace.md),
           Align(
             alignment: Alignment.centerRight,
             child: FilledButton(
@@ -3668,7 +3666,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
           ),
           const Divider(height: 32),
           Text('Pages', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           FutureBuilder<Map<String, dynamic>?>(
             future: _pagesFuture,
             builder: (BuildContext context,
@@ -3690,7 +3688,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
               }));
             },
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           Wrap(
             spacing: 8,
             children: <Widget>[
@@ -3704,7 +3702,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: OgLSpace.lg),
           TextField(
             controller: _cname,
             decoration: InputDecoration(
@@ -3713,7 +3711,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
               border: OutlineInputBorder(),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           Align(
             alignment: Alignment.centerRight,
             child: FilledButton.tonal(
@@ -3727,7 +3725,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             style: theme.textTheme.titleMedium
                 ?.copyWith(color: theme.colorScheme.error),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -3735,7 +3733,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(_t('deleteRepoWarning')),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: OgLSpace.md),
                   FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: theme.colorScheme.error,
@@ -3747,7 +3745,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: OgLSpace.xl),
         ],
       ),
     );

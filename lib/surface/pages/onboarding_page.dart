@@ -222,7 +222,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       body: SafeArea(
         child: Column(
           children: <Widget>[
-            const SizedBox(height: 8),
+            const SizedBox(height: OgLSpace.sm),
             _progress(theme),
             Expanded(
               child: PageView(
@@ -319,7 +319,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             theme,
             children: <Widget>[
               Text(_ts('language'), style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8),
+              const SizedBox(height: OgLSpace.sm),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -338,9 +338,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: OgLSpace.xl),
               Text(_ts('appearance'), style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8),
+              const SizedBox(height: OgLSpace.sm),
               SegmentedButton<OgLThemeMode>(
                 segments: <ButtonSegment<OgLThemeMode>>[
                   ButtonSegment<OgLThemeMode>(
@@ -363,7 +363,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   }
                 },
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: OgLSpace.sm),
               Text(_ts('appearanceDesc'), style: theme.textTheme.bodySmall),
             ],
           );
@@ -373,21 +373,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget _welcomeStep(ThemeData theme) => _stepBody(
         theme,
         children: <Widget>[
-          const SizedBox(height: 24),
+          const SizedBox(height: OgLSpace.xl),
           Icon(Icons.hub_outlined, size: 56, color: theme.colorScheme.primary),
-          const SizedBox(height: 16),
+          const SizedBox(height: OgLSpace.lg),
           Text(
             _t('welcomeTitle'),
             textAlign: TextAlign.center,
             style: theme.textTheme.headlineSmall,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           Text(
             _t('welcomeDesc') + _t('welcomeDesc2'),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: OgLSpace.xl),
           Card(
             child: ListTile(
               leading: const Icon(Icons.phone_android),
@@ -403,7 +403,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         theme,
         children: <Widget>[
           Text(_t('permissionIntro'), style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           if (_infos == null)
             const Padding(
               padding: EdgeInsets.all(24),
@@ -420,7 +420,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       Row(
                         children: <Widget>[
                           Icon(_statusIcon(info.status), size: 20),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: OgLSpace.sm),
                           Expanded(
                             child: Text(
                               info.title,
@@ -435,7 +435,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       ),
                       const SizedBox(height: 6),
                       Text(info.rationale, style: theme.textTheme.bodySmall),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: OgLSpace.sm),
                       Align(
                         alignment: Alignment.centerRight,
                         child: FilledButton.tonal(
@@ -462,7 +462,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         theme,
         children: <Widget>[
           Text(_t('dataPrivacy'), style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           Card(
             color: theme.colorScheme.secondaryContainer,
             child: Padding(
@@ -474,7 +474,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     Icons.lock_outline,
                     color: theme.colorScheme.onSecondaryContainer,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: OgLSpace.sm),
                   Expanded(
                     child: Text(
                       _t('tokenVault') + _t('tokenVault2'),
@@ -487,7 +487,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: OgLSpace.md),
           Card(
             child: ListTile(
               leading: Icon(Icons.folder_outlined),
@@ -508,19 +508,19 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget _doneStep(ThemeData theme) => _stepBody(
         theme,
         children: <Widget>[
-          const SizedBox(height: 24),
+          const SizedBox(height: OgLSpace.xl),
           Icon(
             Icons.check_circle_outline,
             size: 56,
             color: theme.colorScheme.primary,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: OgLSpace.lg),
           Text(
             widget.review ? _t('readyTitle') : _t('readyTitle2'),
             textAlign: TextAlign.center,
             style: theme.textTheme.headlineSmall,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           Text(
             _t('readyDesc'),
             textAlign: TextAlign.center,
@@ -553,11 +553,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget _licenseStep(ThemeData theme) => _stepBody(
         theme,
         children: <Widget>[
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           Row(
             children: <Widget>[
               Icon(Icons.gavel_outlined, color: theme.colorScheme.primary),
-              const SizedBox(width: 8),
+              const SizedBox(width: OgLSpace.sm),
               Expanded(
                 child: Text(
                   _t('licenseTitle'),
@@ -566,7 +566,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: OgLSpace.md),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
@@ -580,7 +580,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   ?.copyWith(color: theme.colorScheme.onSecondaryContainer),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: OgLSpace.md),
           // ── 定性说明：本文不产生法律效力，唯一生效的是 Apache-2.0 ──
           //    放在最前，因为它是整页的性质界定，读者有权先知道这一点。
           Container(
@@ -596,18 +596,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   ?.copyWith(color: theme.colorScheme.onErrorContainer),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: OgLSpace.lg),
           // ── 重点（人话版）：只放要点，不放细节 ──
           Text(
             _t('licenseHighlights'),
             style: theme.textTheme.titleSmall,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: OgLSpace.sm),
           SelectableText(
             _t('onboardingLicenseHighlights'),
             style: theme.textTheme.bodyMedium?.copyWith(height: 1.7),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: OgLSpace.lg),
           // ── 语言效力声明：必须在正文之前，且视觉上醒目 ──
           Container(
             width: double.infinity,
@@ -621,7 +621,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               children: <Widget>[
                 Icon(Icons.translate,
                     size: 16, color: theme.colorScheme.onSurfaceVariant),
-                const SizedBox(width: 8),
+                const SizedBox(width: OgLSpace.sm),
                 Expanded(
                   child: Text(
                     _t('licenseAuthoritative'),
@@ -632,7 +632,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: OgLSpace.md),
           // ── 完整法律文本：默认折叠，细节一条不少 ──
           Card(
             margin: EdgeInsets.zero,
@@ -653,7 +653,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: OgLSpace.xl),
         ],
       );
 

@@ -232,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: <Widget>[
                       Icon(Icons.security,
                           color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: OgLSpace.md),
                       Expanded(
                         child: Text(
                           // 保险库说明：`vaultNote`（含平台与域名等专有名词，不译）。
@@ -243,7 +243,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: OgLSpace.lg),
               TextField(
                 controller: _input,
                 obscureText: _obscure,
@@ -272,7 +272,7 @@ class _LoginPageState extends State<LoginPage> {
                   }
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: OgLSpace.md),
               FilledButton(
                 onPressed: _busy ? null : _login,
                 child: _busy
@@ -284,18 +284,18 @@ class _LoginPageState extends State<LoginPage> {
                             height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(width: OgLSpace.sm),
                           Text(OgLI18n.instance.t('login', 'verifying')),
                         ],
                       )
                     : Text(OgLI18n.instance.t('login', 'signIn')),
               ),
               if (_phase.isNotEmpty) ...<Widget>[
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Text(_phase, style: Theme.of(context).textTheme.bodySmall),
               ],
               if (_error != null) ...<Widget>[
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 Card(
                   color: Theme.of(context).colorScheme.errorContainer,
                   child: Padding(

@@ -748,7 +748,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
         : '${value.result!.index + 1}/${value.result!.matches.length}';
     return Row(
       children: <Widget>[
-        const SizedBox(width: 8),
+        const SizedBox(width: OgLSpace.sm),
         Expanded(
           child: TextField(
             controller: controller.findInputController,
@@ -803,7 +803,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _replaceRow(CodeFindValue value) => Row(
         children: <Widget>[
-          const SizedBox(width: 8),
+          const SizedBox(width: OgLSpace.sm),
           Expanded(
             child: TextField(
               controller: controller.replaceInputController,
@@ -827,7 +827,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
             onPressed:
                 value.result == null ? null : controller.replaceAllMatches,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: OgLSpace.sm),
         ],
       );
 

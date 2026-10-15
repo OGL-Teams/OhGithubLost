@@ -362,7 +362,7 @@ class _AiChatPageState extends State<AiChatPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: OgLSpace.sm),
                   IconButton.filled(
                     tooltip: _t('send'),
                     icon: _sending

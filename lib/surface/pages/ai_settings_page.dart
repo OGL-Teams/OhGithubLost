@@ -266,7 +266,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                 ),
                 const Divider(),
                 Text(_t('provider'), style: theme.textTheme.titleSmall),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Wrap(
                   spacing: 8,
                   children: <Widget>[
@@ -278,7 +278,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 DropdownButtonFormField<AiProviderKind>(
                   initialValue: _kind,
                   decoration: InputDecoration(labelText: _t('protocol')),
@@ -293,7 +293,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                     }
                   },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _url,
                   keyboardType: TextInputType.url,
@@ -315,7 +315,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                       children: <Widget>[
                         Icon(Icons.warning_amber_rounded,
                             size: 18, color: theme.colorScheme.error),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: OgLSpace.sm),
                         Expanded(
                           child: Text(
                             _t('plaintextHint'),
@@ -327,7 +327,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                       ],
                     ),
                   ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _key,
                   obscureText: true,
@@ -338,7 +338,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                     hintText: _t('keyHint'),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 Row(
                   children: <Widget>[
                     Expanded(
@@ -359,7 +359,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: OgLSpace.sm),
                     TextButton.icon(
                       onPressed: _saving ? null : _detectModels,
                       icon: const Icon(Icons.refresh),
@@ -367,7 +367,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 if (_hasKey)
                   Align(
                     alignment: Alignment.centerLeft,
@@ -377,9 +377,9 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                       label: Text(_t('removeKey')),
                     ),
                   ),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 Text(_t('privacy'), style: theme.textTheme.bodySmall),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 FilledButton(
                   onPressed: _saving ? null : _save,
                   child: Text(_t('save')),

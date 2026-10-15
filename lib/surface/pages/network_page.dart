@@ -47,7 +47,7 @@ class NetworkSettingsPage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             children: <Widget>[
               builder(context, surface.settings.settings),
-              const SizedBox(height: 24),
+              const SizedBox(height: OgLSpace.xl),
             ],
           ),
         ),

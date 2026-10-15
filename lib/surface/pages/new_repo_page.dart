@@ -168,7 +168,7 @@ class _NewRepoPageState extends State<NewRepoPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _description,
                   maxLines: 3,
@@ -177,7 +177,7 @@ class _NewRepoPageState extends State<NewRepoPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 SwitchListTile(
                   title: Text(_t('private')),
                   subtitle: Text(_t('privateDesc')),
@@ -187,7 +187,7 @@ class _NewRepoPageState extends State<NewRepoPage> {
                       : (bool value) => setState(() => _private = value),
                 ),
                 if (_error != null) ...<Widget>[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: OgLSpace.md),
                   Card(
                     color: Theme.of(context).colorScheme.errorContainer,
                     child: Padding(
@@ -201,7 +201,7 @@ class _NewRepoPageState extends State<NewRepoPage> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 // 「创建」按钮跟着滚动"让路"：下滑时向屏外收起（只露约 1/4，点击即弹回），
                 // 上滑自动完全弹回。
                 //

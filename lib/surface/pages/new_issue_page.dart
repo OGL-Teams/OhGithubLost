@@ -163,7 +163,7 @@ class _NewIssuePageState extends State<NewIssuePage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _body,
                   maxLines: 8,
@@ -174,7 +174,7 @@ class _NewIssuePageState extends State<NewIssuePage> {
                   ),
                 ),
                 if (_error != null) ...<Widget>[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: OgLSpace.md),
                   Card(
                     color: Theme.of(context).colorScheme.errorContainer,
                     child: Padding(
@@ -188,7 +188,7 @@ class _NewIssuePageState extends State<NewIssuePage> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 FilledButton(
                   onPressed: _busy ? null : _submit,
                   child: Text(_busy ? _t('submitting') : _t('submit')),

@@ -177,7 +177,7 @@ class _NewGistPageState extends State<NewGistPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _filename,
                   decoration: InputDecoration(
@@ -186,7 +186,7 @@ class _NewGistPageState extends State<NewGistPage> {
                     prefixIcon: Icon(Icons.insert_drive_file_outlined),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 Text(_t('content'), style: theme.textTheme.labelLarge),
                 const SizedBox(height: 6),
                 TextField(
@@ -206,7 +206,7 @@ class _NewGistPageState extends State<NewGistPage> {
                   value: _public,
                   onChanged: (bool on) => setState(() => _public = on),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Text(
                   _t('fileNameHint'),
                   style: theme.textTheme.bodySmall,

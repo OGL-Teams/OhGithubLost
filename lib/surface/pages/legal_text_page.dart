@@ -103,7 +103,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
               children: <Widget>[
                 Icon(Icons.info_outline,
                     size: 18, color: theme.colorScheme.onErrorContainer),
-                const SizedBox(width: 8),
+                const SizedBox(width: OgLSpace.sm),
                 Expanded(
                   child: Text(
                     OgLI18n.instance.t('onboarding', 'legalStatementOnly'),
@@ -129,7 +129,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
                     Icon(Icons.translate,
                         size: 18,
                         color: theme.colorScheme.onSecondaryContainer),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: OgLSpace.sm),
                     Expanded(
                       child: Text(
                         OgLI18n.instance
@@ -148,7 +148,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
                     Icon(Icons.verified_outlined,
                         size: 18,
                         color: theme.colorScheme.onSecondaryContainer),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: OgLSpace.sm),
                     Expanded(
                       child: Text(
                         OgLI18n.instance.t('onboarding', 'licenseOfficialCopy'),
@@ -168,7 +168,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
             child: Row(
               children: <Widget>[
                 Text(_t('legalLanguages'), style: theme.textTheme.labelLarge),
-                const SizedBox(width: 12),
+                const SizedBox(width: OgLSpace.md),
                 Expanded(
                   child: DropdownButton<String>(
                     isExpanded: true,

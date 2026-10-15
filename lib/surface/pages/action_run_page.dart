@@ -18,6 +18,7 @@ import '../util/accel.dart';
 import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_space.dart';
 import 'action_log_page.dart';
 import 'download_manager_page.dart';
 
@@ -274,8 +275,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
         connections: widget.surface.settings.settings.downloadConnections,
       );
       if (mounted) {
-        ogLShowDownloadQueued(context, widget.surface,
-            _t('artifactAdded', <String, Object?>{'name': name}));
+        OgLDownloadNotice.instance.show(context, widget.surface,
+            message: _t('artifactAdded', <String, Object?>{'name': name}));
       }
     } catch (error) {
       if (mounted) {
@@ -394,7 +395,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
                               _statusIcon(status, conclusion),
                               color: _statusColor(theme, status, conclusion),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: OgLSpace.sm),
                             Expanded(
                               child: Text(
                                 ghStr(run, 'display_title').isEmpty
@@ -405,7 +406,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: OgLSpace.sm),
                         Text(
                           '${ghStr(run, 'name')} · ${ghStr(run, 'event')} · '
                           '${ghStr(run, 'head_branch')} · ${ghShortSha(ghStr(run, 'head_sha'))}',
@@ -418,7 +419,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
                           '${ghDate(run, 'created_at')}',
                           style: theme.textTheme.bodySmall,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: OgLSpace.md),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -451,14 +452,14 @@ class _ActionRunPageState extends State<ActionRunPage> {
                         if (detail.artifacts.isNotEmpty) ...<Widget>[
                           Text(_t('artifacts'),
                               style: theme.textTheme.titleMedium),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: OgLSpace.sm),
                           for (final Map<String, dynamic> artifact
                               in detail.artifacts)
                             _artifactTile(theme, artifact),
                           const Divider(height: 32),
                         ],
                         Text(_t('jobs'), style: theme.textTheme.titleMedium),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: OgLSpace.sm),
                         if (detail.jobs.isEmpty)
                           Padding(
                             padding: EdgeInsets.symmetric(vertical: 16),
@@ -544,7 +545,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
                     },
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                const SliverToBoxAdapter(child: SizedBox(height: OgLSpace.xl)),
               ],
             ),
           );

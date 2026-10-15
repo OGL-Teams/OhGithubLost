@@ -21,6 +21,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/gh_format.dart';
+import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 
 /// 取 `code_editor_page` 分片文案。
@@ -263,10 +264,10 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
               children: <Widget>[
                 Text(_t('baseline', {'sha': _short(result.baseSha)})),
                 Text(_t('remoteLatest', {'sha': _short(result.sha)})),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Text(_t('overwriteWarning')),
                 if (result.remoteContent != null) ...<Widget>[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: OgLSpace.md),
                   Text(_t('remoteLatestContent')),
                   Container(
                     width: double.infinity,
