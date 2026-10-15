@@ -2,7 +2,7 @@
 
 # OhGithubLost
 
-**GitHub 仓库管理客户端**
+**GitHub 仓库管理客户端 · v9.0.0**
 
 Android · Windows · Linux · Web
 
@@ -22,24 +22,31 @@ Android · Windows · Linux · Web
 
 </div>
 
+<br>
+
+> **插入截图**：主界面（首页 / 仓库页 / 代码编辑器 三联图最佳），置于 README 居中位置。
+
 ---
 
-## 功能
+## 关于本项目
 
-| | |
-| --- | --- |
-| **仓库** | 目录树、文件预览、README 渲染；新建 / 编辑 / 删除 / 重命名（含目录递归）；提交与冲突处理 |
-| **协作** | Issues、Pull Requests、Releases、Actions、Gist |
-| **账号** | 多账号自由切换；令牌本地安全存储 |
-| **下载** | 多连接分片 + 断点续传；加速通道**自备**（默认关闭，应用不预置任何代理） |
-| **网络** | 内置 DoH、重试与限流避让；**不做静默降级** —— 失败如实报错 |
-| **动效** | 四档（静默 / 保守 / 标准 / 拉满），降档降开销、不删效果；按档位分级预加载 |
-| **语言** | 6 种（简体中文 / 繁體中文 / English / Deutsch / Français / Русский）；文案零硬编码，CI 强制校验 |
+OhGithubLost（以下简称 OGL）是一款基于 Flutter 构建的 GitHub 客户端，旨在将 GitHub 的日常协作能力——仓库浏览与提交、Issue 与 PR 处理、Release 与 Action 监控、Gist 管理——搬到本地应用窗口之内，使用者不必再为这些操作打开浏览器。项目以「数据可靠性」与「失败如实可见」为工程底线：不静默降级、不预置加速通道、不掩盖版本冲突。
+
+OGL 同时面向使用者与开发者：使用者经由发行产物安装；开发者经由 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) 了解五层结构与依赖门禁。
+
+## 核心特性
+
+- **仓库全功能**：目录树浏览、文件预览与 README 渲染；新建、编辑、删除、重命名（含目录）；提交与冲突处理。
+- **协作面板**：Issues / Pull Requests / Releases / Actions / Gist 一并支持，含 PR 差异、Action 日志与工作流手动触发。
+- **多账号与令牌安全**：自由切换账号；令牌仅存本机系统密钥库，界面与日志中脱敏，退出登录即删除。
+- **下载与草稿**：内置多连接分片下载，支持断点续传；编辑器自动持久化未提交草稿，再次进入同文件自动恢复。
+- **网络韧性**：内置 DoH、自动重试与限流避让；失败如实报错，不静默降级。Release 附件下载可经**用户自备的加速通道**（默认关闭，应用不预置任何代理）。
+- **国际化与动效**：6 种界面语言（简体中文 / 繁體中文 / English / Deutsch / Français / Русский），文案零硬编码由 CI 强制校验；动效分四档（静默 / 保守 / 标准 / 拉满），降档降开销、不删效果。
 
 ## 平台支持
 
-| 平台 | 状态 | 产物 |
-| --- | --- | --- |
+| 平台  | 状态 | 产物 |
+| ---   | --- | --- |
 | Android | 支持 | 4 架构 APK（arm64-v8a / armeabi-v7a / x86_64 / universal）+ AAB |
 | Windows | 支持 | x64 / arm64 |
 | Linux | 支持 | x64 / arm64；deb / rpm / AppImage；**glibc ≥ 2.35** |
@@ -57,6 +64,7 @@ Android · Windows · Linux · Web
 | Android | `OGL-<version>-Android.<abi>.zip` / `.AAB.zip` | 解压后安装 APK |
 | Windows | `OGL-<version>-Windows.<arch>.zip` | 运行解压目录下的 `oghl.exe` |
 | Linux | `OGL-<version>-Linux.<arch>.deb` / `.rpm` / `.AppImage` | `sudo dpkg -i *.deb` 或 `sudo rpm -i *.rpm`；AppImage 直接运行（无需 FUSE） |
+| Web | 在线访问 | <https://oghapp.344977.xyz/> |
 
 `<version>` 形如 `v8.0.0`，`<arch>` 形如 `x64` / `arm64`。
 
@@ -73,7 +81,9 @@ flutter build linux            # Linux（宿主直编，glibc 下限见 CI）
 flutter build web --release --wasm --no-web-resources-cdn   # Web
 ```
 
-## 架构
+## 架构概览
+
+代码分为五层，依赖方向**只能向下**（`surface → domain → base → kernel`，`platform` 仅依赖 `kernel`）。CI 由 `tool/layer_audit.py --fatal` 强制；另有 i18n、动效分级、性能反模式三道门禁。完整说明见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)。
 
 ```
 lib/
@@ -83,38 +93,28 @@ lib/
   surface/   交互层  UI、设置、i18n
 ```
 
-依赖只能向下：`surface → domain → base → kernel`（装配根与类型门面为白名单例外）。
-CI 由 `tool/layer_audit.py --fatal` 强制；另有 i18n、动效分级、性能反模式三道门禁。
+## 用法
 
-## 仓库结构
+初次使用者请阅读 [`docs/USAGE.md`](docs/USAGE.md)：登录流程、首次权限引导、首页 / 搜索 / 仓库页操作、代码编辑器（含冲突处理）、下载管理、通知中心、设置项与故障排除均在其中。
 
-```
-.github/workflows/   CI：质量门、构建矩阵、发布、统计
-assets/              icon（SVG 为唯一事实来源 → 三端派生）、i18n、boot、mods、theme_packs
-docs/                USAGE.md、I18N.md
-lib/                 源码（四层架构，见上）
-changed/             更新日志站点源（同时发布到 GitHub Pages 与 Netlify）
-release_notes/       逐版本发布说明（中英对照）
-test/                测试
-tool/                图标派生、平台规格注入、打包、审计门禁、统计图表
-```
+## 文档索引
 
-## 文档
+- [`docs/USAGE.md`](docs/USAGE.md) —— 使用说明（任务驱动，含故障排除）
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) —— 五层架构与依赖门禁
+- [`docs/NETWORK.md`](docs/NETWORK.md) —— 网络连接总览（出口主机 / 资源取法 / Web 端限制）
+- [`docs/I18N.md`](docs/I18N.md) —— 多语言维护手册
+- [`CHANGELOG.md`](CHANGELOG.md) —— 完整版本历史
+- [`release_notes/`](release_notes/) —— 逐版本发布说明（中英对照）
+- <https://oglb.344977.xyz/> —— 更新日志站点（逐版本中英对照）
 
-| 文档 | 内容 |
-| --- | --- |
-| [`docs/USAGE.md`](docs/USAGE.md) | 使用说明 |
-| [`docs/I18N.md`](docs/I18N.md) | 多语言维护手册 |
-| [`CHANGELOG.md`](CHANGELOG.md) | 完整版本历史 |
-| [`release_notes/`](release_notes/) | 逐版本发布说明 |
-| <https://oglb.344977.xyz/> | 更新日志站点（逐版本中英对照） |
+## 贡献
 
-## 版本与发布
+OGL 不接受随意合入：分层违规、未本地化中文、动效绕档、质量反模式均由 CI 拦截。请先阅读 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) 的「依赖方向的保障机制」与 [`docs/I18N.md`](docs/I18N.md) 的流程，再提交变更。
 
-- 语义化版本 `vX.Y.Z`；跳过的版本在 `CHANGELOG.md` 中标注；
-- 发布说明**中英逐条对照**，包含 新增 / 变更 / 修复 / 已知限制 / 产物；
-- 星标与提交历史见页首图表，数据源为 `stats` 分支的 `history.json`。
+## 许可证
 
-## 许可
+本项目使用 [Apache License 2.0](LICENSE)。第三方依赖声明见 [`NOTICE`](NOTICE) 与应用内「许可」页面。
 
-[Apache-2.0](LICENSE)。第三方依赖许可见应用内「许可」页面与 [`NOTICE`](NOTICE)。
+<br>
+
+<sub>星标与提交历史见页首图表，数据源为 `stats` 分支的 `history.json`。</sub>

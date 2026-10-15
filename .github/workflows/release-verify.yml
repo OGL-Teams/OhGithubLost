@@ -14,7 +14,7 @@
 #     不等于设备实拍；平台差异覆盖 ThemeData 级别。
 # ============================================================================
 
-name: Release核验（手动 · 全平台）
+name: Release Verify
 
 on:
   workflow_dispatch:

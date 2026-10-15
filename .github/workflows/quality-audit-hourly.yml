@@ -1,4 +1,4 @@
-name: Quality Audit (Hourly)
+name: Quality Audit
 
 # 每小时定时质量审计：逐个文件审查 lib/（Agnes 高智能），
 # 结果 TXT 发布到**独立 tag**（与版本 Release 分开）。
