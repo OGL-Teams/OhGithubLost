@@ -128,6 +128,13 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
         // 优先展示可读详情（如「端点必须是 HTTPS」）：code 只是类别。
         _toast('${_t('error')}：${e.detail.isEmpty ? e.code : e.detail}');
       }
+    } on Object catch (e) {
+      // 解析层（jsonDecode / parseModelList）遇 200+非 JSON 响应会抛
+      // FormatException / TypeError —— 不属于 AiException，必须兜住，
+      // 否则是「未捕获异步错误」（onPressed 未 await）。
+      if (mounted) {
+        _toast('${_t('error')}：$e');
+      }
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -164,8 +171,13 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
       }
     } on AiException catch (e) {
       if (mounted) {
-        // 优先展示可读详情（如「端点必须是 HTTPS」）：code 只是类别。
         _toast('${_t('error')}：${e.detail.isEmpty ? e.code : e.detail}');
+      }
+    } on Object catch (e) {
+      // writeKey → SecureDiskVault → flutter_secure_storage 可能抛
+      // PlatformException（Android Keystore 失败等）——不属于 AiException。
+      if (mounted) {
+        _toast('${_t('error')}：$e');
       }
     } finally {
       if (mounted) {
@@ -175,10 +187,18 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
   }
 
   Future<void> _removeKey() async {
-    await widget.surface.domain.ai.clearKey();
-    if (mounted) {
-      setState(() => _hasKey = false);
-      _toast(_t('saved'));
+    try {
+      await widget.surface.domain.ai.clearKey();
+      if (mounted) {
+        setState(() => _hasKey = false);
+        _toast(_t('saved'));
+      }
+    } on Object catch (e) {
+      // clearKey → vault 删除可能抛 PlatformException（旧实现无任何 catch，
+      // 表现为「点了没反应」）。
+      if (mounted) {
+        _toast('${_t('error')}：$e');
+      }
     }
   }
 
@@ -237,7 +257,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
       body: _busy
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(all),
               children: <Widget>[
                 SwitchListTile(
                   title: Text(_t('enabled')),
@@ -246,7 +266,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                 ),
                 const Divider(),
                 Text(_t('provider'), style: theme.textTheme.titleSmall),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Wrap(
                   spacing: 8,
                   children: <Widget>[
@@ -258,7 +278,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 DropdownButtonFormField<AiProviderKind>(
                   initialValue: _kind,
                   decoration: InputDecoration(labelText: _t('protocol')),
@@ -273,7 +293,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                     }
                   },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _url,
                   keyboardType: TextInputType.url,
@@ -289,13 +309,13 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                 // 明文端点：**知情提示**（不阻止使用，但说清风险）。
                 if (_isPlaintext)
                   Padding(
-                    padding: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.only(only),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Icon(Icons.warning_amber_rounded,
                             size: 18, color: theme.colorScheme.error),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: OgLSpace.sm),
                         Expanded(
                           child: Text(
                             _t('plaintextHint'),
@@ -307,7 +327,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                       ],
                     ),
                   ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _key,
                   obscureText: true,
@@ -318,7 +338,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                     hintText: _t('keyHint'),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 Row(
                   children: <Widget>[
                     Expanded(
@@ -339,7 +359,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: OgLSpace.sm),
                     TextButton.icon(
                       onPressed: _saving ? null : _detectModels,
                       icon: const Icon(Icons.refresh),
@@ -347,7 +367,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 if (_hasKey)
                   Align(
                     alignment: Alignment.centerLeft,
@@ -357,9 +377,9 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                       label: Text(_t('removeKey')),
                     ),
                   ),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 Text(_t('privacy'), style: theme.textTheme.bodySmall),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 FilledButton(
                   onPressed: _saving ? null : _save,
                   child: Text(_t('save')),

@@ -38,6 +38,7 @@ import '../theme.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/clipboard_x.dart';
+import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
@@ -123,10 +124,28 @@ class _SettingsPageState extends State<SettingsPage> {
     unawaited(_loadGroups());
   }
 
-  /// 读取持久化的展开状态（读不到 = 全部收起）。
+  /// 读取持久化的展开状态（**未落盘 = 全部展开**）。
+  ///
+  /// 设计取舍：用户进入设置页最常见的是"想看某项设置"——空集合让所有分组
+  /// 收起 = 「什么都要点一下」是反模式。所以：
+  /// - **首次启动**（未持久化）→ 全展开，让用户直接浏览；
+  /// - **用户收起过某组** → 持久化 → 下次按用户偏好；
+  /// - **用户展开过某组** → 也持久化（不写特殊白名单）。
+  ///
+  /// 这与「让用户自己决定是否要持久化」的更复杂方案相比，少 1 个"主动保存"
+  /// 步骤；用户既不主动保存也不主动重置时，进入即看到所有内容，是更直接的体验。
   Future<void> _loadGroups() async {
+    if (!mounted) {
+      return;
+    }
     final String? raw = await widget.surface.readUiPref(_groupsKey);
-    if (raw == null || !mounted) {
+    if (raw == null) {
+      // 未持久化：首次打开全部展开（不留全收起这个反模式）。
+      setState(() {
+        _openGroups
+          ..clear()
+          ..addAll(_groupIds);
+      });
       return;
     }
     final Set<String> open = <String>{
@@ -510,7 +529,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     _logsGroup(theme),
                     // 危险区：与上面所有分组**双重拉开**（留白 + 分隔线 + 告警配色），
                     // 免得"收尾顺手点一下"就把设置全清了。
-                    const SizedBox(height: 8),
+                    const SizedBox(height: OgLSpace.sm),
                     Divider(
                         height: 28, color: theme.colorScheme.outlineVariant),
                     OgLSettingsDangerCard(
@@ -519,7 +538,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       actionSubtitle: _t('restoreDefaults'),
                       onTap: _reset,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: OgLSpace.xl),
                   ]),
                 ),
               ),
@@ -985,11 +1004,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 Text(
                     '${OgLI18n.instance.t('shell', 'storageWhere')}：${info.path}'),
                 if (!info.visible) ...<Widget>[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: OgLSpace.sm),
                   Text(OgLI18n.instance.t('shell', 'storageHintModern')),
                 ],
                 if (saf != null) ...<Widget>[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: OgLSpace.sm),
                   Text(
                     saf,
                     style: Theme.of(dialogContext).textTheme.bodySmall,
@@ -1382,7 +1401,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         _t('accelPrivateWarnBody'),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: OgLSpace.md),
                       for (final String key in <String>[
                         'accelPrivateWarnPoint1',
                         'accelPrivateWarnPoint2',
@@ -1475,7 +1494,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   // 勾选框紧贴声明文字（阅读顺序：先读文，再勾选）——
                   // 原来塞在 `actions` 里，屏幕阅读器与视觉顺序都是倒的。
                   if (requireConsent) ...<Widget>[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: OgLSpace.md),
                     CheckboxListTile(
                       value: agreed,
                       onChanged: (bool? v) =>
@@ -1546,7 +1565,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: OgLSpace.md),
             TextField(
               controller: url,
               decoration: InputDecoration(
@@ -2004,7 +2023,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: OgLSpace.sm),
             const Icon(Icons.chevron_right),
           ],
         ),

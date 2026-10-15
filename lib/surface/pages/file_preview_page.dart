@@ -543,13 +543,10 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
       );
       if (mounted) {
         setState(() => _queued = true);
-        ogLShowDownloadQueued(
-          context,
-          widget.surface,
-          _t('addedToDownload', <String, Object?>{
-            'name': ghPathName(widget.path),
-          }),
-        );
+        OgLDownloadNotice.instance.show(context, widget.surface,
+            message: _t('addedToDownload', <String, Object?>{
+              'name': ghPathName(widget.path),
+            }));
       }
     } catch (error) {
       if (mounted) {

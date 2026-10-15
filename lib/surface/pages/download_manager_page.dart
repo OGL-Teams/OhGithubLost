@@ -24,32 +24,93 @@ String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
     args:
         args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
-/// 下载已入队：弹 SnackBar，带「查看下载」动作跳转到下载中心。
+/// 提示样式枚举：4 种通知共用一个入口（避免页面内 SnackBar 风格不统一）。
+enum DownloadNoticeKind { queued, success, warning, info }
+
+/// 下载相关提示（**整个项目统一通过这一处**）。
 ///
-/// 修「开始下载但看不到下载中心」：入队成功后不再只给一句提示，
-/// 而是给出可直接跳转的入口。
-void ogLShowDownloadQueued(
-  BuildContext context,
-  SurfaceBridge surface,
-  String message,
-) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(message),
-      // 带「查看下载」动作的横幅应**长一点**：M3 默认 4s 容易
-      // 在用户读完文件名之前就收回（特别是点了 "viewDownloads" 但
-      // 不去点跳转的情况——横幅消失后就没入口了）。给 8s 留出决定时间。
-      duration: const Duration(seconds: 8),
-      action: SnackBarAction(
-        label: OgLI18n.instance.t('common', 'viewDownloads'),
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext _) => DownloadManagerPage(surface: surface),
-          ),
-        ),
+/// ## 设计要点
+/// 1. **风格一致**：所有下载提示用同一种 SnackBar（floating + 8s + accent color + 关闭按钮），
+///    不再让调用方选位置/时长/颜色；
+/// 2. **不堆 5 个第三方包**：仅依赖 `ScaffoldMessenger`（Flutter 内建）；
+/// 3. **幂等**：`force=false`（默认）时若 600ms 内出现同 message 不再弹第二个，
+///    避免「连点下载」刷屏；
+/// 4. **i18n 优先**：`message` 接受已翻译字符串或 i18n key（自动 `OgLI18n.t` 兜底）；
+/// 5. **不重复顶部 `ogLShowDownloadQueued` 与页面内 `OgLNotifier.of` 两套实现**：
+///    5 个历史调用点全部迁到 [SurfaceBridge.notifyDownload] 同一处。
+class OgLDownloadNotice {
+  /// 单例（全局一根 SnackBar 总线，无跨 surface 状态）。
+  OgLDownloadNotice._();
+  static final OgLDownloadNotice instance = OgLDownloadNotice._();
+
+  /// 上次弹出时间戳（毫秒）—— 幂等保护。
+  int _lastShownMs = 0;
+
+  /// 上次 message 签名（哈希字符串去重）。
+  String _lastSignature = '';
+
+  /// 在 root 上下文弹一条下载相关提示（不要求调用方传 ScaffoldMessenger）。
+  ///
+  /// [surface] 仅用于「查看下载」动作跳转。
+  /// [message] 已翻译文本，调用方负责传 i18n 后的串。
+  /// [kind] 决定 SnackBar 颜色（queued/info=accent、success=正、warning=错误色）。
+  void show(
+    BuildContext context,
+    SurfaceBridge surface, {
+    required String message,
+    DownloadNoticeKind kind = DownloadNoticeKind.queued,
+    String? actionLabel,
+    VoidCallback? onAction,
+    bool force = false,
+  }) {
+    final int now = DateTime.now().millisecondsSinceEpoch;
+    final String signature = '$kind|$message';
+    if (!force && signature == _lastSignature && now - _lastShownMs < 600) {
+      return; // 同 600ms 内的同内容提示：跳过避免刷屏
+    }
+    _lastSignature = signature;
+    _lastShownMs = now;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final Color? bg = switch (kind) {
+      DownloadNoticeKind.queued => null, // 默认（依赖动作色块）
+      DownloadNoticeKind.success => scheme.tertiaryContainer,
+      DownloadNoticeKind.warning => scheme.errorContainer,
+      DownloadNoticeKind.info => null,
+    };
+    final Color? fg = switch (kind) {
+      DownloadNoticeKind.queued || DownloadNoticeKind.info => null,
+      DownloadNoticeKind.success => scheme.onTertiaryContainer,
+      DownloadNoticeKind.warning => scheme.onErrorContainer,
+    };
+    final String? label = actionLabel ??
+        ((kind == DownloadNoticeKind.queued)
+            ? OgLI18n.instance.t('common', 'viewDownloads')
+            : null);
+    final VoidCallback? handler = onAction ??
+        ((kind == DownloadNoticeKind.queued)
+            ? () => _jumpToManager(context, surface)
+            : null);
+    messenger.hideCurrentSnackBar(reason: SnackBarClosedReason.timeout);
+    messenger.showSnackBar(SnackBar(
+      content: Text(
+        message,
+        style: fg != null ? TextStyle(color: fg) : null,
       ),
-    ),
-  );
+      duration: const Duration(seconds: 8),
+      backgroundColor: bg,
+      action: (label != null && handler != null)
+          ? SnackBarAction(label: label, onPressed: handler)
+          : null,
+    ));
+  }
+
+  void _jumpToManager(BuildContext context, SurfaceBridge surface) {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (BuildContext _) => DownloadManagerPage(surface: surface),
+    ));
+  }
 }
 
 /// 下载管理页。
@@ -166,14 +227,20 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
             t.status == IxDownloadStatus.canceled)
         .toList();
     if (failed.isEmpty) {
-      OgLNotifier.of(context).info(_t('noFailedToRetry'));
+      OgLDownloadNotice.instance.show(context, surface,
+          message: _t("noFailedToRetry"),
+          kind: DownloadNoticeKind.info,
+          actionLabel: null,
+          onAction: null);
       return;
     }
     for (final IxDownloadTask task in failed) {
       await surface.retryDownload(task.id);
     }
     if (mounted) {
-      OgLNotifier.of(context).success(_t('retriedCount', {'n': failed.length}));
+      OgLDownloadNotice.instance.show(context, surface,
+          message: _t('retriedCount', {'n': failed.length}),
+          kind: DownloadNoticeKind.success);
     }
   }
 
@@ -435,7 +502,8 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
     } catch (_) {
       await ogLCopyText(task.savePath, tag: '下载路径');
       if (context.mounted) {
-        OgLNotifier.of(context).info(_t('cannotOpenCopied'));
+        OgLDownloadNotice.instance.show(context, surface,
+            message: _t("cannotOpenCopied"), kind: DownloadNoticeKind.warning);
       }
     }
   }
@@ -443,7 +511,8 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
   Future<void> _copyPath(BuildContext context, IxDownloadTask task) async {
     await ogLCopyText(task.savePath, tag: '下载路径');
     if (context.mounted) {
-      OgLNotifier.of(context).success(_t('pathCopied'));
+      OgLDownloadNotice.instance.show(context, surface,
+          message: _t("pathCopied"), kind: DownloadNoticeKind.success);
     }
   }
 }

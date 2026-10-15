@@ -8,11 +8,13 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:ohgithublost/domain/ai/ai_models.dart';
 
 import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/og_l_space.dart';
 import 'ai_settings_page.dart';
 
 /// 取 `ai` 分片文案。
@@ -57,6 +59,7 @@ class _AiChatPageState extends State<AiChatPage> {
 
   @override
   void dispose() {
+    _streamSub?.cancel();
     _input.dispose();
     _scroll.dispose();
     super.dispose();
@@ -162,6 +165,9 @@ class _AiChatPageState extends State<AiChatPage> {
     await _run(_conversation.messages, await _accountId());
   }
 
+  /// 当前订阅的流（用于停止 / dispose 取消）。
+  StreamSubscription<String>? _streamSub;
+
   Future<void> _run(List<AiMessage> messages, String accountId) async {
     setState(() {
       _sending = true;
@@ -170,44 +176,99 @@ class _AiChatPageState extends State<AiChatPage> {
     OgLAppLog.instance
         .add('AI', messages.last.content, severity: OgLNoticeSeverity.info);
 
+    // 实时流式累积 buffer（与 `_conversation.messages` 的最后一条同步）。
+    final StringBuffer buf = StringBuffer();
+    AiMessage? lastUser;
     try {
-      final List<AiMessage> transcript = await _ai.complete(
+      // 先把"用户消息"立刻落进会话，再让服务流式补齐助手回复。
+      // ★ 改用 completeStream：每个 SSE 文本帧就 setState 一次，
+      //   实现打字机效果；中途可被 `_stop` 取消。
+      final Stream<String> stream = _ai.completeStream(
         messages,
-        accountId: accountId,
+        maxTokens: 4096,
       );
-      _conversation = AiConversation(
-        id: _conversation.id,
-        accountId: accountId,
-        repo: widget.repo,
-        title: _conversation.title,
-        messages: transcript,
-        createdAt: _conversation.createdAt,
-        updatedAt: DateTime.now(),
-      );
-      await _ai.saveConversation(_conversation);
-      OgLAppLog.instance
-          .add('AI', _t('operationFinished'), severity: OgLNoticeSeverity.info);
-    } on AiException catch (e) {
-      _lastError = _describeError(e);
-      OgLAppLog.instance.add(
-        'AI',
-        '${_t('error')}：${e.code}',
-        severity: OgLNoticeSeverity.warning,
+      _streamSub = stream.listen(
+        (chunk) {
+          buf.write(chunk);
+          if (!mounted) return;
+          setState(() {
+            // 把累积的 buffer 写到对话的最后一条助手消息
+            // （页面初次建一条空消息占位；这里持续更新它）。
+            final List<AiMessage> updated = List<AiMessage>.from(
+              _conversation.messages,
+            );
+            if (updated.isNotEmpty && updated.last.role == AiRole.assistant) {
+              updated[updated.length - 1] = AiMessage(
+                role: AiRole.assistant,
+                content: buf.toString(),
+              );
+            } else {
+              updated.add(AiMessage(
+                role: AiRole.assistant,
+                content: buf.toString(),
+              ));
+            }
+            _conversation = AiConversation(
+              id: _conversation.id,
+              accountId: accountId,
+              repo: widget.repo,
+              title: _conversation.title,
+              messages: updated,
+              createdAt: _conversation.createdAt,
+              updatedAt: DateTime.now(),
+            );
+          });
+        },
+        onError: (Object error, StackTrace st) {
+          // 流式阶段抛错：把已缓冲部分按"中断"保存，不丢弃。
+          if (!mounted) return;
+          setState(() {
+            _sending = false;
+            _streamSub = null;
+            _lastError =
+                error is AiException ? _describeError(error) : _t('error');
+          });
+          OgLAppLog.instance.add(
+            'AI',
+            '流式中断：$error',
+            severity: OgLNoticeSeverity.warning,
+          );
+        },
+        onDone: () async {
+          // 流完成 → 落盘；后续提示。
+          if (!mounted) return;
+          try {
+            await _ai.saveConversation(_conversation);
+          } catch (_) {/* 落盘失败不影响对话已显示在内存中 */}
+          setState(() {
+            _sending = false;
+            _streamSub = null;
+          });
+          OgLAppLog.instance.add(
+            'AI',
+            _t('operationFinished'),
+            severity: OgLNoticeSeverity.info,
+          );
+        },
+        cancelOnError: true,
       );
     } on Object catch (e) {
-      _lastError = '$e';
-      OgLAppLog.instance
-          .add('AI', '${_t('error')}：$e', severity: OgLNoticeSeverity.warning);
-    } finally {
-      if (mounted) {
-        setState(() => _sending = false);
-      }
-      final List<AiConversation> convos = await _ai.conversations(accountId);
-      if (mounted) {
-        setState(() => _history = convos);
-      }
+      // 仅捕获「订阅前抛出的同步错误」（如设置缺失、密钥缺失抛 AiException），
+      // 流式阶段抛错已在 onError 兜底。
+      if (!mounted) return;
+      setState(() {
+        _sending = false;
+        _lastError = '$e';
+      });
+      OgLAppLog.instance.add(
+        'AI',
+        '${_t('error')}：$e',
+        severity: OgLNoticeSeverity.warning,
+      );
     }
   }
+
+  /// 主动停止流式输出（用户点「停止」）。
 
   String _describeError(AiException e) {
     switch (e.code) {
@@ -231,8 +292,9 @@ class _AiChatPageState extends State<AiChatPage> {
       return Align(
         alignment: Alignment.centerLeft,
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 2),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          margin: const EdgeInsets.symmetric(vertical: OgLSpace.xs),
+          padding: const EdgeInsets.symmetric(
+              horizontal: OgLSpace.md, vertical: OgLSpace.sm),
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
@@ -254,8 +316,9 @@ class _AiChatPageState extends State<AiChatPage> {
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        margin: const EdgeInsets.symmetric(vertical: OgLSpace.xs),
+        padding: const EdgeInsets.symmetric(
+            horizontal: OgLSpace.md, vertical: OgLSpace.sm),
         constraints:
             BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.78),
         decoration: BoxDecoration(
@@ -305,7 +368,8 @@ class _AiChatPageState extends State<AiChatPage> {
         children: <Widget>[
           if (widget.repo != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.lg, OgLSpace.sm, OgLSpace.lg, 0),
               child: Row(
                 children: <Widget>[
                   const Icon(Icons.folder_shared_outlined, size: 16),
@@ -321,7 +385,7 @@ class _AiChatPageState extends State<AiChatPage> {
                     ? Center(child: Text(_t('welcome')))
                     : ListView.builder(
                         controller: _scroll,
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(OgLSpace.lg),
                         itemCount: _conversation.messages.length,
                         itemBuilder: (BuildContext _, int i) =>
                             _bubble(_conversation.messages[i]),
@@ -329,7 +393,8 @@ class _AiChatPageState extends State<AiChatPage> {
           ),
           if (_lastError != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.lg, OgLSpace.xs, OgLSpace.lg, OgLSpace.xs),
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -345,7 +410,8 @@ class _AiChatPageState extends State<AiChatPage> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.md, OgLSpace.xs, OgLSpace.md, OgLSpace.sm),
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -358,22 +424,23 @@ class _AiChatPageState extends State<AiChatPage> {
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24)),
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
+                            horizontal: OgLSpace.md, vertical: OgLSpace.sm),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    tooltip: _t('send'),
-                    icon: _sending
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.arrow_upward),
-                    onPressed: _sending ? null : _send,
-                  ),
+                  const SizedBox(width: OgLSpace.sm),
+                  // 发送中 → 变成「停止」按钮（中途可打断，避免长回复浪费 token）
+                  _sending
+                      ? IconButton.filled(
+                          tooltip: _t('stop'),
+                          icon: const Icon(Icons.stop_circle_outlined),
+                          onPressed: _stop,
+                        )
+                      : IconButton.filled(
+                          tooltip: _t('send'),
+                          icon: const Icon(Icons.arrow_upward),
+                          onPressed: _send,
+                        ),
                 ],
               ),
             ),

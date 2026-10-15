@@ -274,8 +274,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
         connections: widget.surface.settings.settings.downloadConnections,
       );
       if (mounted) {
-        ogLShowDownloadQueued(context, widget.surface,
-            _t('artifactAdded', <String, Object?>{'name': name}));
+        OgLDownloadNotice.instance.show(context, widget.surface,
+            message: _t('artifactAdded', <String, Object?>{'name': name}));
       }
     } catch (error) {
       if (mounted) {
