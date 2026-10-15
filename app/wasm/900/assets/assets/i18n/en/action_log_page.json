@@ -1,0 +1,8 @@
+{
+  "linesCount": "{count} lines",
+  "noLogs": "No logs (job may be incomplete, or Token lacks Actions permissions)",
+  "noMatchingJob": "No matching job found",
+  "reload": "Refresh",
+  "searchJobHint": "Search job name",
+  "title": "Run Logs"
+}

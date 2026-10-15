@@ -1,0 +1,16 @@
+{
+  "codeResults": "「{q}」代码结果：{count} 条",
+  "codeSearch": "代码搜索",
+  "noRepoForResult": "该结果没有可打开的仓库（可能索引未就绪）",
+  "noResults": "「{query}」没有匹配结果",
+  "openFileHint": "点开直达该文件",
+  "private": "私有",
+  "queryHint": "关键字（支持 repo:… language:… 等限定符）",
+  "repoResults": "「{q}」仓库结果：{count} 个",
+  "repoSearch": "仓库搜索",
+  "search": "搜索",
+  "starsCount": "{count} 星标",
+  "startHint": "输入关键字开始搜索",
+  "tabCode": "代码",
+  "tabRepos": "仓库"
+}
