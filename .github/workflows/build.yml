@@ -14,7 +14,7 @@
 #      - beta / alpha      → Pre-release（tag v{版本名}-{通道}）
 #    版本名 / 版本号会灌进 Android 产物（versionName / versionCode）。
 # ============================================================================
-name: build
+name: Build
 
 on:
   push:

@@ -2,16 +2,16 @@
 
 # OhGithubLost
 
-**GitHub 仓库管理客户端** · Web 版
+**GitHub 仓库管理客户端 · v9.0.0**
+
+Android · Windows · Linux · Web
 
 浏览与编辑仓库、处理 Issues / Pull Requests / Releases / Actions、管理 Gist —— 不必打开浏览器。
 
 [![Release](https://img.shields.io/github/v/release/OGL-Teams/OhGithubLost?label=release&color=blue)](https://github.com/OGL-Teams/OhGithubLost/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Web-informational)](#平台支持)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Windows%20%7C%20Linux%20%7C%20Web-informational)](#平台支持)
 [![i18n](https://img.shields.io/badge/i18n-6%20languages-informational)](docs/I18N.md)
-
-**在线使用：<https://oghapp.344977.xyz/>**
 
 <br>
 
@@ -22,102 +22,99 @@
 
 </div>
 
+<br>
+
+> **插入截图**：主界面（首页 / 仓库页 / 代码编辑器 三联图最佳），置于 README 居中位置。
+
 ---
 
-> **分支说明** —— 本仓库有两条独立维护的分支：
->
-> | 分支 | 内容 |
-> | --- | --- |
-> | `main` | 原生版（Android / Windows / Linux），产物走 GitHub Releases |
-> | `web`（当前） | 浏览器版，产物构建后提交到 `app/` 目录并部署到站点 |
->
-> 两条分支共享同一套 `lib/` 四层架构与 i18n 资源，平台接缝各自实现。
+## 关于本项目
 
-## 功能
+OhGithubLost（以下简称 OGL）是一款基于 Flutter 构建的 GitHub 客户端，旨在将 GitHub 的日常协作能力——仓库浏览与提交、Issue 与 PR 处理、Release 与 Action 监控、Gist 管理——搬到本地应用窗口之内，使用者不必再为这些操作打开浏览器。项目以「数据可靠性」与「失败如实可见」为工程底线：不静默降级、不预置加速通道、不掩盖版本冲突。
 
-| | |
-| --- | --- |
-| **仓库** | 目录树、文件预览、README 渲染；新建 / 编辑 / 删除 / 重命名（含目录递归）；提交与冲突处理 |
-| **协作** | Issues、Pull Requests、Releases、Actions、Gist |
-| **账号** | 多账号自由切换；令牌存于浏览器本地存储 |
-| **下载** | 交浏览器接管；多连接分片与断点续传仅在原生分支可用 |
-| **网络** | DoH 查询（`navigator` 允许时）；**不做静默降级** —— 失败如实报错 |
-| **动效** | 四档（静默 / 保守 / 标准 / 拉满）；按档位分级预加载 |
-| **语言** | 6 种（简体中文 / 繁體中文 / English / Deutsch / Français / Русский）；文案零硬编码，CI 强制校验 |
+OGL 同时面向使用者与开发者：使用者经由发行产物安装；开发者经由 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) 了解五层结构与依赖门禁。
+
+## 核心特性
+
+- **仓库全功能**：目录树浏览、文件预览与 README 渲染；新建、编辑、删除、重命名（含目录）；提交与冲突处理。
+- **协作面板**：Issues / Pull Requests / Releases / Actions / Gist 一并支持，含 PR 差异、Action 日志与工作流手动触发。
+- **多账号与令牌安全**：自由切换账号；令牌仅存本机系统密钥库，界面与日志中脱敏，退出登录即删除。
+- **下载与草稿**：内置多连接分片下载，支持断点续传；编辑器自动持久化未提交草稿，再次进入同文件自动恢复。
+- **网络韧性**：内置 DoH、自动重试与限流避让；失败如实报错，不静默降级。Release 附件下载可经**用户自备的加速通道**（默认关闭，应用不预置任何代理）。
+- **国际化与动效**：6 种界面语言（简体中文 / 繁體中文 / English / Deutsch / Français / Русский），文案零硬编码由 CI 强制校验；动效分四档（静默 / 保守 / 标准 / 拉满），降档降开销、不删效果。
 
 ## 平台支持
 
-| 平台 | 状态 | 说明 |
+| 平台  | 状态 | 产物 |
+| ---   | --- | --- |
+| Android | 支持 | 4 架构 APK（arm64-v8a / armeabi-v7a / x86_64 / universal）+ AAB |
+| Windows | 支持 | x64 / arm64 |
+| Linux | 支持 | x64 / arm64；deb / rpm / AppImage；**glibc ≥ 2.35** |
+| Web | 支持 | <https://oghapp.344977.xyz/>（dart2wasm 主载，dart2js 兜底） |
+| macOS / iOS | 弃用 | 最后支持版本 v5.3.0 |
+
+不支持：桌面 32 位、musl-libc、Windows 7 / 8.1。
+
+## 安装
+
+从 [**Releases**](https://github.com/OGL-Teams/OhGithubLost/releases) 下载。每个产物同时提供 `.zip` 与 `.7z`（极限压缩），任选其一。
+
+| 平台 | 文件 | 安装 |
 | --- | --- | --- |
-| Web | 支持 | Chrome / Edge / Firefox 89+，Safari 16.4+（dart2wasm 主载，dart2js 兜底） |
-| Android / Windows / Linux | 见 [`main` 分支](https://github.com/OGL-Teams/OhGithubLost/tree/main) | 本分支不构建原生产物 |
-| macOS / iOS | 弃用 | 最后支持版本 v5.3.0（原生分支） |
+| Android | `OGL-<version>-Android.<abi>.zip` / `.AAB.zip` | 解压后安装 APK |
+| Windows | `OGL-<version>-Windows.<arch>.zip` | 运行解压目录下的 `oghl.exe` |
+| Linux | `OGL-<version>-Linux.<arch>.deb` / `.rpm` / `.AppImage` | `sudo dpkg -i *.deb` 或 `sudo rpm -i *.rpm`；AppImage 直接运行（无需 FUSE） |
+| Web | 在线访问 | <https://oghapp.344977.xyz/> |
 
-浏览器基线取 **WebAssembly GC** 支持：更老的浏览器自动走 dart2js 兜底产物。
+`<version>` 形如 `v8.0.0`，`<arch>` 形如 `x64` / `arm64`。
 
-## 构建
+## 从源码构建
 
-需要 Flutter **3.47.5**（Dart 3.13）。
+需要 Flutter **3.47.5**（Dart 3.13）及目标平台工具链。
 
 ```bash
 flutter pub get
-flutter run --debug                                     # 开发调试
-flutter build web --release --wasm --no-web-resources-cdn   # 正式（主载）
-flutter build web --release --no-web-resources-cdn          # 正式（兜底）
+flutter run                    # 开发调试
+flutter build apk              # Android
+flutter build windows          # Windows
+flutter build linux            # Linux（宿主直编，glibc 下限见 CI）
+flutter build web --release --wasm --no-web-resources-cdn   # Web
 ```
 
-- `--wasm` 产出 `main.dart.wasm`（体积更小、启动更快）；
-- `--no-web-resources-cdn` 让 CanvasKit 打进产物、从**同源**加载
-  （默认会去 `www.gstatic.com` 拉，部分网络不可达）；
-- 产物按版本发布到 `app/wasm/<版本数字>/` 与 `app/js/<版本数字>/`，
-  入口页 `app/index.html` 按 WebAssembly 能力嗅探分流。
+## 架构概览
 
-发布由 `.github/workflows/web.yml` 完成：双构建 → 校验 → 双桶发布 → 预热 CDN → 提交 `app/`。
-
-## 架构
+代码分为五层，依赖方向**只能向下**（`surface → domain → base → kernel`，`platform` 仅依赖 `kernel`）。CI 由 `tool/layer_audit.py --fatal` 强制；另有 i18n、动效分级、性能反模式三道门禁。完整说明见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)。
 
 ```
 lib/
   kernel/    启动层  引导清单、Ed25519 签名、信任根
-  base/      硬件层  网络（DoH / 重试 / 限流）、磁盘（localStorage / IndexedDB）
+  base/      硬件层  网络（DoH / 重试 / 限流）、磁盘（原子写 / 缓存）
   domain/    逻辑层  GitHub API、本地深层信息
   surface/   交互层  UI、设置、i18n
 ```
 
-依赖只能向下：`surface → domain → base → kernel`（装配根与类型门面为白名单例外）。
-CI 由 `tool/layer_audit.py --fatal` 强制；另有 i18n、动效分级、性能反模式三道门禁。
+## 用法
 
-## 仓库结构
+初次使用者请阅读 [`docs/USAGE.md`](docs/USAGE.md)：登录流程、首次权限引导、首页 / 搜索 / 仓库页操作、代码编辑器（含冲突处理）、下载管理、通知中心、设置项与故障排除均在其中。
 
-```
-.github/workflows/   CI：质量门、Web 构建与发布、统计
-app/                 已发布的 Web 产物（按版本目录并存，入口页自动分流）
-assets/              icon、i18n（6 语言）、boot、theme_packs
-docs/                USAGE.md、I18N.md
-lib/                 源码（四层架构，见上）
-changed/             更新日志站点源
-release_notes/       逐版本发布说明
-test/                测试
-tool/                平台规格注入、审计门禁、Web 发布与统计图表
-web/                 PWA 脚手架（入口模板、清单、图标）
-```
+## 文档索引
 
-## 文档
+- [`docs/USAGE.md`](docs/USAGE.md) —— 使用说明（任务驱动，含故障排除）
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) —— 五层架构与依赖门禁
+- [`docs/NETWORK.md`](docs/NETWORK.md) —— 网络连接总览（出口主机 / 资源取法 / Web 端限制）
+- [`docs/I18N.md`](docs/I18N.md) —— 多语言维护手册
+- [`CHANGELOG.md`](CHANGELOG.md) —— 完整版本历史
+- [`release_notes/`](release_notes/) —— 逐版本发布说明（中英对照）
+- <https://oglb.344977.xyz/> —— 更新日志站点（逐版本中英对照）
 
-| 文档 | 内容 |
-| --- | --- |
-| [`docs/USAGE.md`](docs/USAGE.md) | 使用说明 |
-| [`docs/I18N.md`](docs/I18N.md) | 多语言维护手册 |
-| [`CHANGELOG.md`](CHANGELOG.md) | 完整版本历史 |
-| [`release_notes/`](release_notes/) | 逐版本发布说明 |
-| <https://oglb.344977.xyz/> | 更新日志站点（逐版本中英对照） |
+## 贡献
 
-## 版本与发布
+OGL 不接受随意合入：分层违规、未本地化中文、动效绕档、质量反模式均由 CI 拦截。请先阅读 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) 的「依赖方向的保障机制」与 [`docs/I18N.md`](docs/I18N.md) 的流程，再提交变更。
 
-- 语义化版本 `vX.Y.Z`；跳过的版本在 `CHANGELOG.md` 中标注；
-- 发布说明**中英逐条对照**，包含 新增 / 变更 / 修复 / 已知限制 / 产物；
-- 版本目录一经发布即 `immutable` 缓存，优化必须走新版本号。
+## 许可证
 
-## 许可
+本项目使用 [Apache License 2.0](LICENSE)。第三方依赖声明见 [`NOTICE`](NOTICE) 与应用内「许可」页面。
 
-[Apache-2.0](LICENSE)。第三方依赖许可见应用内「许可」页面与 [`NOTICE`](NOTICE)。
+<br>
+
+<sub>星标与提交历史见页首图表，数据源为 `stats` 分支的 `history.json`。</sub>

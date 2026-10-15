@@ -1,6 +1,6 @@
 # 字体 CDN 加速（fonts.md）
 
-## 结论（Decision: 不需要 CDN 加速）
+## 结论（Decision：无需 CDN 加速）
 
 截至 **v8.2.0**，本项目 **没有自定义字体文件**：
 
@@ -13,9 +13,9 @@
 
 ---
 
-## 何时需要打开此方案
+## 何时需要启用此方案
 
-当出现以下任一情况，且仅当之一：
+当出现以下任一情况时（且仅当出现时）：
 
 1. AI 聊天 / 代码显示 / 通知正文需要在 Web 端有更可读的等宽字体（如 JetBrains Mono、
    Fira Code），且当前 Web 端的 `monospace` 映射影响观感。
@@ -23,7 +23,7 @@
 
 ---
 
-## 届时推荐做法（保留备查）
+## 启用时的推荐做法（保留备查）
 
 依赖：
 ```yaml
@@ -44,15 +44,15 @@ Web 端的 google_fonts 默认通过 `fonts.googleapis.com` 拉取；在中国�
 
 | 镜像 | 域名 | 备注 |
 | --- | --- | --- |
-| jsDelivr | `cdn.jsdelivr.net/gh/google/fonts@main/ofl/notosanssc/NotoSansSC[wght].ttf` | 同步 google/fonts 仓库，自动跟新版本 |
+| jsDelivr | `cdn.jsdelivr.net/gh/google/fonts@main/ofl/notosanssc/NotoSansSC[wght].ttf` | 同步 google/fonts 仓库，自动跟进新版本 |
 | 字节跳动 | `fonts.googleapis.cn` | 官方国内镜像，仅替换主域 |
 
-切换：在 `MaterialApp` 之上挂一个 `Theme` 自定义，**不**进入 google_fonts 的 `request` 钩子。
+切换方式：在 `MaterialApp` 之上放置一个自定义 `Theme`，**不**进入 google_fonts 的 `request` 钩子。
 也可在 `web/index.html` 里以 `<link rel="stylesheet" href="https://cdn.jsdelivr.net/...">` 一次性预取。
 
 ---
 
-## 不阻塞本任务
+## 对当前版本无影响
 
-- 本轮（8.2.0）**无任何字体改动**。
+- 本版本（8.2.0）**无任何字体改动**。
 - 上述方案作为「未来工作」保留，不在 8.2.0 范围内执行。
