@@ -257,7 +257,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
       body: _busy
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(all),
               children: <Widget>[
                 SwitchListTile(
                   title: Text(_t('enabled')),
@@ -309,7 +309,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                 // 明文端点：**知情提示**（不阻止使用，但说清风险）。
                 if (_isPlaintext)
                   Padding(
-                    padding: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.only(only),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[

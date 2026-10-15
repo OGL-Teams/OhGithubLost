@@ -138,6 +138,12 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
     final ThemeData theme = Theme.of(context);
     final SurfaceBridge surface = widget.surface;
     return Scaffold(
+      // 单个任务卡片 build 抛错时隔离红屏：替换为兜底卡片而非整页红框。
+      body: ErrorWidget.builder =
+          (FlutterErrorDetails details) => _TaskCardError(
+                message: details.exceptionAsString(),
+                onRetry: () => setState(() {}),
+              ),
       appBar: AppBar(
         title: Text(_t('title')),
         actions: <Widget>[
@@ -515,5 +521,43 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       OgLDownloadNotice.instance.show(context, surface,
           message: _t("pathCopied"), kind: DownloadNoticeKind.success);
     }
+  }
+}
+
+/// 兜底卡片：**当任务卡片 build 抛错时**显示，不让单条坏任务染红整页。
+class _TaskCardError extends StatelessWidget {
+  const _TaskCardError({required this.message, required this.onRetry});
+  final String message;
+  final VoidCallback onRetry;
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(OgLSpace.md),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.error_outline,
+                color: theme.colorScheme.onErrorContainer),
+            const SizedBox(width: OgLSpace.sm),
+            Expanded(
+              child: Text(
+                message,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onErrorContainer,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            TextButton(
+              onPressed: onRetry,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
