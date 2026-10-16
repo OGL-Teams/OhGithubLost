@@ -237,7 +237,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
         .toList();
     if (failed.isEmpty) {
       OgLDownloadNotice.instance.show(context, surface,
-          message: _t("noFailedToRetry"),
+          message: _t('noFailedToRetry'),
           kind: DownloadNoticeKind.info,
           actionLabel: null,
           onAction: null);
@@ -521,7 +521,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       await ogLCopyText(task.savePath, tag: '下载路径');
       if (context.mounted) {
         OgLDownloadNotice.instance.show(context, widget.surface,
-            message: _t("cannotOpenCopied"), kind: DownloadNoticeKind.warning);
+            message: _t('cannotOpenCopied'), kind: DownloadNoticeKind.warning);
       }
     }
   }
@@ -530,7 +530,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
     await ogLCopyText(task.savePath, tag: '下载路径');
     if (context.mounted) {
       OgLDownloadNotice.instance.show(context, widget.surface,
-          message: _t("pathCopied"), kind: DownloadNoticeKind.success);
+          message: _t('pathCopied'), kind: DownloadNoticeKind.success);
     }
   }
 }
