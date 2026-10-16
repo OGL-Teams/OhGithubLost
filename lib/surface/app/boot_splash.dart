@@ -26,8 +26,7 @@ class OgLBootSplash extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Brightness brightness =
-        MediaQuery.platformBrightnessOf(context);
+    final Brightness brightness = MediaQuery.platformBrightnessOf(context);
     final bool dark = brightness == Brightness.dark;
     final Color bg = dark ? const Color(0xFF101418) : const Color(0xFFFBFCFE);
     final Color fg = dark ? const Color(0xFFCEDACD) : const Color(0xFF3A424C);
