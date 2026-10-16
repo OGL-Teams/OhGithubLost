@@ -51,6 +51,8 @@ const String kOgLAppVersion = '9.1.0';
 const String kOgLBootManifestJson = String.fromEnvironment('OGL_BOOT_MANIFEST');
 
 void main() async {
+  // ★ 启动耗时埋点：进程开始 → 首帧渲染完成（对比改动用）。
+  final Stopwatch bootWatch = Stopwatch()..start();
   WidgetsFlutterBinding.ensureInitialized();
   // ★ 冷启动首帧：先渲染零依赖占位屏，再做重活（日志落盘 / 平台存储 /
   //   内核引导）。真正的 [OgLApp] 在初始化完成后通过第二次 `runApp` 顶替它。
@@ -228,6 +230,11 @@ void main() async {
     //   只复核、不弹窗（重新请求交给引导页 / 设置页）；缺什么、影响什么、
     //   怎么修 → 诊断日志 + 通知中心（**带事件码** OGL-PERM-00x）。
     //   加超时兜底：权限查询走平台通道，绝不允许它拖住启动。
+    OgLAppLog.instance.add(
+      '启动',
+      '启动总耗时=${bootWatch.elapsedMilliseconds}ms（进程 → 真实界面就绪）',
+      severity: OgLNoticeSeverity.info,
+    );
     OgLAppLog.instance.result('启动', '进入界面（runApp）', '启动报告已就绪');
     runApp(OgLApp(surface: surfaceModule.bridge, report: report));
     // ★ Web 专属接线（安装到桌面 / 加速服务首启说明）。非 Web 构建里
