@@ -101,6 +101,23 @@ def scan_eager_lists(path, rel):
     return hits
 
 
+# ── 着色器 / 合成类卡顿源（**直接进门禁**）──────────────────────────────
+# 与 `shrinkWrap` / `MediaQuery` 不同，这四类**没有语义歧义**：它们必然触发
+# `saveLayer`（每帧一次离屏合成），是"动画/滚动卡顿"的确定成因。因此：
+#   1. 直接计入 `--fatal` 门禁；
+#   2. **不受整文件 `ALLOW` 豁免**——某文件为"列表条数有界"登记，不该顺带
+#      豁免它引入 BackdropFilter 的自由。例外必须逐条写进 `SHADER_ALLOW`。
+SHADER_RULES = (
+    'BackdropFilter（saveLayer）',
+    'ImageFilter.blur（saveLayer）',
+    'ColorFiltered（saveLayer）',
+    'ShaderMask（saveLayer）',
+)
+
+# 着色器例外（文件 → 理由）。**应当保持为空**。
+SHADER_ALLOW = {}
+
+
 def scan():
     hits = []
     for dirpath, _dirs, files in os.walk(SURFACE):
@@ -138,7 +155,10 @@ def main():
         rows = by_rule[label]
         print('\n## %s（%d）' % (label, len(rows)))
         for rel, line, text in rows:
-            if rel in ALLOW:
+            if label in SHADER_RULES:
+                mark = ('（已登记例外·着色器：%s）' % SHADER_ALLOW[rel]
+                        if rel in SHADER_ALLOW else '')
+            elif rel in ALLOW:
                 mark = '（已登记例外）'
             elif rel in REVIEWED_BOUNDED:
                 mark = '（已评估·数量有界：%s）' % REVIEWED_BOUNDED[rel]
@@ -154,11 +174,14 @@ def main():
     # 「急加载长列表」只报告不拦截：循环体长度是**语义**问题（静态可知的短列表
     # 与数据驱动的长列表在语法上一样），硬拦会逼出无意义的白名单。
     # 数据驱动长列表的正确写法见 `OgLAsyncSliver`（PR / commit 文件列已改用它）。
-    fatal_hits = [
-        (label, rel, line) for label, rel, line, _text in hits
-        if rel not in ALLOW
-        and label in ('shrinkWrap', '宽 MediaQuery.of')
-    ]
+    fatal_hits = []
+    for label, rel, line, _text in hits:
+        if label in SHADER_RULES:
+            # 着色器卡顿源：无歧义 → 进门禁；且**不看整文件 ALLOW**
+            if rel not in SHADER_ALLOW:
+                fatal_hits.append((label, rel, line))
+        elif label in ('shrinkWrap', '宽 MediaQuery.of') and rel not in ALLOW:
+            fatal_hits.append((label, rel, line))
     if args.fatal and fatal_hits:
         print('\n[fatal] 需处理 %d 处：' % len(fatal_hits))
         for label, rel, line in fatal_hits:

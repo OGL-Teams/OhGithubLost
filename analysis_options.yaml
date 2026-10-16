@@ -6,6 +6,16 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  # ── 严格语言模式（三项全开）────────────────────────────────────────────
+  # 默认情况下 Dart 允许三类"悄悄降级"，它们正是 JSON / 泛型代码里 bug 的温床：
+  #   strict-casts     ：禁止 `dynamic` → 具体类型的**隐式**下转（必须显式 `as`）；
+  #   strict-inference ：推断不出类型时报错，而不是默默给你 `dynamic`；
+  #   strict-raw-types ：禁止裸 `List` / `Map`（必须写类型参数）。
+  # 本仓库实测**零裸泛型**，`jsonDecode` 结果也一律显式 `as`，因此开启成本可控。
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
   errors:
     unused_import: error
     unused_local_variable: error
