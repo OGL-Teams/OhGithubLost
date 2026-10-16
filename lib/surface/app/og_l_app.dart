@@ -25,6 +25,7 @@ import 'desktop_window.dart';
 import 'error_surface.dart';
 import 'keyboard_guard.dart';
 import 'motion.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `shell` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(

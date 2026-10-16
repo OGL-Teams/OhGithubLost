@@ -178,7 +178,6 @@ class _AiChatPageState extends State<AiChatPage> {
 
     // 实时流式累积 buffer（与 `_conversation.messages` 的最后一条同步）。
     final StringBuffer buf = StringBuffer();
-    AiMessage? lastUser;
     try {
       // 先把"用户消息"立刻落进会话，再让服务流式补齐助手回复。
       // ★ 改用 completeStream：每个 SSE 文本帧就 setState 一次，
