@@ -423,7 +423,8 @@ class DomainLayerModule extends OgLModule {
     final AiService ai = AiService(
       store: base.disk.kv,
       vault: base.disk.vault,
-      http: const AiHttpClientWeb(),
+      // Web 的 AiHttpClientWeb 构造会创建 http.Client()，因此不能 const。
+      http: AiHttpClientWeb(),
       tools: buildAiTools(context.di.resolve<GhApi>()),
     );
     context.di.register<AiService>(ai);
