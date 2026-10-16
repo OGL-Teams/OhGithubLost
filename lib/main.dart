@@ -113,6 +113,12 @@ void main() async {
     );
     return true;
   };
+  // 3) **构建期**异常：默认的红屏（release 下是灰底 ErrorWidget）会把整页
+  //    替换成错误块——单个控件出错不该让整个界面消失。这里换成紧凑的错误卡：
+  //    只占它自己的位置，页面其余部分照常可用（用户仍能操作其它区域）。
+  ErrorWidget.builder = (FlutterErrorDetails details) => _OgLErrorBox(
+        message: details.exceptionAsString(),
+      );
 
   final diagnostics = KernelDiagnostics(appVersion: kOgLAppVersion);
   final warnings = TrustWarningCollector();
@@ -271,6 +277,38 @@ void main() async {
     runApp(OgLBootFailureApp(
       message: '启动流程出现未预期异常：$error\n\n$stackTrace',
     ));
+  }
+}
+
+/// 构建期错误的**紧凑错误卡**（替换框架默认的整页 ErrorWidget）。
+///
+/// 单个控件构建失败时，用户仍应能使用页面其余部分——而不是面对一片红/灰。
+/// 卡片只显示异常摘要，详细信息走 `FlutterError.onError`（已落盘 + 通知中心）。
+///
+/// 【为什么要自己提供 `Directionality` 与 `Material`】`ErrorWidget` 会被插入到
+/// **出错控件原来的位置**，那里可能位于 `MaterialApp` 之外（如根部脚手架构建
+/// 失败）。直接用 `Text` 会因缺少 `Directionality` 二次抛错，因此这里自备
+/// 方向与最小化样式。
+class _OgLErrorBox extends StatelessWidget {
+  const _OgLErrorBox({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Container(
+        color: const Color(0xFF4A1D1F),
+        padding: const EdgeInsets.all(12),
+        child: Text(
+          message,
+          maxLines: 4,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(color: Color(0xFFFFDAD6), fontSize: 12),
+        ),
+      ),
+    );
   }
 }
 
