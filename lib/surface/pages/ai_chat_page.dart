@@ -8,7 +8,6 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:ohgithublost/domain/ai/ai_models.dart';
 
 import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
