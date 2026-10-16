@@ -23,7 +23,7 @@
 ///   允许设备被引导去探测内网。
 library;
 
-import 'ix_presign_io.dart';
+import 'ix_presign_web.dart';
 
 /// 解析结果（失败时 [url] 为 `null`，调用方据此降级）。
 class IxPresignResult {

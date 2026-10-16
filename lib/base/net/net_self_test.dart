@@ -7,7 +7,7 @@
 /// 逐地址 TCP + 裸 TLS + `HttpClient` 四条探针（把故障压到具体一层）。
 library;
 
-import 'net_self_test_impl_io.dart';
+import 'net_self_test_impl_web.dart';
 
 /// 网络自检：解析 → 逐地址 TCP 连接，输出可读报告。
 ///

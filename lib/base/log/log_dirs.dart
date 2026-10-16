@@ -9,7 +9,7 @@
 /// `log_dirs_platform_io.dart`。
 library;
 
-import 'log_dirs_platform_io.dart';
+import 'log_dirs_platform_web.dart';
 
 /// 解析日志目录候选清单（去重、规整为正斜杠路径）。
 ///

@@ -23,7 +23,7 @@ library;
 import 'package:flutter/foundation.dart';
 
 import 'app_dirs.dart';
-import 'og_l_storage_saf_io.dart';
+import 'og_l_storage_saf_web.dart';
 
 /// 落盘模式（三档，按优先级）。
 enum OgLStorageMode {

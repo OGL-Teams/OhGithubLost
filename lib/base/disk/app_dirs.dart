@@ -24,7 +24,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 
-import 'app_dirs_fs_io.dart';
+import 'app_dirs_fs_web.dart';
 
 /// 落盘位置分级（决定"用户能不能在文件管理器里看到"）。
 enum OgLStorageTier {

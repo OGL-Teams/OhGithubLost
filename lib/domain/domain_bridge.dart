@@ -13,7 +13,7 @@ import 'dart:async';
 
 import '../base/base_bridge.dart';
 import '../base/disk/og_l_storage.dart';
-import '../base/net/ai_http_client_io.dart';
+import '../base/net/ai_http_client_web.dart';
 import '../base/net/net_bridge.dart';
 import '../base/net/net_transport.dart';
 import '../base/net/range_download.dart';

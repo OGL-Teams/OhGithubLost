@@ -20,7 +20,7 @@ import 'dart:convert';
 
 import 'package:archive/archive.dart';
 
-import 'ix_action_logs_http_io.dart';
+import 'ix_action_logs_http_web.dart';
 
 /// 日志拉取失败（HTTP 状态或网络错误）。
 ///

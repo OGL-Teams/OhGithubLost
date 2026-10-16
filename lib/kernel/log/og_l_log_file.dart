@@ -20,7 +20,7 @@
 /// （真实文件：原子追加 / 按天切分 / 滚动）。
 library;
 
-import 'og_l_log_file_io.dart';
+import 'og_l_log_file_web.dart';
 
 /// 日志落盘器（单例；组合根在 `runApp` 之前 `init`）。
 abstract final class OgLLogFile {

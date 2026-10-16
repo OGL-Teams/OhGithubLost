@@ -26,7 +26,7 @@ import 'dart:math';
 
 import '../../kernel/diagnostics.dart';
 import '../../kernel/environment.dart';
-import 'net_dns_platform_io.dart';
+import 'net_dns_platform_web.dart';
 
 /// DNS 解析模式。
 enum NetDnsMode {
