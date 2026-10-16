@@ -141,7 +141,8 @@ class OgLSettings {
       dnsServerId:
           serverId is String && serverId.isNotEmpty ? serverId : 'alidns',
       dnsPreferDoh: _asBool(raw['dnsPreferDoh'], fallback: true),
-      dnsCustomIp: raw['dnsCustomIp'] is String ? raw['dnsCustomIp'] as String : '',
+      dnsCustomIp:
+          raw['dnsCustomIp'] is String ? raw['dnsCustomIp'] as String : '',
       dnsCustomDohUrl: raw['dnsCustomDohUrl'] is String
           ? raw['dnsCustomDohUrl'] as String
           : '',
