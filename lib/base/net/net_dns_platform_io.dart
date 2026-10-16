@@ -34,7 +34,8 @@ class DnsPlatform {
   ///
   /// 必须能区分 `host:port` 这类输入（它不是 IP），否则会把一个连不上的
   /// "地址"当成解析成功的直连目标。
-  static bool isIpLiteral(String host) => InternetAddress.tryParse(host) != null;
+  static bool isIpLiteral(String host) =>
+      InternetAddress.tryParse(host) != null;
 
   /// 明文 UDP DNS 交换：向 `serverIp:53` 发送 [query]，返回响应字节；
   /// 超时返回 `null`（由上层翻译成 `DnsException`）。

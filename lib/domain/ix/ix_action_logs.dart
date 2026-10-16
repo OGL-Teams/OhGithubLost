@@ -20,7 +20,7 @@ import 'dart:convert';
 
 import 'package:archive/archive.dart';
 
-import 'ix_action_logs_http_web.dart';
+import 'ix_action_logs_http_io.dart';
 
 /// 日志拉取失败（HTTP 状态或网络错误）。
 ///
@@ -78,7 +78,7 @@ class IxActionLogs {
         continue;
       }
       out[_labelOf(file.name)] = utf8.decode(
-        file.content,
+        file.content as List<int>,
         allowMalformed: true,
       );
     }

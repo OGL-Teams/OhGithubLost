@@ -128,8 +128,8 @@ class AiService {
     }
     try {
       return (jsonDecode(raw) as List)
-          .whereType<Map>()
-          .map((Object? e) => Map<String, Object?>.from(e as Map))
+          .whereType<Map<Object?, Object?>>()
+          .map((Map<Object?, Object?> e) => Map<String, Object?>.from(e))
           .toList();
     } on Object {
       return const <Map<String, Object?>>[];

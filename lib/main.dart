@@ -101,7 +101,7 @@ void main() async {
   //   不让整页红屏（页面其余部分仍可用）。
   ErrorWidget.builder = (FlutterErrorDetails details) => _OgLErrorBox(
         message: details.exceptionAsString(),
-      );  // 2) 平台/异步未捕获异常：返回 true 表示"已处理"（已呈现给用户），
+      ); // 2) 平台/异步未捕获异常：返回 true 表示"已处理"（已呈现给用户），
   //    避免被框架静默吞掉。
   WidgetsBinding.instance.platformDispatcher.onError =
       (Object error, StackTrace stack) {

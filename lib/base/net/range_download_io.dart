@@ -255,8 +255,7 @@ class OgLRangeDownloader implements DownloadEngine {
   }
 
   static String? _fileNameOf(HttpClientResponse response) {
-    final String? disposition =
-        response.headers.value('content-disposition');
+    final String? disposition = response.headers.value('content-disposition');
     if (disposition == null) {
       return null;
     }

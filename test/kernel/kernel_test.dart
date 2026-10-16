@@ -262,8 +262,7 @@ void main() {
 
     test('负载被篡改后签名不再有效（防伪）', () async {
       final fixture = await _buildFixture(specs: _defaultSpecs());
-      final raw =
-          utf8.decode(fixture.fs.files[fixture.manifestPath]!) as dynamic;
+      final String raw = utf8.decode(fixture.fs.files[fixture.manifestPath]!);
       final json = jsonDecode(raw) as Map<String, Object?>;
       // 篡改模块指纹，但保留原签名。
       final modules =
