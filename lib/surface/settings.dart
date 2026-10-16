@@ -74,6 +74,8 @@ class OgLSettings {
     this.dnsMode = 'system',
     this.dnsServerId = 'alidns',
     this.dnsPreferDoh = true,
+    this.dnsCustomIp = '',
+    this.dnsCustomDohUrl = '',
     this.downloadConnections = OgLSettings.kOgLDefaultDownloadConnections,
     this.releaseProxyEnabled = false,
     this.accelPrivateRepoAccepted = false,
@@ -139,6 +141,10 @@ class OgLSettings {
       dnsServerId:
           serverId is String && serverId.isNotEmpty ? serverId : 'alidns',
       dnsPreferDoh: _asBool(raw['dnsPreferDoh'], fallback: true),
+      dnsCustomIp: raw['dnsCustomIp'] is String ? raw['dnsCustomIp'] as String : '',
+      dnsCustomDohUrl: raw['dnsCustomDohUrl'] is String
+          ? raw['dnsCustomDohUrl'] as String
+          : '',
       downloadConnections: _asDownloadConnections(raw['downloadConnections']),
       releaseProxyEnabled: _asBool(raw['releaseProxyEnabled'], fallback: false),
       accelPrivateRepoAccepted:
@@ -326,6 +332,15 @@ class OgLSettings {
   /// 是否优先 DoH（加密解析）。
   final bool dnsPreferDoh;
 
+  /// 自定义 DNS 服务器 IP（空串 = 未自定义）。
+  ///
+  /// 与 [dnsServerId] 的关系：`dnsServerId == 'custom'` 时用本字段；
+  /// 内置五家（ali/dnspod/114/cloudflare/google）用不到它。
+  final String dnsCustomIp;
+
+  /// 自定义 DoH 端点（可选；必须 `https://`，空串 = 用明文 UDP）。
+  final String dnsCustomDohUrl;
+
   /// 下载并发连接数（1 = 单连接走库；>1 = 多连接分片）。
   ///
   /// 由设置页给出，跟随 `enqueue` 传入中枢层；服务端不支持 Range 时
@@ -463,6 +478,8 @@ class OgLSettings {
     bool? reduceMotion,
     String? dnsMode,
     String? dnsServerId,
+    String? dnsCustomIp,
+    String? dnsCustomDohUrl,
     bool? dnsPreferDoh,
     int? downloadConnections,
     bool? releaseProxyEnabled,
@@ -496,6 +513,8 @@ class OgLSettings {
         reduceMotion: reduceMotion ?? this.reduceMotion,
         dnsMode: dnsMode ?? this.dnsMode,
         dnsServerId: dnsServerId ?? this.dnsServerId,
+        dnsCustomIp: dnsCustomIp ?? this.dnsCustomIp,
+        dnsCustomDohUrl: dnsCustomDohUrl ?? this.dnsCustomDohUrl,
         dnsPreferDoh: dnsPreferDoh ?? this.dnsPreferDoh,
         downloadConnections: downloadConnections ?? this.downloadConnections,
         releaseProxyEnabled: releaseProxyEnabled ?? this.releaseProxyEnabled,
@@ -536,6 +555,8 @@ class OgLSettings {
         'dnsMode': dnsMode,
         'dnsServerId': dnsServerId,
         'dnsPreferDoh': dnsPreferDoh,
+        'dnsCustomIp': dnsCustomIp,
+        'dnsCustomDohUrl': dnsCustomDohUrl,
         'downloadConnections': downloadConnections,
         'releaseProxyEnabled': releaseProxyEnabled,
         'accelPrivateRepoAccepted': accelPrivateRepoAccepted,
@@ -689,6 +710,20 @@ class OgLSettingsController extends ChangeNotifier {
   /// 便捷：设置 DoH 优先。
   Future<void> setDnsPreferDoh(bool enabled) =>
       apply(_settings.copyWith(dnsPreferDoh: enabled));
+
+  /// 便捷：设置自定义 DNS 服务器 IP（空串 = 取消自定义）。
+  ///
+  /// 切换 id 到 `custom`：设置了 IP 即视为用户想用自定义解析器。
+  Future<void> setDnsCustomIp(String ip) => apply(
+        _settings.copyWith(
+          dnsCustomIp: ip.trim(),
+          dnsServerId: ip.trim().isEmpty ? _settings.dnsServerId : 'custom',
+        ),
+      );
+
+  /// 便捷：设置自定义 DoH 端点（空串 = 只用明文 UDP）。
+  Future<void> setDnsCustomDohUrl(String url) =>
+      apply(_settings.copyWith(dnsCustomDohUrl: url.trim()));
 
   /// 便捷：Release 附件是否走加速通道（总开关）。
   Future<void> setReleaseProxyEnabled(bool enabled) =>

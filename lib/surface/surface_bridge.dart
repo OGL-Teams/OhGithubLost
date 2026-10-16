@@ -226,6 +226,8 @@ class SurfaceBridge {
       custom: current.dnsMode == 'custom',
       serverId: current.dnsServerId,
       preferDoh: current.dnsPreferDoh,
+      customIp: current.dnsCustomIp,
+      customDohUrl: current.dnsCustomDohUrl,
     );
   }
 
@@ -244,6 +246,18 @@ class SurfaceBridge {
   /// 便捷：切换 DoH 优先并即刻应用。
   Future<void> setDnsPreferDoh(bool enabled) async {
     await settings.setDnsPreferDoh(enabled);
+    applyDns();
+  }
+
+  /// 便捷：设置自定义 DNS 服务器 IP 并即刻应用（空串 = 取消自定义）。
+  Future<void> setDnsCustomIp(String ip) async {
+    await settings.setDnsCustomIp(ip);
+    applyDns();
+  }
+
+  /// 便捷：设置自定义 DoH 端点并即刻应用（空串 = 只用明文 UDP）。
+  Future<void> setDnsCustomDohUrl(String url) async {
+    await settings.setDnsCustomDohUrl(url);
     applyDns();
   }
 
@@ -585,6 +599,8 @@ class SurfaceLayerModule extends OgLModule {
       custom: persisted.dnsMode == 'custom',
       serverId: persisted.dnsServerId,
       preferDoh: persisted.dnsPreferDoh,
+      customIp: persisted.dnsCustomIp,
+      customDohUrl: persisted.dnsCustomDohUrl,
     );
     // i18n：按持久化语言加载 JSON 分片（英文基线 + 当前语言）。
     // **失败不阻断启动**：i18n 内部兜底英文/键名。

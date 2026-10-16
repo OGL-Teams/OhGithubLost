@@ -11,6 +11,8 @@
 ///    用户第一次打开就能看见"到底加载了什么"。
 library;
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +29,7 @@ import 'kernel/contract/module.dart';
 import 'kernel/diagnostics.dart';
 import 'kernel/kernel.dart';
 import 'kernel/log/og_l_log_file.dart';
+import 'surface/app/boot_splash.dart';
 import 'surface/app/error_surface.dart';
 import 'surface/app/og_l_app.dart';
 import 'surface/app/permission_selftest.dart';
@@ -34,8 +37,11 @@ import 'surface/surface_bridge.dart';
 
 /// 应用版本（零外部资源：不读 pubspec，直接内联常量）。
 ///
-/// 与 `pubspec.yaml` 的 `version:` 保持一致，发布流程会做一致性校验。
-const String kOgLAppVersion = '7.4.0';
+/// ★ **必须与 `pubspec.yaml` 的 `version:` 一致**——由 CI 的
+/// `tool/version_sync.py` 强制校验（不一致直接失败）。
+/// 历史上这里曾长期停留在 `7.4.0` 而 pubspec 已到 9.x，导致「关于」页与
+/// 诊断日志谎报版本；该脚本就是为杜绝这类漂移而存在。
+const String kOgLAppVersion = '9.1.0';
 
 /// 发布构建注入的引导清单 JSON（由 `--dart-define-from-file` 提供；调试构建为空）。
 ///
@@ -45,6 +51,18 @@ const String kOgLBootManifestJson = String.fromEnvironment('OGL_BOOT_MANIFEST');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // ★ 冷启动首帧：**先渲染占位屏**，再做重活。
+  //
+  // 下面的 `await` 链（日志落盘 / 平台存储 / 内核引导 / 权限自检）合计可能
+  // 数百毫秒到数秒；此前不先渲染任何东西，用户看到的是系统 splash 之后的
+  // 空白（观感 = 卡住）。这里先 `runApp` 一个零依赖的占位屏，真正的
+  // [OgLApp] 在初始化完成后通过**第二次 `runApp`** 顶替它（Flutter 官方
+  // 推荐的启动模式；第二次 runApp 会替换整棵根树）。
+  //
+  // 安全边界：占位屏不读磁盘、不碰内核、不显示任何用户数据，因此**不削弱**
+  // 引导清单的信任链语义（校验仍在下面的 `kernel.boot` 里、仍在显示真实
+  // 界面之前完成）。
+  runApp(const OgLBootSplash());
   // ── 日志落盘：**任何后续日志都必须先能写盘** ──────────────────────────
   // 候选顺序：sdcard/logging → 应用外部目录 → 文档目录 → 支持目录；
   // 全失败也不静默——把原因写进内存日志（关于页可见）。
@@ -201,28 +219,34 @@ void main() async {
         severity: OgLNoticeSeverity.critical,
       );
     }
-    // ★ 5.0：权限网关**每次启动**都实测一遍（不只是首次引导那一次）。
-    //   只复核、不弹窗（重新请求交给引导页 / 设置页）；缺什么、影响什么、
-    //   怎么修 → 诊断日志 + 通知中心（**带事件码** OGL-PERM-00x）。
-    //   加超时兜底：权限查询走平台通道，绝不允许它拖住启动。
-    OgLAppLog.instance.step('启动', '权限自检（每次启动）…');
-    try {
-      await ogLRunPermissionSelfTest(
-        diagnostics: diagnostics,
-        storageProbe: surfaceModule.bridge.ensureStorage,
-        storageLocation: surfaceModule.bridge.appStoragePath,
-      ).timeout(const Duration(seconds: 5));
-    } catch (error) {
-      // 自检超时 / 异常也要留痕，且不阻断启动（宁可漏报，不可不放行）。
-      OgLLogFile.line('权限', '权限自检未完成（超时或异常）：$error', level: 'WARN');
-      OgLAppLog.instance.add(
-        '权限',
-        '权限自检未完成：$error',
-        severity: OgLNoticeSeverity.warning,
-      );
-    }
+    // ★ 先上界面：权限自检**不再阻塞首屏**（它是诊断性自检，5.0 起每次启动
+    //   复核，但完全没有"必须做完才能显示界面"的理由）。这里把它挪到
+    //   `runApp` 之后 fire-and-forget：用户立即看到应用，自检结果以
+    //   通知/日志形式稍后呈现。
     OgLAppLog.instance.result('启动', '进入界面（runApp）', '启动报告已就绪');
     runApp(OgLApp(surface: surfaceModule.bridge, report: report));
+
+    // ── 首屏之后：权限自检（不阻塞启动）────────────────────────────────
+    //   只复核、不弹窗（重新请求交给引导页 / 设置页）；缺什么、影响什么、
+    //   怎么修 → 诊断日志 + 通知中心（**带事件码** OGL-PERM-00x）。
+    //   加超时兜底：权限查询走平台通道，超时即放弃（不挂住任何东西）。
+    unawaited(() async {
+      OgLAppLog.instance.step('启动', '权限自检（每次启动）…');
+      try {
+        await ogLRunPermissionSelfTest(
+          diagnostics: diagnostics,
+          storageProbe: surfaceModule.bridge.ensureStorage,
+          storageLocation: surfaceModule.bridge.appStoragePath,
+        ).timeout(const Duration(seconds: 5));
+      } catch (error) {
+        OgLLogFile.line('权限', '权限自检未完成（超时或异常）：$error', level: 'WARN');
+        OgLAppLog.instance.add(
+          '权限',
+          '权限自检未完成：$error',
+          severity: OgLNoticeSeverity.warning,
+        );
+      }
+    }());
   } on KernelBootException catch (error) {
     // 启动被拒（清单签名失败 / 模块依赖不满足）：**不静默降级**，
     // 直接把原因摊给用户看——这是数据安全产品该有的态度。

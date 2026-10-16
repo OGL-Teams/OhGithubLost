@@ -165,5 +165,11 @@
   "expandGroup": "Expand",
   "collapseGroup": "Collapse",
   "logsSaving": "Saving to disk",
-  "logsLineCount": "{count} lines"
+  "logsLineCount": "{count} lines",
+  "dnsCustom": "Custom DNS server",
+  "dnsCustomHint": "Enter resolver IP; optional https:// DoH endpoint. Clear IP to cancel.",
+  "dnsCustomIpLabel": "Resolver IP",
+  "dnsCustomDohLabel": "DoH endpoint (optional)",
+  "dnsCustomSaved": "Custom DNS applied",
+  "save": "Save"
 }

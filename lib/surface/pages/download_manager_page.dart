@@ -185,8 +185,8 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
           Expanded(
             child: ListenableBuilder(
               listenable: surface.downloadsListenable,
-              builder: (BuildContext context, Widget? _) {
-                final List<IxDownloadTask> tasks = surface.downloadTasks;
+              builder: (BuildContext context, List<IxDownloadTask>? tasks) {
+                tasks = tasks ?? const <IxDownloadTask>[];
                 if (tasks.isEmpty) {
                   return Center(
                     child: Column(
@@ -213,10 +213,16 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                   itemCount: tasks.length,
                   separatorBuilder: (BuildContext context, int index) =>
                       const SizedBox(height: OgLSpace.sm),
-                  itemBuilder: (BuildContext context, int index) => OgLReveal(
-                    delay: OgLAnim.staggerOf(context, index),
-                    child: _taskCard(context, theme, tasks[index]),
-                  ),
+                  itemBuilder: (BuildContext context, int index) {
+                    // 重建期间 tasks 可能已变短，越界兜底。
+                    if (index < 0 || index >= tasks.length) {
+                      return const SizedBox.shrink();
+                    }
+                    return OgLReveal(
+                      delay: OgLAnim.staggerOf(context, index),
+                      child: _taskCard(context, theme, tasks[index]),
+                    );
+                  },
                 );
               },
             ),
@@ -242,7 +248,13 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       return;
     }
     for (final IxDownloadTask task in failed) {
-      await surface.retryDownload(task.id);
+      try {
+        await surface.retryDownload(task.id);
+      } on Object catch (_) {
+        // 单条重试失败不能让整批中断；落日志由中枢层处理。
+        // ignore: avoid_print
+        print('[DL] retry ${task.fileName} failed; continuing batch');
+      }
     }
     if (mounted) {
       OgLDownloadNotice.instance.show(context, surface,
@@ -506,7 +518,10 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       if (!ok) {
         throw StateError(_t('noAppForFile'));
       }
-    } catch (_) {
+    } on Object catch (error) {
+      // 打不开就走"复制路径"兜底；保留异常对象供日志排查。
+      // ignore: avoid_print
+      print('[DL] open local failed: $error; falling back to copy path');
       await ogLCopyText(task.savePath, tag: '下载路径');
       if (context.mounted) {
         OgLDownloadNotice.instance.show(context, surface,

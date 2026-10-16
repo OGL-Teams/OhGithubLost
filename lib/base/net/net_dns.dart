@@ -735,11 +735,16 @@ class DnsService {
     required bool custom,
     required String serverId,
     required bool preferDoh,
+    DnsServer? customServer,
   }) {
     final NetDnsMode mode = custom ? NetDnsMode.custom : NetDnsMode.system;
-    final List<DnsServer> picked = builtinDnsServers
-        .where((DnsServer server) => server.id == serverId)
-        .toList();
+    // ★ 自定义服务器优先：用户在设置里填了 IP → 用它（`serverId == 'custom'`
+    //   或 `customServer != null` 均走这条）。内置五家仍可按 id 选中。
+    final List<DnsServer> picked = customServer != null
+        ? <DnsServer>[customServer]
+        : builtinDnsServers
+            .where((DnsServer server) => server.id == serverId)
+            .toList();
     // 没选到内置服务商（id 拼错 / 已下线）→ 保留原列表，**不静默清空**：
     // 清空会让"自定义 DNS"变成一句空话（`_resolveCustom` 直接抛"未配置"）。
     final bool changed = policy.mode != mode ||

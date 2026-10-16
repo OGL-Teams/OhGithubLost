@@ -165,5 +165,11 @@
   "expandGroup": "Развернуть",
   "collapseGroup": "Свернуть",
   "logsSaving": "Запись в файл включена",
-  "logsLineCount": "Строк: {count}"
+  "logsLineCount": "Строк: {count}",
+  "dnsCustom": "Пользовательский DNS-сервер",
+  "dnsCustomHint": "Укажите IP распознавателя; необязательный DoH-эндпоинт https://.",
+  "dnsCustomIpLabel": "IP распознавателя",
+  "dnsCustomDohLabel": "DoH-эндпоинт (необязательно)",
+  "dnsCustomSaved": "Пользовательский DNS применён",
+  "save": "Сохранить"
 }

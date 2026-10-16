@@ -61,15 +61,32 @@ class NetBridge {
     required bool custom,
     required String serverId,
     required bool preferDoh,
+    String customIp = '',
+    String customDohUrl = '',
   }) {
     final service = dns;
     if (service == null) {
       return;
     }
+    // ★ 自定义 DNS：用户在设置里填了 IP 就构造一个临时 DnsServer 传下去。
+    //   DoH 端点必须是 `https://`（明文 HTTP 的 DoH 等于不设防），
+    //   不合法就只走明文 UDP（`ogLIsUsableDohEndpoint` 做同一套判定）。
+    final String ip = customIp.trim();
+    final DnsServer? customServer = ip.isEmpty
+        ? null
+        : DnsServer(
+            id: 'custom',
+            label: '自定义',
+            ip: ip,
+            dohUrl: ogLIsUsableDohEndpoint(customDohUrl)
+                ? customDohUrl.trim()
+                : null,
+          );
     service.applySelection(
       custom: custom,
       serverId: serverId,
       preferDoh: preferDoh,
+      customServer: customServer,
     );
   }
 
