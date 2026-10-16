@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/animations.dart';
-import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -179,8 +178,11 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
           Expanded(
             child: ListenableBuilder(
               listenable: surface.downloadsListenable,
-              builder: (BuildContext context, List<IxDownloadTask>? tasks) {
-                tasks = tasks ?? const <IxDownloadTask>[];
+              builder: (BuildContext context, Widget? _) {
+                // ★ 注意：`ListenableBuilder.builder` 的第二参是 `Widget?`
+                //   （子节点槽位），**不是** listenable 的当前值 —— 后者是
+                //   `ValueListenableBuilder` 的行为。这里必须自己从桥读快照。
+                final List<IxDownloadTask> tasks = surface.downloadTasks;
                 if (tasks.isEmpty) {
                   return Center(
                     child: Column(
