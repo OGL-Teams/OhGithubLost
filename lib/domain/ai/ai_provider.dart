@@ -268,7 +268,10 @@ class AiProvider {
         (message['tool_calls'] as List?) ?? const <Object?>[];
     return AiReply(
       content: '${message['content'] ?? ''}',
-      toolCalls: calls.whereType<Map>().map(AiToolCall.fromRaw).toList(),
+      toolCalls: calls
+          .whereType<Map<Object?, Object?>>()
+          .map(AiToolCall.fromRaw)
+          .toList(),
       finished: choice['finish_reason'] == 'stop',
     );
   }
@@ -428,18 +431,19 @@ class AiProvider {
       case AiProviderKind.openai:
       case AiProviderKind.anthropic:
         return (raw['data'] as List? ?? const <Object?>[])
-            .whereType<Map>()
-            .map((Object? e) => '${(e as Map)['id'] ?? ''}')
+            .whereType<Map<Object?, Object?>>()
+            .map((Map<Object?, Object?> e) => '${e['id'] ?? ''}')
             .where((String s) => s.isNotEmpty)
             .toList();
       case AiProviderKind.gemini:
         return (raw['models'] as List? ?? const <Object?>[])
-            .whereType<Map>()
-            .where((Object? e) =>
-                ((e as Map)['supportedGenerationMethods'] as List? ?? const [])
+            .whereType<Map<Object?, Object?>>()
+            .where((Map<Object?, Object?> e) =>
+                ((e['supportedGenerationMethods'] as List?) ??
+                        const <Object?>[])
                     .contains('generateContent'))
-            .map((Object? e) =>
-                '${(e as Map)['name'] ?? ''}'.replaceFirst('models/', ''))
+            .map((Map<Object?, Object?> e) =>
+                '${e['name'] ?? ''}'.replaceFirst('models/', ''))
             .where((String s) => s.isNotEmpty)
             .toList();
     }

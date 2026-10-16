@@ -162,7 +162,10 @@ class AiMessage {
     return AiMessage(
       role: AiRole.fromName('${raw['role']}'),
       content: '${raw['content'] ?? ''}',
-      toolCalls: calls.whereType<Map>().map(AiToolCall.fromRaw).toList(),
+      toolCalls: calls
+          .whereType<Map<Object?, Object?>>()
+          .map(AiToolCall.fromRaw)
+          .toList(),
       toolCallId: raw['tool_call_id'] as String?,
       name: raw['name'] as String?,
     );
@@ -211,8 +214,8 @@ class AiConversation {
       repo: raw['repo'] as String?,
       title: raw['title'] as String?,
       messages: msgs
-          .whereType<Map>()
-          .map((Map<dynamic, dynamic> m) =>
+          .whereType<Map<Object?, Object?>>()
+          .map((Map<Object?, Object?> m) =>
               AiMessage.fromJson(Map<String, Object?>.from(m)))
           .toList(),
       createdAt: DateTime.tryParse('${raw['createdAt'] ?? ''}'),

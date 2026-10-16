@@ -78,7 +78,7 @@ class IxActionLogs {
         continue;
       }
       out[_labelOf(file.name)] = utf8.decode(
-        file.content,
+        file.content as List<int>,
         allowMalformed: true,
       );
     }
