@@ -10,6 +10,7 @@ import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `ai` 分片文案。
 String _t(String key, [Map<String, String>? args]) =>
@@ -257,7 +258,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
       body: _busy
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(all),
+              padding: const EdgeInsets.all(OgLSpace.lg),
               children: <Widget>[
                 SwitchListTile(
                   title: Text(_t('enabled')),
@@ -309,7 +310,7 @@ class _AiSettingsPageState extends State<AiSettingsPage> {
                 // 明文端点：**知情提示**（不阻止使用，但说清风险）。
                 if (_isPlaintext)
                   Padding(
-                    padding: const EdgeInsets.only(only),
+                    padding: const EdgeInsets.only(top: OgLSpace.sm),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[

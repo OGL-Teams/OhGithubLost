@@ -18,6 +18,7 @@ import '../surface_bridge.dart';
 import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 
 /// 取 `gist_detail_page` 分片文案。
@@ -319,7 +320,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
               style: theme.textTheme.bodySmall,
             ),
             if (detail.htmlUrl.isNotEmpty) ...<Widget>[
-              const SizedBox(height: 8),
+              const SizedBox(height: OgLSpace.sm),
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
@@ -345,7 +346,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                       child: Row(
                         children: <Widget>[
                           const Icon(Icons.description_outlined, size: 18),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: OgLSpace.sm),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,7 +427,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                   ],
                 ),
               ),
-            const SizedBox(height: 24),
+            const SizedBox(height: OgLSpace.xl),
           ],
         ),
       ),

@@ -178,7 +178,6 @@ class _AiChatPageState extends State<AiChatPage> {
 
     // 实时流式累积 buffer（与 `_conversation.messages` 的最后一条同步）。
     final StringBuffer buf = StringBuffer();
-    AiMessage? lastUser;
     try {
       // 先把"用户消息"立刻落进会话，再让服务流式补齐助手回复。
       // ★ 改用 completeStream：每个 SSE 文本帧就 setState 一次，
@@ -270,6 +269,26 @@ class _AiChatPageState extends State<AiChatPage> {
 
   /// 主动停止流式输出（用户点「停止」）。
 
+  /// 主动停止流式输出（用户点「停止」）。
+  ///
+  /// 取消订阅后**保留已显示的内容**：用户看到的部分不因停止而丢失
+  /// （下一次发送会把当前缓冲一并落盘）。
+  Future<void> _stop() async {
+    final StreamSubscription<String>? sub = _streamSub;
+    if (sub == null) {
+      return;
+    }
+    await sub.cancel();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _sending = false;
+      _streamSub = null;
+    });
+    await _ai.saveConversation(_conversation);
+  }
+
   String _describeError(AiException e) {
     switch (e.code) {
       case 'noKey':
@@ -292,7 +311,7 @@ class _AiChatPageState extends State<AiChatPage> {
       return Align(
         alignment: Alignment.centerLeft,
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: OgLSpace.xs),
+          margin: const EdgeInsets.symmetric(vertical: OgLSpace.xxs),
           padding: const EdgeInsets.symmetric(
               horizontal: OgLSpace.md, vertical: OgLSpace.sm),
           decoration: BoxDecoration(
@@ -316,7 +335,7 @@ class _AiChatPageState extends State<AiChatPage> {
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: OgLSpace.xs),
+        margin: const EdgeInsets.symmetric(vertical: OgLSpace.xxs),
         padding: const EdgeInsets.symmetric(
             horizontal: OgLSpace.md, vertical: OgLSpace.sm),
         constraints:
@@ -394,7 +413,7 @@ class _AiChatPageState extends State<AiChatPage> {
           if (_lastError != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  OgLSpace.lg, OgLSpace.xs, OgLSpace.lg, OgLSpace.xs),
+                  OgLSpace.lg, OgLSpace.xxs, OgLSpace.lg, OgLSpace.xxs),
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -411,7 +430,7 @@ class _AiChatPageState extends State<AiChatPage> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
-                  OgLSpace.md, OgLSpace.xs, OgLSpace.md, OgLSpace.sm),
+                  OgLSpace.md, OgLSpace.xxs, OgLSpace.md, OgLSpace.sm),
               child: Row(
                 children: <Widget>[
                   Expanded(

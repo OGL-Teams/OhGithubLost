@@ -24,6 +24,7 @@ import '../util/clipboard_x.dart';
 import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_space.dart';
 import '../widgets/readme_view.dart';
 import 'download_manager_page.dart';
 
@@ -309,7 +310,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                 _assetKeyRow(_t('type'), asset.contentType!),
               if (asset.downloadUrl != null && asset.downloadUrl!.isNotEmpty)
                 _assetKeyRow(_t('directLink'), asset.downloadUrl!),
-              const SizedBox(height: 16),
+              const SizedBox(height: OgLSpace.lg),
               Row(
                 children: <Widget>[
                   Expanded(
@@ -481,7 +482,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
               ),
               if (_release.body != null &&
                   _release.body!.trim().isNotEmpty) ...<Widget>[
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(12),
@@ -496,7 +497,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
               ],
               const Divider(height: 32),
               Text(_t('assets'), style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8),
+              const SizedBox(height: OgLSpace.sm),
               if (_release.assets.isEmpty)
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
@@ -524,7 +525,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                       onLongPress: () => unawaited(_showAssetActions(asset)),
                     ),
                   ),
-              const SizedBox(height: 24),
+              const SizedBox(height: OgLSpace.xl),
             ],
           )),
     );

@@ -13,9 +13,11 @@ import 'package:yaml/yaml.dart';
 
 import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `workflow_dispatch_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -90,15 +92,29 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
   void initState() {
     super.initState();
     _ref.text = widget.defaultBranch;
+    // 任一输入变化都触发重建：`PopScope.canPop`（以及按钮可用态）依赖表单
+    // 内容，否则输入后返回键仍按「未修改」直接放行（静默丢失输入）。
+    _ref.addListener(_onFieldChanged);
+    _inputs.addListener(_onFieldChanged);
     _workflowsC().loadIfNeeded();
+  }
+
+  /// 任一字段变化 → 重建（脏检查随输入即时生效）。
+  void _onFieldChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
     _workflows?.dispose();
+    _ref.removeListener(_onFieldChanged);
+    _inputs.removeListener(_onFieldChanged);
     _ref.dispose();
     _inputs.dispose();
     for (final TextEditingController c in _formText.values) {
+      c.removeListener(_onFieldChanged);
       c.dispose();
     }
     super.dispose();
@@ -171,6 +187,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
       _formError = null;
       _form = const <_WfInput>[];
       for (final TextEditingController c in _formText.values) {
+        c.removeListener(_onFieldChanged);
         c.dispose();
       }
       _formText.clear();
@@ -205,8 +222,10 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
           } else if (input.type == 'boolean') {
             _formBool[input.name] = input.defaultValue == 'true';
           } else {
-            _formText[input.name] =
+            final TextEditingController controller =
                 TextEditingController(text: input.defaultValue ?? '');
+            controller.addListener(_onFieldChanged);
+            _formText[input.name] = controller;
           }
         }
       });
@@ -296,12 +315,12 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
   Future<void> _submit() async {
     final String workflowIdOrFile = _selected ?? '';
     if (workflowIdOrFile.isEmpty) {
-      _toast(_t('selectWorkflow'));
+      _notifier.warning(_t('selectWorkflow'));
       return;
     }
     final String ref = _ref.text.trim();
     if (ref.isEmpty) {
-      _toast(_t('refRequired'));
+      _notifier.warning(_t('refRequired'));
       return;
     }
     Map<String, String> inputs;
@@ -311,7 +330,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
         ..._parseManualInputs(),
       };
     } on FormatException catch (error) {
-      _toast(error.message);
+      _notifier.warning(error.message);
       return;
     }
     if (_busy) {
@@ -336,7 +355,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        _toast(_t('triggerFailedNoDispatch', {'error': error}));
+        _notifier.warning(_t('triggerFailedNoDispatch', {'error': error}));
       }
     } finally {
       if (mounted) {
@@ -345,13 +364,12 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
     }
   }
 
-  void _toast(String message) {
-    if (!mounted) {
-      return;
-    }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
+  /// 统一提示入口（Phase 5 后半收敛）：**提示长什么样、什么语气只有一处定义**
+  /// （见 [OgLNotifier]，即 `surface/app/notifier.dart`）—— 本页不再自造 SnackBar。
+  ///
+  /// 语气分工：[OgLNotifier.success] 操作已生效 / [OgLNotifier.info] 普通说明 /
+  /// [OgLNotifier.warning] 失败与"被拦下"（权限不足、目标不存在、写回失败…）。
+  OgLNotifier get _notifier => OgLNotifier(ScaffoldMessenger.of(context));
 
   /// 表单是否已输入内容（任一输入与初始值不同）。
   bool get _dirty {
@@ -436,7 +454,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
               padding: const EdgeInsets.all(16),
               children: <Widget>[
                 Text(_t('title'), style: theme.textTheme.titleSmall),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Card(
                   child: Column(
                     children: <Widget>[
@@ -462,9 +480,9 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 Text(_t('refLabel'), style: theme.textTheme.titleSmall),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 TextField(
                   controller: _ref,
                   decoration: const InputDecoration(
@@ -472,7 +490,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                     hintText: 'main',
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 Row(
                   children: <Widget>[
                     Expanded(
@@ -487,9 +505,9 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 ..._formSection(theme),
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
                   title:
@@ -511,7 +529,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Text(
                   _t('dispatchHint') + _t('dispatchHint2'),
                   style: theme.textTheme.bodySmall,

@@ -21,6 +21,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../app/animations.dart';
+import '../../util/og_l_space.dart';
 
 /// 行内统一内边距（左 16；缩进子项在此基础上再加 [OgLSettingsIndent.step]）。
 ///
@@ -86,7 +87,7 @@ Future<T?> ogLShowSettingsChoice<T>({
                 children: <Widget>[
                   if (option.leading != null) ...<Widget>[
                     option.leading!,
-                    const SizedBox(width: 12),
+                    const SizedBox(width: OgLSpace.md),
                   ],
                   Expanded(
                     child: Column(
@@ -188,7 +189,7 @@ class OgLSettingsGroup extends StatelessWidget {
                         data: IconThemeData(color: theme.colorScheme.primary),
                         child: leading!,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: OgLSpace.md),
                     ],
                     Expanded(
                       child: Column(

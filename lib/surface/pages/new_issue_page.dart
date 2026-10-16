@@ -10,6 +10,7 @@ import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `new_issue_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -71,8 +72,25 @@ class _NewIssuePageState extends State<NewIssuePage> {
         },
       );
 
+  /// 任一字段变化 → 重建：`PopScope` 的 `canPop` 依赖文本内容，
+  /// 否则输入后返回键仍按「未修改」直接放行（静默丢失输入）。
+  void _onFieldChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _title.addListener(_onFieldChanged);
+    _body.addListener(_onFieldChanged);
+  }
+
   @override
   void dispose() {
+    _title.removeListener(_onFieldChanged);
+    _body.removeListener(_onFieldChanged);
     _title.dispose();
     _body.dispose();
     super.dispose();
@@ -146,7 +164,7 @@ class _NewIssuePageState extends State<NewIssuePage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _body,
                   maxLines: 8,
@@ -157,7 +175,7 @@ class _NewIssuePageState extends State<NewIssuePage> {
                   ),
                 ),
                 if (_error != null) ...<Widget>[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: OgLSpace.md),
                   Card(
                     color: Theme.of(context).colorScheme.errorContainer,
                     child: Padding(
@@ -171,7 +189,7 @@ class _NewIssuePageState extends State<NewIssuePage> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 FilledButton(
                   onPressed: _busy ? null : _submit,
                   child: Text(_busy ? _t('submitting') : _t('submit')),

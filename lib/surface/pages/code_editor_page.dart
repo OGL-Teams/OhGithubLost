@@ -15,10 +15,13 @@ import 'package:re_editor/re_editor.dart';
 
 import '../app/animations.dart';
 import '../app/error_surface.dart';
+import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/gh_format.dart';
+import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 
 /// 取 `code_editor_page` 分片文案。
@@ -76,11 +79,6 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   bool _saving = false;
   bool _saved = false;
 
-  /// dispose 进行中：编辑监听回调（`_onEdit`）在 `dispose` 之后还可能被
-  /// 残余事件触发，会重新 schedule 落盘 / setState；显式守住，省掉
-  /// "Page dismissed but timer still pending" 的竞态。
-  bool _disposed = false;
-
   /// 「放弃修改」已确认：真正丢弃（dispose 时不再回写草稿，并删除草稿）。
   bool _abandon = false;
   bool _wrap = false;
@@ -97,7 +95,6 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
 
   @override
   void dispose() {
-    _disposed = true;
     _draftTimer?.cancel();
     // 只在「未保存且未放弃」时回写草稿：
     // - 保存成功后再回写会把**已提交内容**残留成草稿；
@@ -113,10 +110,6 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
 
   /// 内容变化：草稿落盘防抖 + 重建（撤销 / 重做可用态与"未保存"标记）。
   void _onEdit() {
-    // dispose 之后的残余回调：不再 schedule 落盘 / setState（页面已经卸）。
-    if (_disposed) {
-      return;
-    }
     _draftTimer?.cancel();
     _draftTimer = Timer(const Duration(milliseconds: 900), _persistDraft);
     if (mounted) {
@@ -143,8 +136,13 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         );
         return;
       }
+      // 草稿读取是异步的：期间用户若已开始输入，就**不再用旧草稿覆盖**
+      // 他的内容（旧草稿留待下一次编辑落盘时自然被覆盖）。
+      if (_controller.text != widget.initialText) {
+        return;
+      }
       _controller.text = draft;
-      _toast(_t('draftRestored'));
+      _notifier.info(_t('draftRestored'));
     } catch (_) {
       // 草稿读取失败不影响编辑。
     }
@@ -196,7 +194,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       if (!result.ok && result.canForceOverwrite) {
         final bool? overwrite = await _showConflictDialog(result);
         if (overwrite != true) {
-          _toast(_t('cancelledRemoteUpdated'));
+          _notifier.warning(_t('cancelledRemoteUpdated'));
           return;
         }
         result = await widget.surface.domain.api.putContentLocked(
@@ -211,14 +209,20 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         );
       }
       if (!result.ok) {
+        // 冲突一律翻译成用户可读文案（不再把 `staleSha` 这类枚举名端给用户）。
+        final String conflict = ghWriteConflictText(result.conflict);
         OgLAppLog.instance.add(
           _t('editTitle'),
-          '提交失败（${result.conflict.name}）：${result.detail ?? ''}',
+          _t('commitFailedConflict', {
+            'conflict': conflict,
+            'detail': result.detail ?? '',
+          }),
           severity: OgLNoticeSeverity.critical,
         );
         if (mounted) {
-          _toast(_t('commitFailedDetail',
-              {'detail': result.detail ?? result.conflict.name}));
+          _notifier.warning(
+            _t('commitFailedDetail', {'detail': result.detail ?? conflict}),
+          );
         }
         return;
       }
@@ -230,7 +234,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       );
       _saved = true;
       if (mounted) {
-        _toast(_t('committedPath', {'path': widget.path}));
+        _notifier.success(_t('committedPath', {'path': widget.path}));
         Navigator.of(context).pop(true);
       }
     } catch (error) {
@@ -240,7 +244,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        _toast(_t('commitFailedDetail', {'detail': error}));
+        _notifier.warning(_t('commitFailedDetail', {'detail': error}));
       }
     } finally {
       if (mounted) {
@@ -260,10 +264,10 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
               children: <Widget>[
                 Text(_t('baseline', {'sha': _short(result.baseSha)})),
                 Text(_t('remoteLatest', {'sha': _short(result.sha)})),
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Text(_t('overwriteWarning')),
                 if (result.remoteContent != null) ...<Widget>[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: OgLSpace.md),
                   Text(_t('remoteLatestContent')),
                   Container(
                     width: double.infinity,
@@ -323,13 +327,12 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         ),
       );
 
-  void _toast(String message) {
-    if (!mounted) {
-      return;
-    }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
+  /// 统一提示入口（Phase 5 后半收敛）：**提示长什么样、什么语气只有一处定义**
+  /// （见 [OgLNotifier]，即 `surface/app/notifier.dart`）—— 本页不再自造 SnackBar。
+  ///
+  /// 语气分工：[OgLNotifier.success] 操作已生效 / [OgLNotifier.info] 普通说明 /
+  /// [OgLNotifier.warning] 失败与"被拦下"（权限不足、目标不存在、写回失败…）。
+  OgLNotifier get _notifier => OgLNotifier(ScaffoldMessenger.of(context));
 
   static String _short(String? sha) => sha == null || sha.isEmpty
       ? '—'
@@ -346,15 +349,20 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (BuildContext sheetContext) => SizedBox(
-        height: MediaQuery.of(sheetContext).size.height * 0.8,
-        child: OgLCodeViewer(
-          code: _controller.text,
-          path: widget.path,
-          fontSize: settings.fontSize,
-          wrap: _wrap,
-          highlight: settings.highlight,
-          codeTheme: settings.theme(sheetContext),
+      // 底部让位：弹层延伸到屏幕底边（useSafeArea 只管顶部 / 左右），
+      // 编辑器最后一屏不会被手势条 / 浏览器下沿盖住。
+      builder: (BuildContext sheetContext) => SafeArea(
+        top: false,
+        child: SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.8,
+          child: OgLCodeViewer(
+            code: _controller.text,
+            path: widget.path,
+            fontSize: settings.fontSize,
+            wrap: _wrap,
+            highlight: settings.highlight,
+            codeTheme: settings.theme(sheetContext),
+          ),
         ),
       ),
     );

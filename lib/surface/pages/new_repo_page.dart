@@ -13,6 +13,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../widgets/scroll_aware_action.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `new_repo_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -168,7 +169,7 @@ class _NewRepoPageState extends State<NewRepoPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _description,
                   maxLines: 3,
@@ -177,7 +178,7 @@ class _NewRepoPageState extends State<NewRepoPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 SwitchListTile(
                   title: Text(_t('private')),
                   subtitle: Text(_t('privateDesc')),
@@ -187,7 +188,7 @@ class _NewRepoPageState extends State<NewRepoPage> {
                       : (bool value) => setState(() => _private = value),
                 ),
                 if (_error != null) ...<Widget>[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: OgLSpace.md),
                   Card(
                     color: Theme.of(context).colorScheme.errorContainer,
                     child: Padding(
@@ -201,7 +202,7 @@ class _NewRepoPageState extends State<NewRepoPage> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: OgLSpace.lg),
                 // 「创建」按钮跟着滚动"让路"：下滑时向屏外收起（只露约 1/4，点击即弹回），
                 // 上滑自动完全弹回。
                 //

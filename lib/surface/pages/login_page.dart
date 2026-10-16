@@ -18,6 +18,7 @@ import '../surface_bridge.dart';
 import '../types.dart';
 import 'onboarding_page.dart';
 import 'repo_page.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `login` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -54,8 +55,6 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscure = true;
   String? _error;
   String _phase = '';
-
-  /// 向导进度：0 = 还没开始；1..4 = 当前正在做的第几步；5 = 全部完成。
 
   @override
   void dispose() {
@@ -144,13 +143,9 @@ class _LoginPageState extends State<LoginPage> {
       OgLAppLog.instance.add(_t('signIn'), '完成：@${me.login}');
       await widget.onLoggedIn();
     } catch (error, stackTrace) {
-      // ★ 第一件事：把失败写到通知中心（与 UI mounted 无关）。
-      //   设 `_error`/`_phase` 是界面层的事，页面被销毁就没必要（也不该）
-      //   setState；但"用户能不能在通知中心看到登录失败"必须独立成立——
-      //   切到其它页面也照样是 critical 横幅 / 弹窗。
       OgLAppLog.instance.add(
-        'signIn',
-        '登录失败：$error\n$stackTrace',
+        _t('signIn'),
+        '失败（原始异常）：$error\n$stackTrace',
         severity: OgLNoticeSeverity.critical,
       );
       // ★ 清理"待验证"半成品：若失败时激活的仍是占位账户，
@@ -162,13 +157,11 @@ class _LoginPageState extends State<LoginPage> {
         }
       } catch (cleanupError) {
         OgLAppLog.instance.add(
-          'signIn',
+          _t('signIn'),
           '清理待验证账户失败：$cleanupError',
           severity: OgLNoticeSeverity.warning,
         );
       }
-      // 下面的 setState 是「当前页面」上的错误反馈；如果状态已 unmounted
-      // （用户在 await 期间点了返回），就让通知中心那条 critical 兜底。
       if (mounted) {
         setState(() {
           _error = OgLI18n.instance.t('login', 'verifyFailed',
@@ -177,23 +170,23 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     } finally {
+      // 已卸载时 `_busy` 无人再读：不必、也不应在已 dispose 的 State 上回写。
       if (mounted) {
         setState(() => _busy = false);
-      } else {
-        _busy = false;
       }
     }
   }
 
   /// 打开引导页（**回顾模式**：不改动"已引导"标志，也不影响登录状态）。
   Future<void> _openOnboarding() async {
+    // 先在同步段取好 Navigator：弹层关闭时不再依赖 builder 的 context。
     final NavigatorState navigator = Navigator.of(context);
     await navigator.push<void>(
       MaterialPageRoute<void>(
         builder: (BuildContext context) => OnboardingPage(
           surface: widget.surface,
           review: true,
-          onFinished: () => Navigator.of(context).pop(),
+          onFinished: () => navigator.pop(),
         ),
       ),
     );
@@ -240,7 +233,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: <Widget>[
                       Icon(Icons.security,
                           color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: OgLSpace.md),
                       Expanded(
                         child: Text(
                           // 保险库说明：`vaultNote`（含平台与域名等专有名词，不译）。
@@ -251,7 +244,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: OgLSpace.lg),
               TextField(
                 controller: _input,
                 obscureText: _obscure,
@@ -280,7 +273,7 @@ class _LoginPageState extends State<LoginPage> {
                   }
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: OgLSpace.md),
               FilledButton(
                 onPressed: _busy ? null : _login,
                 child: _busy
@@ -292,18 +285,18 @@ class _LoginPageState extends State<LoginPage> {
                             height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(width: OgLSpace.sm),
                           Text(OgLI18n.instance.t('login', 'verifying')),
                         ],
                       )
                     : Text(OgLI18n.instance.t('login', 'signIn')),
               ),
               if (_phase.isNotEmpty) ...<Widget>[
-                const SizedBox(height: 8),
+                const SizedBox(height: OgLSpace.sm),
                 Text(_phase, style: Theme.of(context).textTheme.bodySmall),
               ],
               if (_error != null) ...<Widget>[
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 Card(
                   color: Theme.of(context).colorScheme.errorContainer,
                   child: Padding(

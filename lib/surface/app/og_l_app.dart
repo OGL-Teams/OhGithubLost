@@ -25,6 +25,7 @@ import 'desktop_window.dart';
 import 'error_surface.dart';
 import 'keyboard_guard.dart';
 import 'motion.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `shell` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -170,9 +171,9 @@ class OgLBootFailureApp extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: OgLSpace.md),
                     Text(_t('dataUntouched')),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: OgLSpace.lg),
                     SelectableText(
                       message,
                       style: const TextStyle(fontFamily: 'monospace'),

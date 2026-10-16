@@ -20,6 +20,7 @@ import '../app/permissions.dart';
 import '../app/project_info.dart';
 import '../i18n/og_l_i18n.dart';
 import '../util/clipboard_x.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `about_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -124,7 +125,7 @@ class AboutPage extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: OgLSpace.lg),
           // 设置页另有「加星」入口，此处为赞助跳转（用户已拍板两个入口都保留）。
           Card(
             clipBehavior: Clip.antiAlias,
@@ -141,7 +142,7 @@ class AboutPage extends StatelessWidget {
               onTap: () => _openSponsor(context),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: OgLSpace.lg),
           Card(
             child: Column(
               children: <Widget>[
@@ -167,9 +168,9 @@ class AboutPage extends StatelessWidget {
             ),
           ),
           if (snapshot != null) ...<Widget>[
-            const SizedBox(height: 16),
+            const SizedBox(height: OgLSpace.lg),
             Text(_t('bootDiagnostics'), style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
+            const SizedBox(height: OgLSpace.sm),
             _diagnosticTile(
               title: _t('bootReport'),
               subtitle: snapshot.bootSummary,
@@ -236,12 +237,12 @@ class AboutPage extends StatelessWidget {
             ),
             _permissionSelfTestTile(theme),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: OgLSpace.xl),
           Text(
             _t('logsAndLicenseHint'),
             style: theme.textTheme.bodySmall,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: OgLSpace.xl),
         ]),
       ),
     );

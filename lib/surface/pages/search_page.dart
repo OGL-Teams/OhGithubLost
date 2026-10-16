@@ -17,6 +17,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/gh_format.dart';
+import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
 import 'repo_page.dart';
 
@@ -337,7 +338,7 @@ class _SearchPageState extends State<SearchPage> {
                     }
                   },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: _input,
                   textInputAction: TextInputAction.search,

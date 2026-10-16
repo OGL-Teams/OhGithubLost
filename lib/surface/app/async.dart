@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import '../i18n/og_l_i18n.dart';
 import 'animations.dart';
 import 'error_surface.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `shell` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -316,13 +317,13 @@ class OgLAsyncErrorPane extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(Icons.error_outline, size: 40, color: scheme.error),
-            const SizedBox(height: 12),
+            const SizedBox(height: OgLSpace.md),
             Text(
               message,
               textAlign: TextAlign.center,
               style: TextStyle(color: scheme.error),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: OgLSpace.lg),
             FilledButton.tonal(
               onPressed: onRetry,
               child: Text(_t('retry')),
@@ -358,10 +359,10 @@ class OgLAsyncEmptyPane extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(icon, size: 40, color: scheme.outline),
-            const SizedBox(height: 12),
+            const SizedBox(height: OgLSpace.md),
             Text(text, textAlign: TextAlign.center),
             if (action != null) ...<Widget>[
-              const SizedBox(height: 16),
+              const SizedBox(height: OgLSpace.lg),
               action!,
             ],
           ],
@@ -393,7 +394,7 @@ class OgLAsyncSoftErrorBar extends StatelessWidget {
         child: Row(
           children: <Widget>[
             Icon(Icons.warning_amber_rounded, color: scheme.onErrorContainer),
-            const SizedBox(width: 8),
+            const SizedBox(width: OgLSpace.sm),
             Expanded(
               child: Text(
                 message,

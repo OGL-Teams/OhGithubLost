@@ -48,8 +48,8 @@ import 'package:re_highlight/languages/xml.dart';
 import 'package:re_highlight/languages/yaml.dart';
 import 'package:re_highlight/re_highlight.dart';
 
-import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `common` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -541,54 +541,18 @@ class _OgLCodeFieldState extends State<OgLCodeField> {
       anchors: anchors,
       buttonItems: <ContextMenuButtonItem>[
         // 只读时不提供"剪切/粘贴"：给了也没意义，反而误导。
-        //
-        // ★ 复制 / 剪切 / 粘贴在 Web 上**常常静默失败**：
-        //   - 控制器 [copy] 走 `Clipboard.setData`（焦点丢失会失败）；
-        //   - [paste] 走 `Clipboard.getData`（未授权 → 抛异常，库自己无 try）。
-        // 必须**我们自己包 try/catch** + 上报通知中心 + debugPrint，
-        // 否则用户看到的是"长按菜单里点了复制，结果啥也没发生"。
         if (!readOnly)
           ContextMenuButtonItem(
             label: l10n.cutButtonLabel,
             onPressed: () {
-              try {
-                controller.cut();
-              } catch (error, stack) {
-                OgLAppLog.instance.add(
-                  '编辑器',
-                  '剪切失败：$error',
-                  severity: OgLNoticeSeverity.warning,
-                );
-                OgLNoticeCenter.instance.report(
-                  title: '复制失败',
-                  detail: '$error\n$stack',
-                  severity: OgLNoticeSeverity.warning,
-                );
-                debugPrint('OGL 编辑器：剪切失败 $error');
-              } finally {
-                onDismiss();
-              }
+              controller.cut();
+              onDismiss();
             },
           ),
         ContextMenuButtonItem(
           label: l10n.copyButtonLabel,
           onPressed: () {
-            // [copy] 内部返回 Future；既不能用同步 try 包，又必须等它完成
-            // 才能判断成败 —— 用 `unawaited` + `catchError` 把异常接住。
-            unawaited(
-                controller.copy().catchError((Object error, StackTrace stack) {
-              OgLAppLog.instance.add(
-                '编辑器',
-                '复制失败：$error',
-                severity: OgLNoticeSeverity.warning,
-              );
-              OgLNoticeCenter.instance.report(
-                title: '复制失败',
-                detail: '$error\n$stack',
-                severity: OgLNoticeSeverity.warning,
-              );
-              debugPrint('OGL 编辑器：复制失败 $error');
-            }));
+            unawaited(controller.copy());
             onDismiss();
           },
         ),
@@ -596,45 +560,14 @@ class _OgLCodeFieldState extends State<OgLCodeField> {
           ContextMenuButtonItem(
             label: l10n.pasteButtonLabel,
             onPressed: () {
-              // [paste] 内部走 `Clipboard.getData`（同步 try 即可）—— Web 上
-              // 未授权会**直接抛**，必须先自己 catch，否则菜单点了就崩。
-              try {
-                controller.paste();
-              } catch (error, stack) {
-                OgLAppLog.instance.add(
-                  '编辑器',
-                  '粘贴失败：$error',
-                  severity: OgLNoticeSeverity.warning,
-                );
-                OgLNoticeCenter.instance.report(
-                  title: '粘贴失败',
-                  detail: '$error\n$stack',
-                  severity: OgLNoticeSeverity.warning,
-                );
-                debugPrint('OGL 编辑器：粘贴失败 $error');
-              } finally {
-                onDismiss();
-              }
+              controller.paste();
+              onDismiss();
             },
           ),
         ContextMenuButtonItem(
           label: l10n.selectAllButtonLabel,
           onPressed: () {
-            try {
-              controller.selectAll();
-            } catch (error, stack) {
-              OgLAppLog.instance.add(
-                '编辑器',
-                '全选失败：$error',
-                severity: OgLNoticeSeverity.warning,
-              );
-              OgLNoticeCenter.instance.report(
-                title: '全选失败',
-                detail: '$error\n$stack',
-                severity: OgLNoticeSeverity.warning,
-              );
-              debugPrint('OGL 编辑器：全选失败 $error');
-            }
+            controller.selectAll();
             // 选中范围变化 → 让菜单按新范围重算位置。
             onRefresh();
           },
@@ -816,7 +749,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
         : '${value.result!.index + 1}/${value.result!.matches.length}';
     return Row(
       children: <Widget>[
-        const SizedBox(width: 8),
+        const SizedBox(width: OgLSpace.sm),
         Expanded(
           child: TextField(
             controller: controller.findInputController,
@@ -871,7 +804,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _replaceRow(CodeFindValue value) => Row(
         children: <Widget>[
-          const SizedBox(width: 8),
+          const SizedBox(width: OgLSpace.sm),
           Expanded(
             child: TextField(
               controller: controller.replaceInputController,
@@ -895,7 +828,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
             onPressed:
                 value.result == null ? null : controller.replaceAllMatches,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: OgLSpace.sm),
         ],
       );
 

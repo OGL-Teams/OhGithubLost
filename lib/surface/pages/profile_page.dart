@@ -18,6 +18,7 @@ import 'drafts_page.dart';
 import 'gists_page.dart';
 import 'login_page.dart';
 import 'repo_page.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `profile_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -263,7 +264,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: OgLSpace.lg),
             Padding(
               padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
               child: Text(_t('content')),
@@ -291,7 +292,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 onTap: _openDrafts,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: OgLSpace.sm),
             Card(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               child: ListTile(
@@ -302,7 +303,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 onTap: _openGists,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: OgLSpace.lg),
             Padding(
               padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
               child: Text(_t('dangerZone')),
@@ -315,7 +316,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(_t('logoutDesc')),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: OgLSpace.md),
                     OutlinedButton(
                       onPressed: accounts.isEmpty
                           ? null
@@ -331,7 +332,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: OgLSpace.xl),
           ],
         ),
       ),

@@ -19,6 +19,7 @@ import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../util/clipboard_x.dart';
+import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
 
 /// 取 `notifications_page` 分片文案。
@@ -305,7 +306,7 @@ class _NotificationTile extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 2),
                 child: Icon(icon, color: color, size: 20),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: OgLSpace.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,7 +341,7 @@ class _NotificationTile extends StatelessWidget {
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                const SizedBox(height: 8),
+                                const SizedBox(height: OgLSpace.sm),
                                 // 完整详情：不截断，可选中复制。
                                 Container(
                                   width: double.infinity,
