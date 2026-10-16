@@ -45,6 +45,12 @@ class DnsPlatform {
   /// 即此语义——设置页据此如实说明"自定义 DNS 在 Web 上不接管连接"。
   static const bool supportsConnectionTakeover = false;
 
+  /// 自定义 DNS 是否**可用于真实连接**（对外契约名，供 `DnsService` 读取）。
+  ///
+  /// 等价于 [supportsConnectionTakeover]：自定义解析器只有在能接管真实连接时
+  /// 才有意义 —— Web 上不能，故为 `false`。设置页据此如实说明。
+  static const bool supportsCustomDns = supportsConnectionTakeover;
+
   /// 系统解析：浏览器内部完成，页面拿不到 IP 列表。
   ///
   /// 返回 `[host]` 原样（而不是空列表）——语义是"解析结果是域名本身，

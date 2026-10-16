@@ -138,7 +138,7 @@ class NetModule extends OgLModule {
     NetTransport Function()? transportFactory,
     DnsService? dns,
   })  : _observer = observer ?? NetObserver(),
-        _dns = dns ?? DnsService(dohClient: IoDnsHttpClient()),
+        _dns = dns ?? DnsService(),
         _explicit = transport {
     _policy = policy;
     _mirrors = mirrors ?? MirrorSelector();

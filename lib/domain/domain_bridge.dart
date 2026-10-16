@@ -423,7 +423,7 @@ class DomainLayerModule extends OgLModule {
     final AiService ai = AiService(
       store: base.disk.kv,
       vault: base.disk.vault,
-      http: const AiHttpClientIo(),
+      http: const AiHttpClientWeb(),
       tools: buildAiTools(context.di.resolve<GhApi>()),
     );
     context.di.register<AiService>(ai);
