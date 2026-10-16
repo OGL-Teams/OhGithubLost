@@ -1,15 +1,18 @@
-/// L1 底座级 · 网络自检的**平台实现**。
+/// L1 底座级 · 网络自检的**平台实现**（非 Web）。
 ///
 /// 完整自检：DNS 解析（A / AAAA）→ 逐地址 TCP 连接 → 两条"原生栈"探针
-/// （裸 TLS 与 `HttpClient`）。这是 `NetSelfTest.run` 的平台实现，
-/// 由 `net_self_test.dart` 导入。
+/// （裸 TLS 与 `HttpClient`）。这是 `NetSelfTest.run` 在原生平台上的实现。
 ///
-/// 本文件允许 `import 'dart:io'`：这正是实现文件。
+/// Web 对应文件为 `net_self_test_impl_web.dart`（只做 HTTP 可达性，
+/// 不做 DNS / UDP 探测——浏览器里没有这些 API）。
+///
+/// 本文件允许 `import 'dart:io'`：它只在非 Web 构建里参与编译
+/// （由 `net_self_test.dart` 的条件导入选定）。
 library;
 
 import 'dart:io';
 
-/// 平台自检实现。
+/// 平台自检实现（非 Web）。
 abstract final class NetSelfTestImpl {
   /// 运行自检，返回单行报告。
   static Future<String> run(

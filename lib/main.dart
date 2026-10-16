@@ -15,6 +15,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'base/base_bootstrap.dart';
 import 'base/log/log_dirs.dart';
@@ -29,18 +30,18 @@ import 'kernel/contract/module.dart';
 import 'kernel/diagnostics.dart';
 import 'kernel/kernel.dart';
 import 'kernel/log/og_l_log_file.dart';
-import 'surface/app/boot_splash.dart';
 import 'surface/app/error_surface.dart';
 import 'surface/app/og_l_app.dart';
 import 'surface/app/permission_selftest.dart';
+import 'surface/app/boot_splash.dart';
+import 'surface/app/web_install.dart';
+import 'surface/app/web_pointer.dart';
+import 'surface/i18n/og_l_i18n.dart';
 import 'surface/surface_bridge.dart';
 
 /// 应用版本（零外部资源：不读 pubspec，直接内联常量）。
 ///
-/// ★ **必须与 `pubspec.yaml` 的 `version:` 一致**——由 CI 的
-/// `tool/version_sync.py` 强制校验（不一致直接失败）。
-/// 历史上这里曾长期停留在 `7.4.0` 而 pubspec 已到 9.x，导致「关于」页与
-/// 诊断日志谎报版本；该脚本就是为杜绝这类漂移而存在。
+/// 与 `pubspec.yaml` 的 `version:` 保持一致，发布流程会做一致性校验。
 const String kOgLAppVersion = '9.1.0';
 
 /// 发布构建注入的引导清单 JSON（由 `--dart-define-from-file` 提供；调试构建为空）。
@@ -51,17 +52,9 @@ const String kOgLBootManifestJson = String.fromEnvironment('OGL_BOOT_MANIFEST');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // ★ 冷启动首帧：**先渲染占位屏**，再做重活。
-  //
-  // 下面的 `await` 链（日志落盘 / 平台存储 / 内核引导 / 权限自检）合计可能
-  // 数百毫秒到数秒；此前不先渲染任何东西，用户看到的是系统 splash 之后的
-  // 空白（观感 = 卡住）。这里先 `runApp` 一个零依赖的占位屏，真正的
-  // [OgLApp] 在初始化完成后通过**第二次 `runApp`** 顶替它（Flutter 官方
-  // 推荐的启动模式；第二次 runApp 会替换整棵根树）。
-  //
-  // 安全边界：占位屏不读磁盘、不碰内核、不显示任何用户数据，因此**不削弱**
-  // 引导清单的信任链语义（校验仍在下面的 `kernel.boot` 里、仍在显示真实
-  // 界面之前完成）。
+  // ★ 冷启动首帧：先渲染零依赖占位屏，再做重活（日志落盘 / 平台存储 /
+  //   内核引导）。真正的 [OgLApp] 在初始化完成后通过第二次 `runApp` 顶替它。
+  //   占位屏不读磁盘、不碰内核、不显示用户数据，**不削弱**信任链语义。
   runApp(const OgLBootSplash());
   // ── 日志落盘：**任何后续日志都必须先能写盘** ──────────────────────────
   // 候选顺序：sdcard/logging → 应用外部目录 → 文档目录 → 支持目录；
@@ -101,7 +94,12 @@ void main() async {
       severity: OgLNoticeSeverity.critical,
     );
   };
-  // 2) 平台/异步未捕获异常：返回 true 表示"已处理"（已呈现给用户），
+
+  // ★ 构建期异常隔离：单个控件构建失败时只显示紧凑错误块，
+  //   不让整页红屏（页面其余部分仍可用）。
+  ErrorWidget.builder = (FlutterErrorDetails details) => _OgLErrorBox(
+        message: details.exceptionAsString(),
+      );  // 2) 平台/异步未捕获异常：返回 true 表示"已处理"（已呈现给用户），
   //    避免被框架静默吞掉。
   WidgetsBinding.instance.platformDispatcher.onError =
       (Object error, StackTrace stack) {
@@ -113,12 +111,6 @@ void main() async {
     );
     return true;
   };
-  // 3) **构建期**异常：默认的红屏（release 下是灰底 ErrorWidget）会把整页
-  //    替换成错误块——单个控件出错不该让整个界面消失。这里换成紧凑的错误卡：
-  //    只占它自己的位置，页面其余部分照常可用（用户仍能操作其它区域）。
-  ErrorWidget.builder = (FlutterErrorDetails details) => _OgLErrorBox(
-        message: details.exceptionAsString(),
-      );
 
   final diagnostics = KernelDiagnostics(appVersion: kOgLAppVersion);
   final warnings = TrustWarningCollector();
@@ -187,7 +179,14 @@ void main() async {
 
   // ★ 组合根：装配 L1 —— 解析平台存储（登录 / 设置 / 缓存真正落盘）；
   // 失败退回内存并把错误原样带上来（下面大声上报，绝不静默）。
-  final bootstrap = await baseLayerModulesOnPlatform();
+  // 把 localStorage 失败注入到 OgLAppLog：保持 base → surface 反转，
+  //   不破坏分层。
+  final bootstrap = await baseLayerModulesOnPlatform(
+    onStorageFailure: (String message) {
+      OgLAppLog.instance
+          .add('存储', message, severity: OgLNoticeSeverity.warning);
+    },
+  );
 
   final List<OgLModule> modules = <OgLModule>[
     ...bootstrap.modules,
@@ -225,17 +224,17 @@ void main() async {
         severity: OgLNoticeSeverity.critical,
       );
     }
-    // ★ 先上界面：权限自检**不再阻塞首屏**（它是诊断性自检，5.0 起每次启动
-    //   复核，但完全没有"必须做完才能显示界面"的理由）。这里把它挪到
-    //   `runApp` 之后 fire-and-forget：用户立即看到应用，自检结果以
-    //   通知/日志形式稍后呈现。
-    OgLAppLog.instance.result('启动', '进入界面（runApp）', '启动报告已就绪');
-    runApp(OgLApp(surface: surfaceModule.bridge, report: report));
-
-    // ── 首屏之后：权限自检（不阻塞启动）────────────────────────────────
+    // ★ 5.0：权限网关**每次启动**都实测一遍（不只是首次引导那一次）。
     //   只复核、不弹窗（重新请求交给引导页 / 设置页）；缺什么、影响什么、
     //   怎么修 → 诊断日志 + 通知中心（**带事件码** OGL-PERM-00x）。
-    //   加超时兜底：权限查询走平台通道，超时即放弃（不挂住任何东西）。
+    //   加超时兜底：权限查询走平台通道，绝不允许它拖住启动。
+    OgLAppLog.instance.result('启动', '进入界面（runApp）', '启动报告已就绪');
+    runApp(OgLApp(surface: surfaceModule.bridge, report: report));
+    // ★ Web 专属接线（安装到桌面 / 加速服务首启说明）。非 Web 构建里
+    //   `_ogLScheduleWebSurface` 立即返回，不会产生任何副作用。
+    _ogLScheduleWebSurface(surfaceModule.bridge);
+    // ★ 权限自检移到首屏之后（fire-and-forget）：它是诊断性复核，
+    //   没有"必须做完才能显示界面"的理由，最坏耗时 5 秒（超时上限）。
     unawaited(() async {
       OgLAppLog.instance.step('启动', '权限自检（每次启动）…');
       try {
@@ -280,15 +279,14 @@ void main() async {
   }
 }
 
+/// 当前平台名（诊断日志用；**规范化**为小写标识，如 `web` / `ios` / `macos`）。
+///
+/// 这里刻意**不使用 `dart:io` 的 `Platform`**：Web 上它不存在（编译不过），
+/// 而 Flutter 的 `kIsWeb` + `defaultTargetPlatform` 在两端都可靠。
 /// 构建期错误的**紧凑错误卡**（替换框架默认的整页 ErrorWidget）。
 ///
-/// 单个控件构建失败时，用户仍应能使用页面其余部分——而不是面对一片红/灰。
-/// 卡片只显示异常摘要，详细信息走 `FlutterError.onError`（已落盘 + 通知中心）。
-///
-/// 【为什么要自己提供 `Directionality` 与 `Material`】`ErrorWidget` 会被插入到
-/// **出错控件原来的位置**，那里可能位于 `MaterialApp` 之外（如根部脚手架构建
-/// 失败）。直接用 `Text` 会因缺少 `Directionality` 二次抛错，因此这里自备
-/// 方向与最小化样式。
+/// 单个控件构建失败时，页面其余部分仍可用。自备 `Directionality` 与最小样式：
+/// `ErrorWidget` 会被插到出错控件原位，那里可能没有 `MaterialApp` 祖先。
 class _OgLErrorBox extends StatelessWidget {
   const _OgLErrorBox({required this.message});
 
@@ -312,10 +310,218 @@ class _OgLErrorBox extends StatelessWidget {
   }
 }
 
-/// 当前平台名（诊断日志用；**规范化**为小写标识，如 `android` / `linux` / `windows`）。
-///
-/// 这里刻意**不使用 `dart:io` 的 `Platform`**，只用 Flutter 的
-/// `defaultTargetPlatform`（Web 检查已随 Web 支持一并移除）。
+/// 浏览器里 `defaultTargetPlatform` 反映的是**宿主系统**，因此先判 `kIsWeb`。
 String _ogLPlatformName() {
+  if (kIsWeb) {
+    return 'web';
+  }
   return defaultTargetPlatform.name.toLowerCase();
+}
+
+/// `common` 分片文案（启动期对话框用；此时展示层已把 i18n 载入完成）。
+String _ogLCommon(String key) => OgLI18n.instance.t('common', key);
+
+/// `shell` 分片文案（Web 鼠标交互说明用）。
+String _ogLShell(String key) => OgLI18n.instance.t('shell', key);
+
+/// Web 专属接线：安装提示监听 + 启动后的一次性提示。
+///
+/// **非 Web 构建里本函数立即返回**，不注册监听、不弹窗（`kIsWeb` 在原生构建
+/// 里是编译期常量 `false`，整段会被摇掉）。两个浏览器动作的实现见
+/// `surface/app/web_install.dart` / `web_install_web.dart`（Web 用 `dart:js_interop`）。
+void _ogLScheduleWebSurface(SurfaceBridge bridge) {
+  if (!kIsWeb) {
+    return;
+  }
+  // ① 尽早挂 `beforeinstallprompt` 监听：Chromium 至多派发一次，错过就没有了。
+  //    这里只负责"抓住事件"，何时询问用户由下面的启动流程决定。
+  ogLWebInstallWatch(() {});
+  // ② 右键菜单：Web 版把「右键」接管为返回，浏览器自带的右键菜单必须先关掉
+  //    （本 SDK 默认是开的：`BrowserContextMenu.enabled` 默认 true）。
+  unawaited(BrowserContextMenu.disableContextMenu());
+  // ③ 首帧之后再谈界面：此时根 Navigator 与 i18n 都已就绪。
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_ogLShowWebStartupDialogs(bridge));
+  });
+}
+
+/// 取根 Navigator 的 context（应用刚起来时可能还差一两帧，故做有限重试）。
+Future<BuildContext?> _ogLRootContext() async {
+  for (int attempt = 0; attempt < 10; attempt++) {
+    final BuildContext? context = OgLApp.navigatorKey.currentContext;
+    if (context != null) {
+      return context;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+  }
+  return OgLApp.navigatorKey.currentContext;
+}
+
+/// Web 启动后的两个一次性/每次提示（顺序：先说明加速，再问安装）。
+Future<void> _ogLShowWebStartupDialogs(SurfaceBridge bridge) async {
+  final BuildContext? context = await _ogLRootContext();
+  if (context == null) {
+    // 拿不到 context 就如实留痕（不静默）；下次打开再试。
+    OgLAppLog.instance.add(
+      'Web',
+      '启动提示未能展示：根 Navigator 尚未就绪',
+      severity: OgLNoticeSeverity.warning,
+    );
+    return;
+  }
+  final OgLWebStartup startup = bridge.webStartup;
+  // ① **首次打开**：说明"需要配置加速服务"（只弹一次；不配置也能用）。
+  if (!startup.accelNoticeShown) {
+    await startup.markAccelNoticeShown();
+    if (!context.mounted) {
+      return;
+    }
+    await _ogLShowAccelNotice(context);
+  }
+  // ② **首次检测到鼠标**：说明 Web 版的鼠标交互（只弹一次）。
+  if (ogLWebFinePointer() && !startup.mouseNoticeShown) {
+    await startup.markMouseNoticeShown();
+    if (!context.mounted) {
+      return;
+    }
+    await _ogLShowMouseNotice(context);
+  }
+  // ③ **每次打开**：按设置询问是否添加到桌面（默认开）。
+  if (!startup.installPromptEnabled) {
+    return;
+  }
+  // 已安装（standalone）→ 任何路径都不再提示。
+  if (ogLWebInstallStandalone()) {
+    return;
+  }
+  final OgLWebInstallPlatform platform = ogLWebInstallPlatform();
+  if (platform == OgLWebInstallPlatform.unsupported) {
+    return;
+  }
+  if (!context.mounted) {
+    return;
+  }
+  await _ogLShowInstallPrompt(context, platform);
+}
+
+/// 「需要配置加速服务」说明（Web 首次打开弹一次）。
+///
+/// 文案必须说清三件事：**不配置也能用**、**只是下载走直连**、
+/// **入口在 设置 → 网络 → 加速**。
+Future<void> _ogLShowAccelNotice(BuildContext context) => showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        // 正文较长：窄屏上允许滚动，避免溢出。
+        scrollable: true,
+        title: Text(_ogLCommon('webAccelNoticeTitle')),
+        content: Text(_ogLCommon('webAccelNoticeBody')),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(_ogLCommon('confirm')),
+          ),
+        ],
+      ),
+    );
+
+/// 「检测到鼠标」说明（Web 版只弹一次）。
+///
+/// 说清三件事：**右键 = 返回**、长按左键 = 长按菜单、单击 = 点按；
+/// 触摸手势已禁用。弹窗本身**不接受返回**（`PopScope(canPop: false)`）：
+/// 右键返回不该把说明自己关掉 —— 那会变成"刚弹出就消失"。
+Future<void> _ogLShowMouseNotice(BuildContext context) => showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          scrollable: true,
+          title: Text(_ogLShell('webMouseNoticeTitle')),
+          content: Text(_ogLShell('webMouseNoticeBody')),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(_ogLCommon('confirm')),
+            ),
+          ],
+        ),
+      ),
+    );
+
+/// 「添加到桌面」提示。两条路径的差异见函数体。
+Future<void> _ogLShowInstallPrompt(
+  BuildContext context,
+  OgLWebInstallPlatform platform,
+) async {
+  if (platform == OgLWebInstallPlatform.ios) {
+    // iOS Safari **没有** `beforeinstallprompt`（平台限制，不是实现取舍）：
+    // 只能显示"共享 → 添加到主屏幕"的手动引导，绝不做成一键安装的样子。
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        scrollable: true,
+        title: Text(_ogLCommon('webInstallDialogTitle')),
+        content: Text(_ogLCommon('webInstallIosBody')),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(_ogLCommon('close')),
+          ),
+        ],
+      ),
+    );
+    return;
+  }
+  // Chromium：等 `beforeinstallprompt` 到来（通常首帧后几百毫秒内）。
+  final bool canPrompt = await _ogLWaitInstallEvent();
+  if (!context.mounted) {
+    return;
+  }
+  // 有事件 → 可"一键安装"；没有事件（本轮不满足可安装条件 / 事件已错过）
+  // → **如实给手动引导**，而不是给一个点了没反应的按钮。
+  final bool? confirmed = await showDialog<bool>(
+    context: context,
+    builder: (BuildContext dialogContext) => AlertDialog(
+      scrollable: true,
+      title: Text(_ogLCommon('webInstallDialogTitle')),
+      content: Text(
+        canPrompt
+            ? _ogLCommon('webInstallDialogBody')
+            : _ogLCommon('webInstallChromiumBody'),
+      ),
+      actions: canPrompt
+          ? <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(_ogLCommon('cancel')),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(_ogLCommon('confirm')),
+              ),
+            ]
+          : <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(_ogLCommon('close')),
+              ),
+            ],
+    ),
+  );
+  if (!canPrompt || confirmed != true) {
+    return;
+  }
+  // 用户点了"添加"才真正调起浏览器安装弹窗；结果如实记入日志。
+  final String outcome = await ogLWebInstallPrompt();
+  OgLAppLog.instance.add('Web', '添加到桌面：浏览器返回=$outcome');
+}
+
+/// 等 `beforeinstallprompt`（最多约 3 秒）。返回是否已拿到可用的安装事件。
+Future<bool> _ogLWaitInstallEvent() async {
+  for (int attempt = 0; attempt < 10; attempt++) {
+    if (ogLWebInstallCanPrompt()) {
+      return true;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+  }
+  return ogLWebInstallCanPrompt();
 }

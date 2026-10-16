@@ -1,12 +1,13 @@
-/// L1 底座级 · DNS 策略的**平台原语**。
+/// L1 底座级 · DNS 策略的**平台原语**（非 Web 侧实现）。
 ///
 /// ## 为什么拆出这个文件
 /// `net_dns.dart` 的**策略逻辑**（报文编解码 / 缓存 / 竞速 / 回退 / 自检）
-/// 与平台无关；真正碰平台网络的只有三件事：
+/// 与平台无关，可以在 Web 上原样复用；真正碰平台网络的只有三件事：
 /// 系统解析、IP 字面量判断、明文 UDP 交换。
 ///
-/// 这三件事被收进本文件的 [DnsPlatform]；`net_dns.dart` 直接导入本文件，
-/// 从而本体不再 `import 'dart:io'`。
+/// 这三件事被收进本文件的 [DnsPlatform]；`net_dns.dart` 通过条件导入选用
+/// 本文件（非 Web）或 `net_dns_platform_web.dart`（Web），从而本体不再
+/// `import 'dart:io'` —— 浏览器里没有 `dart:io`，进来就是编译失败。
 library;
 
 import 'dart:async';
@@ -18,8 +19,9 @@ class DnsPlatform {
 
   /// 本平台是否支持**自定义 DNS（明文 UDP / DoH）**。
   ///
-  /// 恒为 `true`——`DnsService` 据此决定是否允许走自定义解析路径，
-  /// 避免留下一个"看起来能选、实际静默失效"的开关。
+  /// 原生平台为 `true`；Web 为 `false`（浏览器不给裸 socket）——
+  /// `DnsService` 据此决定是否允许走自定义解析路径，避免留下一个
+  /// "看起来能选、实际静默失效"的开关。
   static const bool supportsCustomDns = true;
 
   /// 系统解析：交给操作系统（`InternetAddress.lookup`）。
@@ -32,8 +34,7 @@ class DnsPlatform {
   ///
   /// 必须能区分 `host:port` 这类输入（它不是 IP），否则会把一个连不上的
   /// "地址"当成解析成功的直连目标。
-  static bool isIpLiteral(String host) =>
-      InternetAddress.tryParse(host) != null;
+  static bool isIpLiteral(String host) => InternetAddress.tryParse(host) != null;
 
   /// 明文 UDP DNS 交换：向 `serverIp:53` 发送 [query]，返回响应字节；
   /// 超时返回 `null`（由上层翻译成 `DnsException`）。
