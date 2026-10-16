@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!--
+  OGL Web 入口页（PWA）。
+
+  ## 为什么手写而不是用 flutter create 的模板
+  `flutter create` 生成的 index.html 只有最基本的一组标签。要让 Web 版可以
+  「添加到主屏幕 / 添加到程序坞」，还需要 PWA 清单与一组 apple-* 标签 ——
+  而这些**平台差异主要在 iOS Safari**：它不支持 `beforeinstallprompt`，
+  只能靠用户手动「共享 → 添加到主屏幕」，页面侧能做的是把那组标签写对
+  （apple-mobile-web-app-capable 决定全屏、apple-touch-icon 决定图标），
+  并在代码里给出对应指引。macOS 上 Safari 16+ 与 Chrome/Edge 行为一致，
+  走标准 beforeinstallprompt；Safari 也支持「添加到程序坞」。
+
+  ## CanvasKit 延迟加载
+  Flutter 3.x（≥3.22）默认 CanvasKit 渲染器在首次有 Canvas 需要绘制时
+  才下载 canvaskit.wasm / canvaskit.js（~3 MB），首屏 HTML 不再同步加载，
+  这一行为由 flutter_bootstrap.js 控制（Flutter 构建时生成，不在源码树里）。
+  本文件不引入任何 canvaskit_*.js 同步脚本，避免与上述默认行为冲突。
+  老的 Flutter 2.x 模板里直接 <script src="canvaskit_web.js"> 的写法在这里
+  不再适用（那个文件本身在 Flutter 3.x 已不存在）。
+
+  ## 图标
+  与其他平台同源：`assets/icon/ogl_icon.svg` 经 tool/desktop_icon.py 光栅化。
+-->
+<html lang="zh">
+<head>
+  <base href="./">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>OhGithubLost</title>
+  <meta name="description" content="OGL · OhGithubLost — GitHub 仓库管理器（Web 版）">
+
+  <!-- ── PWA：让浏览器允许「安装 / 添加到主屏幕」 ───────────────────── -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#171A21">
+
+  <!-- ── iOS Safari：这些是 iOS 上「添加到主屏幕」的实际开关 ────────── -->
+  <!--   -capable=yes  → 以独立窗口打开（不带 Safari 地址栏）
+       -status-bar-style → 状态栏样式
+       -title         → 主屏图标下方显示的名字
+       apple-touch-icon → iOS **不读** manifest 里的 icons，只认这个标签 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OGL">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
+
+  <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+  <!-- ── 资源源选择：运行时按实测速度挑镜像，失败依次降级 ──────────────
+       文档（本 index.html）**始终由当前站点提供**；Flutter 的静态资源
+       （flutter_bootstrap.js / main.dart.js|wasm / canvaskit / assets）
+       改为从**实测最快的镜像**加载。
+
+       为什么只换资源、不换整站：jsDelivr 的 gh 端点**不直出 HTML**
+       （`*.html` 会 301 到 raw.githubusercontent.com，国内不可达；
+        目录 URL 也是 404），所以页面只能留在本站。
+
+       候选（按实测排序，2026-10 在移动网络下测 1.4MB 主包：
+         fastly.jsdelivr 1.57s < netlify 3.27s < cdn.jsdelivr 3.96s）
+       选择方式：并行拉 13KB 的 flutter_bootstrap.js 取最快者；
+       结果写 localStorage 缓存 6 小时，之后不再探测（零额外延迟）。
+       全部失败 → 回退同源，行为与改动前完全一致。 -->
+  <script>
+    (function () {
+      var CANDIDATES = [
+        'https://fastly.jsdelivr.net/gh/OGL-Teams/OhGithubLost@web/app/',
+        './',
+        'https://cdn.jsdelivr.net/gh/OGL-Teams/OhGithubLost@web/app/'
+      ];
+      // 当前桶路径（如 'wasm/743/'）—— 从 location 推导，模板里不写死版本。
+      // 兼容两种部署根：站点发布 `app/`（路径 /wasm/743/）或仓库根（/app/wasm/743/）。
+      var suffix = location.pathname.replace(/^\/+/, '');
+      if (suffix.indexOf('app/') === 0) suffix = suffix.slice(4);
+      if (suffix.slice(-1) !== '/') suffix = suffix.replace(/[^/]*$/, '');
+      var PROBE_MS = 1000;
+      var CACHE_KEY = 'ogl.cdn.v1';
+      var CACHE_TTL = 6 * 3600 * 1000;
+
+      function start(base) {
+        // ★ 先把「必须同源」的链接固化成绝对 URL（此刻 <base> 还是 ./，
+        //   所以 href 解析出来就是本站地址），再换 base。
+        //   否则它们会跟着 base 跑到镜像上 —— 而 jsDelivr 会把 `*.png`
+        //   与 `*.html` **301 到 raw.githubusercontent.com**（国内不可达），
+        //   结果图标/清单请求长时间挂起。
+        var keep = document.querySelectorAll(
+          'link[rel="manifest"],link[rel="icon"],link[rel="apple-touch-icon"]');
+        for (var i = 0; i < keep.length; i++) {
+          try { keep[i].href = keep[i].href; } catch (e) {}
+        }
+        if (base !== './') {
+          var b = document.querySelector('base');
+          if (b) b.href = base + suffix;
+        }
+        var s = document.createElement('script');
+        s.src = 'flutter_bootstrap.js';
+        s.async = true;
+        document.body.appendChild(s);
+      }
+
+      function cached() {
+        try {
+          var raw = localStorage.getItem(CACHE_KEY);
+          if (!raw) return null;
+          var o = JSON.parse(raw);
+          if (!o || !o.base || (Date.now() - o.ts) > CACHE_TTL) return null;
+          if (CANDIDATES.indexOf(o.base) < 0) return null;
+          return o.base;
+        } catch (e) { return null; }
+      }
+
+      function probe(base) {
+        return new Promise(function (resolve) {
+          var t0 = Date.now();
+          var ctl = ('AbortController' in window) ? new AbortController() : null;
+          var done = false;
+          var timer = setTimeout(function () {
+            if (done) return;
+            done = true;
+            if (ctl) ctl.abort();
+            resolve(null);
+          }, PROBE_MS);
+          fetch(base + suffix + 'flutter_bootstrap.js', ctl ? { signal: ctl.signal } : undefined)
+            .then(function (r) {
+              if (!r.ok) throw new Error('HTTP ' + r.status);
+              return r.arrayBuffer();
+            })
+            .then(function () {
+              if (done) return;
+              done = true; clearTimeout(timer); resolve(Date.now() - t0);
+            })
+            .catch(function () {
+              if (done) return;
+              done = true; clearTimeout(timer); resolve(null);
+            });
+        });
+      }
+
+      var hit = cached();
+      if (hit) { start(hit); return; }
+
+      Promise.all(CANDIDATES.map(probe)).then(function (times) {
+        var best = null, bestMs = Infinity;
+        for (var i = 0; i < CANDIDATES.length; i++) {
+          if (times[i] !== null && times[i] < bestMs) { bestMs = times[i]; best = CANDIDATES[i]; }
+        }
+        if (!best) best = './';
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ base: best, ts: Date.now() })); } catch (e) {}
+        start(best);
+      });
+    })();
+  </script>
+</body>
+</html>

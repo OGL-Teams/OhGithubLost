@@ -1,0 +1,16 @@
+{
+  "content": "Inhalt",
+  "contentHint": "Code / Text einfügen oder eingeben",
+  "contentRequired": "Inhalt darf nicht leer sein",
+  "create": "Erstellen",
+  "createFailed": "Erstellen fehlgeschlagen: {error}",
+  "created": "Erstellt",
+  "creating": "Wird erstellt…",
+  "description": "Beschreibung (optional)",
+  "fileName": "Dateiname (mit Extension, definiert Highlight-Sprache)",
+  "fileNameHint": "Hinweis: Die Dateierweiterung beeinflusst die Highlight-Sprache (z. B. main.dart / app.py).",
+  "fileNameRequired": "Bitte Dateiname angeben",
+  "isPublic": "Öffentlicher Gist",
+  "isPublicDesc": "Nach Aktivierung kann jeder über den Link zugreifen",
+  "title": "Neuen Gist erstellen"
+}
