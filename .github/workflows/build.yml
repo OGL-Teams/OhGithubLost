@@ -351,10 +351,41 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "cmake;3.22.1" >/dev/null 2>&1 \
             && echo 'CMake 预装完成' || echo 'CMake 预装未完成（不阻塞）'
 
+      # ★ 预编译着色器（SkSL bundle）：Skia 平台（Windows / Linux）在首次
+      #   绘制新图元时会**运行时编译**着色器，表现为"动画/滚动第一帧卡一下"。
+      #   Flutter 的解法是预先把这些着色器编译好、随产物打包：
+      #     flutter run --profile --cache-sksl --write-sksl-on-exit <路径>
+      #   在**真实设备**上跑一遍主要交互后生成 bundle，之后构建时传
+      #   `--bundle-sksl-path` 即可消除这类首帧抖动。
+      #   本仓库**不预置** bundle（它依赖具体 GPU 驱动，必须由目标设备采集）；
+      #   一旦 sksl/warmup.sksl.json 入库，这条步骤就会自动启用它。
+      #   注：Android / iOS 用 Impeller，着色器在**构建期 AOT 编译**，
+      #   不需要也不需要 SkSL bundle（传了会被忽略）。
+      - name: 预编译着色器（SkSL bundle · 可选）
+        id: sksl
+        shell: bash
+        run: |
+          set -eu
+          bundle="sksl/warmup.sksl.json"
+          # SkSL 只对 Skia 桌面目标有意义（Android/iOS 走 Impeller 的 AOT 着色器）
+          if [ "${{ matrix.build }}" != "windows" ] && [ "${{ matrix.build }}" != "linux" ]; then
+            echo "SKSL_FLAG=" >> "$GITHUB_ENV"
+            echo "${{ matrix.label }}：非 Skia 桌面目标，跳过 SkSL（Impeller 已 AOT 预编译）"
+            exit 0
+          fi
+          if [ -f "$bundle" ]; then
+            echo "SKSL_FLAG=--bundle-sksl-path=$bundle" >> "$GITHUB_ENV"
+            echo "${{ matrix.label }}：已启用 SkSL 预编译着色器（$bundle）"
+          else
+            echo "SKSL_FLAG=" >> "$GITHUB_ENV"
+            echo "${{ matrix.label }}：未发现 $bundle —— 跳过（留空不影响构建）"
+          fi
+
       - name: 构建 ${{ matrix.label }}（非发布：按 pubspec 版本）
         if: github.event_name != 'workflow_dispatch' && matrix.build != 'linux'
         run: >-
           flutter build ${{ matrix.build }} ${{ matrix.args }}
+          ${{ env.SKSL_FLAG }}
           --dart-define-from-file=dart_define.json
 
       - name: 构建 ${{ matrix.label }}（发布：全平台注入版本号）
@@ -363,6 +394,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && matrix.build != 'linux'
         run: >-
           flutter build ${{ matrix.build }} ${{ matrix.args }}
+          ${{ env.SKSL_FLAG }}
           --build-name=${{ inputs.version_name }}
           --build-number=${{ inputs.version_number }}
           --dart-define-from-file=dart_define.json

@@ -50,6 +50,9 @@ const String kOgLAppVersion = '9.1.0';
 const String kOgLBootManifestJson = String.fromEnvironment('OGL_BOOT_MANIFEST');
 
 void main() async {
+  // ★ 启动耗时埋点：进程开始 → 首帧渲染完成。
+  //   没有这个数字，"冷启动优化"就只能靠感觉；有了它，每次改动的影响可对比。
+  final Stopwatch bootWatch = Stopwatch()..start();
   WidgetsFlutterBinding.ensureInitialized();
   // ★ 冷启动首帧：**先渲染占位屏**，再做重活。
   //
@@ -229,6 +232,13 @@ void main() async {
     //   复核，但完全没有"必须做完才能显示界面"的理由）。这里把它挪到
     //   `runApp` 之后 fire-and-forget：用户立即看到应用，自检结果以
     //   通知/日志形式稍后呈现。
+    // 首帧之前的全部准备工作已完成 —— 记下"到真实界面"的总耗时。
+    // （含首帧占位屏的渲染；不含真实界面自身首帧的布局/绘制。）
+    OgLAppLog.instance.add(
+      '启动',
+      '启动总耗时=${bootWatch.elapsedMilliseconds}ms（进程 → 真实界面就绪）',
+      severity: OgLNoticeSeverity.info,
+    );
     OgLAppLog.instance.result('启动', '进入界面（runApp）', '启动报告已就绪');
     runApp(OgLApp(surface: surfaceModule.bridge, report: report));
 

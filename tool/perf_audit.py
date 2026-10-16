@@ -60,6 +60,15 @@ RULES = [
     ('shrinkWrap', re.compile(r'shrinkWrap:\s*true')),
     ('宽 MediaQuery.of', re.compile(r'MediaQuery\.of\(context\)')),
     ('Opacity 控件', re.compile(r'(?<!Animated)\bOpacity\(')),
+    # ── 着色器 / 合成类卡顿源 ────────────────────────────────────────────
+    # 以下四类都会触发 saveLayer（离屏合成）：每帧一次额外的全区域绘制，
+    # 是"动画/滚动卡顿"的典型成因，且在 Skia 桌面目标上还会触发**运行时
+    # 着色器编译**（首帧明显掉帧）。
+    # 若确有必要使用，请在本文件的白名单里登记并写明理由。
+    ('BackdropFilter（saveLayer）', re.compile(r'\bBackdropFilter\(')),
+    ('ImageFilter.blur（saveLayer）', re.compile(r'ImageFilter\.blur|BlurStyle')),
+    ('ColorFiltered（saveLayer）', re.compile(r'\bColorFiltered\(')),
+    ('ShaderMask（saveLayer）', re.compile(r'\bShaderMask\(')),
 ]
 
 # 「急加载长列表」需要看**块**：`ListView(children: [...])` 里出现 `for (`
