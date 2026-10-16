@@ -19,6 +19,11 @@
 /// - `gapLg`（16）→ 卡片之间、section 起始；
 /// - `gapXl`（24）/ `gapXxl`（32）→ 页面级；
 /// - `gapHuge`（48）/ `gapMega`（64）→ 顶部大留白（页面 hero、首次引导）。
+library;
+
+import 'package:flutter/material.dart';
+
+/// 间距系统：8 点节奏 + 整数倍。
 abstract final class OgLSpace {
   // 极小 / 小 / 中 / 大 / 巨 / 极大 / 超大 / 巨型
   static const double xxs = 4;
