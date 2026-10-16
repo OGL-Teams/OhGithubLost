@@ -5,12 +5,12 @@
 library;
 
 import '../../kernel/contract/module.dart';
+import 'io_net_transport.dart';
 import 'net_dns.dart';
 import 'net_mirror.dart';
 import 'net_retry.dart';
 import 'net_transport.dart';
 import 'net_types.dart';
-import 'web_net_transport.dart';
 
 /// 网络连接门面。
 class NetBridge {
@@ -33,20 +33,10 @@ class NetBridge {
       return '系统解析';
     }
     final policy = service.policy;
-    // Web：浏览器不给裸 socket，自定义 DNS **不接管连接**（拿到的 IP 无法
-    // 回灌给浏览器的网络栈）。这里如实告诉用户，而不是展示一个切过去
-    // 也毫无作用的开关；DoH 查询确实可用，因此也一并说明它做了什么。
+    // Web：浏览器不给裸 socket，自定义 DNS / DoH **不可能生效**。
+    // 这里如实告诉用户，而不是展示一个切过去也毫无作用的开关。
     if (!service.supportsCustomDns) {
-      if (policy.mode != NetDnsMode.custom) {
-        return '系统解析（Web：连接由浏览器解析）';
-      }
-      if (service.supportsDohQuery && policy.preferDoh) {
-        final DnsServer? first =
-            policy.servers.isEmpty ? null : policy.servers.first;
-        return 'DoH 查询${first == null ? '' : '（${first.label}）'} · '
-            '连接仍由浏览器解析';
-      }
-      return '系统解析（Web：无明文 UDP 通道；DoH 未启用）';
+      return '系统解析（Web 浏览器不允许自定义 DNS）';
     }
     if (policy.mode == NetDnsMode.system) {
       return '系统解析';
@@ -71,15 +61,32 @@ class NetBridge {
     required bool custom,
     required String serverId,
     required bool preferDoh,
+    String customIp = '',
+    String customDohUrl = '',
   }) {
     final service = dns;
     if (service == null) {
       return;
     }
+    // ★ 自定义 DNS：用户在设置里填了 IP 就构造一个临时 DnsServer 传下去。
+    //   DoH 端点必须是 `https://`（明文 HTTP 的 DoH 等于不设防），
+    //   不合法就只走明文 UDP（`ogLIsUsableDohEndpoint` 做同一套判定）。
+    final String ip = customIp.trim();
+    final DnsServer? customServer = ip.isEmpty
+        ? null
+        : DnsServer(
+            id: 'custom',
+            label: '自定义',
+            ip: ip,
+            dohUrl: ogLIsUsableDohEndpoint(customDohUrl)
+                ? customDohUrl.trim()
+                : null,
+          );
     service.applySelection(
       custom: custom,
       serverId: serverId,
       preferDoh: preferDoh,
+      customServer: customServer,
     );
   }
 
@@ -118,15 +125,11 @@ class NetModule extends OgLModule {
   /// 这样"内置 DNS"始终可用，而**默认行为与不加 DNS 完全一致**。
   ///
   /// ## 为什么默认就把 DoH 的 HTTP 能力装上
-  /// 底座本体不 import 平台 HTTP 客户端（它要能在任何平台编译），DoH 所需的
-  /// HTTP 能力必须由装配层注入。此前没人注入 —— 于是设置里的「DoH 优先」
-  /// 开着也**永远不会真的走 DoH**（默认工厂只造明文 UDP，
-  /// `DohDnsResolver` 全项目没有任何实例化点）。这里把它接上：
+  /// 底座本体不 `import 'dart:io'`（它要能在任何平台编译），DoH 所需的
+  /// HTTP 能力必须由装配层注入。此前没人注入 —— 于是设置里的
+  /// 「DoH 优先」开着也**永远不会真的走 DoH**（默认工厂写死明文 UDP，
+  /// `IoDnsHttpClient` 全项目没有任何使用点）。这里把它接上：
   /// 用户选的自定义 DNS + DoH 优先，才是它字面上的意思。
-  ///
-  /// Web 侧的诚实边界：DoH 在浏览器里只能**查询**（真解析、真 IP），
-  /// **不能接管连接**——连接仍由浏览器自己的解析器决定；这一点由
-  /// `DnsService` 的日志（`OGL-DNS-105`）与 `dnsSummary` 如实说明。
   NetModule({
     NetTransport? transport,
     NetObserver? observer,
@@ -135,7 +138,7 @@ class NetModule extends OgLModule {
     NetTransport Function()? transportFactory,
     DnsService? dns,
   })  : _observer = observer ?? NetObserver(),
-        _dns = dns ?? DnsService(dohClient: WebDohHttpClient()),
+        _dns = dns ?? DnsService(dohClient: IoDnsHttpClient()),
         _explicit = transport {
     _policy = policy;
     _mirrors = mirrors ?? MirrorSelector();
@@ -167,8 +170,7 @@ class NetModule extends OgLModule {
 
     final inner = _explicit ??
         _factory?.call() ??
-        // 传输实现：package:http 的 BrowserClient
-        // （本分支为纯 Web 构建，浏览器里没有 dart:io）。
+        // 传输实现：dart:io 的 HttpClient（`io_net_transport.dart`）。
         createPlatformNetTransport(
           _dns,
           connectTimeout: const Duration(seconds: 15),
@@ -196,12 +198,6 @@ class NetModule extends OgLModule {
         'policy': _policy.toString(),
         'mirrors': _mirrors.channels.length,
         'dns': bridge.dnsSummary,
-        // 能力边界一并上报：Web 上自定义 DNS 只做得到"查询"。
-        'dnsCapabilities': <String, Object?>{
-          'udp': _dns.supportsUdpDns,
-          'dohQuery': _dns.supportsDohQuery,
-          'takeover': _dns.supportsCustomDns,
-        },
         'syslog': 'DNS 策略可随时切换，不重建传输层',
       },
     );

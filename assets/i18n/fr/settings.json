@@ -165,5 +165,11 @@
   "expandGroup": "Développer",
   "collapseGroup": "Réduire",
   "logsSaving": "Écriture sur disque active",
-  "logsLineCount": "{count} lignes"
+  "logsLineCount": "{count} lignes",
+  "dnsCustom": "Serveur DNS personnalisé",
+  "dnsCustomHint": "Saisissez l'IP du résolveur ; point de terminaison DoH https:// facultatif.",
+  "dnsCustomIpLabel": "IP du résolveur",
+  "dnsCustomDohLabel": "Point de terminaison DoH (facultatif)",
+  "dnsCustomSaved": "DNS personnalisé appliqué",
+  "save": "Enregistrer"
 }

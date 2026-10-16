@@ -74,6 +74,8 @@ class OgLSettings {
     this.dnsMode = 'system',
     this.dnsServerId = 'alidns',
     this.dnsPreferDoh = true,
+    this.dnsCustomIp = '',
+    this.dnsCustomDohUrl = '',
     this.downloadConnections = OgLSettings.kOgLDefaultDownloadConnections,
     this.releaseProxyEnabled = false,
     this.accelPrivateRepoAccepted = false,
@@ -139,6 +141,10 @@ class OgLSettings {
       dnsServerId:
           serverId is String && serverId.isNotEmpty ? serverId : 'alidns',
       dnsPreferDoh: _asBool(raw['dnsPreferDoh'], fallback: true),
+      dnsCustomIp: raw['dnsCustomIp'] is String ? raw['dnsCustomIp'] as String : '',
+      dnsCustomDohUrl: raw['dnsCustomDohUrl'] is String
+          ? raw['dnsCustomDohUrl'] as String
+          : '',
       downloadConnections: _asDownloadConnections(raw['downloadConnections']),
       releaseProxyEnabled: _asBool(raw['releaseProxyEnabled'], fallback: false),
       accelPrivateRepoAccepted:
@@ -257,24 +263,17 @@ class OgLSettings {
 
   /// 支持的语言代码白名单（与展示层 `og_l_i18n.dart` 保持一致）。
   ///
+  /// v6.4.0 起收敛为 **6 种**（简中 / 繁中 / 英 / 德 / 法 / 俄）——
+  /// 与 [OgLI18n.locales]、`assets/i18n/` 目录、pubspec 资源声明三处对齐。
   /// 保持"数据层不认识 UI 资源"的前提下，这里只存**代码**；
   /// 具体加载由展示层完成，非法代码一律回落 `zh`。
   static const List<String> languageCodes = <String>[
     'zh',
     'zh_TW',
     'en',
-    'ja',
-    'ko',
-    'fr',
     'de',
-    'es',
-    'pt',
+    'fr',
     'ru',
-    'ar',
-    'hi',
-    'th',
-    'vi',
-    'id',
   ];
 
   static String _asLocale(Object? value) =>
@@ -332,6 +331,15 @@ class OgLSettings {
 
   /// 是否优先 DoH（加密解析）。
   final bool dnsPreferDoh;
+
+  /// 自定义 DNS 服务器 IP（空串 = 未自定义）。
+  ///
+  /// 与 [dnsServerId] 的关系：`dnsServerId == 'custom'` 时用本字段；
+  /// 内置五家（ali/dnspod/114/cloudflare/google）用不到它。
+  final String dnsCustomIp;
+
+  /// 自定义 DoH 端点（可选；必须 `https://`，空串 = 用明文 UDP）。
+  final String dnsCustomDohUrl;
 
   /// 下载并发连接数（1 = 单连接走库；>1 = 多连接分片）。
   ///
@@ -470,6 +478,8 @@ class OgLSettings {
     bool? reduceMotion,
     String? dnsMode,
     String? dnsServerId,
+    String? dnsCustomIp,
+    String? dnsCustomDohUrl,
     bool? dnsPreferDoh,
     int? downloadConnections,
     bool? releaseProxyEnabled,
@@ -503,6 +513,8 @@ class OgLSettings {
         reduceMotion: reduceMotion ?? this.reduceMotion,
         dnsMode: dnsMode ?? this.dnsMode,
         dnsServerId: dnsServerId ?? this.dnsServerId,
+        dnsCustomIp: dnsCustomIp ?? this.dnsCustomIp,
+        dnsCustomDohUrl: dnsCustomDohUrl ?? this.dnsCustomDohUrl,
         dnsPreferDoh: dnsPreferDoh ?? this.dnsPreferDoh,
         downloadConnections: downloadConnections ?? this.downloadConnections,
         releaseProxyEnabled: releaseProxyEnabled ?? this.releaseProxyEnabled,
@@ -543,6 +555,8 @@ class OgLSettings {
         'dnsMode': dnsMode,
         'dnsServerId': dnsServerId,
         'dnsPreferDoh': dnsPreferDoh,
+        'dnsCustomIp': dnsCustomIp,
+        'dnsCustomDohUrl': dnsCustomDohUrl,
         'downloadConnections': downloadConnections,
         'releaseProxyEnabled': releaseProxyEnabled,
         'accelPrivateRepoAccepted': accelPrivateRepoAccepted,
@@ -633,6 +647,17 @@ class OgLSettingsController extends ChangeNotifier {
   /// 是否已完成一次加载。
   bool get isLoaded => _loaded;
 
+  /// UI 已消费一次错误后清零（弹过一次 SnackBar 后调用，避免反复弹同一条）。
+  ///
+  /// **不是**「下一次错误前不要再弹」——而是「这次已经告诉过用户了」。
+  void clearLastError() {
+    if (_lastError == null) {
+      return;
+    }
+    _lastError = null;
+    notifyListeners();
+  }
+
   /// 加载（**永不抛**：坏数据回落默认并记录原因）。
   ///
   /// **首次启动**（尚无持久化数据）跟随系统语言：系统语言受支持就用它，
@@ -685,6 +710,20 @@ class OgLSettingsController extends ChangeNotifier {
   /// 便捷：设置 DoH 优先。
   Future<void> setDnsPreferDoh(bool enabled) =>
       apply(_settings.copyWith(dnsPreferDoh: enabled));
+
+  /// 便捷：设置自定义 DNS 服务器 IP（空串 = 取消自定义）。
+  ///
+  /// 切换 id 到 `custom`：设置了 IP 即视为用户想用自定义解析器。
+  Future<void> setDnsCustomIp(String ip) => apply(
+        _settings.copyWith(
+          dnsCustomIp: ip.trim(),
+          dnsServerId: ip.trim().isEmpty ? _settings.dnsServerId : 'custom',
+        ),
+      );
+
+  /// 便捷：设置自定义 DoH 端点（空串 = 只用明文 UDP）。
+  Future<void> setDnsCustomDohUrl(String url) =>
+      apply(_settings.copyWith(dnsCustomDohUrl: url.trim()));
 
   /// 便捷：Release 附件是否走加速通道（总开关）。
   Future<void> setReleaseProxyEnabled(bool enabled) =>

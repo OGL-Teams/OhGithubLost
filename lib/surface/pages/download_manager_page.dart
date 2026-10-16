@@ -17,6 +17,7 @@ import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `download_manager_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -137,6 +138,12 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
     final ThemeData theme = Theme.of(context);
     final SurfaceBridge surface = widget.surface;
     return Scaffold(
+      // 单个任务卡片 build 抛错时隔离红屏：替换为兜底卡片而非整页红框。
+      body: ErrorWidget.builder =
+          (FlutterErrorDetails details) => _TaskCardError(
+                message: details.exceptionAsString(),
+                onRetry: () => setState(() {}),
+              ),
       appBar: AppBar(
         title: Text(_t('title')),
         actions: <Widget>[
@@ -178,8 +185,8 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
           Expanded(
             child: ListenableBuilder(
               listenable: surface.downloadsListenable,
-              builder: (BuildContext context, Widget? _) {
-                final List<IxDownloadTask> tasks = surface.downloadTasks;
+              builder: (BuildContext context, List<IxDownloadTask>? tasks) {
+                tasks = tasks ?? const <IxDownloadTask>[];
                 if (tasks.isEmpty) {
                   return Center(
                     child: Column(
@@ -190,7 +197,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                           size: 48,
                           color: theme.colorScheme.outline,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: OgLSpace.md),
                         Text(_t('empty')),
                         const SizedBox(height: 4),
                         Text(
@@ -205,11 +212,17 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                   padding: const EdgeInsets.all(12),
                   itemCount: tasks.length,
                   separatorBuilder: (BuildContext context, int index) =>
-                      const SizedBox(height: 8),
-                  itemBuilder: (BuildContext context, int index) => OgLReveal(
-                    delay: OgLAnim.staggerOf(context, index),
-                    child: _taskCard(context, theme, tasks[index]),
-                  ),
+                      const SizedBox(height: OgLSpace.sm),
+                  itemBuilder: (BuildContext context, int index) {
+                    // 重建期间 tasks 可能已变短，越界兜底。
+                    if (index < 0 || index >= tasks.length) {
+                      return const SizedBox.shrink();
+                    }
+                    return OgLReveal(
+                      delay: OgLAnim.staggerOf(context, index),
+                      child: _taskCard(context, theme, tasks[index]),
+                    );
+                  },
                 );
               },
             ),
@@ -235,7 +248,13 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       return;
     }
     for (final IxDownloadTask task in failed) {
-      await surface.retryDownload(task.id);
+      try {
+        await surface.retryDownload(task.id);
+      } on Object catch (_) {
+        // 单条重试失败不能让整批中断；落日志由中枢层处理。
+        // ignore: avoid_print
+        print('[DL] retry ${task.fileName} failed; continuing batch');
+      }
     }
     if (mounted) {
       OgLDownloadNotice.instance.show(context, surface,
@@ -276,7 +295,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
             Row(
               children: <Widget>[
                 Icon(_iconFor(task.category), size: 20),
-                const SizedBox(width: 8),
+                const SizedBox(width: OgLSpace.sm),
                 Expanded(
                   child: Text(
                     task.fileName,
@@ -499,7 +518,10 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       if (!ok) {
         throw StateError(_t('noAppForFile'));
       }
-    } catch (_) {
+    } on Object catch (error) {
+      // 打不开就走"复制路径"兜底；保留异常对象供日志排查。
+      // ignore: avoid_print
+      print('[DL] open local failed: $error; falling back to copy path');
       await ogLCopyText(task.savePath, tag: '下载路径');
       if (context.mounted) {
         OgLDownloadNotice.instance.show(context, surface,
@@ -514,5 +536,43 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       OgLDownloadNotice.instance.show(context, surface,
           message: _t("pathCopied"), kind: DownloadNoticeKind.success);
     }
+  }
+}
+
+/// 兜底卡片：**当任务卡片 build 抛错时**显示，不让单条坏任务染红整页。
+class _TaskCardError extends StatelessWidget {
+  const _TaskCardError({required this.message, required this.onRetry});
+  final String message;
+  final VoidCallback onRetry;
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(OgLSpace.md),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.error_outline,
+                color: theme.colorScheme.onErrorContainer),
+            const SizedBox(width: OgLSpace.sm),
+            Expanded(
+              child: Text(
+                message,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onErrorContainer,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            TextButton(
+              onPressed: onRetry,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

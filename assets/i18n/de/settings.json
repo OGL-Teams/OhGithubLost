@@ -165,5 +165,11 @@
   "expandGroup": "Erweitern",
   "collapseGroup": "Einklappen",
   "logsSaving": "Wird protokolliert",
-  "logsLineCount": "{count} Zeilen"
+  "logsLineCount": "{count} Zeilen",
+  "dnsCustom": "Benutzerdefinierter DNS-Server",
+  "dnsCustomHint": "Resolver-IP eingeben; optionaler https:// DoH-Endpunkt. IP leeren zum Abbrechen.",
+  "dnsCustomIpLabel": "Resolver-IP",
+  "dnsCustomDohLabel": "DoH-Endpunkt (optional)",
+  "dnsCustomSaved": "Benutzerdefinierter DNS aktiv",
+  "save": "Speichern"
 }

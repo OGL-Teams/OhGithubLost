@@ -165,5 +165,11 @@
   "expandGroup": "展開",
   "collapseGroup": "收合",
   "logsSaving": "已寫入磁碟",
-  "logsLineCount": "{count} 行"
+  "logsLineCount": "{count} 行",
+  "dnsCustom": "自訂 DNS 伺服器",
+  "dnsCustomHint": "填寫解析器 IP；可選填 https:// 的 DoH 端點。清空 IP 即取消自訂。",
+  "dnsCustomIpLabel": "解析器 IP",
+  "dnsCustomDohLabel": "DoH 端點（可選）",
+  "dnsCustomSaved": "自訂 DNS 已生效",
+  "save": "儲存"
 }

@@ -880,6 +880,28 @@ class _SettingsPageState extends State<SettingsPage> {
                       onChanged: (bool on) =>
                           unawaited(widget.surface.setDnsPreferDoh(on)),
                     ),
+                    // ★ 自定义 DNS 服务器（IP + 可选 DoH 端点）。
+                    //   内置五家覆盖不了所有网络（企业内网 / 自建解析器），
+                    //   这里把"用什么解析"完全交给用户——与内置选择平级，
+                    //   不新增设置层级。
+                    ListTile(
+                      contentPadding: kOgLSettingsRowPadding,
+                      leading: const Padding(
+                        padding: EdgeInsets.only(left: 16),
+                        child: Icon(Icons.edit_location_alt_outlined),
+                      ),
+                      title: Text(_t('dnsCustom')),
+                      subtitle: Text(
+                        value.dnsCustomIp.isEmpty
+                            ? _t('dnsCustomHint')
+                            : '${value.dnsCustomIp}'
+                                '${value.dnsCustomDohUrl.isEmpty ? '' : ' · DoH'}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => unawaited(_editCustomDns(value)),
+                    ),
                   ],
                 )
               : const SizedBox(width: double.infinity),
@@ -894,6 +916,72 @@ class _SettingsPageState extends State<SettingsPage> {
     await widget.surface.setDnsServer(serverId);
     if (mounted) {
       _notifier.success(_t('dnsSaved'));
+    }
+  }
+
+  /// 编辑自定义 DNS（IP 必填，DoH 端点可选）。
+  ///
+  /// 约束与底座一致：IP 走明文 UDP；DoH 端点必须是 `https://`（明文 HTTP 的
+  /// DoH 等于不设防）。清空 IP = 取消自定义。
+  Future<void> _editCustomDns(OgLSettings value) async {
+    final TextEditingController ip =
+        TextEditingController(text: value.dnsCustomIp);
+    final TextEditingController doh =
+        TextEditingController(text: value.dnsCustomDohUrl);
+    final bool? ok = await _showOgLDialog<bool>(
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: Text(_t('dnsCustom')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              _t('dnsCustomHint'),
+              style: Theme.of(dialogContext).textTheme.bodySmall,
+            ),
+            const SizedBox(height: OgLSpace.md),
+            TextField(
+              controller: ip,
+              keyboardType: TextInputType.text,
+              decoration: InputDecoration(
+                labelText: _t('dnsCustomIpLabel'),
+                hintText: '223.5.5.5',
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: OgLSpace.md),
+            TextField(
+              controller: doh,
+              keyboardType: TextInputType.url,
+              decoration: InputDecoration(
+                labelText: _t('dnsCustomDohLabel'),
+                hintText: 'https://dns.example.com/resolve',
+                border: const OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(_t('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(_t('save')),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) {
+      return;
+    }
+    // 先写 DoH 再写 IP：setDnsCustomIp 会把 serverId 切到 'custom'，
+    // 顺序反了会让"填了 IP 但 DoH 还没落盘"的瞬间以明文生效。
+    await widget.surface.setDnsCustomDohUrl(doh.text.trim());
+    await widget.surface.setDnsCustomIp(ip.text.trim());
+    if (mounted) {
+      _notifier.success(_t('dnsCustomSaved'));
     }
   }
 

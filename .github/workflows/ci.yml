@@ -40,6 +40,12 @@ jobs:
       - name: 分层审计（依赖只能向下）
         run: python3 tool/layer_audit.py --fatal
 
+      # 版本一致性：`lib/main.dart` 的 kOgLAppVersion 必须与 pubspec 一致。
+      # 历史上它长期停留在 7.4.0 而 pubspec 已到 9.x ——「关于」页与诊断日志
+      # 谎报版本，构建与发布流程却浑然不知。这条门禁杜绝复发。
+      - name: 版本一致性审计（main.dart 与 pubspec 对齐）
+        run: python3 tool/version_sync.py
+
       - name: i18n 审计（界面文案 0 遗漏 / 分片键集合一致）
         run: python3 tool/i18n_scan.py --check
 
