@@ -25,6 +25,8 @@ export '../domain/gh/gh_auth.dart' hide GhAuthService;
 export '../domain/gh/gh_client.dart' hide GhClient;
 export '../domain/gh/gh_draft.dart';
 export '../domain/gh/gh_models.dart';
+
+/// 仓库文件操作：暴露结果 / 进度 / 阶段 / 逐项明细，**隐藏**服务实现。
 export '../domain/gh/repo_file_service.dart' hide RepoFileService;
 
 /// 下载：暴露任务 / 分类 / 状态，**隐藏**下载管理器。

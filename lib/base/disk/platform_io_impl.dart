@@ -165,8 +165,7 @@ class IoDiskFileStore implements DiskFileStore {
         return <String, String>{};
       }
       return decoded.map(
-        (Object? k, Object? v) =>
-            MapEntry<String, String>('$k', '$v'),
+        (Object? k, Object? v) => MapEntry<String, String>('$k', '$v'),
       );
     } catch (_) {
       return <String, String>{};
@@ -196,11 +195,9 @@ class IoDiskFileStore implements DiskFileStore {
       final String name = '$tooLongPrefix$hex.zip';
 
       final String norm = InMemoryFileStore.normalize(relative);
-      String dir = norm.contains('/')
-          ? norm.substring(0, norm.lastIndexOf('/'))
-          : '';
-      while (dir.isNotEmpty &&
-          '$_root/$dir/$name'.length > kWinPathSoftLimit) {
+      String dir =
+          norm.contains('/') ? norm.substring(0, norm.lastIndexOf('/')) : '';
+      while (dir.isNotEmpty && '$_root/$dir/$name'.length > kWinPathSoftLimit) {
         final int cut = dir.lastIndexOf('/');
         dir = cut <= 0 ? '' : dir.substring(0, cut);
       }
@@ -239,7 +236,8 @@ class IoDiskFileStore implements DiskFileStore {
       if (!await file.exists()) {
         return null;
       }
-      final Archive archive = ZipDecoder().decodeBytes(await file.readAsBytes());
+      final Archive archive =
+          ZipDecoder().decodeBytes(await file.readAsBytes());
       for (final ArchiveFile entry in archive.files) {
         if (entry.name == norm) {
           final Object? data = entry.content;
@@ -316,9 +314,8 @@ class IoDiskFileStore implements DiskFileStore {
       }
     }
     // 被收纳的条目：名字在索引里，不在目录里——也要如实列出来。
-    final String prefix = directory.isEmpty
-        ? ''
-        : '${InMemoryFileStore.normalize(directory)}/';
+    final String prefix =
+        directory.isEmpty ? '' : '${InMemoryFileStore.normalize(directory)}/';
     for (final String rel in (await _index()).keys) {
       if (!rel.startsWith(prefix)) {
         continue;
@@ -343,7 +340,8 @@ class IoDiskFileStore implements DiskFileStore {
     }
     var removed = 0;
     final failed = <String>[];
-    await for (final entity in rootDir.list(recursive: true, followLinks: false)) {
+    await for (final entity
+        in rootDir.list(recursive: true, followLinks: false)) {
       if (entity is! File ||
           !entity.path.replaceAll(r'\', '/').endsWith('.tmp')) {
         continue;
@@ -368,15 +366,15 @@ class IoDiskFileStore implements DiskFileStore {
 /// （[keys] 靠读原键还原）。
 class IoDiskKv implements DiskKv {
   /// 创建键值存储。
-  IoDiskKv({required String root})
-      : _store = IoDiskFileStore(root: '$root/kv');
+  IoDiskKv({required String root}) : _store = IoDiskFileStore(root: '$root/kv');
 
   final IoDiskFileStore _store;
 
   /// 底层文件存储（诊断用）。
   IoDiskFileStore get store => _store;
 
-  static String _nameOf(String key) => '${sha256.convert(utf8.encode(key))}.json';
+  static String _nameOf(String key) =>
+      '${sha256.convert(utf8.encode(key))}.json';
 
   @override
   Future<String?> read(String key) async {
@@ -446,16 +444,14 @@ class SecureDiskVault implements DiskVault {
   static const String _prefix = 'ogl.vault.';
 
   @override
-  Future<String?> readSecret(String key) =>
-      _storage.read(key: '$_prefix$key');
+  Future<String?> readSecret(String key) => _storage.read(key: '$_prefix$key');
 
   @override
   Future<void> writeSecret(String key, String value) =>
       _storage.write(key: '$_prefix$key', value: value);
 
   @override
-  Future<void> deleteSecret(String key) =>
-      _storage.delete(key: '$_prefix$key');
+  Future<void> deleteSecret(String key) => _storage.delete(key: '$_prefix$key');
 }
 
 /// 平台目录规划（应用私有目录下）。

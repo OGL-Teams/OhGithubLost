@@ -1,17 +1,15 @@
-/// L2 中枢级 · 第一跳解析的**原生实现**（非 Web）。
+/// L2 中枢级 · 第一跳解析的**原生实现**。
 ///
 /// 用 `dart:io HttpClient` 手工走第一跳：**显式不跟随重定向**，
-/// 自己读取并校验 `Location`（跳转目标由本仓库校验，不依赖 SDK 的隐式行为）。
-///
-/// 只在非 Web 构建里参与编译（由 `ix_presign.dart` 的条件导入选定）；
-/// Web 对应文件是 `ix_presign_web.dart`（无法预签名，如实返回原地址）。
+/// 自己读取并校验 `Location`（跳转目标由本仓库校验，不依赖 SDK 的隐式行为）；
+/// 由 `ix_presign.dart` 导入。
 library;
 
 import 'dart:io';
 
 import 'ix_presign.dart';
 
-/// 第一跳探测（非 Web）。
+/// 第一跳探测。
 abstract final class IxPresignProbe {
   /// 走完第一跳，返回可直接下载的地址（失败时 `url` 为 `null`）。
   static Future<IxPresignResult> resolve(

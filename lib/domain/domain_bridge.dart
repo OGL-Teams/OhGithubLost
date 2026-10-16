@@ -13,7 +13,7 @@ import 'dart:async';
 
 import '../base/base_bridge.dart';
 import '../base/disk/og_l_storage.dart';
-import '../base/net/ai_http_client_web.dart';
+import '../base/net/ai_http_client_io.dart';
 import '../base/net/net_bridge.dart';
 import '../base/net/net_transport.dart';
 import '../base/net/range_download.dart';
@@ -344,8 +344,13 @@ class IxModule extends OgLModule {
       engine: OgLRangeDownloader(),
       // 成品导出（存储②档：把成品粘贴到用户选的 SAF 文件夹）。
       storageExporter: const _OgLStorageExporter(),
-      // ★ 落盘目录裁决器（装配根注入）：Web 后端实现为**空操作**
-      //   （下载交给浏览器，页面无落盘目录可裁决）；注入只为两平台留同一装配形状。
+      // ★ 落盘目录裁决器（装配根注入，逻辑层只认函数签名）：
+      //   返回的目录 = 「存储方案实际写入位置」/download。
+      //   ① 公共目录档时即 /storage/emulated/0/ogl/download——
+      //   下载**直接写进用户可见的 ogl 目录**（旧实现写死应用私有目录，
+      //   用户"拿到了 ogl 权限却永远看不到文件"，还要靠打开 file:// 失败
+      //   才发现文件根本不在那）。② SAF 档照旧私有 + 完成后导出；
+      //   ③ 内部档维持私有。后端拿不到裁决（null）时回退私有目录，绝不阻塞下载。
       downloadDirProvider: () async =>
           '${(await OgLStorage.plan()).root}/download',
     );
@@ -399,17 +404,32 @@ class DomainLayerModule extends OgLModule {
 
   @override
   Future<void> onRegister(KernelContext context) async {
+    // 第一跳解析（presign）需要**当前账号的令牌**：从认证服务实时取；
+    // 未登录时返回 `null`（公开资源照样能拿到签名地址，只是不带 Authorization）。
+    final ghAuth = context.di.resolve<GhAuthService>();
+    // ★ 仓库文件操作服务：create / delete / rename / copy / batch 的统一入口。
+    //   注册进 DI（后续模块可直接解析），并挂到中枢桥（展示层经
+    //   `surface_bridge` 的转发取用；转发由后续相位补上）。
+    final RepoFileService repoFiles = RepoFileService(
+      api: context.di.resolve<GhApi>(),
+      diagnostics: context.diagnostics,
+    );
+    context.di.register<RepoFileService>(repoFiles);
+
+    // ── AI 助手：依赖经抽象注入（DiskKv / DiskVault / AiHttpClient）。
+    //    工具注册表暂时为空——GitHub 操作工具（建 Issue / 读文件 / 建 PR …）
+    //    在后续相位由 `domain/gh` 的只读/受控工具逐项接入。
     final base = BaseBridge.of(context.bridges);
     final AiService ai = AiService(
       store: base.disk.kv,
       vault: base.disk.vault,
-      http: AiHttpClientWeb(),
+      http: const AiHttpClientIo(),
       tools: buildAiTools(context.di.resolve<GhApi>()),
     );
     context.di.register<AiService>(ai);
 
     final bridge = DomainBridge(
-      auth: context.di.resolve<GhAuthService>(),
+      auth: ghAuth,
       api: context.di.resolve<GhApi>(),
       client: context.di.resolve<GhClient>(),
       session: context.di.resolve<IxSession>(),
@@ -420,6 +440,13 @@ class DomainLayerModule extends OgLModule {
       ai: ai,
       downloads: context.di.resolve<IxDownloadManager>(),
       actionLogs: context.di.resolve<IxActionLogs>(),
+      repoFiles: repoFiles,
+      // 第一跳解析：此前**漏传**，DomainBridge 只能退回 `tokenProvider` 恒为
+      // `null` 的兜底实例 —— 私有仓库的 Release 附件 / Action 产物因此拿不到
+      // 签名地址。令牌在本地取用，不落到别处。
+      presign: IxPresign(
+        tokenProvider: () async => (await ghAuth.activeToken())?.value,
+      ),
     );
     context.bridges.register(ModuleLayer.domain.key, bridge);
     context.diagnostics.info(

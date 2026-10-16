@@ -101,6 +101,12 @@ class AiHttpClientIo implements AiHttpClient {
       rethrow;
     } on SocketException catch (e) {
       throw AiTransportException('连接失败：${e.message}');
+    } on IOException catch (e) {
+      // ★ SDK 里 HttpException / TlsException / HandshakeException 都
+      //   implements IOException（**不含** SocketException 的子类分支）。
+      //   少了这一条，自签证书握手失败会一路穿透 ai_service（只认
+      //   AiTransportException）与 UI（只认 AiException）→ 未捕获异步错误。
+      throw AiTransportException('网络错误：$e');
     } on TimeoutException {
       throw const AiTransportException('连接超时');
     } on FormatException catch (e) {
@@ -171,6 +177,10 @@ class AiHttpClientIo implements AiHttpClient {
       rethrow;
     } on SocketException catch (e) {
       throw AiTransportException('流式连接中断：${e.message}');
+    } on IOException catch (e) {
+      // 同 send()：覆盖 HandshakeException / TlsException / HttpException
+      // （dart:io 的网络族异常都 implements IOException）。
+      throw AiTransportException('流式连接中断：$e');
     } finally {
       client.close(force: true);
     }

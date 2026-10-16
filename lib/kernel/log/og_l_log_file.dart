@@ -14,14 +14,13 @@
 /// - 与 Flutter / path_provider **零耦合**：候选目录由组合根注入，
 ///   因此本文件是纯 Dart。
 ///
-/// ## Web 适配
+/// ## 平台分层
 /// 本文件是**门面**，只负责时间戳 / 级别拼接 / 候选遍历与诊断；
-/// 真正的落盘差异（浏览器里没有文件系统）收敛到 Web 实现 `og_l_log_file_web.dart`：
-/// **不落盘**（`isEnabled == false`）、`filePath` / `dirPath` 恒 `null`，
-/// 行改走**浏览器控制台**；`lastError` 语义不变，**不假装写成功**。
+/// 真正的落盘（`dart:io`）收敛到实现文件 `og_l_log_file_io.dart`
+/// （真实文件：原子追加 / 按天切分 / 滚动）。
 library;
 
-import 'og_l_log_file_web.dart';
+import 'og_l_log_file_io.dart';
 
 /// 日志落盘器（单例；组合根在 `runApp` 之前 `init`）。
 abstract final class OgLLogFile {
@@ -33,13 +32,13 @@ abstract final class OgLLogFile {
   static String? _lastError;
   static final List<String> _tried = <String>[];
 
-  /// 是否已成功落盘（web 端恒 `false`）。
+  /// 是否已成功落盘。
   static bool get isEnabled => _backend.isEnabled;
 
-  /// 当前日志文件的绝对路径（未落盘时为 `null`；web 端恒 `null`）。
+  /// 当前日志文件的绝对路径（未落盘时为 `null`）。
   static String? get filePath => _backend.filePath;
 
-  /// 当前日志目录（未落盘时为 `null`；web 端恒 `null`）。
+  /// 当前日志目录（未落盘时为 `null`）。
   static String? get dirPath => _backend.dirPath;
 
   /// 最后一次失败原因（未落盘时给界面看）。
@@ -48,11 +47,11 @@ abstract final class OgLLogFile {
   /// 试过的候选目录（按顺序），供界面如实展示"为什么没写到 sdcard"。
   static List<String> get triedDirectories => List<String>.unmodifiable(_tried);
 
-  /// 初始化：按候选顺序找**第一个可写**的目录（web 端候选为空 → 不落盘）。
+  /// 初始化：按候选顺序找**第一个可写**的目录。
   ///
   /// [candidates] 由 `base` 层解析（`sdcard/logging` → 外部目录 → 文档 → 支持目录）；
-  /// web 端 `ogLLogDirectoryCandidates()` 返回空清单，因此这里会如实进入
-  /// "无可写候选"状态（`isEnabled == false`、`lastError == '没有可写的候选目录'`）。
+  /// 全部不可写时如实进入"无可写候选"状态
+  /// （`isEnabled == false`、`lastError == '没有可写的候选目录'`）。
   static Future<void> init({
     required List<String> candidates,
     String prefix = 'ogl',
@@ -91,7 +90,7 @@ abstract final class OgLLogFile {
 
   /// 写一行原始文本（**已带时间戳的完整行**）。
   ///
-  /// 已落盘 → 写入文件；未落盘（含 web）→ 走后端兜底（web 为控制台），
+  /// 已落盘 → 写入文件；未落盘 → 走后端兜底（控制台），
   /// 因此"日志永远留下痕迹"，而不是被静默丢弃。
   static void raw(String text) {
     if (_backend.isEnabled) {
@@ -104,7 +103,7 @@ abstract final class OgLLogFile {
   /// 等所有已排队的写入落盘（退出前 / 崩溃上报时用）。
   static Future<void> flush() => _backend.flush();
 
-  /// 关闭落盘（退出前调用；web 端空操作）。
+  /// 关闭落盘（退出前调用）。
   static Future<void> close() => _backend.close();
 
   /// 测试用：绑定一个任意 sink（不做目录探测）。
@@ -112,7 +111,7 @@ abstract final class OgLLogFile {
 
   /// 跨天时自动切到新文件（每次写入前检查，代价可忽略）。
   ///
-  /// 实现细节在平台后端：非 web 真实切换；web 为空操作。
+  /// 实现细节在平台后端。
   static void ensureCurrentDay() => _backend.ensureCurrentDay();
 
   static String _iso(DateTime at) {

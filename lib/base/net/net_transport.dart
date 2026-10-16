@@ -11,9 +11,10 @@
 /// 换策略也不影响传输实现。
 ///
 /// ## 两条安全铁律
-/// 1. **只重试幂等方法**：`POST` / `PATCH` 的失败**绝不自动重试**——
-///    一次超时重试就可能重复创建 Release、重复提交。需要重试时由调用方
-///    通过 [retryableMethods] 显式放行，并自行保证幂等键。
+/// 1. **只重试幂等方法**：`POST` / `PUT` / `PATCH` / `DELETE` 的失败**绝不
+///    自动重试**——一次超时重试就可能重复创建 Release、重复提交，或让
+///    `PUT /contents` 撞上 422（文件已存在）。需要重试时由调用方通过
+///    [retryableMethods] 显式放行，并自行保证幂等键。
 /// 2. **失败必须显式**：重试耗尽后不再把 5xx / 429「当作正常响应」返回，
 ///    而是抛 [NetException]（携带状态码与响应体片段）。
 ///    语义性响应（4xx 如 404 / 409 / 422）仍照常返回，由上层判断。
@@ -24,11 +25,14 @@ import 'net_retry.dart';
 import 'net_types.dart';
 
 /// 默认可重试的方法：具备幂等语义，重复执行不会产生额外副作用。
+///
+/// ★ `PUT` / `DELETE` 曾经在这里，但它们在**本应用的用法下不是幂等的**：
+/// `PUT /contents` 新建文件时一次超时重试就会撞 422（文件已经建出来了），
+/// `DELETE` 重试撞"目标已不存在"。所以默认集合只留 `GET` / `HEAD`；
+/// 确需重试时必须由调用方显式传入 `retryableMethods` 并自行保证幂等键。
 const Set<NetMethod> defaultRetryableMethods = <NetMethod>{
   NetMethod.get,
   NetMethod.head,
-  NetMethod.put,
-  NetMethod.delete,
 };
 
 /// 纯发送能力：一次请求一次响应，不做重试、不做镜像。

@@ -15,21 +15,17 @@
 /// 本文件是**增补引擎**：不支持 Range（或探测失败）时抛 [DownloadUnsupported]，
 /// 由中枢层回退到库任务，绝不硬撑。
 ///
-/// ## 平台分层（Web 适配）
-/// 分片下载要 `dart:io` 的 `HttpClient` 与文件分片落盘，浏览器里**两者都没有**：
-/// - 没有可控的连接池 → 无法并发拉分片；
-/// - 不能把响应体写进用户文件系统 → 无法"合并成目标文件"。
-///
-/// 因此本文件只保留**跨平台**的纯逻辑（区间 / 分片规划 / 取消令牌），
-/// [OgLRangeDownloader] 取 Web 实现 `range_download_web.dart`
-/// （**一律抛 [DownloadUnsupported]**，调用方据此回退到单连接 / 浏览器下载）。
+/// ## 平台分层
+/// 本文件只保留**跨平台**的纯逻辑（区间 / 分片规划 / 取消令牌），
+/// [OgLRangeDownloader] 由实现文件 `range_download_io.dart` 导出
+/// （`dart:io` 的 `HttpClient` + 文件分片落盘：真实并发分片实现）。
 library;
 
 import 'package:flutter/foundation.dart';
 
 import '../../kernel/contract/download_engine.dart';
 
-export 'range_download_web.dart' show OgLRangeDownloader;
+export 'range_download_io.dart' show OgLRangeDownloader;
 
 /// 一个字节区间（**闭区间**：`start..end` 含两端）。
 @immutable

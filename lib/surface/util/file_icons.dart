@@ -269,9 +269,7 @@ OgLFileVisual ogLFileVisualFor(String path, {bool isDirectory = false}) {
     case '.env.local':
       return const OgLFileVisual(Icons.key_outlined, Color(0xFFE8B04B));
     case 'readme':
-    case 'readme.md':
     case 'changelog':
-    case 'changelog.md':
       return const OgLFileVisual(Icons.menu_book_outlined, Color(0xFF519ABA));
     default:
       return kOgLGenericFileVisual;

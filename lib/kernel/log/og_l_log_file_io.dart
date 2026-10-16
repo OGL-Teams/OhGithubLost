@@ -1,8 +1,7 @@
-/// L0 内核级 · **日志落盘后端**（非 web 实现：真实文件 + `IOSink`）。
+/// L0 内核级 · **日志落盘后端**（真实文件 + `IOSink`）。
 ///
-/// 由 `og_l_log_file.dart` 条件导入。**只有非 web 会编译到本文件**，
-/// 因此这里可以放心用 `dart:io`。公开面（`OgLLogBackend`）只暴露给主门面，
-/// 不是跨平台契约的一部分。
+/// 由 `og_l_log_file.dart` 导入；可以放心用 `dart:io`。
+/// 公开面（`OgLLogBackend`）只暴露给主门面，不是跨平台契约的一部分。
 library;
 
 import 'dart:io';
@@ -84,7 +83,7 @@ class OgLLogBackend {
     }
   }
 
-  /// 未落盘时的兜底输出：非 web 端保持"不额外输出"（与改造前一致）。
+  /// 未落盘时的兜底输出：保持"不额外输出"（与改造前一致）。
   void fallback(String text) {
     // 有意留空：真实落盘失败时由主门面把原因记入 lastError，不刷屏。
   }
@@ -155,7 +154,8 @@ class OgLLogBackend {
     if (today == _dayStamp) {
       return;
     }
-    final String prefix = File(_filePath!).uri.pathSegments.last.split('-').first;
+    final String prefix =
+        File(_filePath!).uri.pathSegments.last.split('-').first;
     final String next = '$dir/$prefix-$today.log';
     try {
       sink.flush();

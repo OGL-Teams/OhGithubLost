@@ -5,11 +5,10 @@
 /// 本服务负责：带令牌拉取二进制 → 用 `archive` 解压 → 返回
 /// `job 名 → 文本` 映射，供运行详情页展示与检索。
 ///
-/// ## 平台实现（本分支 = Web）
-/// "取一段字节"这一步要 HTTP 客户端，Web 用 `package:http` 的浏览器实现
-/// （浏览器里没有 `dart:io HttpClient`）——实现收敛到 `ix_action_logs_http_web.dart`。
-///
-/// **解压**部分（`archive`）是纯 Dart，与核心逻辑共用同一份代码。
+/// ## 平台分层
+/// "取一段字节"这一步要 HTTP 客户端（`dart:io HttpClient`），实现收敛在
+/// `ix_action_logs_http_io.dart`。**解压**部分（`archive`）是纯 Dart，
+/// 与传输共用同一份代码，不必拆。
 ///
 /// ## 传输策略（2026-10-03）
 /// 由 Dio 改为原生 `HttpClient`：这里只需要"取一段字节"，没必要为它引入一个
@@ -21,12 +20,12 @@ import 'dart:convert';
 
 import 'package:archive/archive.dart';
 
-import 'ix_action_logs_http_web.dart';
+import 'ix_action_logs_http_io.dart';
 
 /// 日志拉取失败（HTTP 状态或网络错误）。
 ///
-/// 单独定类型（而不是漏一个 `HttpException` 出去）的原因：`dart:io` 的异常
-/// 在 Web 上不存在，上层不该被迫认识平台类型。交互层只做"如实提示"。
+/// 单独定类型（而不是漏一个 `HttpException` 出去）的原因：上层不该被迫
+/// 认识平台类型。交互层只做"如实提示"。
 class IxActionLogsException implements Exception {
   /// 创建异常。
   const IxActionLogsException(this.message, {this.statusCode});

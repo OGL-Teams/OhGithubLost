@@ -1,7 +1,6 @@
-/// L1 底座级 · 日志目录候选链的**非 web 实现**（真实文件系统）。
+/// L1 底座级 · 日志目录候选链的**实现**（真实文件系统）。
 ///
-/// 由 `log_dirs.dart` 条件导入。**只有非 web 会编译到本文件**，
-/// 因此这里可以放心用 `dart:io` 与 `package:path_provider`。
+/// 由 `log_dirs.dart` 导入；可以放心用 `dart:io` 与 `package:path_provider`。
 library;
 
 import 'dart:io';

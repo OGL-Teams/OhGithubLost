@@ -66,7 +66,7 @@ class OgLI18n extends ChangeNotifier {
   /// 全部可选语言（v6.4.0 起收敛为 6 种；此前为 15 种）。
   ///
   /// ## 为什么砍掉 9 种
-  /// 15 种里有 12 种的法律类正文（`onboardingLicenseBody`、`accelServiceBody`
+  /// 15 种里有 12 种的法律类正文（`onboardingLicenseBody`、`accelThirdPartyBody`
   /// 等）实际是**英文占位**：语言目录存在、键存在、值与英文相同。用户在自己的
   /// 语言里读到的是自己看不懂的法律说明，而这恰恰是本项目最不容含糊的部分。
   ///

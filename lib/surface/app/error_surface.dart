@@ -47,6 +47,11 @@ enum OgLNoticeSeverity {
 
 /// 通知的**投递方式**（用户要求：用参数决定走哪些通道）。
 ///
+/// **接线状态**：`delivery` 参数目前**尚未接线** —— 所有调用点都使用默认值
+/// [auto]，没有任何调用方传 [inAppOnly] / [allChannels]。枚举与参数保留，
+/// 供将来对"后台系统通知"做显式控制时逐个改调用点；在接线之前，行为等同
+/// [auto]（critical 后台投系统通知、其余按级别展示）。
+///
 /// - [auto]：按严重级别自动决定（critical → 弹窗；其余 → 横幅）；
 /// - [inAppOnly]：**只在应用内**提示（前台横幅 / 弹窗），不尝试系统通知；
 /// - [allChannels]：**三种方式全用** —— 前台弹窗/横幅 + 同时投系统通知，
@@ -112,14 +117,26 @@ class OgLNoticeCenter extends ChangeNotifier {
   /// 上报一条通知。
   ///
   /// 去重：相同的 `title + detail` 已在队列里时不再重复入队
-  /// （避免同一个异常每帧上报刷屏）。
+  /// （避免同一个异常每帧上报刷屏），**也不重复落盘**。
+  ///
+  /// [delivery]：投递方式；**当前所有调用点都走默认的 [OgLNoticeDelivery.auto]**
+  /// （参数尚未接线，见该枚举的说明）。
   void report({
     required String title,
     String? detail,
     OgLNoticeSeverity severity = OgLNoticeSeverity.warning,
     OgLNoticeDelivery delivery = OgLNoticeDelivery.auto,
   }) {
-    // 先落盘：通知可能因为"正在弹窗"而延后展示，但**绝不允许**丢失。
+    // 去重在前：相同的 `title + detail` 已在待展示队列里时，**直接返回** ——
+    // 既不再入队，也不重复落盘。否则同一个异常每帧上报会把磁盘日志刷爆，
+    // 而队列里其实只有一条（旧实现先落盘再去重，重复条目照样写盘）。
+    for (final existing in _pending) {
+      if (existing.title == title && existing.detail == detail) {
+        return;
+      }
+    }
+    // 落盘在后：走到这里的都是**新的**通知；它可能因为"正在弹窗"而延后
+    // 展示，但绝不允许丢失（磁盘留痕）。
     OgLLogFile.line(
       _t('notification'),
       detail == null || detail.isEmpty ? title : '$title：$detail',
@@ -129,11 +146,6 @@ class OgLNoticeCenter extends ChangeNotifier {
               ? 'WARN'
               : 'INFO',
     );
-    for (final existing in _pending) {
-      if (existing.title == title && existing.detail == detail) {
-        return;
-      }
-    }
     if (_pending.length >= maxPending) {
       final dropIndex = _pending.indexWhere(
         (OgLNotice n) => n.severity != OgLNoticeSeverity.critical,
@@ -487,17 +499,23 @@ class _OgLNoticeHostState extends State<OgLNoticeHost>
     }
     showDialog<void>(
       context: navContext,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text(notice.title),
-        content: notice.detail == null || notice.detail!.isEmpty
-            ? null
-            : SelectableText(notice.detail!),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(_t('gotIt')),
-          ),
-        ],
+      // 严重告警**必须被阅读**：遮罩点击与系统返回键都不允许关掉，
+      // 只留「知道了」这一个出口（避免误触把关键告警一扫而过）。
+      barrierDismissible: false,
+      builder: (BuildContext context) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: Text(notice.title),
+          content: notice.detail == null || notice.detail!.isEmpty
+              ? null
+              : SelectableText(notice.detail!),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(_t('gotIt')),
+            ),
+          ],
+        ),
       ),
     ).whenComplete(() {
       if (!mounted) {

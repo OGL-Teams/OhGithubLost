@@ -8,7 +8,7 @@
 ///
 /// ## 为什么要有"后端"
 /// 把"怎么下载"抽成 [IxDownloadBackend]（本文件声明接口），实现收敛在
-/// `ix_download_backend_web.dart`：下载交给浏览器（无后台任务 / 无本地落盘）：
+/// `ix_download_backend_io.dart`：`background_downloader` 提供后台下载、
 /// 断点续传、队列与通知，成品落到应用文档目录。
 /// `File` / `Directory` 的使用**全部**隔离在该实现里。
 library;
@@ -20,7 +20,7 @@ import 'package:flutter/foundation.dart';
 import '../../kernel/contract/download_engine.dart';
 import '../../kernel/contract/storage_export.dart';
 import '../../kernel/diagnostics.dart';
-import 'ix_download_backend_web.dart';
+import 'ix_download_backend_io.dart';
 import 'ix_download_error.dart';
 
 /// 下载分类（决定落到哪个子目录）。
@@ -315,13 +315,6 @@ IxDownloadErrorKind _kindOfFailure(Object error) {
 
 /// 按描述文本粗判分类（判不出 → [IxDownloadErrorKind.unknown]，**不编造**）。
 IxDownloadErrorKind _kindOfText(String text) {
-  // ★ Web 特有：后端把失败原因以 **i18n 键**上报（见 ix_download_backend_web.dart），
-  //   这里按前缀给出结构化分类（原生端描述文本不含该前缀，走下面的启发式）。
-  if (text.startsWith('downloadFailed.')) {
-    return text == 'downloadFailed.authHeaderNotAllowed'
-        ? IxDownloadErrorKind.needsAuth
-        : IxDownloadErrorKind.unknown;
-  }
   final String lower = text.toLowerCase();
   const List<String> diskHints = <String>[
     'filesystem',
@@ -723,7 +716,14 @@ class IxDownloadManager extends ChangeNotifier {
           headers: spec.headers.isEmpty ? null : spec.headers,
         );
       } catch (error) {
-        // 该通道不可用 → 静默试下一个（不打扰用户）。
+        // 该通道不可用 → 静默试下一个（不打扰用户；**留 debug 痕**，
+        // 否则排查「为什么没走加速」时没有任何线索）。
+        _diagnostics?.debug(
+          'DL',
+          '候选地址不可用，已跳过：$candidate（$error）',
+          code: 'OGL-DL-202-D',
+          data: <String, Object?>{'taskId': id},
+        );
         continue;
       }
       reachable ??= candidate;
@@ -1173,6 +1173,30 @@ class IxDownloadManager extends ChangeNotifier {
   /// 顺序很重要：校验不通过时必须**跳过 SAF 导出**，否则被替换的文件会落到
   /// 用户可见的目录里。
   Future<void> _finishTask(String id) async {
+    // ★ 顶层兜底：本方法是 fire-and-forget（`unawaited(_finishTask(id))`），
+    //   完整性校验分支里的 `_backend.deleteFile` 抛错时**无人处理**——
+    //   表现为「下载完成了但状态卡在下载中」。这里兜住并如实置失败。
+    try {
+      await _finishTaskInner(id);
+    } catch (error) {
+      _diagnostics?.error(
+        'DL',
+        '下载收尾异常：${_snapshots[id]?.fileName ?? id}（$error）',
+        code: 'OGL-DL-407',
+        data: <String, Object?>{'taskId': id},
+      );
+      final IxDownloadTask? snap = _snapshots[id];
+      if (snap != null) {
+        _snapshots[id] = snap.copyWith(
+          status: IxDownloadStatus.failed,
+          error: IxDownloadError(IxDownloadErrorKind.unknown, '$error'),
+        );
+        _safeNotify();
+      }
+    }
+  }
+
+  Future<void> _finishTaskInner(String id) async {
     // ★ 幂等守卫：库事件（`_onEvent`）与分片路径（`_runRanged`）**两个入口**
     //   都会走到这里；已判定完成的任务不再重复收尾（否则同一份成品会被重复
     //   校验、重复触发导出）。
@@ -1247,7 +1271,15 @@ class IxDownloadManager extends ChangeNotifier {
       //   「下载 → 导出 → 从列表移除 → 再下载」会复用同一个 id；旧实现只在
       //   失败路径移除，于是第二次 `add(id)` 返回 false，成品**永不导出**。
       _exportedToSaf.remove(id);
-    } catch (_) {
+    } catch (error) {
+      // 兑现文档承诺的「只在日志留痕」：旧实现完全静默，导出失败时
+      // 用户看不到、排查也没有入口。
+      _diagnostics?.warn(
+        'DL',
+        '导出到所选文件夹失败：${snap.fileName}（$error）',
+        code: 'OGL-DL-301',
+        data: <String, Object?>{'taskId': id},
+      );
       _exportedToSaf.remove(id);
     }
   }

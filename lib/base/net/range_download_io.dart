@@ -1,12 +1,9 @@
-/// L1 硬件层 · 多连接分片下载的**原生实现**（非 Web）。
+/// L1 硬件层 · 多连接分片下载的**原生实现**。
 ///
 /// 本文件是 `OgLRangeDownloader` 的真实实现：`dart:io HttpClient` 发 Range 请求，
-/// 每片写独立的 `<目标>.partN`，成功后顺序合并。
+/// 每片写独立的 `<目标>.partN`，成功后顺序合并；由 `range_download.dart` 导出。
 ///
-/// 只在非 Web 构建里参与编译（由 `range_download.dart` 的条件导出选定）；
-/// Web 对应文件是 `range_download_web.dart`。
-///
-/// 允许 `import 'dart:io'`：这正是"非 Web 侧实现文件"。
+/// 允许 `import 'dart:io'`：这正是实现文件。
 library;
 
 import 'dart:io';
@@ -204,6 +201,20 @@ class OgLRangeDownloader implements DownloadEngine {
         statusCode: response.statusCode,
       );
     }
+    // ★ 206 不等于"给的就是我要的那一段"：中间设备 / CDN 会回**错位**的区间。
+    //   必须把 `Content-Range` 与请求区间对齐（RFC 7233：两端都是**含**的），
+    //   否则各片会按错误顺序拼成一个"长度恰好正确"的坏文件 —— 长度校验
+    //   拦不住它（每片各自长度都对）。头部缺失时不猜，交给长度校验兜底。
+    final OgLByteRange? actual = _rangeOf(
+      response.headers.value(HttpHeaders.contentRangeHeader),
+    );
+    if (actual != null &&
+        (actual.start != range.start || actual.end != range.end)) {
+      throw DownloadHttpException(
+        '分片 $range 的 Content-Range 不符：${actual.start}-${actual.end}',
+        statusCode: response.statusCode,
+      );
+    }
     final IOSink sink = part.openWrite();
     int got = 0;
     try {
@@ -254,9 +265,31 @@ class OgLRangeDownloader implements DownloadEngine {
     return int.tryParse(value.substring(slash + 1).trim());
   }
 
+  /// 解析 `Content-Range: bytes <start>-<end>/<total>` 的**区间**部分。
+  ///
+  /// 返回 `null` = 头部缺失或格式不符（**不猜**：调用方只在解析成功时才校验，
+  /// 免得把"服务端省略头部"误判成失败）。
+  static OgLByteRange? _rangeOf(String? value) {
+    if (value == null) {
+      return null;
+    }
+    final RegExpMatch? match = RegExp(
+      r'bytes\s+(\d+)\s*-\s*(\d+)',
+      caseSensitive: false,
+    ).firstMatch(value);
+    if (match == null) {
+      return null;
+    }
+    final int? start = int.tryParse(match.group(1)!);
+    final int? end = int.tryParse(match.group(2)!);
+    if (start == null || end == null) {
+      return null;
+    }
+    return OgLByteRange(start, end);
+  }
+
   static String? _fileNameOf(HttpClientResponse response) {
-    final String? disposition =
-        response.headers.value('content-disposition');
+    final String? disposition = response.headers.value('content-disposition');
     if (disposition == null) {
       return null;
     }

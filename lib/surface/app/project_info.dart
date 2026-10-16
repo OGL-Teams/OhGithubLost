@@ -63,8 +63,6 @@ abstract final class OgLProjectInfo {
 ///
 /// 只列**运行期真正被 import 的包**（见 `pubspec.yaml` 的依赖说明）；
 /// 开发期依赖（`flutter_lints` 等）不进入发布产物，因此不在此列。
-/// v7.2.1（Web 分支）：path_provider / flutter_secure_storage /
-/// background_downloader 已随原生侧实现移除，不再列出。
 class OgLDependencyLicense {
   /// 创建条目。
   const OgLDependencyLicense(this.name, this.license, this.purpose);
@@ -79,9 +77,19 @@ class OgLDependencyLicense {
   final String purpose;
 }
 
-/// 第三方依赖清单（顺序与 `pubspec.yaml` 保持一致）。
+/// 第三方依赖清单：**顺序与 `pubspec.yaml` 的 `dependencies` 逐项一致**。
+///
+/// `flutter_localizations` 虽是 SDK 自带、不带外部版本号，但在 pubspec 中
+/// 紧跟 `flutter` 排在所有外部包之前，这里同样列在首位（BSD-3-Clause，
+/// 随产物分发）。
 final List<OgLDependencyLicense> kOgLDependencyLicenses =
     <OgLDependencyLicense>[
+  OgLDependencyLicense(
+      'flutter_localizations', 'BSD-3-Clause', _t('featureLocalization')),
+  OgLDependencyLicense(
+      'path_provider', 'BSD-3-Clause', _t('featureCrossPlatformDirs')),
+  OgLDependencyLicense(
+      'flutter_secure_storage', 'MIT', _t('featureTokenVault')),
   OgLDependencyLicense('crypto', 'BSD-3-Clause', _t('featureDigest')),
   OgLDependencyLicense(
       'cryptography', 'Apache-2.0', _t('featureManifestSignature')),
@@ -89,10 +97,16 @@ final List<OgLDependencyLicense> kOgLDependencyLicenses =
       'flutter_markdown', 'BSD-3-Clause', _t('featureMarkdown')),
   OgLDependencyLicense(
       'url_launcher', 'BSD-3-Clause', _t('featureExternalLink')),
+  OgLDependencyLicense('flutter_svg', 'MIT', _t('featureSvg')),
   OgLDependencyLicense('re_editor', 'MIT', _t('featureCodeEditor')),
   OgLDependencyLicense('re_highlight', 'MIT', _t('featureHighlight')),
   OgLDependencyLicense('permission_handler', 'MIT', _t('featurePermissions')),
+  OgLDependencyLicense('window_manager', 'MIT', _t('featureDesktopWindow')),
+  OgLDependencyLicense('saf_util', 'BSD-3-Clause', _t('featureSafFolders')),
+  OgLDependencyLicense('saf_stream', 'BSD-3-Clause', _t('featureSafCopy')),
+  OgLDependencyLicense('background_downloader', 'MIT', _t('featureDownloads')),
   OgLDependencyLicense('archive', 'MIT', _t('featureActionsZip')),
   OgLDependencyLicense(
-      'flutter_localizations', 'BSD-3-Clause', _t('featureLocalization')),
+      'flutter_local_notifications', 'BSD-3-Clause', _t('featureSystemNotice')),
+  OgLDependencyLicense('yaml', 'MIT', _t('featureWorkflowInputs')),
 ];

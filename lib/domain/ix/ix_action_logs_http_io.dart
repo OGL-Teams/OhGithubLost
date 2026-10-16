@@ -1,16 +1,14 @@
-/// L2 中枢级 · Actions 日志的**字节获取**（非 Web，`dart:io HttpClient`）。
+/// L2 中枢级 · Actions 日志的**字节获取**（`dart:io HttpClient`）。
 ///
-/// 只做一件事：带令牌 GET 一段字节（含浏览器不可控的超时与"不复用连接"策略）。
+/// 只做一件事：带令牌 GET 一段字节（自带超时与"不复用连接"策略）。
 /// 解压仍由 `ix_action_logs.dart` 统一负责。
-///
-/// 只在非 Web 构建里参与编译；Web 对应文件是 `ix_action_logs_http_web.dart`。
 library;
 
 import 'dart:io';
 
 import 'ix_action_logs.dart';
 
-/// 日志字节获取（非 Web）。
+/// 日志字节获取。
 abstract final class IxActionLogsHttp {
   static const Duration _connectTimeout = Duration(seconds: 20);
   static const Duration _receiveTimeout = Duration(minutes: 5);

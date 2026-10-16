@@ -3,13 +3,11 @@
 ///
 /// ## 平台分层
 /// 本文件只保留**与平台无关**的部分（缓存、"同一主机 30 秒内只测一次"），
-/// 真正的探测交给 Web 实现 `net_self_test_impl_web.dart`：**有限自检**，
-/// 只探 HTTP 可达性，并在报告里标注"web 端不包含 DNS / TCP / TLS 探测"。
-///
-/// 之所以如此：浏览器没有 `dart:io`，DNS / 裸 socket / 自建 TLS 全都不可用。
+/// 真正的探测交给实现文件 `net_self_test_impl_io.dart`：DNS 解析 +
+/// 逐地址 TCP + 裸 TLS + `HttpClient` 四条探针（把故障压到具体一层）。
 library;
 
-import 'net_self_test_impl_web.dart';
+import 'net_self_test_impl_io.dart';
 
 /// 网络自检：解析 → 逐地址 TCP 连接，输出可读报告。
 ///
@@ -51,8 +49,8 @@ class NetSelfTest {
 
   /// 运行自检（平台实现见文件头注释）。
   ///
-  /// 返回**有限报告**（只有 HTTP 可达性，且已标注"web 端不包含
-  /// DNS / TCP / TLS 探测"的能力边界）。
+  /// 返回单行报告，例如：
+  /// `api.github.com:443 | DNS 2 个: 20.205.243.168(IPv4), 2606:... (IPv6) | TCP[20.205.243.168]: OK 350ms | TCP[2606:...]: 失败 12ms → SocketException: ...`
   static Future<String> run(
     String host, {
     int port = 443,

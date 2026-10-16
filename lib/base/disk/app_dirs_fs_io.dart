@@ -1,7 +1,6 @@
-/// L1 底座级 · 应用目录规划的**非 web 实现**（真实文件系统 + path_provider）。
+/// L1 底座级 · 应用目录规划的**实现**（真实文件系统 + path_provider）。
 ///
-/// 由 `app_dirs.dart` 条件导入。**只有非 web（Android / 桌面）会编译到本文件**，
-/// 因此这里可以放心用 `dart:io` 与 `package:path_provider`。
+/// 由 `app_dirs.dart` 导入；可以放心用 `dart:io` 与 `package:path_provider`。
 library;
 
 import 'dart:io';
@@ -58,8 +57,7 @@ abstract final class AppDirsFs {
       try {
         final Directory? ext = await getExternalStorageDirectory();
         if (ext != null) {
-          final String candidate =
-              '${ext.path.replaceAll(r'\', '/')}/$folder';
+          final String candidate = '${ext.path.replaceAll(r'\', '/')}/$folder';
           if (await writable(candidate)) {
             return candidate;
           }

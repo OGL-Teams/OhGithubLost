@@ -183,6 +183,14 @@ String? ogLValidateAccelBaseUrl(String raw) {
     // 明文会被 Android 9+ 直接拦截（此前 4.4.0 的故障根因），提前告知。
     return _t('accelUrlPlaintext');
   }
+  // ★ 形状必须真的是一个 URL，而不是"以 https:// 开头"就算数：
+  //   旧实现只查前缀 + 结尾斜杠，`https://`（无主机）能原样通过 ——
+  //   它会以空前缀参与拼接（`https://` + 原地址 = 原地址），把"加速已开"
+  //   伪装成静默直连。这里用 Uri 解一次并强制要求非空 host。
+  final Uri? parsed = Uri.tryParse(input);
+  if (parsed == null || parsed.host.isEmpty) {
+    return _t('accelUrlHost');
+  }
   if (!input.endsWith('/')) {
     return _t('accelUrlTrailingSlash');
   }
