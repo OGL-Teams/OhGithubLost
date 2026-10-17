@@ -24,8 +24,8 @@ import 'package:window_manager/window_manager.dart';
 import '../../platform/platform.dart';
 import '../../platform/window_capability.dart';
 import '../i18n/og_l_i18n.dart';
-import 'error_surface.dart';
 import '../util/og_l_space.dart';
+import 'error_surface.dart';
 
 export '../../platform/window_capability.dart' show OgLWindowDecoration;
 

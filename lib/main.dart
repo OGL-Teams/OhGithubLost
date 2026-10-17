@@ -16,6 +16,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import './surface/util/og_l_space.dart';
 import 'base/base_bootstrap.dart';
 import 'base/log/log_dirs.dart';
 import 'domain/domain_bridge.dart';
@@ -34,7 +35,6 @@ import 'surface/app/error_surface.dart';
 import 'surface/app/og_l_app.dart';
 import 'surface/app/permission_selftest.dart';
 import 'surface/surface_bridge.dart';
-import './surface/util/og_l_space.dart';
 
 /// 应用版本（零外部资源：不读 pubspec，直接内联常量）。
 ///

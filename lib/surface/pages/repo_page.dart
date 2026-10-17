@@ -26,6 +26,7 @@ import '../app/overlays.dart';
 import '../app/paged_controller.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../theme.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/clipboard_x.dart';
@@ -33,6 +34,7 @@ import '../util/file_icons.dart';
 import '../util/file_preview.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_space.dart';
 import '../util/path_rules.dart';
 import '../widgets/anim/anim_preload.dart';
 import '../widgets/code_editor_field.dart';
@@ -49,8 +51,6 @@ import 'new_release_page.dart';
 import 'pull_page.dart';
 import 'release_detail_page.dart';
 import 'workflow_dispatch_page.dart';
-import '../util/og_l_space.dart';
-import '../theme.dart';
 
 /// 取 `repo` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(

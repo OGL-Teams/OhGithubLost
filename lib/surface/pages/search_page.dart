@@ -17,9 +17,9 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/gh_format.dart';
+import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
 import 'repo_page.dart';
-import '../util/og_l_space.dart';
 
 /// 取 `search_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(

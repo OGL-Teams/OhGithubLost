@@ -28,10 +28,10 @@ import '../util/download_proxy.dart';
 import '../util/file_preview.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 import 'download_manager_page.dart';
 import 'settings_page.dart';
-import '../util/og_l_space.dart';
 
 /// 取 `common` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
