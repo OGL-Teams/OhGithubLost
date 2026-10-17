@@ -333,7 +333,7 @@ void main() {
       downloadConnections: 8,
       releaseProxyEnabled: true,
       accelPrivateRepoAccepted: true,
-      accelScopes: <String>['repo'],
+      accelScopes: <String>['releaseAsset', 'repoFile'],
       releaseProxyChannels: <OgLAccelChannel>[
         OgLAccelChannel(id: 'c1', name: '通道一', baseUrl: 'https://p.example/'),
       ],
@@ -403,7 +403,7 @@ void main() {
         mode: OgLThemeMode.light,
         dnsCustomIp: '8.8.4.4',
         onboardingDone: true,
-        languageCode: 'ja',
+        languageCode: 'en',
       ));
 
       // 新控制器模拟重启：从同一持久化重新 load。
