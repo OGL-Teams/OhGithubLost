@@ -38,13 +38,15 @@ import '../theme.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/clipboard_x.dart';
-import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
 import 'onboarding_page.dart';
+import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
+import '../util/og_l_code_palette.dart';
 
 /// 设置页。
 class SettingsPage extends StatefulWidget {
@@ -219,32 +221,6 @@ class _SettingsPageState extends State<SettingsPage> {
     return '${_t('logsSaving')} · $lines';
   }
 
-  /// 自定义代码配色的可选色板（ARGB）。
-  static const List<int> _kCodePalette = <int>[
-    0xFF000000,
-    0xFF101418,
-    0xFF1E1E1E,
-    0xFF2D333B,
-    0xFFF6F8FA,
-    0xFFFFFFFF,
-    0xFFE6EDF3,
-    0xFF24292F,
-    0xFF79C0FF,
-    0xFF0550AE,
-    0xFF569CD6,
-    0xFF4EC9B0,
-    0xFF6A9955,
-    0xFFCE9178,
-    0xFF953800,
-    0xFFFFA657,
-    0xFFB5CEA8,
-    0xFFCF222E,
-    0xFFFF7B72,
-    0xFF8250DF,
-    0xFFBC8CFF,
-    0xFF9BA7B4,
-  ];
-
   /// 动效档位的短标签（与 [OgLSettings.motionLevelIds] 一一对应）。
   ///
   /// 5.2：档位语义改为**质量**（静默 / 保守 / 标准 / 拉满），
@@ -270,7 +246,7 @@ class _SettingsPageState extends State<SettingsPage> {
         title: Text(title),
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(OgLSpace.lg),
             // 色板宽度：280 保持为**下限**（随字号放大），并受屏宽约束。
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -280,7 +256,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 spacing: 10,
                 runSpacing: 10,
                 children: <Widget>[
-                  for (final int argb in _kCodePalette)
+                  for (final int argb in kOgLCodePalette)
                     Semantics(
                       // 色板是「可选项」：屏幕阅读器要能念出颜色名与选中态，
                       // 否则用户只能靠肉眼分辨哪个被选中；
@@ -293,7 +269,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}',
                       }),
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(OgLRadius.xl),
                         onTap: () => Navigator.of(dialogContext).pop(argb),
                         // 触控命中区 48dp（视觉圆仍 34dp）：34dp 低于 Material
                         // 的最小触控目标，密集点按容易点错。
@@ -312,7 +288,9 @@ class _SettingsPageState extends State<SettingsPage> {
                                       ? Theme.of(dialogContext)
                                           .colorScheme
                                           .primary
-                                      : const Color(0x33000000),
+                                      : Theme.of(dialogContext)
+                                          .colorScheme
+                                          .outlineVariant,
                                   width: argb == current ? 3 : 1,
                                 ),
                               ),
@@ -499,10 +477,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: saveError == null
                     ? const SizedBox(width: double.infinity)
                     : Card(
-                        margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                        margin: const EdgeInsets.fromLTRB(
+                            OgLSpace.lg, OgLSpace.md, OgLSpace.lg, 0),
                         color: theme.colorScheme.errorContainer,
                         child: Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(OgLSpace.md),
                           child: Text(
                             saveError,
                             style: TextStyle(
@@ -516,7 +495,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: ListView(
                   // 顶部 padding 收紧：saveError 已经占满了顶部视觉，分组
                   // 列表只留 8px 间距即可。
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(
+                      OgLSpace.lg, OgLSpace.sm, OgLSpace.lg, OgLSpace.lg),
                   children: OgLRevealList.of(context, <Widget>[
                     // 根级只有「5 个可折叠分组 + 账户条 + 1 个危险区」：
                     // 账户 → 界面 → 代码与文件 → 存储与网络 → 关于与帮助 →
@@ -887,7 +867,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ListTile(
                       contentPadding: kOgLSettingsRowPadding,
                       leading: const Padding(
-                        padding: EdgeInsets.only(left: 16),
+                        padding: EdgeInsets.only(left: OgLSpace.lg),
                         child: Icon(Icons.edit_location_alt_outlined),
                       ),
                       title: Text(_t('dnsCustom')),
@@ -1088,7 +1068,7 @@ class _SettingsPageState extends State<SettingsPage> {
               children: <Widget>[
                 Text(modeText,
                     style: Theme.of(dialogContext).textTheme.titleSmall),
-                const SizedBox(height: 6),
+                const SizedBox(height: OgLSpace.sm),
                 Text(
                     '${OgLI18n.instance.t('shell', 'storageWhere')}：${info.path}'),
                 if (!info.visible) ...<Widget>[
@@ -1496,7 +1476,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         'accelPrivateWarnPoint3',
                       ])
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.only(bottom: OgLSpace.sm),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -1571,7 +1551,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           fontStyle: FontStyle.italic,
                         ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: OgLSpace.sm),
                   Text(
                     OgLI18n.instance.t('onboarding', 'licenseOfficialCopy'),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -1639,7 +1619,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _tc('accelPrefixOnlyTitle'),
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: OgLSpace.sm),
             Text(
               _tc('accelPrefixOnlyBody'),
               style: Theme.of(context).textTheme.bodySmall,
@@ -1706,14 +1686,15 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 一眼知道"现在是谁登录着"（退出登录在「用户页」，那里才是危险动作的归属地）。
   Widget _accountCard(ThemeData theme) => Card(
         clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: OgLSpace.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             // 卡片小标题：只有一行的卡片也把"这是什么"写出来 ——
             // 否则那只是一个带钥匙图标的 @名字，新用户不知道它指谁。
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.lg, OgLSpace.md, OgLSpace.lg, 0),
               child: Text(
                 _t('account'),
                 style: theme.textTheme.labelLarge?.copyWith(
@@ -1875,7 +1856,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           child: text.isEmpty
               ? Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(OgLSpace.sm),
                   child: Text(_t('licenseTextMissing')),
                 )
               : SingleChildScrollView(
@@ -2039,7 +2020,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             title: Text(_t('noLogs')),
                           )
                         : Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                            padding: const EdgeInsets.fromLTRB(OgLSpace.lg,
+                                OgLSpace.sm, OgLSpace.lg, OgLSpace.sm),
                             child: SelectableText(
                               tail.join('\n'),
                               style: const TextStyle(
@@ -2052,7 +2034,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: Padding(
-                      padding: const EdgeInsets.only(right: 8, bottom: 8),
+                      padding: const EdgeInsets.only(
+                          right: OgLSpace.sm, bottom: OgLSpace.sm),
                       child: TextButton.icon(
                         onPressed: () => _copyLogs(allLines),
                         icon: const Icon(Icons.content_copy, size: 16),
@@ -2070,7 +2053,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// 分组内的二级小标题。
   Widget _subTitle(ThemeData theme, String text) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+        padding: const EdgeInsets.fromLTRB(
+            OgLSpace.lg, OgLSpace.xxs, OgLSpace.lg, 0),
         child: Align(
           alignment: Alignment.centerLeft,
           child: Text(text, style: theme.textTheme.labelLarge),
@@ -2106,7 +2090,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 height: 24,
                 decoration: BoxDecoration(
                   color: Color(argb),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(OgLRadius.sm),
                   border: Border.all(color: theme.colorScheme.outlineVariant),
                 ),
               ),

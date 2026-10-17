@@ -14,11 +14,11 @@ import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
-import '../util/og_l_space.dart';
 import 'drafts_page.dart';
 import 'gists_page.dart';
 import 'login_page.dart';
 import 'repo_page.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `profile_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -229,11 +229,12 @@ class _ProfilePageState extends State<ProfilePage> {
         builder: (BuildContext context, List<GhAccount> accounts) => ListView(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
+              padding: EdgeInsets.fromLTRB(
+                  OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
               child: Text(_t('accounts')),
             ),
             Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
+              margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
               child: Column(
                 children: <Widget>[
                   for (final GhAccount account in accounts)
@@ -266,11 +267,12 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: OgLSpace.lg),
             Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
+              padding: EdgeInsets.fromLTRB(
+                  OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.xxs),
               child: Text(_t('content')),
             ),
             Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
+              margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
               child: ListTile(
                 leading: const Icon(Icons.edit_note),
                 title: Text(_t('drafts')),
@@ -294,7 +296,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: OgLSpace.sm),
             Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
+              margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
               child: ListTile(
                 leading: const Icon(Icons.article_outlined),
                 title: Text(_t('gists')),
@@ -305,13 +307,14 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: OgLSpace.lg),
             Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
+              padding: EdgeInsets.fromLTRB(
+                  OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.xxs),
               child: Text(_t('dangerZone')),
             ),
             Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
+              margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(OgLSpace.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[

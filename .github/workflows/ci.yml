@@ -52,6 +52,12 @@ jobs:
       - name: 动效分级审计（动画必须听档位质量表）
         run: python3 tool/motion_audit.py --fatal
 
+      # ★ UI 细节度门禁：设计令牌之外的字面值一律拦下。
+      #   防的是「卡片圆角 2/6/8/12/24 并存」「间距 10/20/28 散落」
+      #   「同一角色按钮两处圆角不同」这类**编译器不会报错**的问题。
+      - name: UI 细节度门禁（设计令牌一致性）
+        run: python3 tool/ui_audit.py --fatal
+
       - name: 性能反模式审计（shrinkWrap / 宽 MediaQuery.of）
         run: python3 tool/perf_audit.py --fatal
 

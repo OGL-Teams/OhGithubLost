@@ -14,8 +14,9 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
-import '../util/og_l_space.dart';
 import '../widgets/readme_view.dart';
+import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `pull_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -117,7 +118,8 @@ class _PullPageState extends State<PullPage> {
               // 头部：常量级 widget 数量，一次性构建即可；
               // 数据行交给下面的 sliver 懒加载（长列表不再一次性构建）。
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: const EdgeInsets.fromLTRB(
+                    OgLSpace.lg, OgLSpace.lg, OgLSpace.lg, 0),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -134,7 +136,7 @@ class _PullPageState extends State<PullPage> {
                       if (body.trim().isNotEmpty)
                         Card(
                           child: Padding(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(OgLSpace.md),
                             child: ReadmeView(
                               markdown: body,
                               onOpenLink: (Uri uri) {
@@ -153,7 +155,7 @@ class _PullPageState extends State<PullPage> {
               ),
               OgLAsyncSliver<List<Map<String, dynamic>>>(
                 controller: _filesC(),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
                 itemCountOf: (List<Map<String, dynamic>> files) => files.length,
                 itemBuilder: (
                   BuildContext context,
@@ -188,14 +190,15 @@ class _PullPageState extends State<PullPage> {
       leading: const Icon(Icons.description_outlined),
       title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(subtitle),
-      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      childrenPadding:
+          const EdgeInsets.fromLTRB(OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.lg),
       children: <Widget>[
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(OgLSpace.md),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(OgLRadius.sm),
           ),
           child: SelectableText(
             patch,

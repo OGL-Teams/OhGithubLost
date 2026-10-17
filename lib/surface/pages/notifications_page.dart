@@ -19,8 +19,9 @@ import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../util/clipboard_x.dart';
-import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
+import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `notifications_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -66,7 +67,7 @@ void _warmSeverityGlyphs() {
         style: TextStyle(
           fontFamily: icon.fontFamily,
           package: icon.fontPackage,
-          fontSize: 20,
+          fontSize: OgLIconSize.lg,
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -184,7 +185,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
       body: Column(
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+            padding: const EdgeInsets.fromLTRB(
+                OgLSpace.md, OgLSpace.md, OgLSpace.md, OgLSpace.sm),
             child: SegmentedButton<int>(
               segments: <ButtonSegment<int>>[
                 ButtonSegment<int>(value: 0, label: Text(_t('filterAll'))),
@@ -298,12 +300,13 @@ class _NotificationTile extends StatelessWidget {
       child: InkWell(
         onTap: onToggle,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+          padding: const EdgeInsets.fromLTRB(
+              OgLSpace.lg, OgLSpace.md, OgLSpace.sm, OgLSpace.md),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.only(top: 2),
+                padding: const EdgeInsets.only(top: OgLSpace.xxs),
                 child: Icon(icon, color: color, size: 20),
               ),
               const SizedBox(width: OgLSpace.md),
@@ -319,7 +322,7 @@ class _NotificationTile extends StatelessWidget {
                         fontWeight: read ? FontWeight.normal : FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: OgLSpace.xxs),
                     Text(
                       '${entry.area} · $timeText'
                       '${read ? '' : ' · ${_t('unread')}'}',
@@ -345,11 +348,12 @@ class _NotificationTile extends StatelessWidget {
                                 // 完整详情：不截断，可选中复制。
                                 Container(
                                   width: double.infinity,
-                                  padding: const EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(OgLSpace.md),
                                   decoration: BoxDecoration(
                                     color: theme
                                         .colorScheme.surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius:
+                                        BorderRadius.circular(OgLRadius.sm),
                                   ),
                                   child: SelectableText(
                                     entry.toDisplay(),
@@ -359,7 +363,7 @@ class _NotificationTile extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 6),
+                                const SizedBox(height: OgLSpace.sm),
                                 Row(
                                   children: <Widget>[
                                     TextButton.icon(

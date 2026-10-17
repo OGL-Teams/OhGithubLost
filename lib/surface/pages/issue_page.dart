@@ -16,8 +16,8 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
-import '../util/og_l_space.dart';
 import '../widgets/readme_view.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `issue_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -227,7 +227,8 @@ class _IssuePageState extends State<IssuePage> {
             slivers: <Widget>[
               // 头部（常量级）：标题 / 状态 / 正文 / 操作按钮 /「评论」标题。
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: const EdgeInsets.fromLTRB(
+                    OgLSpace.lg, OgLSpace.lg, OgLSpace.lg, 0),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -244,7 +245,7 @@ class _IssuePageState extends State<IssuePage> {
                       if (body.trim().isNotEmpty)
                         Card(
                           child: Padding(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(OgLSpace.md),
                             child: ReadmeView(
                               markdown: body,
                               onOpenLink: (Uri uri) {
@@ -273,7 +274,7 @@ class _IssuePageState extends State<IssuePage> {
               // 评论：按需构建（评论可以很多）。
               OgLAsyncSliver<List<Map<String, dynamic>>>(
                 controller: _commentsC(),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
                 emptyIcon: Icons.chat_bubble_outline,
                 emptyText: _t('noComments'),
                 itemCountOf: (List<Map<String, dynamic>> comments) =>
@@ -291,7 +292,8 @@ class _IssuePageState extends State<IssuePage> {
                       children: <Widget>[
                         Container(
                           color: theme.colorScheme.surfaceContainerHighest,
-                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                          padding: const EdgeInsets.fromLTRB(OgLSpace.md,
+                              OgLSpace.sm, OgLSpace.md, OgLSpace.sm),
                           child: Row(
                             children: <Widget>[
                               CircleAvatar(
@@ -316,7 +318,7 @@ class _IssuePageState extends State<IssuePage> {
                         ),
                         const Divider(height: 1),
                         Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(OgLSpace.md),
                           child: ReadmeView(
                             markdown: ghStr(comment, 'body'),
                             onOpenLink: (Uri uri) {
@@ -332,7 +334,7 @@ class _IssuePageState extends State<IssuePage> {
               ),
               // 发表评论（尾部）：输入框 + 提交按钮。
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

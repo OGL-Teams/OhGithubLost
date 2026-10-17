@@ -144,7 +144,7 @@ class _OgLTitleBarState extends State<OgLTitleBar> with WindowListener {
                 onPanStart: (_) => ogLWindow.startDragging(),
                 onDoubleTap: () => _toggleMaximize(),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: OgLSpace.md),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(

@@ -22,6 +22,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import './og_l_space.dart';
 
 /// 间距系统：8 点节奏 + 整数倍。
 abstract final class OgLSpace {

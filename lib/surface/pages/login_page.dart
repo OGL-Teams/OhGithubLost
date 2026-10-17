@@ -16,9 +16,9 @@ import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
-import '../util/og_l_space.dart';
 import 'onboarding_page.dart';
 import 'repo_page.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `login` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -223,11 +223,11 @@ class _LoginPageState extends State<LoginPage> {
       body: OgLReveal(
           delay: Duration.zero,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(OgLSpace.lg),
             children: <Widget>[
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(OgLSpace.lg),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -300,7 +300,7 @@ class _LoginPageState extends State<LoginPage> {
                 Card(
                   color: Theme.of(context).colorScheme.errorContainer,
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(OgLSpace.md),
                     child: Text(
                       // 错误详情：保留原始异常 + 引导去「关于」页复制。
                       OgLI18n.instance.t(

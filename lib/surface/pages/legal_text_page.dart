@@ -98,7 +98,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
           Container(
             width: double.infinity,
             color: theme.colorScheme.errorContainer,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(OgLSpace.md),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -120,7 +120,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
           Container(
             width: double.infinity,
             color: theme.colorScheme.secondaryContainer,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(OgLSpace.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -142,7 +142,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: OgLSpace.sm),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -165,7 +165,8 @@ class _LegalTextPageState extends State<LegalTextPage> {
           ),
           // ── 语言选择：列出**全部可用语言** ──
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            padding: const EdgeInsets.fromLTRB(
+                OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
             child: Row(
               children: <Widget>[
                 Text(_t('legalLanguages'), style: theme.textTheme.labelLarge),
@@ -198,14 +199,14 @@ class _LegalTextPageState extends State<LegalTextPage> {
                 : (_body == null || _body!.isEmpty)
                     ? Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(OgLSpace.xl),
                           child: Text(_t('legalTextEmpty'),
                               textAlign: TextAlign.center,
                               style: theme.textTheme.bodyMedium),
                         ),
                       )
                     : SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(OgLSpace.lg),
                         child: SelectableText(
                           _body!,
                           style:

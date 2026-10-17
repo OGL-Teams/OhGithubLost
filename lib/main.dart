@@ -53,6 +53,15 @@ const String kOgLBootManifestJson = String.fromEnvironment('OGL_BOOT_MANIFEST');
 void main() async {
   // ★ 启动耗时埋点：进程开始 → 首帧渲染完成（对比改动用）。
   final Stopwatch bootWatch = Stopwatch()..start();
+  // 分阶段耗时（毫秒，按发生顺序累计）。只有总耗时时无法定位瓶颈——
+  // 到底是日志落盘、平台存储探针，还是内核验签慢，必须分开看。
+  final Map<String, int> bootPhases = <String, int>{};
+  int lapStart = bootWatch.elapsedMilliseconds;
+  void lap(String name) {
+    bootPhases[name] = bootWatch.elapsedMilliseconds - lapStart;
+    lapStart = bootWatch.elapsedMilliseconds;
+  }
+
   WidgetsFlutterBinding.ensureInitialized();
   // ★ 冷启动首帧：先渲染零依赖占位屏，再做重活（日志落盘 / 平台存储 /
   //   内核引导）。真正的 [OgLApp] 在初始化完成后通过第二次 `runApp` 顶替它。
@@ -67,6 +76,7 @@ void main() async {
     buildMode: kReleaseMode ? 'release' : (kProfileMode ? 'profile' : 'debug'),
     platform: _ogLPlatformName(),
   );
+  lap('日志落盘');
   // 平台与版本：`dart:io` 的 `Platform.operatingSystemVersion` 在 Web 上不存在，
   // 而诊断日志真正需要的是"哪个平台"这一项，因此这里只写规范化后的平台名
   // （web / android / ios / linux / macos / windows），**不编造**系统版本号。
@@ -199,6 +209,7 @@ void main() async {
   try {
     OgLAppLog.instance.step('启动', '内核引导（${modules.length} 个模块）…');
     final report = await kernel.boot(modules);
+    lap('内核引导');
     OgLAppLog.instance.result(
       '启动',
       '内核引导完成',
@@ -230,6 +241,15 @@ void main() async {
     //   只复核、不弹窗（重新请求交给引导页 / 设置页）；缺什么、影响什么、
     //   怎么修 → 诊断日志 + 通知中心（**带事件码** OGL-PERM-00x）。
     //   加超时兜底：权限查询走平台通道，绝不允许它拖住启动。
+    lap('首帧前杂项');
+    final String breakdown = bootPhases.entries
+        .map((MapEntry<String, int> e) => '${e.key}=${e.value}ms')
+        .join(' · ');
+    OgLAppLog.instance.add(
+      '启动',
+      '启动分解：$breakdown · 合计=${bootWatch.elapsedMilliseconds}ms',
+      severity: OgLNoticeSeverity.info,
+    );
     OgLAppLog.instance.add(
       '启动',
       '启动总耗时=${bootWatch.elapsedMilliseconds}ms（进程 → 真实界面就绪）',

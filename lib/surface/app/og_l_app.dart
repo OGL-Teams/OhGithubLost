@@ -19,13 +19,14 @@ import '../../kernel/kernel.dart';
 import '../i18n/og_l_i18n.dart';
 import '../settings.dart';
 import '../surface_bridge.dart';
-import '../util/og_l_space.dart';
 import 'animations.dart';
 import 'client_shell.dart';
 import 'desktop_window.dart';
 import 'error_surface.dart';
 import 'keyboard_guard.dart';
 import 'motion.dart';
+import '../util/og_l_space.dart';
+import '../theme.dart';
 
 /// 取 `shell` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -148,7 +149,7 @@ class OgLBootFailureApp extends StatelessWidget {
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.red,
+            seedColor: kOgLErrorSeedColor,
             brightness: Brightness.dark,
           ),
         ),
@@ -157,7 +158,7 @@ class OgLBootFailureApp extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(OgLSpace.xl),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,

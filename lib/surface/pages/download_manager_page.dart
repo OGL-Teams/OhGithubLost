@@ -195,7 +195,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                         ),
                         const SizedBox(height: OgLSpace.md),
                         Text(_t('empty')),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: OgLSpace.xxs),
                         Text(
                           _t('emptyHint'),
                           style: theme.textTheme.bodySmall,
@@ -205,7 +205,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                   );
                 }
                 return ListView.separated(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(OgLSpace.md),
                   itemCount: tasks.length,
                   separatorBuilder: (BuildContext context, int index) =>
                       const SizedBox(height: OgLSpace.sm),
@@ -284,7 +284,8 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 10, 8, 8),
+        padding: const EdgeInsets.fromLTRB(
+            OgLSpace.md, OgLSpace.md, OgLSpace.sm, OgLSpace.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -306,7 +307,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: OgLSpace.sm),
             // `total > 0` 才画进度条：Web 上总大小恒为 `0`（浏览器下载不向
             // 页面回报大小），无值进度条只会一直空转；此时照实写明
             // 「已交给浏览器下载」，不假装量得出进度。
@@ -332,12 +333,12 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                 _t('handedToBrowser'),
                 style: theme.textTheme.bodySmall,
               ),
-            const SizedBox(height: 6),
+            const SizedBox(height: OgLSpace.sm),
             Row(
               children: <Widget>[
                 if (widget.surface.domain.downloads.isRanged(task.id))
                   Padding(
-                    padding: const EdgeInsets.only(right: 6),
+                    padding: const EdgeInsets.only(right: OgLSpace.sm),
                     child: Tooltip(
                       message: _t('multiConnection'),
                       child: Icon(
@@ -368,7 +369,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
             ),
             if (task.errorText.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.only(top: OgLSpace.xxs),
                 child: Text(
                   task.errorText,
                   maxLines: 2,

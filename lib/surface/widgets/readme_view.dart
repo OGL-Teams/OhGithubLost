@@ -22,6 +22,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../i18n/og_l_i18n.dart';
+import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `common` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -374,7 +376,7 @@ class ReadmeView extends StatelessWidget {
         ),
         codeblockDecoration: BoxDecoration(
           color: scheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(OgLRadius.sm),
         ),
         blockquoteDecoration: BoxDecoration(
           border: Border(
@@ -526,7 +528,7 @@ class _ReadmeImage extends StatelessWidget {
       );
 
   Widget _frame(Widget child) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: OgLSpace.sm),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 320),
           child: child,
@@ -540,7 +542,7 @@ class _ReadmeImageSpinner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.symmetric(vertical: OgLSpace.sm),
         child: SizedBox(
           width: 18,
           height: 18,

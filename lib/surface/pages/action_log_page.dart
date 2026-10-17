@@ -10,6 +10,8 @@ import '../app/async.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../widgets/log_body.dart';
+import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `action_log_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -90,7 +92,8 @@ class _ActionLogPageState extends State<ActionLogPage> {
       body: Column(
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+            padding: const EdgeInsets.fromLTRB(
+                OgLSpace.md, OgLSpace.md, OgLSpace.md, OgLSpace.sm),
             child: TextField(
               controller: _query,
               decoration: InputDecoration(
@@ -118,7 +121,7 @@ class _ActionLogPageState extends State<ActionLogPage> {
                   return Center(child: Text(_t('noMatchingJob')));
                 }
                 return ListView(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(OgLSpace.md),
                   children: <Widget>[
                     for (final String key in keys)
                       Card(
@@ -130,17 +133,18 @@ class _ActionLogPageState extends State<ActionLogPage> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          childrenPadding:
-                              const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                          childrenPadding: const EdgeInsets.fromLTRB(
+                              OgLSpace.md, 0, OgLSpace.md, OgLSpace.md),
                           children: <Widget>[
                             Container(
                               width: double.infinity,
                               constraints: const BoxConstraints(maxHeight: 420),
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(OgLSpace.md),
                               decoration: BoxDecoration(
                                 color:
                                     theme.colorScheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius:
+                                    BorderRadius.circular(OgLRadius.sm),
                               ),
                               // 5.0：长日志**分块虚拟化**渲染。
                               // 之前把整份日志塞进一个 `SelectableText`，
@@ -148,7 +152,7 @@ class _ActionLogPageState extends State<ActionLogPage> {
                               // 现在按行切块、交给 `ListView.builder` 按需渲染。
                               child: OgLLogBody(text: logs[key] ?? ''),
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: OgLSpace.sm),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(

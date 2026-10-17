@@ -13,8 +13,9 @@ import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
-import '../util/og_l_space.dart';
 import 'ai_settings_page.dart';
+import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `ai` 分片文案。
 String _t(String key, [Map<String, String>? args]) =>
@@ -315,7 +316,7 @@ class _AiChatPageState extends State<AiChatPage> {
               horizontal: OgLSpace.md, vertical: OgLSpace.sm),
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(OgLRadius.sm),
           ),
           child: Text(
             '⚙ ${m.name ?? 'tool'}: ${m.content}',
@@ -343,7 +344,7 @@ class _AiChatPageState extends State<AiChatPage> {
           color: mine
               ? theme.colorScheme.primaryContainer
               : theme.colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(OgLRadius.md),
         ),
         child: SelectableText(
           m.content,
@@ -391,7 +392,7 @@ class _AiChatPageState extends State<AiChatPage> {
               child: Row(
                 children: <Widget>[
                   const Icon(Icons.folder_shared_outlined, size: 16),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: OgLSpace.sm),
                   Expanded(child: Text('${_t('contextHint')}：${widget.repo}')),
                 ],
               ),
@@ -440,7 +441,7 @@ class _AiChatPageState extends State<AiChatPage> {
                       decoration: InputDecoration(
                         hintText: _t('inputHint'),
                         border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24)),
+                            borderRadius: BorderRadius.circular(OgLRadius.xl)),
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: OgLSpace.md, vertical: OgLSpace.sm),
                       ),
