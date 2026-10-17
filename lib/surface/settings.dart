@@ -193,6 +193,11 @@ class OgLSettings {
   static int _motionLevelOf(Map<dynamic, dynamic> raw) {
     final Object? level = raw['motionLevel'];
     if (level is num) {
+      // Infinity/NaN 的 toInt() 会抛 UnsupportedError——那会击穿
+      // 「fromJson 永不抛」纪律（一处坏值 = 全部设置丢失）。非有限值回落。
+      if (!level.isFinite) {
+        return 1;
+      }
       final int v = level.toInt();
       return v < 0 ? 0 : (v > 3 ? 3 : v);
     }
@@ -205,8 +210,9 @@ class OgLSettings {
   static bool _asBool(Object? value, {required bool fallback}) =>
       value is bool ? value : fallback;
 
-  static int _asInt(Object? value, {required int fallback}) =>
-      value is int ? value : (value is num ? value.toInt() : fallback);
+  static int _asInt(Object? value, {required int fallback}) => value is int
+      ? value
+      : (value is num && value.isFinite ? value.toInt() : fallback);
 
   /// 解析自定义通道列表（坏条目直接丢弃，绝不抛异常）。
   static List<OgLAccelChannel> _asAccelChannels(Object? value) {
@@ -284,7 +290,8 @@ class OgLSettings {
     if (value is int && value >= 0 && value <= 0xFFFFFFFF) {
       return value;
     }
-    if (value is num) {
+    if (value is num && value.isFinite) {
+      // Infinity/NaN 的 toInt() 会抛（见 _motionLevelOf 处注）——先挡掉。
       final int v = value.toInt();
       if (v >= 0 && v <= 0xFFFFFFFF) {
         return v;
@@ -639,6 +646,10 @@ class OgLSettingsController extends ChangeNotifier {
   String? _lastError;
   bool _loaded = false;
 
+  /// load 世代号：每次 load 自增；迟到的 load 若发现自己不是最新一代，
+  /// 不得覆盖内存（防 apply 先落、load 后到把新值冲回旧值）。
+  int _loadGen = 0;
+
   /// 当前设置。
   OgLSettings get settings => _settings;
 
@@ -664,8 +675,15 @@ class OgLSettingsController extends ChangeNotifier {
   /// **首次启动**（尚无持久化数据）跟随系统语言：系统语言受支持就用它，
   /// 否则回落 `zh`。已有配置则一律尊重用户选择，不再被系统语言改写。
   Future<void> load() async {
+    // 世代号：load 期间用户可能已经 apply（启动初期最快的操作路径）。
+    // 迟到的 load 不得用旧快照覆盖内存里更新的值，否则改动被静默回退、
+    // 且下一次 apply 会把旧值重新写盘（永久丢失）。
+    final int gen = ++_loadGen;
     try {
       final String? raw = await _persistence.read();
+      if (gen != _loadGen) {
+        return; // 期间又来了一次 load/apply，本次结果作废。
+      }
       if (raw == null) {
         _settings = OgLSettings.defaults
             .copyWith(languageCode: ogLDetectDeviceLocale());
@@ -674,6 +692,9 @@ class OgLSettingsController extends ChangeNotifier {
       }
       _lastError = null;
     } catch (error) {
+      if (gen != _loadGen) {
+        return;
+      }
       _settings = OgLSettings.defaults;
       _lastError = OgLI18n.instance.t('settings', 'errorLoad',
           args: <String, String>{'error': '$error'});
@@ -689,10 +710,16 @@ class OgLSettingsController extends ChangeNotifier {
     notifyListeners();
     try {
       await _persistence.write(next.encode());
-      _lastError = null;
+      // 保存结果改变 UI 可见状态（错误横幅），必须通知——否则横幅双向
+      // 滞留：失败时横幅不出现，恢复成功后旧横幅不消失。
+      if (_lastError != null) {
+        _lastError = null;
+        notifyListeners();
+      }
     } catch (error) {
       _lastError = OgLI18n.instance.t('settings', 'errorSave',
           args: <String, String>{'error': '$error'});
+      notifyListeners();
     }
   }
 

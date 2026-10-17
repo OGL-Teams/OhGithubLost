@@ -188,9 +188,21 @@ class AiService {
         throw AiException('transport', e.message);
       }
       if (!res.ok) {
-        throw AiException('httpError', '${res.statusCode}');
+        throw AiException('httpError', _errorDetail(res.statusCode, res.body));
       }
-      final AiReply reply = provider.parseReply(jsonDecode(res.body));
+      final Object? decoded;
+      try {
+        decoded = jsonDecode(res.body);
+      } on FormatException catch (e) {
+        // 200 + HTML 错误页（登录页 / CDN 拦截）等非 JSON 体：
+        // 转成业务异常（UI 只认 AiException），不许裸逃逸。
+        throw AiException(
+          'badResponse',
+          '响应不是合法 JSON（HTTP ${res.statusCode}）：${e.message}',
+        );
+      }
+
+      final AiReply reply = provider.parseReply(decoded);
       if (reply.toolCalls.isEmpty) {
         msgs.add(AiMessage(
           role: AiRole.assistant,
@@ -256,11 +268,13 @@ class AiService {
           continue;
         }
         final AiStreamDelta d = provider.parseStreamChunk(data);
-        if (d.finished) {
-          break;
-        }
+        // 结束帧也可能携带正文（Gemini 把最后一段文本与 finishReason 放
+        // 同一帧）：必须先吐正文再 break，否则结尾被静默截断。
         if (d.content.isNotEmpty) {
           yield d.content;
+        }
+        if (d.finished) {
+          break;
         }
       }
     } on AiTransportException catch (e) {
@@ -287,9 +301,19 @@ class AiService {
       throw AiException('transport', e.message);
     }
     if (!res.ok) {
-      throw AiException('httpError', '${res.statusCode}');
+      throw AiException('httpError', _errorDetail(res.statusCode, res.body));
     }
-    return provider.parseModelList(jsonDecode(res.body));
+    final Object? rawList;
+    try {
+      rawList = jsonDecode(res.body);
+    } on FormatException catch (e) {
+      throw AiException(
+        'badResponse',
+        '模型列表响应不是合法 JSON（HTTP ${res.statusCode}）：${e.message}',
+      );
+    }
+
+    return provider.parseModelList(rawList);
   }
 
   // ── 内部 ──────────────────────────────────────────────────────────────
@@ -337,5 +361,39 @@ class AiService {
       case AiProviderKind.gemini:
         return <String, String>{'x-goog-api-key': key};
     }
+  }
+
+  /// 从错误响应体里抽人话摘要（各家形状不同），只留一行、截断防刷屏。
+  ///
+  /// 抽不到就用状态码兜底——但绝不把 body 原样塞给用户（可能很长/含内部信息）。
+  static String _errorDetail(int statusCode, String body) {
+    String? msg;
+    final Object? raw;
+    try {
+      raw = jsonDecode(body);
+    } on FormatException {
+      raw = null;
+    }
+    if (raw is Map) {
+      final Object? err = raw['error'];
+      if (err is Map) {
+        final Object? m = err['message'];
+        if (m is String && m.isNotEmpty) {
+          msg = m;
+        }
+      } else if (err is String && err.isNotEmpty) {
+        msg = err;
+      } else if (raw['message'] is String) {
+        msg = raw['message'] as String;
+      }
+    }
+    if (msg == null || msg.isEmpty) {
+      return 'HTTP $statusCode';
+    }
+    msg = msg.replaceAll('\n', ' ');
+    if (msg.length > 160) {
+      msg = '${msg.substring(0, 160)}…';
+    }
+    return 'HTTP $statusCode：$msg';
   }
 }
