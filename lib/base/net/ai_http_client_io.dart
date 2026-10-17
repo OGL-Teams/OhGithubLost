@@ -143,8 +143,22 @@ class AiHttpClientIo implements AiHttpClient {
         );
       }
 
+      // ★ 读空闲超时：connectionTimeout 只管建连；连接建立后服务端/中间盒
+      //   半开（不再发数据也不断开）会让 await for 永久阻塞。给**帧间隔**
+      //   施加超时（SSE 正常每秒都有帧），挂死连接在 timeout 内自愈成异常。
+      final Duration idle = timeout < const Duration(seconds: 60)
+          ? timeout
+          : const Duration(seconds: 60);
       final Stream<String> lines =
-          res.transform(utf8.decoder).transform(const LineSplitter());
+          res.transform(utf8.decoder).transform(const LineSplitter()).timeout(
+        idle,
+        onTimeout: (EventSink<String> sink) {
+          sink.addError(const AiTransportException(
+            '流式连接空闲超时（60s 无数据）',
+          ));
+          sink.close();
+        },
+      );
       String event = '';
       String id = '';
       final List<String> dataLines = <String>[];
@@ -172,6 +186,16 @@ class AiHttpClientIo implements AiHttpClient {
           id = line.substring('id:'.length).trim();
         }
         // 其它（注释 `:` / `retry:` 等）忽略。
+      }
+      // ★ 流结束（EOF）时缓冲里可能还压着最后一帧：不少网关/反代在
+      //   关闭连接前不发结尾空行。不 flush 的话，最后一帧（常常是
+      //   `data: [DONE]` 或最后一段正文）会整帧丢失。
+      if (dataLines.isNotEmpty) {
+        yield AiSseEvent(
+          event: event.isEmpty ? null : event,
+          id: id.isEmpty ? null : id,
+          data: dataLines.join('\n'),
+        );
       }
     } on AiTransportException {
       rethrow;

@@ -511,4 +511,29 @@ void main() {
       }
     });
   });
+
+  group('P1 回归 · 流式结束帧语义（A1）', () {
+    test('Gemini 末帧：正文与 finishReason 同帧 → 正文必须保留', () {
+      final AiProvider p = AiProvider(AiProviderKind.gemini);
+      final AiStreamDelta d = p.parseStreamChunk(
+        '{"candidates":[{"content":{"parts":[{"text":"最后一截"}]},'
+        '"finishReason":"STOP"}]}',
+      );
+      expect(d.finished, isTrue);
+      expect(
+        d.content,
+        '最后一截',
+        reason: '结束帧丢正文 = Gemini 流式回复结尾被静默截断',
+      );
+    });
+
+    test('OpenAI 末帧：finish_reason 帧无 content → 仍正常结束', () {
+      final AiProvider p = AiProvider(AiProviderKind.openai);
+      final AiStreamDelta d = p.parseStreamChunk(
+        '{"choices":[{"delta":{},"finish_reason":"stop"}]}',
+      );
+      expect(d.finished, isTrue);
+      expect(d.content, isEmpty);
+    });
+  });
 }

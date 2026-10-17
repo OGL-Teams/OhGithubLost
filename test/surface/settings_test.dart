@@ -6,6 +6,7 @@
 /// 3. 存储键沿用 `ogl.settings`（老配置文件可平滑读取）。
 library;
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -417,4 +418,63 @@ void main() {
       expect(c2.settings.languageCode, 'en');
     });
   });
+
+  group('P1 回归 · fromJson 永不抛', () {
+    test('Infinity/NaN 数字 → 回落默认，不抛（S1）', () {
+      // 1e999 经 jsonDecode 得 double.infinity；num.toInt() 对它抛
+      // UnsupportedError——历史上会击穿「一处坏值丢全部设置」。
+      final OgLSettings back = OgLSettings.fromJson(<String, Object?>{
+        'motionLevel': 1e999,
+        'releaseProxyConsentVersion': double.infinity,
+        'codeColorKeyword': double.nan,
+        'codeColorBackground': double.infinity,
+      });
+      expect(back.motionLevel, 1); // 回落默认档位
+      expect(back.releaseProxyConsentVersion, 0);
+      expect(back.codeColorKeyword, 0xFF569CD6); // 构造器默认
+      expect(back.codeColorBackground, 0xFF1E1E1E);
+    });
+
+    test('load 世代守卫：apply 先落、load 后到不覆盖内存（S3）', () async {
+      final OgLInMemorySettingsPersistence p = OgLInMemorySettingsPersistence(
+        jsonEncode(<String, Object?>{'languageCode': 'en'}),
+      );
+      final OgLSettingsController c = OgLSettingsController(persistence: p);
+      addTearDown(c.dispose);
+
+      // 挂起 read：让 load 的 await 悬着，此时用户改设置。
+      final Completer<String?> gate = Completer<String?>();
+      final OgLSettingsController c2 = OgLSettingsController(
+        persistence: _GatedPersistence(
+            gate,
+            jsonEncode(<String, Object?>{
+              'languageCode': 'en',
+            })),
+      );
+      addTearDown(c2.dispose);
+      final Future<void> loading = c2.load();
+      await c2.apply(c2.settings.copyWith(mode: OgLThemeMode.dark));
+      gate.complete(null); // 迟到的 load 结果（空）
+      await loading;
+      // apply 的 dark 不被迟到的 load 覆盖。
+      expect(c2.settings.mode, OgLThemeMode.dark);
+    });
+  });
+}
+
+/// read 挂在外部门上的持久化（测 load/apply 交错）。
+class _GatedPersistence implements OgLSettingsPersistence {
+  _GatedPersistence(this._gate, this._raw);
+
+  final Completer<String?> _gate;
+  final String _raw;
+
+  @override
+  Future<String?> read() => _gate.future.then((_) => _raw);
+
+  @override
+  Future<void> write(String raw) async {}
+
+  @override
+  Future<void> clear() async {}
 }

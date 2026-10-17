@@ -698,6 +698,15 @@ class IxDownloadManager extends ChangeNotifier {
     if (snap == null || spec == null) {
       return;
     }
+    // ★ 单飞守卫：已有分片任务在跑（running）时不得再起一轮——
+    //   resume/retry 双击或对 running 任务再 resume 会创建第二个引擎
+    //   fetch，两个 fetch 并发写同一 targetPath，交错写坏文件且互删分片。
+    //   旧 token 先取消（暂停语义），再由本次调用接管。
+    if (_rangeTokens.containsKey(id) &&
+        _snapshots[id]?.status == IxDownloadStatus.running) {
+      _rangeTokens[id]?.cancel();
+      _rangeTokens.remove(id);
+    }
     final DownloadEngine engine = _engine!;
     final List<String> candidates = _urlCandidates[id] ?? <String>[spec.url];
     final DownloadCancelToken token = engine.newCancelToken();
