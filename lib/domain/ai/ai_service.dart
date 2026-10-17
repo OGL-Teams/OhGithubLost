@@ -368,7 +368,8 @@ class AiService {
   /// 抽不到就用状态码兜底——但绝不把 body 原样塞给用户（可能很长/含内部信息）。
   static String _errorDetail(int statusCode, String body) {
     String? msg;
-    final Object? raw;
+    // jsonDecode 失败（非 JSON 错误体）时按"抽不到"处理，不走 raw。
+    Object? raw;
     try {
       raw = jsonDecode(body);
     } on FormatException {
