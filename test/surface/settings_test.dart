@@ -414,7 +414,7 @@ void main() {
       expect(c2.settings.mode, OgLThemeMode.light);
       expect(c2.settings.dnsCustomIp, '8.8.4.4');
       expect(c2.settings.onboardingDone, isTrue);
-      expect(c2.settings.languageCode, 'ja');
+      expect(c2.settings.languageCode, 'en');
     });
   });
 }
