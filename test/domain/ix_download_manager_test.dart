@@ -311,8 +311,7 @@ void main() {
           await manager.enqueue(url: url, fileName: 'a.zip');
       final IxDownloadTask b =
           await manager.enqueue(url: url, fileName: 'b.zip');
-      final IxDownloadTask c =
-          await manager.enqueue(url: url, fileName: 'c.zip');
+      await manager.enqueue(url: url, fileName: 'c.zip');
 
       backend.emitState(a.id, IxDownloadStatus.running);
       backend.emitState(b.id, IxDownloadStatus.completed);
