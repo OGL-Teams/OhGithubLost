@@ -274,4 +274,147 @@ void main() {
       expect(c.settings.mode, OgLThemeMode.system);
     });
   });
+
+  group('DNS 自定义服务器往返（9.1.0 新增）', () {
+    test('自定义 IP 与 DoH 端点完整往返', () {
+      const OgLSettings s = OgLSettings(
+        dnsMode: 'custom',
+        dnsServerId: 'custom',
+        dnsPreferDoh: true,
+        dnsCustomIp: '1.2.4.8',
+        dnsCustomDohUrl: 'https://doh.example/dns-query',
+      );
+      final Map<String, Object?> json =
+          jsonDecode(s.encode()) as Map<String, Object?>;
+      // 字段必须真的进 JSON —— 漏写会让用户重启后自定义 DNS 悄悄失效。
+      expect(json.containsKey('dnsCustomIp'), isTrue);
+      expect(json.containsKey('dnsCustomDohUrl'), isTrue);
+
+      final OgLSettings back = OgLSettings.fromJson(json);
+      expect(back.dnsMode, 'custom');
+      expect(back.dnsServerId, 'custom');
+      expect(back.dnsCustomIp, '1.2.4.8');
+      expect(back.dnsCustomDohUrl, 'https://doh.example/dns-query');
+    });
+
+    test('缺字段或类型不对 → 回落空串（不崩、不返回 null）', () {
+      final OgLSettings back = OgLSettings.fromJson(<String, Object?>{
+        'dnsCustomIp': 42,
+        'dnsCustomDohUrl': <String>['bad'],
+      });
+      expect(back.dnsCustomIp, '');
+      expect(back.dnsCustomDohUrl, '');
+    });
+
+    test('只填 IP 不填 DoH 端点也应保留', () {
+      const OgLSettings s = OgLSettings(
+        dnsMode: 'custom',
+        dnsCustomIp: '9.9.9.9',
+      );
+      final OgLSettings back = OgLSettings.fromJson(jsonDecode(s.encode()));
+      expect(back.dnsCustomIp, '9.9.9.9');
+      expect(back.dnsCustomDohUrl, '');
+    });
+  });
+
+  group('设置全字段往返', () {
+    // 一份覆盖所有字段的设置（与构造器字段一一对应，新增字段须补进来）。
+    const OgLSettings s = OgLSettings(
+      mode: OgLThemeMode.dark,
+      seedColorId: 'indigo',
+      fontScale: 1.15,
+      density: 'compact',
+      reduceMotion: true,
+      dnsMode: 'custom',
+      dnsServerId: 'custom',
+      dnsPreferDoh: false,
+      dnsCustomIp: '1.1.1.1',
+      dnsCustomDohUrl: 'https://dns.example/query',
+      downloadConnections: 8,
+      releaseProxyEnabled: true,
+      accelPrivateRepoAccepted: true,
+      accelScopes: <String>['repo'],
+      releaseProxyChannels: <OgLAccelChannel>[
+        OgLAccelChannel(id: 'c1', name: '通道一', baseUrl: 'https://p.example/'),
+      ],
+      releaseProxySelectedId: 'ch1',
+      releaseProxyConsentVersion: 2,
+      releaseProxyConsentAt: '2026-10-17T00:00:00Z',
+      foldersFirst: false,
+      codeHighlight: false,
+      codeFontSize: 15,
+      codeWrap: true,
+      codeThemePreset: 'custom',
+      codeColorBackground: 0xFF101010,
+      codeColorForeground: 0xFFEEEEEE,
+      codeColorKeyword: 0xFF00FF00,
+      codeColorTypeName: 0xFF00CCFF,
+      codeColorString: 0xFFFFAA00,
+      codeColorComment: 0xFF888888,
+      codeColorNumber: 0xFFFF5555,
+      onboardingDone: true,
+      motionLevel: 2,
+      languageCode: 'en',
+    );
+
+    test('全字段落盘→恢复逐项相等', () {
+      final OgLSettings back = OgLSettings.fromJson(jsonDecode(s.encode()));
+      expect(back.mode, s.mode);
+      expect(back.seedColorId, s.seedColorId);
+      expect(back.fontScale, s.fontScale);
+      expect(back.density, s.density);
+      expect(back.reduceMotion, s.reduceMotion);
+      expect(back.dnsMode, s.dnsMode);
+      expect(back.dnsServerId, s.dnsServerId);
+      expect(back.dnsPreferDoh, s.dnsPreferDoh);
+      expect(back.dnsCustomIp, s.dnsCustomIp);
+      expect(back.dnsCustomDohUrl, s.dnsCustomDohUrl);
+      expect(back.downloadConnections, s.downloadConnections);
+      expect(back.releaseProxyEnabled, s.releaseProxyEnabled);
+      expect(back.accelPrivateRepoAccepted, s.accelPrivateRepoAccepted);
+      expect(back.accelScopes, s.accelScopes);
+      expect(back.releaseProxyChannels, s.releaseProxyChannels);
+      expect(back.releaseProxySelectedId, s.releaseProxySelectedId);
+      expect(back.releaseProxyConsentVersion, s.releaseProxyConsentVersion);
+      expect(back.releaseProxyConsentAt, s.releaseProxyConsentAt);
+      expect(back.foldersFirst, s.foldersFirst);
+      expect(back.codeHighlight, s.codeHighlight);
+      expect(back.codeFontSize, s.codeFontSize);
+      expect(back.codeWrap, s.codeWrap);
+      expect(back.codeThemePreset, s.codeThemePreset);
+      expect(back.codeColorBackground, s.codeColorBackground);
+      expect(back.codeColorForeground, s.codeColorForeground);
+      expect(back.codeColorKeyword, s.codeColorKeyword);
+      expect(back.codeColorTypeName, s.codeColorTypeName);
+      expect(back.codeColorString, s.codeColorString);
+      expect(back.codeColorComment, s.codeColorComment);
+      expect(back.codeColorNumber, s.codeColorNumber);
+      expect(back.onboardingDone, s.onboardingDone);
+      expect(back.motionLevel, s.motionLevel);
+      expect(back.languageCode, s.languageCode);
+    });
+
+    test('控制器经内存持久化保存→重载，设置完整恢复', () async {
+      final OgLInMemorySettingsPersistence p = OgLInMemorySettingsPersistence();
+      final OgLSettingsController c1 = OgLSettingsController(persistence: p);
+      addTearDown(c1.dispose);
+
+      await c1.apply(c1.settings.copyWith(
+        mode: OgLThemeMode.light,
+        dnsCustomIp: '8.8.4.4',
+        onboardingDone: true,
+        languageCode: 'ja',
+      ));
+
+      // 新控制器模拟重启：从同一持久化重新 load。
+      final OgLSettingsController c2 = OgLSettingsController(persistence: p);
+      addTearDown(c2.dispose);
+      await c2.load();
+
+      expect(c2.settings.mode, OgLThemeMode.light);
+      expect(c2.settings.dnsCustomIp, '8.8.4.4');
+      expect(c2.settings.onboardingDone, isTrue);
+      expect(c2.settings.languageCode, 'ja');
+    });
+  });
 }
