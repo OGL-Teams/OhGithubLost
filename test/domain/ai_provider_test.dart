@@ -458,7 +458,6 @@ void main() {
   group('流式累积契约（多帧 → 完整回复）', () {
     AiStreamDelta acc(AiProviderKind kind, List<String> frames) {
       final AiProvider p = AiProvider(kind);
-      AiStreamDelta acc = const AiStreamDelta();
       final StringBuffer buf = StringBuffer();
       bool done = false;
       for (final String f in frames) {
