@@ -28,6 +28,7 @@ import '../../platform/window_listener_shim.dart';
 import '../../platform/platform.dart';
 import '../../platform/window_capability.dart';
 import '../i18n/og_l_i18n.dart';
+import '../util/og_l_space.dart';
 
 export '../../platform/window_capability.dart' show OgLWindowDecoration;
 

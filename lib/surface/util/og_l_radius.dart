@@ -18,7 +18,6 @@
 library;
 
 import 'package:flutter/widgets.dart';
-import './og_l_radius.dart';
 
 /// 圆角令牌。
 abstract final class OgLRadius {
