@@ -19,9 +19,9 @@ library;
 
 import 'package:flutter/material.dart';
 
-import 'i18n/og_l_i18n.dart';
-import './util/og_l_space.dart';
 import './util/og_l_radius.dart';
+import './util/og_l_space.dart';
+import 'i18n/og_l_i18n.dart';
 
 /// 品牌种子色（GitHub 蓝）。
 const Color kOgLSeedColor = Color(0xFF0969DA);

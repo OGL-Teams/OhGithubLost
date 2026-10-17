@@ -38,15 +38,15 @@ import '../theme.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/clipboard_x.dart';
+import '../util/og_l_code_palette.dart';
+import '../util/og_l_radius.dart';
+import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
 import 'onboarding_page.dart';
-import '../util/og_l_space.dart';
-import '../util/og_l_radius.dart';
-import '../util/og_l_code_palette.dart';
 
 /// 设置页。
 class SettingsPage extends StatefulWidget {

@@ -16,13 +16,13 @@ import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
 import '../widgets/scroll_aware_action.dart';
 import 'download_manager_page.dart';
 import 'new_repo_page.dart';
 import 'notifications_page.dart';
 import 'repo_page.dart';
-import '../util/og_l_space.dart';
 
 /// 取 `dashboard_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
