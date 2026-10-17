@@ -45,7 +45,7 @@ class NetworkSettingsPage extends StatelessWidget {
         child: ListenableBuilder(
           listenable: surface.settings,
           builder: (BuildContext context, Widget? _) => ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(OgLSpace.lg),
             children: <Widget>[
               builder(context, surface.settings.settings),
               const SizedBox(height: OgLSpace.xl),

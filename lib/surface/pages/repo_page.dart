@@ -33,7 +33,6 @@ import '../util/file_icons.dart';
 import '../util/file_preview.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
-import '../util/og_l_space.dart';
 import '../util/path_rules.dart';
 import '../widgets/anim/anim_preload.dart';
 import '../widgets/code_editor_field.dart';
@@ -50,6 +49,8 @@ import 'new_release_page.dart';
 import 'pull_page.dart';
 import 'release_detail_page.dart';
 import 'workflow_dispatch_page.dart';
+import '../util/og_l_space.dart';
+import '../theme.dart';
 
 /// 取 `repo` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -487,7 +488,8 @@ class _RepoPageState extends State<RepoPage> {
             child: Container(
               constraints: const BoxConstraints(minHeight: 48),
               alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.md),
               child: Row(
                 children: <Widget>[
                   const Icon(Icons.account_tree_outlined, size: 18),
@@ -502,7 +504,7 @@ class _RepoPageState extends State<RepoPage> {
                   ),
                   if (_branch == _repo.defaultBranch)
                     Padding(
-                      padding: const EdgeInsets.only(right: 6),
+                      padding: const EdgeInsets.only(right: OgLSpace.sm),
                       child: Text(_t('defaultLabel'),
                           style: theme.textTheme.bodySmall),
                     ),
@@ -554,7 +556,8 @@ class _BranchSheetState extends State<_BranchSheet> {
         child: Column(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.sm),
               child: TextField(
                 autofocus: false,
                 decoration: InputDecoration(
@@ -658,7 +661,7 @@ Widget _pagedBody<T>(
       itemBuilder: (BuildContext context, int index) {
         if (index == list.length) {
           return Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(OgLSpace.md),
             child: Center(
               child: paged.loading
                   ? const CircularProgressIndicator()
@@ -1702,7 +1705,7 @@ class _CodeTabState extends State<_CodeTab> {
   }
 
   Widget _detailRow(ThemeData theme, String label, String value) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.only(bottom: OgLSpace.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -1798,7 +1801,8 @@ class _CodeTabState extends State<_CodeTab> {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      padding:
+          const EdgeInsets.fromLTRB(OgLSpace.md, OgLSpace.sm, OgLSpace.md, 0),
       child: Row(
         children: <Widget>[
           TextButton(onPressed: () => _goTo(''), child: Text(_t('rootDir'))),
@@ -1953,7 +1957,8 @@ class _CodeTabState extends State<_CodeTab> {
     return ExpansionTile(
       title: const Text('README'),
       subtitle: Text(_t('expandCollapse')),
-      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      childrenPadding:
+          const EdgeInsets.fromLTRB(OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.lg),
       children: <Widget>[
         ReadmeView(
           markdown: md,
@@ -2082,7 +2087,7 @@ class _CodeTabState extends State<_CodeTab> {
                 progress == null
                     ? child
                     : const Padding(
-                        padding: EdgeInsets.all(24),
+                        padding: EdgeInsets.all(OgLSpace.xl),
                         child: CircularProgressIndicator(),
                       ),
             errorBuilder:
@@ -2123,7 +2128,7 @@ class _CodeTabState extends State<_CodeTab> {
         Future<Map<String, String>>? headers
       }) plan = _readmeImagePlan(_dirOf(file.path));
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(OgLSpace.lg),
         child: ReadmeView(
           markdown: text,
           imageBase: plan.base,
@@ -2188,7 +2193,8 @@ class _CodeTabState extends State<_CodeTab> {
           // 写操作进行中：列表顶部摊开进度状态（`_operationStatus`）。
           if (_busy && _operationStatus.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.md, OgLSpace.sm, OgLSpace.md, 0),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -2199,7 +2205,8 @@ class _CodeTabState extends State<_CodeTab> {
             ),
           if (_path.isNotEmpty) _breadcrumb(context),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            padding: const EdgeInsets.fromLTRB(
+                OgLSpace.md, OgLSpace.sm, OgLSpace.md, OgLSpace.xxs),
             child: TextField(
               controller: _filter,
               decoration: InputDecoration(
@@ -2277,7 +2284,7 @@ class _CodeTabState extends State<_CodeTab> {
                             if (_path.isEmpty) _readmeTile(),
                             if (shown.isEmpty)
                               Padding(
-                                padding: EdgeInsets.all(24),
+                                padding: EdgeInsets.all(OgLSpace.xl),
                                 child: Center(
                                     child: Text(_t('noMatchingEntries'))),
                               )
@@ -2456,7 +2463,8 @@ class _IssuesTabState extends State<_IssuesTab> {
       body: Column(
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            padding: const EdgeInsets.fromLTRB(
+                OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
             child: SegmentedButton<String>(
               segments: <ButtonSegment<String>>[
                 ButtonSegment<String>(
@@ -2584,7 +2592,8 @@ class _PullsTabState extends State<_PullsTab> {
     return Column(
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          padding: const EdgeInsets.fromLTRB(
+              OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
           child: SegmentedButton<String>(
             segments: <ButtonSegment<String>>[
               ButtonSegment<String>(
@@ -3233,7 +3242,8 @@ class _ActionsTabState extends State<_ActionsTab> {
         return Column(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.md, OgLSpace.sm, OgLSpace.md, OgLSpace.xxs),
               child: Row(
                 children: <Widget>[
                   FilledButton.tonalIcon(
@@ -3255,7 +3265,8 @@ class _ActionsTabState extends State<_ActionsTab> {
                             'failure': _t('runFailed'),
                           }.entries)
                             Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding:
+                                  const EdgeInsets.only(right: OgLSpace.sm),
                               child: ChoiceChip(
                                 label: Text(entry.value),
                                 selected: _filter == entry.key,
@@ -3290,7 +3301,10 @@ class _ActionsTabState extends State<_ActionsTab> {
                           leading: Icon(
                             _iconFor(status, conclusion),
                             color: conclusion == 'success'
-                                ? const Color(0xFF1A7F37)
+                                ? (Theme.of(context)
+                                        .extension<OgLSemanticColors>()
+                                        ?.success ??
+                                    Theme.of(context).colorScheme.primary)
                                 : conclusion == 'failure' ||
                                         conclusion == 'timed_out'
                                     ? Theme.of(context).colorScheme.error
@@ -3636,7 +3650,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
         }
       },
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(OgLSpace.lg),
         children: <Widget>[
           Text(_t('basicInfo'), style: theme.textTheme.titleMedium),
           const SizedBox(height: OgLSpace.sm),
@@ -3728,7 +3742,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
           const SizedBox(height: OgLSpace.sm),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(OgLSpace.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[

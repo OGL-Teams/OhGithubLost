@@ -27,6 +27,7 @@ import '../i18n/og_l_i18n.dart';
 import '../settings.dart';
 import '../surface_bridge.dart';
 import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `onboarding` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -250,19 +251,20 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Widget _progress(ThemeData theme) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+            horizontal: OgLSpace.xl, vertical: OgLSpace.sm),
         child: Row(
           children: <Widget>[
             for (int i = 0; i < _stepCount; i++)
               Expanded(
                 child: Container(
                   height: 4,
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  margin: const EdgeInsets.symmetric(horizontal: OgLSpace.xxs),
                   decoration: BoxDecoration(
                     color: i <= _step
                         ? theme.colorScheme.primary
                         : theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(OgLRadius.xs),
                   ),
                 ),
               ),
@@ -276,7 +278,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
     final bool permissionPending =
         _step == _permissionStepIndex && _infos == null;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      padding: const EdgeInsets.fromLTRB(
+          OgLSpace.xl, OgLSpace.sm, OgLSpace.xl, OgLSpace.lg),
       child: Row(
         children: <Widget>[
           if (_step > 0)
@@ -286,7 +289,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           const Spacer(),
           if (permissionPending)
             Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.only(right: OgLSpace.sm),
               child: Text(
                 _t('detectingPermissions'),
                 style: theme.textTheme.bodySmall,
@@ -306,7 +309,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Widget _stepBody(ThemeData theme, {required List<Widget> children}) =>
-      ListView(padding: const EdgeInsets.all(20), children: children);
+      ListView(padding: const EdgeInsets.all(OgLSpace.xl), children: children);
 
   /// 第 1 步：**语言与外观**。
   ///
@@ -407,14 +410,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
           const SizedBox(height: OgLSpace.sm),
           if (_infos == null)
             const Padding(
-              padding: EdgeInsets.all(24),
+              padding: EdgeInsets.all(OgLSpace.xl),
               child: Center(child: CircularProgressIndicator()),
             )
           else
             for (final OgLPermissionInfo info in _infos!)
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(OgLSpace.md),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -434,7 +437,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: OgLSpace.sm),
                       Text(info.rationale, style: theme.textTheme.bodySmall),
                       const SizedBox(height: OgLSpace.sm),
                       Align(
@@ -467,7 +470,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           Card(
             color: theme.colorScheme.secondaryContainer,
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(OgLSpace.md),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -570,10 +573,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
           const SizedBox(height: OgLSpace.md),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(OgLSpace.md),
             decoration: BoxDecoration(
               color: theme.colorScheme.secondaryContainer,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(OgLRadius.sm),
             ),
             child: Text(
               _t('licenseIntro'),
@@ -586,10 +589,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
           //    放在最前，因为它是整页的性质界定，读者有权先知道这一点。
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(OgLSpace.md),
             decoration: BoxDecoration(
               color: theme.colorScheme.errorContainer,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(OgLRadius.sm),
             ),
             child: Text(
               _t('legalStatementOnly'),
@@ -612,10 +615,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
           // ── 语言效力声明：必须在正文之前，且视觉上醒目 ──
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(OgLSpace.md),
             decoration: BoxDecoration(
               border: Border.all(color: theme.colorScheme.outlineVariant),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(OgLRadius.sm),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -645,7 +648,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 _t('licenseFullText'),
                 style: theme.textTheme.titleSmall,
               ),
-              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              childrenPadding: const EdgeInsets.fromLTRB(
+                  OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.lg),
               children: <Widget>[
                 SelectableText(
                   _t('onboardingLicenseBody'),

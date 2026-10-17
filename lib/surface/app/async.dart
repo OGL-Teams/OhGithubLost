@@ -19,9 +19,9 @@ library;
 import 'package:flutter/material.dart';
 
 import '../i18n/og_l_i18n.dart';
-import '../util/og_l_space.dart';
 import 'animations.dart';
 import 'error_surface.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `shell` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -250,7 +250,7 @@ class AsyncView<T> extends StatelessWidget {
               'loading',
               const Center(
                 child: Padding(
-                  padding: EdgeInsets.all(32),
+                  padding: EdgeInsets.all(OgLSpace.xxl),
                   child: CircularProgressIndicator(),
                 ),
               ),
@@ -312,7 +312,7 @@ class OgLAsyncErrorPane extends StatelessWidget {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(OgLSpace.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -354,7 +354,7 @@ class OgLAsyncEmptyPane extends StatelessWidget {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(OgLSpace.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -390,7 +390,8 @@ class OgLAsyncSoftErrorBar extends StatelessWidget {
     return Material(
       color: scheme.errorContainer,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 4, 8),
+        padding: const EdgeInsets.fromLTRB(
+            OgLSpace.lg, OgLSpace.sm, OgLSpace.xxs, OgLSpace.sm),
         child: Row(
           children: <Widget>[
             Icon(Icons.warning_amber_rounded, color: scheme.onErrorContainer),
@@ -499,7 +500,7 @@ class OgLAsyncSliver<T> extends StatelessWidget {
           return const SliverToBoxAdapter(
             child: Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
+                padding: EdgeInsets.all(OgLSpace.xxl),
                 child: CircularProgressIndicator(),
               ),
             ),

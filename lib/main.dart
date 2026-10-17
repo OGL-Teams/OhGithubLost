@@ -34,6 +34,7 @@ import 'surface/app/error_surface.dart';
 import 'surface/app/og_l_app.dart';
 import 'surface/app/permission_selftest.dart';
 import 'surface/surface_bridge.dart';
+import './surface/util/og_l_space.dart';
 
 /// 应用版本（零外部资源：不读 pubspec，直接内联常量）。
 ///
@@ -53,6 +54,15 @@ void main() async {
   // ★ 启动耗时埋点：进程开始 → 首帧渲染完成。
   //   没有这个数字，"冷启动优化"就只能靠感觉；有了它，每次改动的影响可对比。
   final Stopwatch bootWatch = Stopwatch()..start();
+  // 分阶段耗时（毫秒，按发生顺序累计）。只有总耗时时无法定位瓶颈——
+  // 到底是日志落盘、平台存储探针，还是内核验签慢，必须分开看。
+  final Map<String, int> bootPhases = <String, int>{};
+  int lapStart = bootWatch.elapsedMilliseconds;
+  void lap(String name) {
+    bootPhases[name] = bootWatch.elapsedMilliseconds - lapStart;
+    lapStart = bootWatch.elapsedMilliseconds;
+  }
+
   WidgetsFlutterBinding.ensureInitialized();
   // ★ 冷启动首帧：**先渲染占位屏**，再做重活。
   //
@@ -75,6 +85,7 @@ void main() async {
     buildMode: kReleaseMode ? 'release' : (kProfileMode ? 'profile' : 'debug'),
     platform: _ogLPlatformName(),
   );
+  lap('日志落盘');
   // 平台与版本：`dart:io` 的 `Platform.operatingSystemVersion` 在 Web 上不存在，
   // 而诊断日志真正需要的是"哪个平台"这一项，因此这里只写规范化后的平台名
   // （web / android / ios / linux / macos / windows），**不编造**系统版本号。
@@ -191,6 +202,7 @@ void main() async {
   // ★ 组合根：装配 L1 —— 解析平台存储（登录 / 设置 / 缓存真正落盘）；
   // 失败退回内存并把错误原样带上来（下面大声上报，绝不静默）。
   final bootstrap = await baseLayerModulesOnPlatform();
+  lap('平台存储');
 
   final List<OgLModule> modules = <OgLModule>[
     ...bootstrap.modules,
@@ -201,6 +213,7 @@ void main() async {
   try {
     OgLAppLog.instance.step('启动', '内核引导（${modules.length} 个模块）…');
     final report = await kernel.boot(modules);
+    lap('内核引导');
     OgLAppLog.instance.result(
       '启动',
       '内核引导完成',
@@ -234,6 +247,15 @@ void main() async {
     //   通知/日志形式稍后呈现。
     // 首帧之前的全部准备工作已完成 —— 记下"到真实界面"的总耗时。
     // （含首帧占位屏的渲染；不含真实界面自身首帧的布局/绘制。）
+    lap('首帧前杂项');
+    final String breakdown = bootPhases.entries
+        .map((MapEntry<String, int> e) => '${e.key}=${e.value}ms')
+        .join(' · ');
+    OgLAppLog.instance.add(
+      '启动',
+      '启动分解：$breakdown · 合计=${bootWatch.elapsedMilliseconds}ms',
+      severity: OgLNoticeSeverity.info,
+    );
     OgLAppLog.instance.add(
       '启动',
       '启动总耗时=${bootWatch.elapsedMilliseconds}ms（进程 → 真实界面就绪）',
@@ -310,7 +332,7 @@ class _OgLErrorBox extends StatelessWidget {
       textDirection: TextDirection.ltr,
       child: Container(
         color: const Color(0xFF4A1D1F),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(OgLSpace.md),
         child: Text(
           message,
           maxLines: 4,

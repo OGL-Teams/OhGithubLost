@@ -18,9 +18,10 @@ import '../util/accel.dart';
 import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
-import '../util/og_l_space.dart';
 import 'action_log_page.dart';
 import 'download_manager_page.dart';
+import '../util/og_l_space.dart';
+import '../theme.dart';
 
 /// 取 `action_run_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -220,7 +221,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
         _t('artifactExpiresAt', <String, Object?>{'at': expires}),
     ].join(' · ');
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: OgLSpace.sm),
       child: ListTile(
         leading: const Icon(Icons.inventory_2_outlined),
         title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -311,7 +312,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
     }
     switch (conclusion) {
       case 'success':
-        return const Color(0xFF1A7F37);
+        return theme.extension<OgLSemanticColors>()?.success ??
+            theme.colorScheme.primary;
       case 'failure':
       case 'timed_out':
         return theme.colorScheme.error;
@@ -384,7 +386,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
               slivers: <Widget>[
                 // 头部（常量级）：状态 / 操作按钮 /「作业」标题 /（空态提示）。
                 SliverPadding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(OgLSpace.lg),
                   sliver: SliverToBoxAdapter(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -412,7 +414,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
                           '${ghStr(run, 'head_branch')} · ${ghShortSha(ghStr(run, 'head_sha'))}',
                           style: theme.textTheme.bodySmall,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: OgLSpace.xxs),
                         Text(
                           '${_t('status', {'status': status})}'
                           '${conclusion.isEmpty ? '' : ' / $conclusion'} · '
@@ -462,7 +464,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
                         const SizedBox(height: OgLSpace.sm),
                         if (detail.jobs.isEmpty)
                           Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
+                            padding:
+                                EdgeInsets.symmetric(vertical: OgLSpace.lg),
                             child: Text(_t('noJobs')),
                           )
                       ],
@@ -471,7 +474,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
                 ),
                 // 作业：按需构建（作业/步骤可以很多）。
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
                   sliver: SliverList.builder(
                     itemCount: detail.jobs.length,
                     itemBuilder: (BuildContext context, int index) {
@@ -498,8 +501,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
                             '${ghStr(job, 'status')} · '
                             '${ghStr(job, 'conclusion').isEmpty ? '—' : ghStr(job, 'conclusion')}',
                           ),
-                          childrenPadding:
-                              const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                          childrenPadding: const EdgeInsets.fromLTRB(
+                              OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.md),
                           children: <Widget>[
                             for (final Object? rawStep in (job['steps'] is List
                                 ? job['steps'] as List<Object?>

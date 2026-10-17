@@ -25,6 +25,7 @@ import '../../platform/platform.dart';
 import '../../platform/window_capability.dart';
 import '../i18n/og_l_i18n.dart';
 import 'error_surface.dart';
+import '../util/og_l_space.dart';
 
 export '../../platform/window_capability.dart' show OgLWindowDecoration;
 
@@ -145,7 +146,7 @@ class _OgLTitleBarState extends State<OgLTitleBar> with WindowListener {
                 onPanStart: (_) => ogLWindow.startDragging(),
                 onDoubleTap: () => _toggleMaximize(),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: OgLSpace.md),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(

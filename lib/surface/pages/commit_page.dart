@@ -14,6 +14,8 @@ import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/gh_format.dart';
 import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
+import '../theme.dart';
 
 /// 取 `commit_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -101,14 +103,15 @@ class _CommitPageState extends State<CommitPage> {
               // 头部：常量级 widget 数量，一次性构建即可；
               // 数据行交给下面的 sliver 懒加载（长列表不再一次性构建）。
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: const EdgeInsets.fromLTRB(
+                    OgLSpace.lg, OgLSpace.lg, OgLSpace.lg, 0),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Card(
                         child: Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(OgLSpace.md),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -141,7 +144,7 @@ class _CommitPageState extends State<CommitPage> {
               ),
               OgLAsyncSliver<List<Map<String, dynamic>>>(
                 controller: _diffC(),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
                 itemCountOf: (List<Map<String, dynamic>> files) => files.length,
                 itemBuilder: (
                   BuildContext context,
@@ -178,14 +181,15 @@ class _CommitPageState extends State<CommitPage> {
       leading: const Icon(Icons.description_outlined),
       title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(subtitle),
-      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      childrenPadding:
+          const EdgeInsets.fromLTRB(OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.lg),
       children: <Widget>[
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(OgLSpace.md),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(OgLRadius.sm),
           ),
           child: _PatchView(patch: patch),
         ),
@@ -203,14 +207,16 @@ class _PatchView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
+    final OgLSemanticColors sem =
+        Theme.of(context).extension<OgLSemanticColors>()!;
     const TextStyle base = TextStyle(fontFamily: 'monospace', fontSize: 12);
     final List<TextSpan> spans = <TextSpan>[];
     for (final String line in patch.split('\n')) {
       Color color = scheme.onSurface;
       if (line.startsWith('+')) {
-        color = const Color(0xFF2DA44E);
+        color = sem.success;
       } else if (line.startsWith('-')) {
-        color = const Color(0xFFCF222E);
+        color = scheme.error;
       } else if (line.startsWith('@@')) {
         color = scheme.primary;
       }

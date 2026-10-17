@@ -24,9 +24,9 @@ import '../util/clipboard_x.dart';
 import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
-import '../util/og_l_space.dart';
 import '../widgets/readme_view.dart';
 import 'download_manager_page.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `release_detail_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -87,7 +87,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: name,
                   decoration: InputDecoration(
@@ -95,7 +95,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: OgLSpace.md),
                 TextField(
                   controller: body,
                   minLines: 5,
@@ -294,7 +294,8 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
       isScrollControlled: true,
       builder: (BuildContext sheetContext) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+          padding: const EdgeInsets.fromLTRB(
+              OgLSpace.xl, OgLSpace.xxs, OgLSpace.xl, OgLSpace.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,7 +304,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                 asset.name,
                 style: Theme.of(sheetContext).textTheme.titleMedium,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: OgLSpace.md),
               _assetKeyRow(_t('size'), ghSizeText(asset.size)),
               _assetKeyRow(_t('downloadCount'), '${asset.downloadCount}'),
               if (asset.contentType != null && asset.contentType!.isNotEmpty)
@@ -323,7 +324,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                       label: Text(_t('download')),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: OgLSpace.md),
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
@@ -397,7 +398,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
   }
 
   Widget _assetKeyRow(String key, String value) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
+        padding: const EdgeInsets.symmetric(vertical: OgLSpace.xxs),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -457,7 +458,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
       body: OgLReveal(
           delay: Duration.zero,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(OgLSpace.lg),
             children: <Widget>[
               Text(
                 _release.name == null || _release.name!.isEmpty
@@ -465,7 +466,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                     : _release.name!,
                 style: theme.textTheme.titleLarge,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: OgLSpace.sm),
               Text(
                 <String>[
                   if (_release.publishedAt != null)
@@ -485,7 +486,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                 const SizedBox(height: OgLSpace.lg),
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(OgLSpace.md),
                     child: ReadmeView(
                       markdown: _release.body!,
                       onOpenLink: (Uri uri) {
@@ -500,7 +501,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
               const SizedBox(height: OgLSpace.sm),
               if (_release.assets.isEmpty)
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: OgLSpace.md),
                   child: Text(_t('noAssets')),
                 )
               else

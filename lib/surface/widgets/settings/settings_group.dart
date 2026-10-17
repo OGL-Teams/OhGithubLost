@@ -97,7 +97,7 @@ Future<T?> ogLShowSettingsChoice<T>({
                         Text(option.label),
                         if (option.hint != null)
                           Padding(
-                            padding: const EdgeInsets.only(top: 2),
+                            padding: const EdgeInsets.only(top: OgLSpace.xxs),
                             child: Text(
                               option.hint!,
                               style:
@@ -165,7 +165,7 @@ class OgLSettingsGroup extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     return Card(
       clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: OgLSpace.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -181,7 +181,8 @@ class OgLSettingsGroup extends StatelessWidget {
               excludeSemantics: true,
               label: '$title, ${expanded ? collapseLabel : expandLabel}',
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+                padding: const EdgeInsets.fromLTRB(
+                    OgLSpace.lg, OgLSpace.md, OgLSpace.sm, OgLSpace.md),
                 child: Row(
                   children: <Widget>[
                     if (leading != null) ...<Widget>[
@@ -203,7 +204,7 @@ class OgLSettingsGroup extends StatelessWidget {
                           ),
                           if (subtitle.isNotEmpty)
                             Padding(
-                              padding: const EdgeInsets.only(top: 2),
+                              padding: const EdgeInsets.only(top: OgLSpace.xxs),
                               child: Text(
                                 subtitle,
                                 style: theme.textTheme.bodySmall?.copyWith(
@@ -223,7 +224,7 @@ class OgLSettingsGroup extends StatelessWidget {
                       curve: OgLAnim.curve(context),
                       child: const Icon(Icons.chevron_right),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: OgLSpace.xxs),
                   ],
                 ),
               ),
@@ -242,7 +243,7 @@ class OgLSettingsGroup extends StatelessWidget {
                     children: <Widget>[
                       const Divider(height: 1),
                       ...children,
-                      const SizedBox(height: 4),
+                      const SizedBox(height: OgLSpace.xxs),
                     ],
                   ),
           ),
@@ -337,7 +338,7 @@ class OgLSettingsChoiceTile<T> extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-          const SizedBox(width: 4),
+          const SizedBox(width: OgLSpace.xxs),
           const Icon(Icons.chevron_right, size: 18),
         ],
       ),
@@ -553,7 +554,8 @@ class OgLSettingsDangerCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+            padding: const EdgeInsets.fromLTRB(
+                OgLSpace.lg, OgLSpace.md, OgLSpace.lg, 0),
             child: Text(
               title,
               style: theme.textTheme.labelLarge?.copyWith(

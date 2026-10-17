@@ -79,7 +79,7 @@ class AboutPage extends StatelessWidget {
       // 根级子项逐个挂入场动画（[OgLRevealList] 自动错峰）；不再用整页
       // `OgLReveal` 包住整个列表 —— 那会与路由过渡叠加成双重动画。
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(OgLSpace.lg),
         children: OgLRevealList.of(context, <Widget>[
           Card(
             child: Column(
@@ -256,11 +256,12 @@ class AboutPage extends StatelessWidget {
   }) =>
       Card(
         clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: OgLSpace.md),
         child: ExpansionTile(
           title: Text(title),
           subtitle: Text(subtitle),
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          childrenPadding: const EdgeInsets.fromLTRB(
+              OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.lg),
           children: children,
         ),
       );
@@ -334,7 +335,7 @@ class _KeyValueRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: OgLSpace.xxs),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[

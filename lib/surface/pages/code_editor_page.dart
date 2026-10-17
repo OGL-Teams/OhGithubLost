@@ -21,8 +21,9 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/gh_format.dart';
-import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
+import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `code_editor_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -272,12 +273,12 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
                   Container(
                     width: double.infinity,
                     constraints: const BoxConstraints(maxHeight: 200),
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(OgLSpace.sm),
                     decoration: BoxDecoration(
                       color: Theme.of(dialogContext)
                           .colorScheme
                           .surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(OgLRadius.sm),
                     ),
                     child: SingleChildScrollView(
                       child: SelectableText(
@@ -371,7 +372,8 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   Widget _statusBar(ThemeData theme) => Material(
         color: theme.colorScheme.surfaceContainerHighest,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+          padding: const EdgeInsets.fromLTRB(
+              OgLSpace.md, OgLSpace.sm, OgLSpace.md, OgLSpace.sm),
           child: Text(
             '${_t('stats', {
                   'lines': _controller.lineCount,

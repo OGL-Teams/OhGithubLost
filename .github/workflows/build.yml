@@ -361,6 +361,17 @@ jobs:
       #   一旦 sksl/warmup.sksl.json 入库，这条步骤就会自动启用它。
       #   注：Android / iOS 用 Impeller，着色器在**构建期 AOT 编译**，
       #   不需要也不需要 SkSL bundle（传了会被忽略）。
+      # 调试符号：`--split-debug-info` 把它从产物剥离（体积更小、加载更快），
+      # 崩溃栈需要它来符号化 —— 单独存 artifact，不进安装包。
+      - name: 上传调试符号（符号化用）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: symbols-${{ matrix.label }}
+          path: build/symbols
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: 预编译着色器（SkSL bundle · 可选）
         id: sksl
         shell: bash
@@ -395,6 +406,7 @@ jobs:
         run: >-
           flutter build ${{ matrix.build }} ${{ matrix.args }}
           ${{ env.SKSL_FLAG }}
+          --split-debug-info=build/symbols
           --build-name=${{ inputs.version_name }}
           --build-number=${{ inputs.version_number }}
           --dart-define-from-file=dart_define.json

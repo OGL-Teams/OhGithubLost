@@ -154,7 +154,7 @@ class _NewIssuePageState extends State<NewIssuePage> {
         body: OgLReveal(
             delay: Duration.zero,
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(OgLSpace.lg),
               children: <Widget>[
                 TextField(
                   controller: _title,
@@ -179,7 +179,7 @@ class _NewIssuePageState extends State<NewIssuePage> {
                   Card(
                     color: Theme.of(context).colorScheme.errorContainer,
                     child: Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(OgLSpace.md),
                       child: Text(
                         _error!,
                         style: TextStyle(

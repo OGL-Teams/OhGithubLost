@@ -451,7 +451,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
               });
             }
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(OgLSpace.lg),
               children: <Widget>[
                 Text(_t('title'), style: theme.textTheme.titleSmall),
                 const SizedBox(height: OgLSpace.sm),
@@ -512,7 +512,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                   tilePadding: EdgeInsets.zero,
                   title:
                       Text(_t('advanced'), style: theme.textTheme.titleSmall),
-                  childrenPadding: const EdgeInsets.only(bottom: 8),
+                  childrenPadding: const EdgeInsets.only(bottom: OgLSpace.sm),
                   children: <Widget>[
                     TextField(
                       controller: _inputs,
@@ -549,7 +549,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
         Card(
           color: theme.colorScheme.errorContainer,
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(OgLSpace.md),
             child: Text(_formError!, style: theme.textTheme.bodySmall),
           ),
         ),
@@ -566,7 +566,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
     return <Widget>[
       for (final _WfInput input in _form)
         Padding(
-          padding: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.only(bottom: OgLSpace.md),
           child: _fieldFor(theme, input),
         ),
     ];

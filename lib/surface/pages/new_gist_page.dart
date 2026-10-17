@@ -169,7 +169,7 @@ class _NewGistPageState extends State<NewGistPage> {
         body: OgLReveal(
             delay: Duration.zero,
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(OgLSpace.lg),
               children: <Widget>[
                 TextField(
                   controller: _description,
@@ -189,7 +189,7 @@ class _NewGistPageState extends State<NewGistPage> {
                 ),
                 const SizedBox(height: OgLSpace.md),
                 Text(_t('content'), style: theme.textTheme.labelLarge),
-                const SizedBox(height: 6),
+                const SizedBox(height: OgLSpace.sm),
                 TextField(
                   controller: _content,
                   minLines: 8,

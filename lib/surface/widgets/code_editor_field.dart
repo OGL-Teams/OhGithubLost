@@ -442,7 +442,7 @@ class OgLCodeField extends StatefulWidget {
     this.readOnly = false,
     this.findController,
     this.focusNode,
-    this.padding = const EdgeInsets.all(12),
+    this.padding = const EdgeInsets.all(OgLSpace.md),
     super.key,
   });
 
@@ -843,7 +843,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
         child: InkWell(
           onTap: onPressed,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: OgLSpace.sm),
             child: Text(
               label,
               style: TextStyle(

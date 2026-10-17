@@ -22,6 +22,7 @@ import 'download_manager_page.dart';
 import 'new_repo_page.dart';
 import 'notifications_page.dart';
 import 'repo_page.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `dashboard_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -357,7 +358,8 @@ class _DashboardPageState extends State<DashboardPage> {
       body: Column(
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            padding: const EdgeInsets.fromLTRB(
+                OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
             child: SegmentedButton<int>(
               segments: <ButtonSegment<int>>[
                 ButtonSegment<int>(value: 0, label: Text(_t('mine'))),
@@ -409,7 +411,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     itemBuilder: (BuildContext context, int index) {
                       if (index == p.items.length) {
                         return Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(OgLSpace.md),
                           child: Center(
                             child: p.loading
                                 ? const CircularProgressIndicator()

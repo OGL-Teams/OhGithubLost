@@ -28,10 +28,10 @@ import '../util/download_proxy.dart';
 import '../util/file_preview.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
-import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 import 'download_manager_page.dart';
 import 'settings_page.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `common` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -336,7 +336,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
     }
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(OgLSpace.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -360,7 +360,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: OgLSpace.xl),
             FilledButton.icon(
               onPressed: () => setState(() => _useRaw = true),
               icon: const Icon(Icons.link),
@@ -481,7 +481,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   /// 点了必然失败的动作。私有仓库只给「下载」（下载走本应用的传输层，带认证）。
   Widget _audioCard(ThemeData theme, {String? rawUrl}) => Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(OgLSpace.xxl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -497,7 +497,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: OgLSpace.xl),
               // 有 raw 地址时优先给「播放」：这是**真的能听到声音**的那条路
               // （走系统播放器；应用内播放需要额外音频依赖且音频必然超过
               //  Contents API 的 1 MB 上限，内置播放本就不成立）。
@@ -564,7 +564,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
 
   Widget _notice(ThemeData theme, IconData icon, String message) => Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(OgLSpace.xxl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -584,7 +584,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   Widget _banner(ThemeData theme, IconData icon, String message) => Container(
         width: double.infinity,
         color: theme.colorScheme.surfaceContainerHighest,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+            horizontal: OgLSpace.md, vertical: OgLSpace.sm),
         child: Row(
           children: <Widget>[
             Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),

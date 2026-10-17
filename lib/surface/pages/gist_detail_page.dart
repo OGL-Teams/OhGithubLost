@@ -18,8 +18,8 @@ import '../surface_bridge.dart';
 import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
-import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `gist_detail_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -303,7 +303,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
         emptyIcon: Icons.article_outlined,
         emptyText: _t('noFiles'),
         builder: (BuildContext context, _GistDetail detail) => ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(OgLSpace.lg),
           children: <Widget>[
             Text(
               detail.description.isEmpty
@@ -311,7 +311,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                   : detail.description,
               style: theme.textTheme.titleMedium,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: OgLSpace.xxs),
             Text(
               '${detail.isPublic ? _t('public') : _t('private')} · '
               '${_t('fileCount', <String, Object?>{
@@ -342,7 +342,8 @@ class _GistDetailPageState extends State<GistDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+                      padding: const EdgeInsets.fromLTRB(
+                          OgLSpace.md, OgLSpace.sm, OgLSpace.xxs, OgLSpace.sm),
                       child: Row(
                         children: <Widget>[
                           const Icon(Icons.description_outlined, size: 18),
@@ -368,7 +369,8 @@ class _GistDetailPageState extends State<GistDetailPage> {
                                 // 在卡片上如实标注，绝不冒充完整内容。
                                 if (file.truncated)
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 2),
+                                    padding: const EdgeInsets.only(
+                                        top: OgLSpace.xxs),
                                     child: Row(
                                       children: <Widget>[
                                         Icon(
@@ -376,7 +378,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                                           size: 14,
                                           color: theme.colorScheme.error,
                                         ),
-                                        const SizedBox(width: 4),
+                                        const SizedBox(width: OgLSpace.xxs),
                                         Flexible(
                                           child: Text(
                                             _t('truncatedWarning'),
@@ -408,7 +410,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                     ),
                     if (file.content.isEmpty)
                       Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: EdgeInsets.all(OgLSpace.lg),
                         child: Text(_t('emptyOrUnreadable')),
                       )
                     else

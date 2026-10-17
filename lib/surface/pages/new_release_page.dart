@@ -12,8 +12,8 @@ import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
-import '../util/og_l_space.dart';
 import '../widgets/scroll_aware_action.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `new_release_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -181,7 +181,7 @@ class _NewReleasePageState extends State<NewReleasePage> {
             delay: Duration.zero,
             child: ListView(
               controller: _scroll,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(OgLSpace.lg),
               children: <Widget>[
                 TextField(
                   controller: _tag,
@@ -232,7 +232,7 @@ class _NewReleasePageState extends State<NewReleasePage> {
                   Card(
                     color: Theme.of(context).colorScheme.errorContainer,
                     child: Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(OgLSpace.md),
                       child: Text(
                         _error!,
                         style: TextStyle(
