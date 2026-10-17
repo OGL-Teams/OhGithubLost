@@ -196,4 +196,55 @@ void main() {
       expect(t.diverged, isFalse);
     });
   });
+
+  group('端到端流程 · 三方分歧判定 → 处置', () {
+    ConflictThreeWay cw(String? base, String local, String? remote) =>
+        ConflictThreeWay(local: local, base: base, remote: remote);
+
+    test('流程 A：远端没动（我改的）→ 无分歧，直接走"远端已同步"路径', () {
+      // base == remote：远端与我编辑时的基线一致 → 我的写入不会冲突。
+      final ConflictThreeWay c = cw('BASE', '我的改动', 'BASE');
+      expect(c.diverged, isFalse);
+      expect(c.hasBase, isTrue);
+      expect(c.hasRemote, isTrue);
+    });
+
+    test('流程 B：双方各改各的 → 判分歧，必须给 viewDiff 且禁止自动覆盖', () {
+      final ConflictThreeWay c = cw('BASE\n旧', 'BASE\n我的', 'BASE\n远端');
+      expect(c.diverged, isTrue);
+      final List<ConflictAction> actions =
+          resolveConflictActions(WriteConflict.staleSha);
+      expect(actions, contains(ConflictAction.viewDiff));
+      // 危险动作（forceOverwrite）必须二次确认才放行。
+      expect(
+        const IxConflictResolution(
+          action: ConflictAction.forceOverwrite,
+          confirmed: false,
+        ).allowed,
+        isFalse,
+        reason: '未确认的强制覆盖必须被拦下',
+      );
+      expect(
+        const IxConflictResolution(
+          action: ConflictAction.forceOverwrite,
+          confirmed: true,
+        ).allowed,
+        isTrue,
+      );
+    });
+
+    test('流程 C：两边恰好改成同一内容 → 不是分歧（数据一致的并发写）', () {
+      final ConflictThreeWay c = cw('BASE\n旧', 'BASE\n同', 'BASE\n同');
+      expect(
+        c.diverged,
+        isFalse,
+        reason: '两边内容一致时宣称"覆盖会丢对方修改"是谎言',
+      );
+    });
+
+    test('流程 D：拿不到 base 或 remote → 无法判定分歧，保守处理', () {
+      expect(cw(null, '我的', '远端').diverged, isFalse);
+      expect(cw('BASE', '我的', null).diverged, isFalse);
+    });
+  });
 }

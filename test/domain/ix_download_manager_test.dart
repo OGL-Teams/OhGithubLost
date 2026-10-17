@@ -88,6 +88,25 @@ class FakeDownloadBackend implements IxDownloadBackend {
   }
 }
 
+/// 支持暂停 / 继续的假后端（PC / Android 的能力面）。
+class _PausableBackend extends FakeDownloadBackend {
+  int pauseCalls = 0;
+  int resumeCalls = 0;
+
+  @override
+  bool get supportsPauseResume => true;
+
+  @override
+  Future<void> pause(String id) async {
+    pauseCalls++;
+  }
+
+  @override
+  Future<void> resume(String id) async {
+    resumeCalls++;
+  }
+}
+
 void main() {
   const String url = 'https://github.com/o/r/releases/download/v1.0.0/a.zip';
 
@@ -188,6 +207,171 @@ void main() {
         manager.enqueue(url: 'file:///etc/passwd', fileName: 'a'),
         throwsArgumentError,
       );
+    });
+  });
+
+  group('生命周期状态机', () {
+    test('不支持暂停的平台：pause 是空操作，状态不得变成 paused', () async {
+      final IxDownloadTask task =
+          await manager.enqueue(url: url, fileName: 'a.zip');
+      backend.emitState(task.id, IxDownloadStatus.running);
+      expect(manager.tasks.single.status, IxDownloadStatus.running);
+
+      await manager.pause(task.id);
+
+      expect(
+        manager.tasks.single.status,
+        IxDownloadStatus.running,
+        reason: 'Web 不支持暂停——若标成 paused，界面会显示"已暂停"而实际仍在下载',
+      );
+    });
+
+    test('支持暂停的平台：pause / resume 真正驱动后端并改状态', () async {
+      final _PausableBackend pausable = _PausableBackend();
+      final IxDownloadManager m = IxDownloadManager(backend: pausable);
+      addTearDown(m.dispose);
+
+      final IxDownloadTask task = await m.enqueue(url: url, fileName: 'a.zip');
+      pausable.emitState(task.id, IxDownloadStatus.running);
+
+      await m.pause(task.id);
+      expect(m.tasks.single.status, IxDownloadStatus.paused);
+      expect(pausable.pauseCalls, 1);
+
+      await m.resume(task.id);
+      expect(m.tasks.single.status, IxDownloadStatus.running);
+      expect(pausable.resumeCalls, 1);
+    });
+
+    test('cancel：状态置为已取消，并把取消转达后端', () async {
+      final IxDownloadTask task =
+          await manager.enqueue(url: url, fileName: 'a.zip');
+      backend.emitState(task.id, IxDownloadStatus.running);
+
+      await manager.cancel(task.id);
+
+      expect(manager.tasks.single.status, IxDownloadStatus.canceled);
+      expect(backend.cancelCalls, 1);
+    });
+
+    test('retry：失败任务回到 queued，且必须清空上一次的失败原因', () async {
+      final IxDownloadTask task =
+          await manager.enqueue(url: url, fileName: 'a.zip');
+      backend.emitState(task.id, IxDownloadStatus.failed, error: 'network');
+      expect(manager.tasks.single.errorText, 'network');
+
+      await manager.retry(task.id);
+
+      final IxDownloadTask after = manager.tasks.single;
+      expect(after.status, IxDownloadStatus.queued);
+      expect(
+        after.error,
+        isNull,
+        reason: '重试后若残留旧错误，界面会一直显示红色失败态',
+      );
+      expect(after.received, 0);
+      expect(backend.enqueueCalls, 2, reason: '非分片任务应重新交给后端入队');
+    });
+
+    test('remove：任务从列表消失，且清理到后端', () async {
+      final IxDownloadTask task =
+          await manager.enqueue(url: url, fileName: 'a.zip');
+      expect(manager.tasks, hasLength(1));
+
+      await manager.remove(task.id);
+
+      expect(manager.tasks, isEmpty);
+      expect(backend.cancelCalls, 1);
+    });
+
+    test('clearFinished：只清终态，进行中的任务必须保留', () async {
+      final IxDownloadTask done =
+          await manager.enqueue(url: url, fileName: 'a.zip');
+      final IxDownloadTask bad =
+          await manager.enqueue(url: url, fileName: 'b.zip');
+      final IxDownloadTask live =
+          await manager.enqueue(url: url, fileName: 'c.zip');
+
+      backend.emitState(done.id, IxDownloadStatus.completed);
+      await settle();
+      backend.emitState(bad.id, IxDownloadStatus.failed, error: 'x');
+      backend.emitState(live.id, IxDownloadStatus.running);
+
+      manager.clearFinished();
+
+      expect(
+        manager.tasks.map((IxDownloadTask t) => t.id).toList(),
+        <String>[live.id],
+        reason: '清理已完成/失败时不能连带清掉正在跑的任务',
+      );
+    });
+
+    test('runningCount 只统计 queued / running', () async {
+      final IxDownloadTask a =
+          await manager.enqueue(url: url, fileName: 'a.zip');
+      final IxDownloadTask b =
+          await manager.enqueue(url: url, fileName: 'b.zip');
+      final IxDownloadTask c =
+          await manager.enqueue(url: url, fileName: 'c.zip');
+
+      backend.emitState(a.id, IxDownloadStatus.running);
+      backend.emitState(b.id, IxDownloadStatus.completed);
+      await settle();
+
+      expect(manager.runningCount, 2, reason: 'a=running、c=queued、b=completed');
+    });
+  });
+
+  group('端到端流程 · 入队→进行→终态→清理', () {
+    test('全生命周期：入队 → 进度推进 → 完成 → 从运行计数消失 → 清理', () async {
+      final IxDownloadTask task =
+          await manager.enqueue(url: url, fileName: 'a.zip');
+      expect(manager.runningCount, 1);
+
+      backend.emitState(task.id, IxDownloadStatus.running);
+      await settle();
+      expect(manager.tasks.single.status, IxDownloadStatus.running);
+
+      backend.emitState(task.id, IxDownloadStatus.completed);
+      await settle();
+      expect(manager.tasks.single.status, IxDownloadStatus.completed);
+      expect(manager.runningCount, 0, reason: '完成后不再计入运行数');
+
+      manager.clearFinished();
+      expect(manager.tasks, isEmpty);
+    });
+
+    test('失败→重试→成功：错误清除、计数恢复、终态正确', () async {
+      final IxDownloadTask task =
+          await manager.enqueue(url: url, fileName: 'a.zip');
+      backend.emitState(task.id, IxDownloadStatus.failed, error: '断网');
+      await settle();
+      expect(manager.tasks.single.errorText, '断网');
+
+      await manager.retry(task.id);
+      expect(manager.tasks.single.status, IxDownloadStatus.queued);
+      expect(manager.tasks.single.error, isNull);
+      expect(manager.runningCount, 1);
+
+      backend.emitState(task.id, IxDownloadStatus.running);
+      backend.emitState(task.id, IxDownloadStatus.completed);
+      await settle();
+      expect(manager.tasks.single.status, IxDownloadStatus.completed);
+      expect(manager.runningCount, 0);
+    });
+
+    test('取消→重新入队：旧实例退场、新实例从头计', () async {
+      final IxDownloadTask first =
+          await manager.enqueue(url: url, fileName: 'a.zip');
+      await manager.cancel(first.id);
+      expect(manager.tasks.single.status, IxDownloadStatus.canceled);
+
+      final IxDownloadTask second =
+          await manager.enqueue(url: url, fileName: 'a.zip');
+      expect(identical(first, second), isFalse);
+      expect(second.status, IxDownloadStatus.queued);
+      expect(second.received, 0);
+      expect(manager.runningCount, 1);
     });
   });
 }

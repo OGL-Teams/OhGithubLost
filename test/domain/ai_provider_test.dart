@@ -454,4 +454,62 @@ void main() {
       ]);
     });
   });
+
+  group('流式累积契约（多帧 → 完整回复）', () {
+    AiStreamDelta acc(AiProviderKind kind, List<String> frames) {
+      final AiProvider p = AiProvider(kind);
+      AiStreamDelta acc = const AiStreamDelta();
+      final StringBuffer buf = StringBuffer();
+      bool done = false;
+      for (final String f in frames) {
+        final AiStreamDelta d = p.parseStreamChunk(f);
+        buf.write(d.content);
+        done = done || d.finished;
+      }
+      return AiStreamDelta(content: buf.toString(), finished: done);
+    }
+
+    test('openai：10 帧累积 = 完整文本，末帧带 finish_reason 才算结束', () {
+      final List<String> frames = <String>[
+        for (int i = 0; i < 9; i++) '{"choices":[{"delta":{"content":"字$i"}}]}',
+        '{"choices":[{"delta":{},"finish_reason":"stop"}]}',
+      ];
+      final AiStreamDelta r = acc(AiProviderKind.openai, frames);
+      expect(r.content, '字0字1字2字3字4字5字6字7字8');
+      expect(r.finished, isTrue);
+    });
+
+    test('anthropic：流没给 message_stop 时不得谎报结束', () {
+      final AiStreamDelta r = acc(AiProviderKind.anthropic, <String>[
+        '{"type":"content_block_delta","delta":{"type":"text_delta","text":"你好"}}',
+        '{"type":"ping"}',
+      ]);
+      expect(r.content, '你好');
+      expect(r.finished, isFalse);
+    });
+
+    test('gemini：多帧文本累积 + 末帧 STOP', () {
+      final AiStreamDelta r = acc(AiProviderKind.gemini, <String>[
+        '{"candidates":[{"content":{"parts":[{"text":"A"}]}}]}',
+        '{"candidates":[{"content":{"parts":[{"text":"B"}]},"finishReason":"STOP"}]}',
+      ]);
+      expect(r.content, 'AB');
+      expect(r.finished, isTrue);
+    });
+
+    test('中断流（无结束帧）：三家都不得判 finished —— 防截断回复被当完整', () {
+      final Map<AiProviderKind, String> partial = <AiProviderKind, String>{
+        AiProviderKind.openai: '{"choices":[{"delta":{"content":"半"}}]}',
+        AiProviderKind.anthropic:
+            '{"type":"content_block_delta","delta":{"type":"text_delta","text":"半"}}',
+        AiProviderKind.gemini:
+            '{"candidates":[{"content":{"parts":[{"text":"半"}]}}]}',
+      };
+      for (final MapEntry<AiProviderKind, String> e in partial.entries) {
+        final AiStreamDelta r = acc(e.key, <String>[e.value]);
+        expect(r.finished, isFalse, reason: '${e.key} 流中断不应判完成');
+        expect(r.content, '半');
+      }
+    });
+  });
 }
