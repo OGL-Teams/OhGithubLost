@@ -325,7 +325,10 @@ class ConflictThreeWay {
     if (baseText == null || remoteText == null) {
       return false;
     }
-    return remoteText != baseText && local != baseText;
+    // 双方都动过，且**结果不同**才算"各改各的"。
+    // 两边恰好改成同一内容时不存在可解的分歧，按"远端已更新"提示即可
+    // （否则界面会宣称"直接覆盖会丢掉对方的修改"，而实际上对方的修改就是你的修改）。
+    return remoteText != baseText && local != baseText && local != remoteText;
   }
 
   @override
