@@ -706,6 +706,10 @@ class OgLSettingsController extends ChangeNotifier {
 
   /// 应用一份新设置（**先落盘**；失败保留内存新值并记录，绝不静默）。
   Future<void> apply(OgLSettings next) async {
+    // ★ 世代递增：load 的 read 在途期间用户 apply 了新值——迟到的 load
+    //   快照（旧数据）不得覆盖内存里更新的设置（否则改动被静默回退、
+    //   下一次 apply 再把旧值写盘，永久丢失）。
+    _loadGen++;
     _settings = next;
     notifyListeners();
     try {
