@@ -80,6 +80,11 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   bool _saving = false;
   bool _saved = false;
 
+  /// 已成功提交到远端的那份文本（F1：_saved 不能是一次性闩锁——
+  /// 保存后再编辑时，dirty 判据必须是"与已保存版本不同"，
+  /// 否则增量编辑既不进草稿也无一确认，退出即静默丢失）。
+  String? _savedText;
+
   /// 「放弃修改」已确认：真正丢弃（dispose 时不再回写草稿，并删除草稿）。
   bool _abandon = false;
   bool _wrap = false;
@@ -100,7 +105,9 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
     // 只在「未保存且未放弃」时回写草稿：
     // - 保存成功后再回写会把**已提交内容**残留成草稿；
     // - 「放弃修改」后再回写等于把被放弃的改动又救回来，与操作语义相反。
-    if (!_saved && !_abandon) {
+    final bool savedClean =
+        _savedText != null && _controller.text == _savedText;
+    if (!savedClean && !_abandon) {
       unawaited(_persistDraft());
     }
     _controller.removeListener(_onEdit);
@@ -113,6 +120,10 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   void _onEdit() {
     _draftTimer?.cancel();
     _draftTimer = Timer(const Duration(milliseconds: 900), _persistDraft);
+    if (_saved && _controller.text != _savedText) {
+      // 保存之后又有新改动：保存态作废（dirty 判据回归"与已存版本比对"）。
+      _saved = false;
+    }
     if (mounted) {
       setState(() {});
     }
@@ -151,6 +162,11 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
 
   /// 把当前文本写入草稿（与远端一致则清掉草稿）。
   Future<void> _persistDraft() async {
+    // 已放弃的改动绝不落草稿（编辑器审计 F4）：「放弃修改」与在途的
+    // 防抖写入并发时，写入晚于 discard 会让被放弃的内容"复活"。
+    if (_abandon) {
+      return;
+    }
     try {
       if (_controller.text == widget.initialText) {
         await widget.surface.domain.api.discardDraft(
@@ -198,6 +214,26 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
           _notifier.warning(_t('cancelledRemoteUpdated'));
           return;
         }
+        // ★ 复核远端：对话框展示的是**第一次失败时**的快照，用户确认
+        //   期间远端可能又被第三方推进。force 顶掉的必须是用户看过的
+        //   版本——变了就中止本次覆盖（草稿仍在，可重新保存走新冲突）。
+        final GhContent? fresh = await widget.surface.domain.api.content(
+          widget.fullName,
+          widget.path,
+          branch: widget.branch,
+          refresh: true,
+        );
+        if (fresh != null && result.sha != null && fresh.sha != result.sha) {
+          OgLAppLog.instance.add(
+            _t('editTitle'),
+            '强制覆盖前发现远端又已更新'
+            '（确认时 ${result.sha?.substring(0, 8)}，'
+            '现在 ${fresh.sha.substring(0, 8)}）',
+            severity: OgLNoticeSeverity.warning,
+          );
+          _notifier.warning(_t('remoteChangedAgain'));
+          return;
+        }
         result = await widget.surface.domain.api.putContentLocked(
           widget.fullName,
           widget.path,
@@ -228,12 +264,24 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         return;
       }
       OgLAppLog.instance.result(_t('editTitle'), _t('committed'), widget.path);
-      await widget.surface.domain.api.discardDraft(
-        widget.fullName,
-        widget.path,
-        branch: widget.branch,
-      );
+      // ★ 提交已成功（result.ok）：保存态**先**落定，再做草稿清理——
+      //   清理失败（磁盘 IO 等）只是卫生问题，绝不能伪装成"提交失败"，
+      //   否则用户重存会撞上自己刚提交的版本（D2 误报冲突）。
       _saved = true;
+      _savedText = text;
+      try {
+        await widget.surface.domain.api.discardDraft(
+          widget.fullName,
+          widget.path,
+          branch: widget.branch,
+        );
+      } catch (draftError) {
+        OgLAppLog.instance.add(
+          _t('editTitle'),
+          '草稿清理失败（提交已成功）：$draftError',
+          severity: OgLNoticeSeverity.warning,
+        );
+      }
       if (mounted) {
         _notifier.success(_t('committedPath', {'path': widget.path}));
         Navigator.of(context).pop(true);
@@ -266,8 +314,18 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
                 Text(_t('baseline', {'sha': _short(result.baseSha)})),
                 Text(_t('remoteLatest', {'sha': _short(result.sha)})),
                 const SizedBox(height: OgLSpace.sm),
-                Text(_t('overwriteWarning')),
-                if (result.remoteContent != null) ...<Widget>[
+                // ★ remoteContent 为**空串**（非 null）= 远端文件已被删除
+                //   （D2′）。此时"强制覆盖"实际是重新创建文件，语义不同，
+                //   必须给专门文案，不能渲染成空的"远端最新内容"块误导。
+                if (result.remoteContent != null &&
+                    result.remoteContent!.isEmpty) ...<Widget>[
+                  const SizedBox(height: OgLSpace.md),
+                  Text(_t('remoteDeletedNote')),
+                ] else ...<Widget>[
+                  Text(_t('overwriteWarning')),
+                ],
+                if (result.remoteContent != null &&
+                    result.remoteContent!.isNotEmpty) ...<Widget>[
                   const SizedBox(height: OgLSpace.md),
                   Text(_t('remoteLatestContent')),
                   Container(
@@ -389,8 +447,11 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final _EditorPrefs prefs = _EditorPrefs(widget.surface);
+    // 与已提交版本一致（或从未编辑）才算"干净"：保存后的增量编辑仍是 dirty。
+    final bool savedClean =
+        _savedText != null && _controller.text == _savedText;
     return PopScope(
-      canPop: !_dirty || _saved,
+      canPop: !_dirty || savedClean,
       onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) {
           return;

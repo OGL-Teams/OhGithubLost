@@ -238,7 +238,11 @@ class _RepoPageState extends State<RepoPage> {
         _notifier.success(target ? _t('starred') : _t('unstarred'));
       }
     } catch (error) {
-      _notifier.warning(_t('actionFailed', {'error': error}));
+      // 页面可能已在请求返回前退出（星标后立刻返回列表是高频操作）：
+      // 在已 dispose 的 State 上弹通知会抛异常。
+      if (mounted) {
+        _notifier.warning(_t('actionFailed', {'error': error}));
+      }
     } finally {
       if (mounted) {
         setState(() => _starBusy = false);
@@ -276,7 +280,9 @@ class _RepoPageState extends State<RepoPage> {
       OgLAppLog.instance.result('仓库', _t('forked'), forked.fullName);
       _notifier.success(_t('forkedAs', {'name': forked.fullName}));
     } catch (error) {
-      _notifier.warning(_t('forkFailed', {'error': error}));
+      if (mounted) {
+        _notifier.warning(_t('forkFailed', {'error': error}));
+      }
     } finally {
       if (mounted) {
         setState(() => _forkBusy = false);
@@ -300,7 +306,10 @@ class _RepoPageState extends State<RepoPage> {
     try {
       branches = await widget.surface.domain.api.branches(_full, perPage: 100);
     } catch (error) {
-      _notifier.warning(_t('branchesFailed', {'error': error}));
+      // await 之后弹通知：页面可能已退出（UI 审计 U4）。
+      if (mounted) {
+        _notifier.warning(_t('branchesFailed', {'error': error}));
+      }
       return;
     }
     if (!mounted) {
@@ -1222,6 +1231,16 @@ class _CodeTabState extends State<_CodeTab> {
       builder: (BuildContext dialogContext) => StatefulBuilder(
         builder: (BuildContext context, StateSetter setLocal) {
           final bool directory = _newPath.text.trim().endsWith('/');
+          // ★ 校验在对话框**内**实时做（UI 审计 U1）：校验后置会导致
+          //   "关框才发现非法 → content 已 dispose → 用户多行输入全丢"。
+          final String raw = _newPath.text.trim();
+          final String? pathError = raw.isEmpty
+              ? null
+              : ogLValidateRepoEntryPath(raw, directory: directory);
+          final String? contentError =
+              directory ? null : ogLValidateFileContent(raw, content.text);
+          final bool canCreate =
+              raw.isNotEmpty && pathError == null && contentError == null;
           return AlertDialog(
             title: Text(directory ? _t('newDirectory') : _t('newFile')),
             content: SingleChildScrollView(
@@ -1237,6 +1256,7 @@ class _CodeTabState extends State<_CodeTab> {
                       labelText: _t('pathLabel'),
                       hintText: _t('pathHint'),
                       helperText: _t('pathHintSlash'),
+                      errorText: pathError,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -1271,7 +1291,9 @@ class _CodeTabState extends State<_CodeTab> {
                 child: Text(_t('cancel')),
               ),
               FilledButton(
-                onPressed: () => Navigator.of(dialogContext).pop(true),
+                onPressed: canCreate
+                    ? () => Navigator.of(dialogContext).pop(true)
+                    : null,
                 child: Text(_t('create')),
               ),
             ],

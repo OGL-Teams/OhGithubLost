@@ -230,7 +230,12 @@ class _OgLClientShellState extends State<OgLClientShell> {
           surface: widget.surface,
         );
       case OgLShellTab.ai:
-        return AiChatPage(surface: widget.surface);
+        // 按账号 key 化（生命周期审计 L3）：与 home/search 一致——
+        // 切号重建 State，避免 A 的会话上下文在 B 名下继续显示/续写。
+        return AiChatPage(
+          key: ValueKey<String>('ai-${_accountId ?? 'guest'}'),
+          surface: widget.surface,
+        );
       case OgLShellTab.profile:
         return ProfilePage(surface: widget.surface, onAccountsChanged: _check);
       case OgLShellTab.settings:

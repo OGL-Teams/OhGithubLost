@@ -590,11 +590,17 @@ class GhContent extends GhRecord {
     final size = GhJson.integer(json, 'size');
     final isDirectory = type == 'dir';
     final hasBody = encoded.isNotEmpty;
+    // ★ 空文件（content=="" 且 size==0）是**真实存在**的文件：内容是
+    //   空串而不是"未知"。text 仍用 null 表示"没拿到"，但空文件要有
+    //   sha 且 size==0 的事实留给 read() 区分——否则写链路把它当
+    //   "远端不存在"，空文件的合法保存会走错分支（历史 P0）。
     return GhContent(
       path: GhJson.str(json, 'path'),
       sha: GhJson.str(json, 'sha'),
       size: size,
-      text: hasBody ? GhContent.decodeContent(encoded, encoding) : null,
+      text: hasBody
+          ? GhContent.decodeContent(encoded, encoding)
+          : (!isDirectory && size == 0 ? '' : null),
       isDirectory: isDirectory,
       downloadUrl: GhJson.strOrNull(json, 'download_url'),
       htmlUrl: GhJson.strOrNull(json, 'html_url'),

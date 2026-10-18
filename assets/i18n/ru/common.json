@@ -121,5 +121,6 @@
   "writeConflictForbidden": "Недостаточно прав для записи",
   "writeConflictServer": "Ошибка сервера — повторите попытку позже",
   "writeConflictVerificationFailed": "Проверка после записи не пройдена — повторите попытку",
-  "viewDownloads": "Открыть загрузки"
+  "viewDownloads": "Открыть загрузки",
+  "copyFailed": "Copy failed, please copy manually"
 }

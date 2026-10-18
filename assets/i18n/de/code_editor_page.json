@@ -21,6 +21,8 @@
   "preview": "Vorschau (nur lesen)",
   "previewTruncated": "{text}\n… (Vorschau abgeschnitten)",
   "redo": "Wiederholen",
+  "remoteChangedAgain": "Das Remote-Repository wurde erneut aktualisiert; Überschreiben abgebrochen (Entwurf bleibt erhalten, erneut speichern für den Konfliktablauf)",
+  "remoteDeletedNote": "Die Remote-Datei wurde gelöscht. „Überschreiben erzwingen\" legt die Datei mit Ihrem Inhalt **neu an**.",
   "remoteLatest": "Remote aktueller Stand: {sha}",
   "remoteLatestContent": "Aktueller Remote-Inhalt:",
   "remoteUpdated": "Remote wurde aktualisiert, fremde Änderungen könnten überschrieben werden",

@@ -21,6 +21,8 @@
   "preview": "Aperçu (lecture seule)",
   "previewTruncated": "{text}\n… (aperçu tronqué)",
   "redo": "Rétablir",
+  "remoteChangedAgain": "Le dépôt distant a de nouveau avancé ; écrasement annulé (brouillon conservé, resauvegardez pour relancer le flux de conflit)",
+  "remoteDeletedNote": "Le fichier distant a été supprimé. « Forcer l'écrasement » **recréera** le fichier avec votre contenu.",
   "remoteLatest": "Dernière version distante : {sha}",
   "remoteLatestContent": "Contenu de la dernière version distante :",
   "remoteUpdated": "Version distante mise à jour, risque de surcharger les modifications d'autres personnes",

@@ -133,6 +133,19 @@ class _AiChatPageState extends State<AiChatPage> {
       return;
     }
     _input.clear();
+    // 失败路径把原文回填输入框（UI 审计 U3）：消息虽已入会话列表，
+    // 但输入框被清后用户若想改写重发，原文找不回。
+    try {
+      await _sendInner(text);
+    } on Object {
+      if (mounted && _input.text.isEmpty) {
+        _input.text = text;
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _sendInner(String text) async {
     final String accountId = await _accountId();
     final AiMessage user = AiMessage(role: AiRole.user, content: text);
     final List<AiMessage> messages = List<AiMessage>.of(_conversation.messages)
@@ -486,9 +499,32 @@ class _AiChatPageState extends State<AiChatPage> {
               subtitle: Text(c.repo ?? ''),
               trailing: IconButton(
                 icon: const Icon(Icons.delete_outline),
-                onPressed: () {
+                onPressed: () async {
+                  // 删除会话不可逆（对齐全仓惯例：草稿/Gist/通知删除均有确认）。
                   Navigator.of(sheetContext).pop();
-                  unawaited(_deleteConversation(c));
+                  final bool? ok = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext dialogContext) => AlertDialog(
+                      title: Text(_t('deleteConversationTitle')),
+                      content: Text(_t('deleteConversationDesc',
+                          {'title': c.title ?? c.id})),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () =>
+                              Navigator.of(dialogContext).pop(false),
+                          child: Text(_t('cancelChatDelete')),
+                        ),
+                        FilledButton(
+                          onPressed: () =>
+                              Navigator.of(dialogContext).pop(true),
+                          child: Text(_t('deleteConversation')),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (ok == true && mounted) {
+                    await _deleteConversation(c);
+                  }
                 },
               ),
               onTap: () {

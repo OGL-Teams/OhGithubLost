@@ -378,6 +378,13 @@ class GhAuthService extends ChangeNotifier {
       data: <String, Object?>{'accountId': id},
     );
     if (wasActive) {
+      // 还有其它已登录账号时自动切换到第一个，而不是把用户踢回登录门
+      // （switchTo 本就支持——删当前账号不该比切账号代价更大）。
+      final remaining = await accounts();
+      if (remaining.isNotEmpty) {
+        await switchTo(remaining.first.id);
+        return;
+      }
       _setState(GhAuthState.signedOut);
     } else {
       notifyListeners();
