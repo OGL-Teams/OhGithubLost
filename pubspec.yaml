@@ -18,7 +18,7 @@
 name: ohgithublost
 description: "OGL · OhGithubLost — GitHub 仓库管理器（Flutter 多平台重构版）"
 publish_to: 'none'
-version: 9.1.0+90100
+version: 9.5.0+90500
 
 homepage: https://github.com/OGL-Teams/OhGithubLost
 repository: https://github.com/OGL-Teams/OhGithubLost
@@ -43,9 +43,6 @@ dependencies:
 
   # ── 启动层 · 信任校验 ───────────────────────────────────────────────
   cryptography: ^2.9.0             # Ed25519 引导清单签名验证
-
-  # ── Web 传输引擎（dart2js / wasm 下走 browser_client）───────────────
-  http: ^1.2.2                     # fetch/XHR 门面（Web 侧所有网络出口）
 
   # ── 展示层 · 渲染与外链 ─────────────────────────────────────────────
   flutter_markdown: ^0.7.7+1       # README / 议题 / 评论渲染
@@ -98,7 +95,7 @@ dependencies:
 
   # 已移除（未被任何代码 import，重写时一并裁掉）：
   #   provider · shared_preferences · file_picker
-  #   window_manager · cached_network_image · mocktail
+  #   cached_network_image · mocktail
   #
   # 注意：device_info_plus **暂不引入**（iOS 构建链报 NSProcessInfo 选择器缺失），
   # 真机探针需要时再选与构建链兼容的版本。
@@ -109,11 +106,6 @@ dependency_overrides:
   # `NWPath.isUltraConstrained`，导致 iOS / macOS 构建失败；
   # 故固定到 6.1.4（仍满足 background_downloader 的约束）。
   connectivity_plus: 6.1.4
-  # ★ dart2wasm 依赖解锁：re_highlight → re_editor → isolate_manager
-  #   ^4.1.5+1 → isolate_contactor ^4.x（入口库 `import 'dart:html'`，
-  #   dart2wasm 不支持）。6.x 删掉 isolate_contactor、直接用 package:web，
-  #   API 兼容（create/compute/stop）。
-  isolate_manager: ^6.3.2
 
 dev_dependencies:
   flutter_test:
