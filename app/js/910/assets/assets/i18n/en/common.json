@@ -121,5 +121,6 @@
   "writeConflictForbidden": "You don't have permission to write",
   "writeConflictServer": "Server error - please try again later",
   "writeConflictVerificationFailed": "Post-write verification failed - please try again",
-  "viewDownloads": "View downloads"
+  "viewDownloads": "View downloads",
+  "copyFailed": "Copy failed, please copy manually"
 }

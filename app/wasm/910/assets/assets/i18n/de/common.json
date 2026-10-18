@@ -121,5 +121,6 @@
   "writeConflictForbidden": "Keine Schreibberechtigung",
   "writeConflictServer": "Serverfehler – bitte später erneut versuchen",
   "writeConflictVerificationFailed": "Prüfung nach dem Schreiben fehlgeschlagen – bitte erneut versuchen",
-  "viewDownloads": "Downloads anzeigen"
+  "viewDownloads": "Downloads anzeigen",
+  "copyFailed": "Copy failed, please copy manually"
 }

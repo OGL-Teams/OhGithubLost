@@ -21,6 +21,8 @@
   "preview": "Preview (Read-only)",
   "previewTruncated": "{text}\n…(Truncated preview)",
   "redo": "Redo",
+  "remoteChangedAgain": "The remote branch advanced again; overwrite aborted (draft kept, save again to re-run conflict flow)",
+  "remoteDeletedNote": "The remote file has been deleted. \"Force overwrite\" will **recreate** the file with your content.",
   "remoteLatest": "Latest remote: {sha}",
   "remoteLatestContent": "Latest remote content:",
   "remoteUpdated": "Remote updated, may overwrite others' changes",
