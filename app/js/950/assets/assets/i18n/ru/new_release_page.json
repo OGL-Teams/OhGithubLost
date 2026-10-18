@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Описание (необязательно, поддержка Markdown)",
+  "createFailed": "Ошибка создания: {error}",
+  "created": "Создано",
+  "draft": "Draft",
+  "draftDesc": "Сохранить как Draft, не публиковать",
+  "prerelease": "Предварительный Release",
+  "prereleaseDesc": "Пометить как pre-release",
+  "publish": "Создать Release",
+  "publishing": "Публикация…",
+  "tagLabel": "Тег (tag)",
+  "tagRequired": "Сначала введите тег (например, v1.0.0)",
+  "title": "Новый Release",
+  "titleLabel": "Заголовок (необязательно)"
+}
