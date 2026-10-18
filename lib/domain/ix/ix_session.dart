@@ -287,6 +287,18 @@ class IxSession extends ChangeNotifier {
   /// 账号切换后刷新会话（由交互层在切换成功后调用）。
   Future<void> refreshAccount() async {
     _account = await _auth.activeAccount();
+    // ★ 上下文里可能装着上一个账号的仓库（生命周期审计 L5）：切号必须
+    //   一并清掉（内存 + 持久化），否则持久化的 context 会把 A 的私有仓
+    //   库名带进 B 的会话——当前虽无直接消费点，这是隐性契约，等第一个
+    //   读取点出现就踩中。
+    if (_context.repo.isNotEmpty) {
+      _context = const IxContext();
+      try {
+        await _store?.remove(_contextKey);
+      } on Object {
+        // 持久化清理失败不阻断：内存已清，重启后 restore 会再按需取。
+      }
+    }
     notifyListeners();
   }
 

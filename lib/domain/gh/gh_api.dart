@@ -16,6 +16,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../base/disk/disk_cache.dart';
 import '../../kernel/contract/disk_types.dart';
+import '../../kernel/log/og_l_log_file.dart';
 import '../../kernel/contract/net_types.dart';
 import 'gh_client.dart';
 import 'gh_draft.dart';
@@ -252,6 +253,12 @@ class GhApi implements CacheRemote {
       },
       label: 'PATCH /repos/$fullName',
     ));
+    // ★ 默认分支变了就必须作废进程内记忆：缓存键、createBranch、
+    //   enablePages 全部走 _defaultBranchOf——留着旧值会整条链路
+    //   静默落在旧分支上（显示与实际不符），重启前都不会自愈。
+    if (defaultBranch != null && defaultBranch.isNotEmpty) {
+      _defaultBranchMemo[fullName] = defaultBranch;
+    }
     return GhRepo.fromJson(response.jsonObject ?? const <String, dynamic>{});
   }
 
@@ -287,6 +294,10 @@ class GhApi implements CacheRemote {
   ///
   /// `GET /user/starred/{owner}/{repo}`：已 star 返回 204，未 star 返回 404。
   /// 404 属于**正常结果**（未 star），因此单独处理为 `false`，不当作错误抛出。
+  ///
+  /// 注意语义边界：对当前令牌**不可见**的仓库（无权私有仓库）GitHub 同样
+  /// 返回 404——此时"未星标"是**无法判定**的猜测。调用方（仓库页）只应
+  /// 在"仓库本身已可读"的上下文里使用本方法，404 才能可靠地解读为未星标。
   Future<bool> isRepoStarred(String fullName) async {
     try {
       await client.send(GhRequest(
@@ -534,7 +545,10 @@ class GhApi implements CacheRemote {
         return GhContent(
           path: path,
           sha: entry.sha,
-          size: entry.content.length,
+          // 字节数而非 UTF-16 code unit 数：网络路径用的是 GitHub 的
+          // 真实 size，缓存路径不能自己编一个（含 CJK 时明显偏小，
+          // 同一文件两次显示不同大小）。
+          size: utf8.encode(entry.content).length,
           text: entry.content,
           raw: const <String, dynamic>{},
         );
@@ -679,11 +693,28 @@ class GhApi implements CacheRemote {
     ));
     final object = response.jsonObject ?? const <String, dynamic>{};
     final contentPart = object['content'];
-    return GhContent.fromJson(
+    final written = GhContent.fromJson(
       contentPart is Map
           ? Map<String, dynamic>.from(contentPart)
           : const <String, dynamic>{},
     );
+    // ★ 直接写成功后同步失效底座缓存条目：引擎写路径（_writeLocked）自带
+    //   D5 失效，但这条裸写路径不经过引擎——不清的话 30s TTL 内读到旧内容
+    //   （"改完再看显示旧值"）。
+    final CacheKey? key = await _cacheKeyFor(fullName, path, branch);
+    if (key != null) {
+      try {
+        await _cache!.invalidate(key);
+      } catch (error) {
+        // 失效是 best-effort：失败只留痕，不改变"写已成功"的事实。
+        OgLLogFile.line(
+          'GH',
+          '写后缓存失效失败（$fullName/$path）：$error',
+          level: 'WARN',
+        );
+      }
+    }
+    return written;
   }
 
   /// 按基线 SHA **加锁**写入（走底座 D1–D7 一致性引擎）。
@@ -711,20 +742,54 @@ class GhApi implements CacheRemote {
     if (cache == null || key == null) {
       // 未绑定缓存 / 无法构造合法键：退化为裸写。
       // 仍带 baseSha —— **服务端 GitHub 会用它做乐观锁**，误覆盖依然被拦。
-      final GhContent written = await putContent(
-        fullName,
-        path,
-        content: content,
-        message: message,
-        baseSha: baseSha,
-        branch: branch,
-      );
-      return GhWriteResult(
-        ok: true,
-        conflict: GhWriteConflict.none,
-        sha: written.sha,
-        baseSha: baseSha,
-      );
+      //
+      // ★ force/confirmed 不能被丢弃：用户在冲突对话框确认"强制覆盖"后，
+      //   这条路径若原样带旧 baseSha，服务端 409 会以异常逃逸（UI 无
+      //   冲突对话框可走，重试永远失败）。处理：
+      //   1) force=true → 先取远端当前 sha，用**当下最新值**做基线
+      //      （引擎路径的语义正是"以刚读到的远端版本为期望"）；
+      //   2) 409/422 异常折成结构化 staleSha，UI 照常弹冲突对话框。
+      String? expected = baseSha;
+      if (force) {
+        final GhContent? latest =
+            await _contentNetwork(fullName, path, branch: branch);
+        if (latest == null) {
+          return GhWriteResult(
+            ok: false,
+            conflict: GhWriteConflict.notFound,
+            detail: '强制覆盖失败：远端目标不存在（可能已被删除）',
+            baseSha: baseSha,
+            localContent: content,
+          );
+        }
+        expected = latest.sha;
+      }
+      try {
+        final GhContent written = await putContent(
+          fullName,
+          path,
+          content: content,
+          message: message,
+          baseSha: expected,
+          branch: branch,
+        );
+        return GhWriteResult(
+          ok: true,
+          conflict: GhWriteConflict.none,
+          sha: written.sha,
+          baseSha: expected,
+        );
+      } on RemoteConflictException catch (error) {
+        // 结构化折返：UI 依赖 canForceOverwrite / remoteContent 呈现冲突。
+        return GhWriteResult(
+          ok: false,
+          conflict: GhWriteConflict.staleSha,
+          sha: error.currentSha,
+          baseSha: baseSha,
+          detail: '远端版本已变化（HTTP ${error.statusCode}）',
+          localContent: content,
+        );
+      }
     }
     final WriteOutcome outcome = await cache.write(
       WriteIntent(
@@ -1655,8 +1720,15 @@ class GhApi implements CacheRemote {
       }
     }
     if (text == null) {
-      // 拿不到内容就当作不存在，**不返回空串**——空串会被写回远端，是数据事故。
-      return null;
+      // ★ 空文件（GitHub 返回 content==""、size==0）是真实存在的文件：
+      //   内容就是空串——必须与"拿不到内容"区分，否则写链路把它当
+      //   "远端不存在"，空文件的合法保存走错分支。
+      if (!parsed.isDirectory && parsed.size == 0 && parsed.sha.isNotEmpty) {
+        text = '';
+      } else {
+        // 真拿不到：**不返回空串当成功**——空串会被写回远端，是数据事故。
+        return null;
+      }
     }
     return RemoteDocument(content: text, sha: parsed.sha);
   }

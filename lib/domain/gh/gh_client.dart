@@ -450,17 +450,24 @@ class GhClient {
     if (RegExp(r'^/(users|orgs)/[^/]+/repos$').hasMatch(path)) {
       return const Duration(seconds: 60);
     }
-    if (path.contains('/actions/runs')) {
+    // ★ 按 path **段**匹配而非 contains：`/repos/readme-fan/app` 这类
+    //   owner/repo 名含关键字的路径会被误配进 60s TTL（缓存 TTL 语义
+    //   被放大到无关端点）。
+    final List<String> segments = path.split('/');
+    bool hasSegment(String s) => segments.contains(s);
+    bool hasTail(String s) =>
+        segments.length >= 2 && segments[segments.length - 2] == s;
+    if (hasTail('actions') && segments.last == 'runs') {
       return const Duration(seconds: 30);
     }
-    if (path.contains('/releases') ||
-        path.contains('/branches') ||
-        path.contains('/commits') ||
-        path.contains('/issues') ||
-        path.contains('/pulls') ||
-        path.contains('/readme') ||
-        path.contains('/labels') ||
-        path.contains('/actions/workflows')) {
+    if (hasSegment('releases') ||
+        hasSegment('branches') ||
+        hasSegment('commits') ||
+        hasSegment('issues') ||
+        hasSegment('pulls') ||
+        (hasSegment('readme')) ||
+        (hasTail('labels')) ||
+        (hasTail('workflows'))) {
       return const Duration(seconds: 60);
     }
     // 仓库详情：`/repos/{owner}/{repo}`（恰好两段）。
@@ -729,6 +736,18 @@ class GhClient {
           throw GhRateLimitException(
             message: '触发次要限流，建议退避后重试',
             retryAfter: retryAfter,
+            secondary: true,
+          );
+        }
+        // 403 无 Retry-After：GitHub 的滥用拦截（abuse detection）也长这样，
+        // 错误体 message 常写明 "abuse detection"。按服务端原话提示，
+        // 不再一律宣称"缺少作用域"误导用户去检查 token。
+        final String body403 = _snippet(response.body);
+        if (body403.contains('abuse') ||
+            body403.contains('Abuse') ||
+            body403.contains('secondary rate limit')) {
+          throw GhRateLimitException(
+            message: '触发 GitHub 滥用拦截（稍等片刻即可恢复）',
             secondary: true,
           );
         }

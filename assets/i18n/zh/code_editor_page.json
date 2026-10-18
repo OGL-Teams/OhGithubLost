@@ -21,6 +21,8 @@
   "preview": "预览（只读）",
   "previewTruncated": "{text}\n…（已截断预览）",
   "redo": "重做",
+  "remoteChangedAgain": "远端又有新提交，本次覆盖已中止（草稿已保留，可重新保存走冲突流程）",
+  "remoteDeletedNote": "远端文件已被删除。此时\"强制覆盖\"将以当前内容**重新创建**该文件。",
   "remoteLatest": "远端最新：{sha}",
   "remoteLatestContent": "远端最新内容：",
   "remoteUpdated": "远端已更新，可能覆盖他人改动",

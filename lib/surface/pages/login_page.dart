@@ -111,12 +111,17 @@ class _LoginPageState extends State<LoginPage> {
           _phase = OgLI18n.instance.t('login', 'phasePromote');
         });
       }
-      await auth.removeAccount(pendingId);
+      // ★ promote 调序（生命周期审计 L1）：**先**saveAccount+switchTo
+      //   **再**删 pending。旧顺序先删 pending（激活态被清空、广播
+      //   signedOut），若 save/switch 中途失败，用户原本正常的会话
+      //   被破坏成"未登录"且无回滚。新顺序下失败时 pending 仍在、
+      //   catch 清理路径照常工作。
       await auth.saveAccount(
         GhAccount(id: 'user-${me.id}', login: me.login, name: me.name),
         token,
       );
       await auth.switchTo('user-${me.id}');
+      await auth.removeAccount(pendingId);
       // ★ 与「我的」页移出账号时同样的要求：切号必须清**全部**缓存。
       //   只清仓库缓存会留下 DNS 缓存与页面分页快照，多账号下正是
       //   「用 B 账号看到 A 账号内容」的串台来源（桥层注释已写明）。
@@ -152,10 +157,11 @@ class _LoginPageState extends State<LoginPage> {
       // 连同它的令牌一起删除——否则下次启动会把「（待验证）」当成
       // "已登录"（跳过登录门、每个请求 401，用户看到的是"登录状态坏了"）。
       try {
-        if (await auth.activeAccountId() == pendingId) {
-          await auth.removeAccount(pendingId);
-        }
-      } catch (cleanupError) {
+        // ★ 按 pendingId 精确清理（生命周期审计 L2）：旧逻辑只清"激活中"
+        //   的半成品——用户在验证期间切了号、或新一轮登录覆盖了 activeKey
+        //   时，僵尸账号（含令牌）会永久残留。
+        await auth.removeAccount(pendingId);
+      } on Object catch (cleanupError) {
         OgLAppLog.instance.add(
           _t('signIn'),
           '清理待验证账户失败：$cleanupError',
