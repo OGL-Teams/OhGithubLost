@@ -42,7 +42,7 @@ import 'surface/surface_bridge.dart';
 /// `tool/version_sync.py` 强制校验（不一致直接失败）。
 /// 历史上这里曾长期停留在 `7.4.0` 而 pubspec 已到 9.x，导致「关于」页与
 /// 诊断日志谎报版本；该脚本就是为杜绝这类漂移而存在。
-const String kOgLAppVersion = '9.1.0';
+const String kOgLAppVersion = '9.5.0';
 
 /// 发布构建注入的引导清单 JSON（由 `--dart-define-from-file` 提供；调试构建为空）。
 ///
