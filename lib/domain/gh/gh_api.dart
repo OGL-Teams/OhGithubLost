@@ -16,8 +16,8 @@ import 'package:flutter/foundation.dart';
 
 import '../../base/disk/disk_cache.dart';
 import '../../kernel/contract/disk_types.dart';
-import '../../kernel/log/og_l_log_file.dart';
 import '../../kernel/contract/net_types.dart';
+import '../../kernel/log/og_l_log_file.dart';
 import 'gh_client.dart';
 import 'gh_draft.dart';
 import 'gh_models.dart';
