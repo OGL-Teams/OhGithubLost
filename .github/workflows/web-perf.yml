@@ -1,0 +1,60 @@
+name: Web · 冷启动性能
+
+# 对线上 Web 站点做一次"冷启动"实测：
+#   · 链路部分：TTFB、资源总量、各资源耗时；
+#   · 初始化部分：网络加载完成 → 应用首帧，这是本项目 5 秒预算的验收口径。
+#
+# 之所以把两段分开：用户反映"网络加载完了还要一分多钟才进主界面"，
+# 只有把两段量化，才能判断问题在链路还是在初始化。
+#
+# 浏览器在 CI 上跑（国际链路、无本地缓存），测的是初始化成本；
+# 若需要测国内链路，另开 workflow_dispatch 指到自建探针即可。
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: '被测地址'
+        required: true
+        default: 'https://oghapp.344977.xyz/'
+      budget_ms:
+        description: '初始化预算（毫秒，网络完成后到首帧）'
+        required: true
+        default: '5000'
+
+jobs:
+  cold-start:
+    name: 冷启动实测
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装 Playwright 与 Chromium
+        run: |
+          npm init -y >/dev/null 2>&1 || true
+          npm install --no-audit --no-fund playwright@1.47.2
+          npx playwright install --with-deps chromium
+
+      - name: 实测冷启动
+        id: probe
+        run: |
+          node tool/web_perf_probe.mjs "${{ inputs.url }}" "${{ inputs.budget_ms }}" | tee probe.md
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: 写入作业摘要
+        if: always()
+        run: |
+          if [ -f probe.md ]; then cat probe.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: 上传报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-cold-start-report
+          path: probe.md
+          if-no-files-found: warn
