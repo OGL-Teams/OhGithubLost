@@ -140,13 +140,11 @@ class OgLI18n extends ChangeNotifier {
   /// **永不抛**：单个分片读取失败只记录，不阻断应用（缺键会兜底到英文）。
   Future<void> load(String code) async {
     final String target = _isSupported(code) ? code : 'zh';
-    // 基线必须先有，否则兜底链断裂。
-    if (!_data.containsKey(baseLocale)) {
-      await _loadLocale(baseLocale);
-    }
-    if (!_data.containsKey(target)) {
-      await _loadLocale(target);
-    }
+    // 基线与目标语言互不依赖，可同时读取；两者都到齐后兜底链才成立。
+    await Future.wait(<Future<void>>[
+      if (!_data.containsKey(baseLocale)) _loadLocale(baseLocale),
+      if (!_data.containsKey(target)) _loadLocale(target),
+    ]);
     if (_locale != target) {
       _locale = target;
       notifyListeners();
@@ -163,10 +161,18 @@ class OgLI18n extends ChangeNotifier {
   }
 
   Future<void> _loadLocale(String code) async {
+    // ★ 分片必须**并发**读取，不能顺序 await。
+    //
+    // 每个分片是一次独立的资源请求（Web 上就是一次 HTTP 取回）。20 余个分片
+    // 顺序读取意味着 20 余次往返：桌面宽带下约 1~2 秒，移动网络下可达十几秒，
+    // 期间界面停在启动画面。并发读取后总耗时接近单次往返。
+    final List<Map<String, String>> results = await Future.wait(
+      pages.map((String page) => _loadPage(code, page)),
+    );
     final Map<String, Map<String, String>> pagesData =
         <String, Map<String, String>>{};
-    for (final String page in pages) {
-      pagesData[page] = await _loadPage(code, page);
+    for (int i = 0; i < pages.length; i++) {
+      pagesData[pages[i]] = results[i];
     }
     _data[code] = pagesData;
   }
