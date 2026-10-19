@@ -84,11 +84,13 @@
         l.href = href;
         document.head.appendChild(l);
       }
+      // 只预取主包。canvaskit 有 full / chromium 两个变体，具体用哪一个是
+      // flutter_bootstrap 按浏览器能力决定的；提前预取会命中错误的那一份，
+      // 结果同一份 wasm 被下载两次（实测多出 1.9 MB，冷启动多等一倍）。
       if (isWasm) {
         preload('main.dart.wasm', 'fetch');
       } else {
         preload('main.dart.js', 'script');
-        preload('canvaskit/canvaskit.wasm', 'fetch');
       }
 
       function start(base) {
