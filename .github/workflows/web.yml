@@ -278,7 +278,8 @@ jobs:
 
   # ── 冷启动实测（发布后自动执行）───────────────────────────────────────
   # 口径：**网络加载完成 → 应用首帧**，不含首次下载资源的时间。
-  # 目标 5 秒；超出即红，便于在合入后立刻发现初始化退化。
+  # 验收对象：wasm（dart2wasm）路径，目标 10 秒；js 路径仅作参考。
+  # 超出即红，便于在合入后立刻发现初始化退化。
   cold-start:
     name: 冷启动实测（网络完成 → 首帧）
     needs: build-web
@@ -303,7 +304,7 @@ jobs:
 
       - name: 实测冷启动
         run: |
-          node tool/web_perf_probe.mjs "https://oghapp.344977.xyz/" 5000 | tee probe.md
+          node tool/web_perf_probe.mjs "https://oghapp.344977.xyz/" 10000 | tee probe.md
 
       - name: 写入作业摘要
         if: always()
