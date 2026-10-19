@@ -1,0 +1,7 @@
+- type: github
+  icon: fab fa-github
+  url: https://github.com/OGL-Teams/OhGithubLost
+
+- type: rss
+  icon: fas fa-rss
+  url: /feed.xml

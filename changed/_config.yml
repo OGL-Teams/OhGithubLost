@@ -1,35 +1,110 @@
-# OGL 更新日志站点 · Jekyll 配置
-# 由 GitHub Pages 原生构建，推送本目录即自动发布。
+# OhGithubLost · 更新日志站点配置
+#
+# 主题：Chirpy（jekyll-theme-chirpy 7.6.0）
+# 构建：Netlify 读取本目录 Gemfile，执行 bundle exec jekyll build，产物在 _site。
+# 所有版本号一律锁定，避免构建环境漂移导致排版变化。
 
-title: OhGithubLost 更新日志
+theme: jekyll-theme-chirpy
+
+lang: zh-CN
+timezone: Asia/Shanghai
+
+title: OhGithubLost
+tagline: 版本更新日志
 description: >-
-  记录 OhGithubLost（一款 GitHub 仓库管理客户端）每个版本的变化，
-  并提供各版本安装包的下载。
-baseurl: ""            # 项目 Pages 子路径（<user>.github.io/<repo>/ 时填 /<repo>）
-url: ""                # 生产域名（Pages 自动注入）
+  OhGithubLost 是一款 GitHub 仓库管理客户端，支持手机、平板与电脑。
+  本页按时间顺序记录每个已发布版本的变化，并提供各版本安装包的下载入口。
 
-# 主题：Cayman（现代简洁的文档主题，适合按时间排列的更新日志）
-theme: jekyll-theme-cayman
+url: ""
+baseurl: ""
 
-# 站点结构：将 release_notes/ 的版本说明复制为 _posts（见生成脚本）
+github:
+  username: OGL-Teams
+
+social:
+  name: OhGithubLost
+  links:
+    - https://github.com/OGL-Teams/OhGithubLost
+
+theme_mode:
+
+avatar:
+
+toc: false
+
+comments:
+  provider:
+
+paginate: 10
+
+plugins:
+  - jekyll-paginate
+  - jekyll-seo-tag
+  - jekyll-archives
+  - jekyll-sitemap
+  - jekyll-include-cache
+
+kramdown:
+  footnote_backlink: "&#8617;&#xfe0e;"
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: highlight
+    span:
+      line_numbers: false
+    block:
+      line_numbers: true
+      start_line: 1
+
+collections:
+  tabs:
+    output: true
+    sort_by: order
+
 defaults:
   - scope:
       path: ""
       type: posts
     values:
       layout: post
-      author: OGL
+      comments: false
+      toc: false
+      permalink: /posts/:title/
+  - scope:
+      path: ""
+      type: tabs
+    values:
+      layout: page
+      permalink: /:title/
 
-# 排序：新版本在前
-future: false
-show_excerpts: false
+sass:
+  style: compressed
 
-# 不发布的内容
+compress_html:
+  clippings: all
+  comments: all
+  endings: all
+  profile: false
+  blanklines: false
+  ignore:
+    envs: [development]
+
+jekyll-archives:
+  enabled: [categories, tags]
+  layouts:
+    category: category
+    tag: tag
+  permalinks:
+    tag: /tags/:name/
+    category: /categories/:name/
+
+# 不进入站点的文件
 exclude:
-  - README.md
-  - generate_posts.py
-  # Gemfile 仅用于 Netlify 构建期解析依赖，不属于站点内容
   - Gemfile
   - Gemfile.lock
+  - .ruby-version
+  - generate_posts.py
+  - check_content.py
+  - releases.json
+  - README.md
   - vendor
   - "*.sh"

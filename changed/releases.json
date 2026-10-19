@@ -1,0 +1,4540 @@
+{
+ "CI-cat-20261005-1034-cst8": {
+  "assets": [
+   {
+    "name": "quality_audit.txt",
+    "size": 12815,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/CI-cat-20261005-1034-cst8/quality_audit.txt"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/CI-cat-20261005-1034-cst8",
+  "prerelease": true,
+  "published_at": "2026-10-05T02:34:08Z"
+ },
+ "CI-cat-20261009-0632-cst8": {
+  "assets": [
+   {
+    "name": "quality_audit.txt",
+    "size": 17959,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/CI-cat-20261009-0632-cst8/quality_audit.txt"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/CI-cat-20261009-0632-cst8",
+  "prerelease": true,
+  "published_at": "2026-10-08T22:32:27Z"
+ },
+ "CI-cat-20261011-1420-cst8": {
+  "assets": [
+   {
+    "name": "quality_audit.txt",
+    "size": 19266,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/CI-cat-20261011-1420-cst8/quality_audit.txt"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/CI-cat-20261011-1420-cst8",
+  "prerelease": true,
+  "published_at": "2026-10-11T06:20:55Z"
+ },
+ "v0.1.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 52715861,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 8758810,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 8274727,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 24511215,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 8946072,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/Android.x86_64.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 7705107,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 55970829,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 9839083,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 10274856,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 56147217,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 56138044,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v0.1.0-app-arm64-v8a-release.apk",
+    "size": 19037013,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/OGL-v0.1.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v0.1.0-app-armeabi-v7a-release.apk",
+    "size": 16494881,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/OGL-v0.1.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v0.1.0-app-release.aab",
+    "size": 53071865,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/OGL-v0.1.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v0.1.0-app-release.apk",
+    "size": 54305207,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/OGL-v0.1.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v0.1.0-app-x86_64-release.apk",
+    "size": 20520785,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/OGL-v0.1.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 11449770,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 12416818,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.1.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v0.1.0",
+  "prerelease": true,
+  "published_at": "2026-10-01T14:17:50Z"
+ },
+ "v0.2.0-beta": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 54347260,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 9019450,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 8603882,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 25325644,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 9204486,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1139,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 7962752,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 56434122,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10077840,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 10516408,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 57741731,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 57732570,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v0.2.0-app-arm64-v8a-release.apk",
+    "size": 19517128,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/OGL-v0.2.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v0.2.0-app-armeabi-v7a-release.apk",
+    "size": 17104592,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/OGL-v0.2.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v0.2.0-app-release.aab",
+    "size": 54697463,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/OGL-v0.2.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v0.2.0-app-release.apk",
+    "size": 55832870,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/OGL-v0.2.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v0.2.0-app-x86_64-release.apk",
+    "size": 20999868,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/OGL-v0.2.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 11710928,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 12680342,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v0.2.0-beta/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v0.2.0-beta",
+  "prerelease": true,
+  "published_at": "2026-10-02T07:15:15Z"
+ },
+ "v1.0.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 54306869,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 8776003,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 8365629,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 25269652,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 8970231,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1135,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 7917125,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 55054852,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10134366,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 10574297,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 57893706,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 57890990,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v1.0.0-app-arm64-v8a-release.apk",
+    "size": 19302082,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/OGL-v1.0.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v1.0.0-app-armeabi-v7a-release.apk",
+    "size": 16910024,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/OGL-v1.0.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v1.0.0-app-release.aab",
+    "size": 54578117,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/OGL-v1.0.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v1.0.0-app-release.apk",
+    "size": 56129645,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/OGL-v1.0.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v1.0.0-app-x86_64-release.apk",
+    "size": 20784825,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/OGL-v1.0.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 11680100,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 12649560,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.0.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v1.0.0",
+  "prerelease": false,
+  "published_at": "2026-10-02T11:53:21Z"
+ },
+ "v1.1.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 54307164,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 8776247,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 8365441,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 25268666,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 8971303,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1129,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 7917183,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 55056508,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10134769,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 10574414,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 57885115,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 57882400,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v1.1.0-app-arm64-v8a-release.apk",
+    "size": 19302082,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/OGL-v1.1.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v1.1.0-app-armeabi-v7a-release.apk",
+    "size": 16910024,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/OGL-v1.1.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v1.1.0-app-release.aab",
+    "size": 54578119,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/OGL-v1.1.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v1.1.0-app-release.apk",
+    "size": 56129645,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/OGL-v1.1.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v1.1.0-app-x86_64-release.apk",
+    "size": 20784825,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/OGL-v1.1.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 11680098,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 12649457,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.1.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v1.1.0",
+  "prerelease": false,
+  "published_at": "2026-10-02T12:43:12Z"
+ },
+ "v1.4": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 55052502,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 8895305,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 8496524,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 25635136,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 9091428,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1133,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 8036179,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 55117336,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10250162,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 10691884,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 58611050,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 58608336,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v1.4-app-arm64-v8a-release.apk",
+    "size": 19568322,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/OGL-v1.4-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v1.4-app-armeabi-v7a-release.apk",
+    "size": 17221320,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/OGL-v1.4-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v1.4-app-release.aab",
+    "size": 55323844,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/OGL-v1.4-app-release.aab"
+   },
+   {
+    "name": "OGL-v1.4-app-release.apk",
+    "size": 57030765,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/OGL-v1.4-app-release.apk"
+   },
+   {
+    "name": "OGL-v1.4-app-x86_64-release.apk",
+    "size": 21116601,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/OGL-v1.4-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 11793913,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 12769708,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v1.4/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v1.4",
+  "prerelease": false,
+  "published_at": "2026-10-02T17:04:15Z"
+ },
+ "v2.0.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 55336577,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 8941408,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 8546051,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 25776217,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 9136924,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1131,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 8083479,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 55153581,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10296790,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 10741003,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 58889296,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 58886564,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v2.0.0-app-arm64-v8a-release.apk",
+    "size": 19699394,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/OGL-v2.0.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v2.0.0-app-armeabi-v7a-release.apk",
+    "size": 17352392,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/OGL-v2.0.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v2.0.0-app-release.aab",
+    "size": 55610602,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/OGL-v2.0.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v2.0.0-app-release.apk",
+    "size": 57423981,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/OGL-v2.0.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v2.0.0-app-x86_64-release.apk",
+    "size": 21247673,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/OGL-v2.0.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 11841601,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 12815888,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.0.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v2.0.0",
+  "prerelease": false,
+  "published_at": "2026-10-02T18:11:28Z"
+ },
+ "v2.2.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 56546888,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 9136721,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 8778987,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 26366623,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 9340639,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1128,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 8353426,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 56794890,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10547739,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 10991892,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 60390883,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 60387061,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v2.2.0-app-arm64-v8a-release.apk",
+    "size": 20193853,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/OGL-v2.2.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v2.2.0-app-armeabi-v7a-release.apk",
+    "size": 17896003,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/OGL-v2.2.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v2.2.0-app-release.aab",
+    "size": 56881182,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/OGL-v2.2.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v2.2.0-app-release.apk",
+    "size": 58885096,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/OGL-v2.2.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v2.2.0-app-x86_64-release.apk",
+    "size": 21742132,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/OGL-v2.2.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 12093040,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13071767,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v2.2.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v2.2.0",
+  "prerelease": false,
+  "published_at": "2026-10-02T19:55:15Z"
+ },
+ "v3.0.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 56591224,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 9158011,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 8800112,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 26397595,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 9360356,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1133,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 8371882,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 56822101,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10566850,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11012102,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 60459507,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 60455673,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v3.0.0-app-arm64-v8a-release.apk",
+    "size": 20210237,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/OGL-v3.0.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v3.0.0-app-armeabi-v7a-release.apk",
+    "size": 17928771,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/OGL-v3.0.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v3.0.0-app-release.aab",
+    "size": 56928392,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/OGL-v3.0.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v3.0.0-app-release.apk",
+    "size": 58917864,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/OGL-v3.0.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v3.0.0-app-x86_64-release.apk",
+    "size": 21758516,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/OGL-v3.0.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 12110934,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13092669,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.0.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v3.0.0",
+  "prerelease": false,
+  "published_at": "2026-10-03T02:43:10Z"
+ },
+ "v3.1.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 56917296,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 9210896,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 8851044,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 26550665,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 9411531,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1133,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 8426535,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 56872554,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10615796,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11064507,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 60789502,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 60785674,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v3.1.0-app-arm64-v8a-release.apk",
+    "size": 20341309,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/OGL-v3.1.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v3.1.0-app-armeabi-v7a-release.apk",
+    "size": 18043459,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/OGL-v3.1.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v3.1.0-app-release.aab",
+    "size": 57252939,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/OGL-v3.1.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v3.1.0-app-release.apk",
+    "size": 59294696,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/OGL-v3.1.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v3.1.0-app-x86_64-release.apk",
+    "size": 21889588,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/OGL-v3.1.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 12164023,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13145162,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.1.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v3.1.0",
+  "prerelease": false,
+  "published_at": "2026-10-03T04:17:15Z"
+ },
+ "v3.2.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 56937603,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 9212101,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 8858095,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 26559795,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 9413305,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1136,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 8427300,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 56876862,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10623007,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11068428,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 60793235,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 60789400,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v3.2.0-app-arm64-v8a-release.apk",
+    "size": 20341309,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/OGL-v3.2.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v3.2.0-app-armeabi-v7a-release.apk",
+    "size": 18059843,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/OGL-v3.2.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v3.2.0-app-release.aab",
+    "size": 57273685,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/OGL-v3.2.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v3.2.0-app-release.apk",
+    "size": 59311080,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/OGL-v3.2.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v3.2.0-app-x86_64-release.apk",
+    "size": 21889588,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/OGL-v3.2.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 12168240,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13146529,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v3.2.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v3.2.0",
+  "prerelease": false,
+  "published_at": "2026-10-03T05:44:22Z"
+ },
+ "v4.0.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 59110442,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 9909046,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 9587011,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 27632266,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 10114294,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1135,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 9110365,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 59770108,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10966914,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11422569,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 62434266,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 62428623,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v4.0.0-app-arm64-v8a-release.apk",
+    "size": 21322988,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/OGL-v4.0.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v4.0.0-app-armeabi-v7a-release.apk",
+    "size": 19160306,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/OGL-v4.0.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v4.0.0-app-release.aab",
+    "size": 59528352,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/OGL-v4.0.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v4.0.0-app-release.apk",
+    "size": 61066903,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/OGL-v4.0.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v4.0.0-app-x86_64-release.apk",
+    "size": 22871267,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/OGL-v4.0.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 12515236,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13497222,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.0.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v4.0.0",
+  "prerelease": true,
+  "published_at": "2026-10-03T08:23:01Z"
+ },
+ "v4.1.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 59435779,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 9963882,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 9636534,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 27791761,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 10167287,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1132,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 9161908,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 59776282,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 11026576,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11476102,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 62750576,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 62744921,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v4.1.0-app-arm64-v8a-release.apk",
+    "size": 21454060,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/OGL-v4.1.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v4.1.0-app-armeabi-v7a-release.apk",
+    "size": 19291378,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/OGL-v4.1.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v4.1.0-app-release.aab",
+    "size": 59863658,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/OGL-v4.1.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v4.1.0-app-release.apk",
+    "size": 61460119,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/OGL-v4.1.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v4.1.0-app-x86_64-release.apk",
+    "size": 23006435,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/OGL-v4.1.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 12573136,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13552186,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.1.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v4.1.0",
+  "prerelease": true,
+  "published_at": "2026-10-03T09:07:37Z"
+ },
+ "v4.2.0-alpha": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 59159510,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 9920948,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 9591668,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 27654196,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 10120532,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1132,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 9110772,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 59639846,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 10981103,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11430193,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 62478681,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 62473023,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v4.2.0-app-arm64-v8a-release.apk",
+    "size": 21388524,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/OGL-v4.2.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v4.2.0-app-armeabi-v7a-release.apk",
+    "size": 19176690,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/OGL-v4.2.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v4.2.0-app-release.aab",
+    "size": 59582103,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/OGL-v4.2.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v4.2.0-app-release.apk",
+    "size": 61148823,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/OGL-v4.2.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v4.2.0-app-x86_64-release.apk",
+    "size": 22875363,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/OGL-v4.2.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 12527792,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13504775,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.2.0-alpha/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v4.2.0-alpha",
+  "prerelease": true,
+  "published_at": "2026-10-03T10:16:00Z"
+ },
+ "v4.3.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 61382332,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 10268503,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 9985221,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 28751547,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 10476700,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1132,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 9497423,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 60339378,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 11351195,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11813677,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 64785685,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 64780029,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v4.3.0-app-arm64-v8a-release.apk",
+    "size": 22437100,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/OGL-v4.3.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v4.3.0-app-armeabi-v7a-release.apk",
+    "size": 20421874,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/OGL-v4.3.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v4.3.0-app-release.aab",
+    "size": 61827064,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/OGL-v4.3.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v4.3.0-app-release.apk",
+    "size": 64622231,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/OGL-v4.3.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v4.3.0-app-x86_64-release.apk",
+    "size": 24055011,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/OGL-v4.3.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 12907085,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13888990,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.3.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v4.3.0",
+  "prerelease": false,
+  "published_at": "2026-10-03T10:48:19Z"
+ },
+ "v4.5.0-alpha": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 61462276,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 10282545,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 9995666,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 28789604,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 10491121,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1128,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 9511854,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 60357132,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 11364613,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11824485,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 64869452,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 64863813,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v4.5.0-app-arm64-v8a-release.apk",
+    "size": 22502636,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/OGL-v4.5.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v4.5.0-app-armeabi-v7a-release.apk",
+    "size": 20454642,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/OGL-v4.5.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v4.5.0-app-release.aab",
+    "size": 61907831,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/OGL-v4.5.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v4.5.0-app-release.apk",
+    "size": 64720535,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/OGL-v4.5.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v4.5.0-app-x86_64-release.apk",
+    "size": 24055011,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/OGL-v4.5.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 12919031,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13900888,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.5.0-alpha/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v4.5.0-alpha",
+  "prerelease": true,
+  "published_at": "2026-10-03T12:05:16Z"
+ },
+ "v4.6.0-alpha": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 62059442,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 10376959,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 10093491,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 29078794,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 10583706,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1130,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 9615698,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 60483877,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 11456373,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11910994,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 65427107,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 65421450,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v4.6.0-app-arm64-v8a-release.apk",
+    "size": 22699244,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/OGL-v4.6.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v4.6.0-app-armeabi-v7a-release.apk",
+    "size": 20700402,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/OGL-v4.6.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v4.6.0-app-release.aab",
+    "size": 62501136,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/OGL-v4.6.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v4.6.0-app-release.apk",
+    "size": 65359511,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/OGL-v4.6.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v4.6.0-app-x86_64-release.apk",
+    "size": 24251619,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/OGL-v4.6.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 13007795,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13987613,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.6.0-alpha/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v4.6.0-alpha",
+  "prerelease": true,
+  "published_at": "2026-10-03T12:20:19Z"
+ },
+ "v4.7.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 62115819,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 10384640,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 10107163,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 29104047,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 10593064,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1141,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 9624243,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 60498849,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 11463372,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11921274,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 65490139,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 65484492,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v4.7.0-app-arm64-v8a-release.apk",
+    "size": 22699244,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/OGL-v4.7.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v4.7.0-app-armeabi-v7a-release.apk",
+    "size": 20716786,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/OGL-v4.7.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v4.7.0-app-release.aab",
+    "size": 62555760,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/OGL-v4.7.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v4.7.0-app-release.apk",
+    "size": 65375895,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/OGL-v4.7.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v4.7.0-app-x86_64-release.apk",
+    "size": 24251619,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/OGL-v4.7.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 13014895,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 13999135,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.7.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v4.7.0",
+  "prerelease": false,
+  "published_at": "2026-10-03T12:54:25Z"
+ },
+ "v4.8.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 62751278,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 10606600,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 10330897,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 29418689,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 10815784,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1129,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 9691190,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 60826524,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 11519179,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 11979551,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 65875416,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 65866070,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v4.8.0-app-arm64-v8a-release.apk",
+    "size": 23027377,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/OGL-v4.8.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v4.8.0-app-armeabi-v7a-release.apk",
+    "size": 21024439,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/OGL-v4.8.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v4.8.0-app-release.aab",
+    "size": 63197331,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/OGL-v4.8.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v4.8.0-app-release.apk",
+    "size": 65945692,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/OGL-v4.8.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v4.8.0-app-x86_64-release.apk",
+    "size": 24575656,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/OGL-v4.8.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 13127030,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 14114613,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.8.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v4.8.0",
+  "prerelease": false,
+  "published_at": "2026-10-03T13:47:38Z"
+ },
+ "v4.9.0-beta": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 63187319,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 10975191,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 10693830,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 29813408,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 11183679,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1138,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 10143383,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 61264903,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 11938503,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 12386824,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 67335359,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 67322055,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v4.9.0-app-arm64-v8a-release.apk",
+    "size": 23491153,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/OGL-v4.9.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v4.9.0-app-armeabi-v7a-release.apk",
+    "size": 21471831,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/OGL-v4.9.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v4.9.0-app-release.aab",
+    "size": 63679247,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/OGL-v4.9.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v4.9.0-app-release.apk",
+    "size": 66524156,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/OGL-v4.9.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v4.9.0-app-x86_64-release.apk",
+    "size": 25039432,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/OGL-v4.9.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 13553140,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 14528131,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v4.9.0-beta/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v4.9.0-beta",
+  "prerelease": true,
+  "published_at": "2026-10-04T04:26:20Z"
+ },
+ "v5.0.0-beta": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 63792229,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 11074289,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 10810163,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 30108114,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 11281411,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1133,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 10249602,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 61311681,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 12042257,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 12492411,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 67953158,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 67939846,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v5.0.0-app-arm64-v8a-release.apk",
+    "size": 23695953,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/OGL-v5.0.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v5.0.0-app-armeabi-v7a-release.apk",
+    "size": 21742167,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/OGL-v5.0.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v5.0.0-app-release.aab",
+    "size": 64281867,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/OGL-v5.0.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v5.0.0-app-release.apk",
+    "size": 67253244,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/OGL-v5.0.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v5.0.0-app-x86_64-release.apk",
+    "size": 25309768,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/OGL-v5.0.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 13647617,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 14633793,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.0.0-beta/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v5.0.0-beta",
+  "prerelease": true,
+  "published_at": "2026-10-04T07:01:07Z"
+ },
+ "v5.1.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 63797317,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 11073852,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 10811409,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 30112067,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 11281918,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1129,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 10251878,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 61313443,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 12042296,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 12493944,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 67952256,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 67938936,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v5.1.0-app-arm64-v8a-release.apk",
+    "size": 23695953,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/OGL-v5.1.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v5.1.0-app-armeabi-v7a-release.apk",
+    "size": 21742167,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/OGL-v5.1.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v5.1.0-app-release.aab",
+    "size": 64287087,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/OGL-v5.1.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v5.1.0-app-release.apk",
+    "size": 67253244,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/OGL-v5.1.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v5.1.0-app-x86_64-release.apk",
+    "size": 25309768,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/OGL-v5.1.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 13648988,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 14636766,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.1.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v5.1.0",
+  "prerelease": false,
+  "published_at": "2026-10-04T07:46:25Z"
+ },
+ "v5.2.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 63837775,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 11080826,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 10820263,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 30131604,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 11289210,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1134,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 10250771,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 61325403,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 12046700,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 12497585,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 67966467,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 67953168,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v5.2.0-app-arm64-v8a-release.apk",
+    "size": 23695953,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/OGL-v5.2.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v5.2.0-app-armeabi-v7a-release.apk",
+    "size": 21758551,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/OGL-v5.2.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v5.2.0-app-release.aab",
+    "size": 64327697,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/OGL-v5.2.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v5.2.0-app-release.apk",
+    "size": 67269628,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/OGL-v5.2.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v5.2.0-app-x86_64-release.apk",
+    "size": 25309768,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/OGL-v5.2.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 13656821,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 14643978,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.2.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v5.2.0",
+  "prerelease": false,
+  "published_at": "2026-10-04T10:55:23Z"
+ },
+ "v5.3.0": {
+  "assets": [
+   {
+    "name": "Android.AAB.zip",
+    "size": 63844042,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/Android.AAB.zip"
+   },
+   {
+    "name": "Android.arm64-v8a.zip",
+    "size": 11082409,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/Android.arm64-v8a.zip"
+   },
+   {
+    "name": "Android.armeabi-v7a.zip",
+    "size": 10821598,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "Android.universal-APK.zip",
+    "size": 30137408,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/Android.universal-APK.zip"
+   },
+   {
+    "name": "Android.x86_64.zip",
+    "size": 11292541,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/Android.x86_64.zip"
+   },
+   {
+    "name": "boot-manifest.zip",
+    "size": 1131,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/boot-manifest.zip"
+   },
+   {
+    "name": "iOS.device-arm64.zip",
+    "size": 10260680,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/iOS.device-arm64.zip"
+   },
+   {
+    "name": "iOS.simulator.zip",
+    "size": 61336329,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/iOS.simulator.zip"
+   },
+   {
+    "name": "Linux.arm64-best-effort.zip",
+    "size": 12046331,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/Linux.arm64-best-effort.zip"
+   },
+   {
+    "name": "Linux.x64.zip",
+    "size": 12498961,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/Linux.x64.zip"
+   },
+   {
+    "name": "macOS.arm64.zip",
+    "size": 68003277,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/macOS.arm64.zip"
+   },
+   {
+    "name": "macOS.x64.zip",
+    "size": 67989967,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/macOS.x64.zip"
+   },
+   {
+    "name": "OGL-v5.3.0-app-arm64-v8a-release.apk",
+    "size": 23695953,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/OGL-v5.3.0-app-arm64-v8a-release.apk"
+   },
+   {
+    "name": "OGL-v5.3.0-app-armeabi-v7a-release.apk",
+    "size": 21758551,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/OGL-v5.3.0-app-armeabi-v7a-release.apk"
+   },
+   {
+    "name": "OGL-v5.3.0-app-release.aab",
+    "size": 64334879,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/OGL-v5.3.0-app-release.aab"
+   },
+   {
+    "name": "OGL-v5.3.0-app-release.apk",
+    "size": 67269628,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/OGL-v5.3.0-app-release.apk"
+   },
+   {
+    "name": "OGL-v5.3.0-app-x86_64-release.apk",
+    "size": 25309768,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/OGL-v5.3.0-app-x86_64-release.apk"
+   },
+   {
+    "name": "Windows.arm64-best-effort.zip",
+    "size": 13661499,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/Windows.arm64-best-effort.zip"
+   },
+   {
+    "name": "Windows.x64.zip",
+    "size": 14641697,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.3.0/Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v5.3.0",
+  "prerelease": false,
+  "published_at": "2026-10-04T14:12:11Z"
+ },
+ "v5.6.0": {
+  "assets": [
+   {
+    "name": "OGL-v5.6.0-Android.AAB.7z",
+    "size": 60815883,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v5.6.0-Android.AAB.zip",
+    "size": 63956394,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v5.6.0-Android.arm64-v8a.7z",
+    "size": 8426890,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v5.6.0-Android.arm64-v8a.zip",
+    "size": 11088063,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v5.6.0-Android.armeabi-v7a.7z",
+    "size": 8422437,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v5.6.0-Android.armeabi-v7a.zip",
+    "size": 10803329,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v5.6.0-Android.universal-APK.7z",
+    "size": 20383775,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v5.6.0-Android.universal-APK.zip",
+    "size": 30072730,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v5.6.0-Android.x86_64.7z",
+    "size": 8934558,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v5.6.0-Android.x86_64.zip",
+    "size": 11275656,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v5.6.0-boot-manifest.7z",
+    "size": 565,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v5.6.0-boot-manifest.zip",
+    "size": 924,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v5.6.0-Linux.arm64.7z",
+    "size": 7604913,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v5.6.0-Linux.arm64.zip",
+    "size": 11987365,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v5.6.0-Linux.x64.7z",
+    "size": 8362553,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v5.6.0-Linux.x64.zip",
+    "size": 12415370,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v5.6.0-Windows.arm64.7z",
+    "size": 8619771,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v5.6.0-Windows.arm64.zip",
+    "size": 13598651,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v5.6.0-Windows.x64.7z",
+    "size": 9829523,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v5.6.0-Windows.x64.zip",
+    "size": 14555163,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v5.6.0/OGL-v5.6.0-Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v5.6.0",
+  "prerelease": false,
+  "published_at": "2026-10-04T17:16:44Z"
+ },
+ "v6.0.0": {
+  "assets": [
+   {
+    "name": "OGL-v6.0.0-Android.AAB.7z",
+    "size": 61681444,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v6.0.0-Android.AAB.zip",
+    "size": 64123481,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v6.0.0-Android.arm64-v8a.7z",
+    "size": 8443731,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v6.0.0-Android.arm64-v8a.zip",
+    "size": 11112923,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v6.0.0-Android.armeabi-v7a.7z",
+    "size": 8448006,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v6.0.0-Android.armeabi-v7a.zip",
+    "size": 10840171,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v6.0.0-Android.universal-APK.7z",
+    "size": 20424462,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v6.0.0-Android.universal-APK.zip",
+    "size": 30154296,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v6.0.0-Android.x86_64.7z",
+    "size": 8953155,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v6.0.0-Android.x86_64.zip",
+    "size": 11298924,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v6.0.0-boot-manifest.7z",
+    "size": 561,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v6.0.0-boot-manifest.zip",
+    "size": 920,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v6.0.0-Linux.arm64.7z",
+    "size": 7637849,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.0.0-Linux.arm64.zip",
+    "size": 12049031,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.0.0-Linux.x64.7z",
+    "size": 8399266,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v6.0.0-Linux.x64.zip",
+    "size": 12479498,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v6.0.0-Windows.arm64.7z",
+    "size": 8666258,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.0.0-Windows.arm64.zip",
+    "size": 13719424,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.0.0-Windows.x64.7z",
+    "size": 9877584,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v6.0.0-Windows.x64.zip",
+    "size": 14677290,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.0.0/OGL-v6.0.0-Windows.x64.zip"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v6.0.0",
+  "prerelease": false,
+  "published_at": "2026-10-05T03:29:34Z"
+ },
+ "v6.2.0": {
+  "assets": [
+   {
+    "name": "OGL-v6.2.0-Android.AAB.7z",
+    "size": 62899373,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v6.2.0-Android.AAB.zip",
+    "size": 65524574,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v6.2.0-Android.arm64-v8a.7z",
+    "size": 8619934,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v6.2.0-Android.arm64-v8a.zip",
+    "size": 11359622,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v6.2.0-Android.armeabi-v7a.7z",
+    "size": 8637150,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v6.2.0-Android.armeabi-v7a.zip",
+    "size": 11111888,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v6.2.0-Android.universal-APK.7z",
+    "size": 20867068,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v6.2.0-Android.universal-APK.zip",
+    "size": 30855398,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v6.2.0-Android.x86_64.7z",
+    "size": 9137510,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v6.2.0-Android.x86_64.zip",
+    "size": 11551458,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v6.2.0-boot-manifest.7z",
+    "size": 564,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v6.2.0-boot-manifest.zip",
+    "size": 925,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v6.2.0-Linux.arm64.7z",
+    "size": 7793018,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.2.0-Linux.arm64.zip",
+    "size": 12296030,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.2.0-Linux.x64.7z",
+    "size": 8564240,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v6.2.0-Linux.x64.zip",
+    "size": 12733317,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v6.2.0-Windows.arm64.7z",
+    "size": 8820494,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.2.0-Windows.arm64.zip",
+    "size": 13968292,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.2.0-Windows.x64.7z",
+    "size": 10041677,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v6.2.0-Windows.x64.zip",
+    "size": 14925676,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/OGL-v6.2.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-6.2.0-1.x86_64.rpm",
+    "size": 9346121,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/ohgithublost-6.2.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_6.2.0_amd64.deb",
+    "size": 9363204,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/ohgithublost_6.2.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_6.2.0_arm64.deb",
+    "size": 8526316,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.2.0/ohgithublost_6.2.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v6.2.0",
+  "prerelease": false,
+  "published_at": "2026-10-06T05:54:21Z"
+ },
+ "v6.3.0": {
+  "assets": [
+   {
+    "name": "OGL-v6.3.0-Android.AAB.7z",
+    "size": 63158307,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v6.3.0-Android.AAB.zip",
+    "size": 65534007,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v6.3.0-Android.arm64-v8a.7z",
+    "size": 8622086,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v6.3.0-Android.arm64-v8a.zip",
+    "size": 11366645,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v6.3.0-Android.armeabi-v7a.7z",
+    "size": 8639070,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v6.3.0-Android.armeabi-v7a.zip",
+    "size": 11114304,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v6.3.0-Android.universal-APK.7z",
+    "size": 20878298,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v6.3.0-Android.universal-APK.zip",
+    "size": 30863248,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v6.3.0-Android.x86_64.7z",
+    "size": 9140651,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v6.3.0-Android.x86_64.zip",
+    "size": 11553273,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v6.3.0-boot-manifest.7z",
+    "size": 562,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v6.3.0-boot-manifest.zip",
+    "size": 920,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v6.3.0-Linux.arm64.7z",
+    "size": 7794436,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.3.0-Linux.arm64.zip",
+    "size": 12296535,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.3.0-Linux.x64.7z",
+    "size": 8565560,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v6.3.0-Linux.x64.zip",
+    "size": 12733912,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v6.3.0-Windows.arm64.7z",
+    "size": 8823708,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.3.0-Windows.arm64.zip",
+    "size": 13972680,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.3.0-Windows.x64.7z",
+    "size": 10043744,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v6.3.0-Windows.x64.zip",
+    "size": 14930617,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/OGL-v6.3.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-6.3.0-1.x86_64.rpm",
+    "size": 9346321,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/ohgithublost-6.3.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_6.3.0_amd64.deb",
+    "size": 9361940,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/ohgithublost_6.3.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_6.3.0_arm64.deb",
+    "size": 8527168,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.3.0/ohgithublost_6.3.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v6.3.0",
+  "prerelease": false,
+  "published_at": "2026-10-06T10:32:06Z"
+ },
+ "v6.4.0": {
+  "assets": [
+   {
+    "name": "OGL-v6.4.0-Android.AAB.7z",
+    "size": 62629343,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v6.4.0-Android.AAB.zip",
+    "size": 65357299,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v6.4.0-Android.arm64-v8a.7z",
+    "size": 8390186,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v6.4.0-Android.arm64-v8a.zip",
+    "size": 11131729,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v6.4.0-Android.armeabi-v7a.7z",
+    "size": 8408432,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v6.4.0-Android.armeabi-v7a.zip",
+    "size": 10884934,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v6.4.0-Android.universal-APK.7z",
+    "size": 20634559,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v6.4.0-Android.universal-APK.zip",
+    "size": 30655919,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v6.4.0-Android.x86_64.7z",
+    "size": 8907936,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v6.4.0-Android.x86_64.zip",
+    "size": 11328139,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v6.4.0-boot-manifest.7z",
+    "size": 560,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v6.4.0-boot-manifest.zip",
+    "size": 922,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v6.4.0-Linux.arm64.7z",
+    "size": 7695432,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.4.0-Linux.arm64.zip",
+    "size": 12058280,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.4.0-Linux.x64.7z",
+    "size": 8468564,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v6.4.0-Linux.x64.zip",
+    "size": 12489717,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v6.4.0-Windows.arm64.7z",
+    "size": 8714346,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.4.0-Windows.arm64.zip",
+    "size": 13713433,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.4.0-Windows.x64.7z",
+    "size": 9936918,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v6.4.0-Windows.x64.zip",
+    "size": 14670042,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/OGL-v6.4.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-6.4.0-1.x86_64.rpm",
+    "size": 9213717,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/ohgithublost-6.4.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_6.4.0_amd64.deb",
+    "size": 9251688,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/ohgithublost_6.4.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_6.4.0_arm64.deb",
+    "size": 8434688,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.0/ohgithublost_6.4.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v6.4.0",
+  "prerelease": false,
+  "published_at": "2026-10-07T05:21:06Z"
+ },
+ "v6.4.1": {
+  "assets": [
+   {
+    "name": "OGL-v6.4.1-Android.AAB.7z",
+    "size": 62810340,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v6.4.1-Android.AAB.zip",
+    "size": 65379494,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v6.4.1-Android.arm64-v8a.7z",
+    "size": 8398982,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v6.4.1-Android.arm64-v8a.zip",
+    "size": 11140518,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v6.4.1-Android.armeabi-v7a.7z",
+    "size": 8412897,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v6.4.1-Android.armeabi-v7a.zip",
+    "size": 10893919,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v6.4.1-Android.universal-APK.7z",
+    "size": 20651858,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v6.4.1-Android.universal-APK.zip",
+    "size": 30670057,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v6.4.1-Android.x86_64.7z",
+    "size": 8914863,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v6.4.1-Android.x86_64.zip",
+    "size": 11331991,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v6.4.1-boot-manifest.7z",
+    "size": 561,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v6.4.1-boot-manifest.zip",
+    "size": 925,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v6.4.1-Linux.arm64.7z",
+    "size": 7703573,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.4.1-Linux.arm64.zip",
+    "size": 12069526,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.4.1-Linux.x64.7z",
+    "size": 8474024,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v6.4.1-Linux.x64.zip",
+    "size": 12500063,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v6.4.1-Windows.arm64.7z",
+    "size": 8717528,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.4.1-Windows.arm64.zip",
+    "size": 13715990,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.4.1-Windows.x64.7z",
+    "size": 9941012,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v6.4.1-Windows.x64.zip",
+    "size": 14677461,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/OGL-v6.4.1-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-6.4.1-1.x86_64.rpm",
+    "size": 9218177,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/ohgithublost-6.4.1-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_6.4.1_amd64.deb",
+    "size": 9258064,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/ohgithublost_6.4.1_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_6.4.1_arm64.deb",
+    "size": 8437596,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.1/ohgithublost_6.4.1_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v6.4.1",
+  "prerelease": false,
+  "published_at": "2026-10-07T07:56:49Z"
+ },
+ "v6.4.2": {
+  "assets": [
+   {
+    "name": "OGL-v6.4.2-Android.AAB.7z",
+    "size": 63218948,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v6.4.2-Android.AAB.zip",
+    "size": 65381223,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v6.4.2-Android.arm64-v8a.7z",
+    "size": 8401824,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v6.4.2-Android.arm64-v8a.zip",
+    "size": 11143515,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v6.4.2-Android.armeabi-v7a.7z",
+    "size": 8415604,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v6.4.2-Android.armeabi-v7a.zip",
+    "size": 10897232,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v6.4.2-Android.universal-APK.7z",
+    "size": 20652798,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v6.4.2-Android.universal-APK.zip",
+    "size": 30674373,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v6.4.2-Android.x86_64.7z",
+    "size": 8917959,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v6.4.2-Android.x86_64.zip",
+    "size": 11335622,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v6.4.2-boot-manifest.7z",
+    "size": 563,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v6.4.2-boot-manifest.zip",
+    "size": 921,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v6.4.2-Linux.arm64.7z",
+    "size": 7703578,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.4.2-Linux.arm64.zip",
+    "size": 12069526,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.4.2-Linux.x64.7z",
+    "size": 8474032,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v6.4.2-Linux.x64.zip",
+    "size": 12500063,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v6.4.2-Windows.arm64.7z",
+    "size": 8722191,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.4.2-Windows.arm64.zip",
+    "size": 13720926,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.4.2-Windows.x64.7z",
+    "size": 9946722,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v6.4.2-Windows.x64.zip",
+    "size": 14682067,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/OGL-v6.4.2-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-6.4.2-1.x86_64.rpm",
+    "size": 9218717,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/ohgithublost-6.4.2-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_6.4.2_amd64.deb",
+    "size": 9256564,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/ohgithublost_6.4.2_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_6.4.2_arm64.deb",
+    "size": 8437408,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.4.2/ohgithublost_6.4.2_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v6.4.2",
+  "prerelease": false,
+  "published_at": "2026-10-07T11:25:30Z"
+ },
+ "v6.5.0": {
+  "assets": [
+   {
+    "name": "OGL-v6.5.0-Android.AAB.7z",
+    "size": 62860583,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v6.5.0-Android.AAB.zip",
+    "size": 65403239,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v6.5.0-Android.arm64-v8a.7z",
+    "size": 8404677,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v6.5.0-Android.arm64-v8a.zip",
+    "size": 11148371,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v6.5.0-Android.armeabi-v7a.7z",
+    "size": 8420372,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v6.5.0-Android.armeabi-v7a.zip",
+    "size": 10901543,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v6.5.0-Android.universal-APK.7z",
+    "size": 20651311,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v6.5.0-Android.universal-APK.zip",
+    "size": 30678584,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v6.5.0-Android.x86_64.7z",
+    "size": 8922552,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v6.5.0-Android.x86_64.zip",
+    "size": 11337591,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v6.5.0-boot-manifest.7z",
+    "size": 561,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v6.5.0-boot-manifest.zip",
+    "size": 923,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v6.5.0-Linux.arm64.7z",
+    "size": 7704272,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.5.0-Linux.arm64.zip",
+    "size": 12068106,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.5.0-Linux.x64.7z",
+    "size": 8478205,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v6.5.0-Linux.x64.zip",
+    "size": 12509382,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v6.5.0-Windows.arm64.7z",
+    "size": 8724645,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v6.5.0-Windows.arm64.zip",
+    "size": 13730724,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v6.5.0-Windows.x64.7z",
+    "size": 9950751,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v6.5.0-Windows.x64.zip",
+    "size": 14689724,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/OGL-v6.5.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-6.5.0-1.x86_64.rpm",
+    "size": 9223421,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/ohgithublost-6.5.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_6.5.0_amd64.deb",
+    "size": 9263812,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/ohgithublost_6.5.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_6.5.0_arm64.deb",
+    "size": 8443988,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v6.5.0/ohgithublost_6.5.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v6.5.0",
+  "prerelease": false,
+  "published_at": "2026-10-08T15:04:02Z"
+ },
+ "v7.0.0": {
+  "assets": [
+   {
+    "name": "OGL-v7.0.0-Android.AAB.7z",
+    "size": 63045020,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v7.0.0-Android.AAB.zip",
+    "size": 65427520,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v7.0.0-Android.arm64-v8a.7z",
+    "size": 8410925,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v7.0.0-Android.arm64-v8a.zip",
+    "size": 11155247,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v7.0.0-Android.armeabi-v7a.7z",
+    "size": 8428339,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v7.0.0-Android.armeabi-v7a.zip",
+    "size": 10910456,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v7.0.0-Android.universal-APK.7z",
+    "size": 20704407,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v7.0.0-Android.universal-APK.zip",
+    "size": 30689964,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v7.0.0-Android.x86_64.7z",
+    "size": 8930055,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v7.0.0-Android.x86_64.zip",
+    "size": 11344094,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v7.0.0-boot-manifest.7z",
+    "size": 562,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v7.0.0-boot-manifest.zip",
+    "size": 922,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v7.0.0-Linux.arm64.7z",
+    "size": 7701896,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.0.0-Linux.arm64.zip",
+    "size": 12065407,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.0.0-Linux.x64.7z",
+    "size": 8475567,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v7.0.0-Linux.x64.zip",
+    "size": 12501259,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v7.0.0-Windows.arm64.7z",
+    "size": 8732024,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.0.0-Windows.arm64.zip",
+    "size": 13738708,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.0.0-Windows.x64.7z",
+    "size": 9957408,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v7.0.0-Windows.x64.zip",
+    "size": 14696111,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/OGL-v7.0.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-7.0.0-1.x86_64.rpm",
+    "size": 9221289,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/ohgithublost-7.0.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_7.0.0_amd64.deb",
+    "size": 9259692,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/ohgithublost_7.0.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_7.0.0_arm64.deb",
+    "size": 8442452,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.0.0/ohgithublost_7.0.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v7.0.0",
+  "prerelease": false,
+  "published_at": "2026-10-08T23:29:46Z"
+ },
+ "v7.2.1": {
+  "assets": [
+   {
+    "name": "OGL-v7.2.1-Android.AAB.7z",
+    "size": 62627898,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v7.2.1-Android.AAB.zip",
+    "size": 65408189,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v7.2.1-Android.arm64-v8a.7z",
+    "size": 8406318,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v7.2.1-Android.arm64-v8a.zip",
+    "size": 11149393,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v7.2.1-Android.armeabi-v7a.7z",
+    "size": 8423488,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v7.2.1-Android.armeabi-v7a.zip",
+    "size": 10901045,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v7.2.1-Android.universal-APK.7z",
+    "size": 20669007,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v7.2.1-Android.universal-APK.zip",
+    "size": 30679649,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v7.2.1-Android.x86_64.7z",
+    "size": 8924513,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v7.2.1-boot-manifest.7z",
+    "size": 562,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v7.2.1-boot-manifest.zip",
+    "size": 926,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v7.2.1-Linux.arm64.7z",
+    "size": 7707048,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.2.1-Linux.arm64.zip",
+    "size": 12076553,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.2.1-Linux.x64.7z",
+    "size": 8479055,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v7.2.1-Linux.x64.zip",
+    "size": 12507757,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v7.2.1-Windows.arm64.7z",
+    "size": 8728571,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.2.1-Windows.arm64.zip",
+    "size": 13732992,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.2.1-Windows.x64.7z",
+    "size": 9953723,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v7.2.1-Windows.x64.zip",
+    "size": 14690566,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/OGL-v7.2.1-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-7.2.1-1.x86_64.rpm",
+    "size": 9226413,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/ohgithublost-7.2.1-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_7.2.1_amd64.deb",
+    "size": 9263620,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/ohgithublost_7.2.1_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_7.2.1_arm64.deb",
+    "size": 8447864,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.1/ohgithublost_7.2.1_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v7.2.1",
+  "prerelease": false,
+  "published_at": "2026-10-09T14:24:23Z"
+ },
+ "v7.2.2": {
+  "assets": [
+   {
+    "name": "OGL-v7.2.2-Android.AAB.7z",
+    "size": 64043188,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v7.2.2-Android.AAB.zip",
+    "size": 65489504,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v7.2.2-Android.arm64-v8a.7z",
+    "size": 8414692,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v7.2.2-Android.arm64-v8a.zip",
+    "size": 11160149,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v7.2.2-Android.armeabi-v7a.7z",
+    "size": 8432094,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v7.2.2-Android.armeabi-v7a.zip",
+    "size": 10913660,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v7.2.2-Android.universal-APK.7z",
+    "size": 20710020,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v7.2.2-Android.universal-APK.zip",
+    "size": 30716793,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v7.2.2-Android.x86_64.7z",
+    "size": 8932107,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v7.2.2-Android.x86_64.zip",
+    "size": 11351322,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v7.2.2-boot-manifest.7z",
+    "size": 563,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v7.2.2-boot-manifest.zip",
+    "size": 918,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v7.2.2-Linux.arm64.7z",
+    "size": 7705526,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.2.2-Linux.arm64.zip",
+    "size": 12069028,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.2.2-Linux.x64.7z",
+    "size": 8477040,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v7.2.2-Linux.x64.zip",
+    "size": 12503788,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v7.2.2-Windows.arm64.7z",
+    "size": 8735480,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.2.2-Windows.arm64.zip",
+    "size": 13741490,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.2.2-Windows.x64.7z",
+    "size": 9960661,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v7.2.2-Windows.x64.zip",
+    "size": 14701337,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/OGL-v7.2.2-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-7.2.2-1.x86_64.rpm",
+    "size": 9223585,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/ohgithublost-7.2.2-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_7.2.2_amd64.deb",
+    "size": 9260796,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/ohgithublost_7.2.2_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_7.2.2_arm64.deb",
+    "size": 8444100,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.2.2/ohgithublost_7.2.2_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v7.2.2",
+  "prerelease": false,
+  "published_at": "2026-10-09T23:14:05Z"
+ },
+ "v7.3.0": {
+  "assets": [
+   {
+    "name": "OGL-v7.3.0-Android.AAB.7z",
+    "size": 58197752,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v7.3.0-Android.AAB.zip",
+    "size": 65502684,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v7.3.0-Android.arm64-v8a.7z",
+    "size": 8408236,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v7.3.0-Android.arm64-v8a.zip",
+    "size": 11155389,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v7.3.0-Android.armeabi-v7a.7z",
+    "size": 8424894,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v7.3.0-Android.armeabi-v7a.zip",
+    "size": 10911606,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v7.3.0-Android.universal-APK.7z",
+    "size": 20703042,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v7.3.0-Android.universal-APK.zip",
+    "size": 30718254,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v7.3.0-Android.x86_64.7z",
+    "size": 8925475,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v7.3.0-Android.x86_64.zip",
+    "size": 11344530,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v7.3.0-boot-manifest.7z",
+    "size": 562,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v7.3.0-boot-manifest.zip",
+    "size": 920,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v7.3.0-Linux.arm64.7z",
+    "size": 7699524,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.3.0-Linux.arm64.zip",
+    "size": 12060190,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.3.0-Linux.x64.7z",
+    "size": 8471529,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v7.3.0-Linux.x64.zip",
+    "size": 12497752,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v7.3.0-Windows.arm64.7z",
+    "size": 8731262,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.3.0-Windows.arm64.zip",
+    "size": 13735750,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.3.0-Windows.x64.7z",
+    "size": 9955091,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v7.3.0-Windows.x64.zip",
+    "size": 14693720,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/OGL-v7.3.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-7.3.0-1.x86_64.rpm",
+    "size": 9218305,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/ohgithublost-7.3.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_7.3.0_amd64.deb",
+    "size": 9256960,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/ohgithublost_7.3.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_7.3.0_arm64.deb",
+    "size": 8439316,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.0/ohgithublost_7.3.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v7.3.0",
+  "prerelease": false,
+  "published_at": "2026-10-10T16:34:50Z"
+ },
+ "v7.3.1": {
+  "assets": [
+   {
+    "name": "OGL-v7.3.1-Android.AAB.7z",
+    "size": 62595695,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v7.3.1-Android.AAB.zip",
+    "size": 65538516,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v7.3.1-Android.arm64-v8a.7z",
+    "size": 8415295,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v7.3.1-Android.arm64-v8a.zip",
+    "size": 11165180,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v7.3.1-Android.armeabi-v7a.7z",
+    "size": 8430803,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v7.3.1-Android.armeabi-v7a.zip",
+    "size": 10919157,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v7.3.1-Android.universal-APK.7z",
+    "size": 20750475,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v7.3.1-Android.universal-APK.zip",
+    "size": 30743420,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v7.3.1-Android.x86_64.7z",
+    "size": 8934474,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v7.3.1-Android.x86_64.zip",
+    "size": 11352199,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v7.3.1-boot-manifest.7z",
+    "size": 564,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v7.3.1-boot-manifest.zip",
+    "size": 924,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v7.3.1-Linux.arm64.7z",
+    "size": 7706164,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.3.1-Linux.arm64.zip",
+    "size": 12071916,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.3.1-Linux.x64.7z",
+    "size": 8478951,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v7.3.1-Linux.x64.zip",
+    "size": 12507950,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v7.3.1-Windows.arm64.7z",
+    "size": 8743604,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.3.1-Windows.arm64.zip",
+    "size": 13751855,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.3.1-Windows.x64.7z",
+    "size": 9962223,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v7.3.1-Windows.x64.zip",
+    "size": 14707381,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/OGL-v7.3.1-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-7.3.1-1.x86_64.rpm",
+    "size": 9228365,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/ohgithublost-7.3.1-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_7.3.1_amd64.deb",
+    "size": 9265448,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/ohgithublost_7.3.1_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_7.3.1_arm64.deb",
+    "size": 8445172,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.3.1/ohgithublost_7.3.1_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v7.3.1",
+  "prerelease": false,
+  "published_at": "2026-10-11T01:37:44Z"
+ },
+ "v7.4.0": {
+  "assets": [
+   {
+    "name": "OGL-v7.4.0-Android.AAB.7z",
+    "size": 63825623,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v7.4.0-Android.AAB.zip",
+    "size": 65686115,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v7.4.0-Android.arm64-v8a.7z",
+    "size": 8432007,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v7.4.0-Android.arm64-v8a.zip",
+    "size": 11189258,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v7.4.0-Android.armeabi-v7a.7z",
+    "size": 8448840,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v7.4.0-Android.armeabi-v7a.zip",
+    "size": 10943936,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v7.4.0-Android.universal-APK.7z",
+    "size": 20736747,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v7.4.0-Android.universal-APK.zip",
+    "size": 30813167,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v7.4.0-Android.x86_64.7z",
+    "size": 8951254,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v7.4.0-Android.x86_64.zip",
+    "size": 11376813,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v7.4.0-boot-manifest.7z",
+    "size": 563,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v7.4.0-boot-manifest.zip",
+    "size": 920,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v7.4.0-Linux.arm64.7z",
+    "size": 7722959,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.4.0-Linux.arm64.zip",
+    "size": 12092526,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.4.0-Linux.x64.7z",
+    "size": 8492766,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v7.4.0-Linux.x64.zip",
+    "size": 12530549,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v7.4.0-Windows.arm64.7z",
+    "size": 8754260,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v7.4.0-Windows.arm64.zip",
+    "size": 13776228,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v7.4.0-Windows.x64.7z",
+    "size": 9980347,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v7.4.0-Windows.x64.zip",
+    "size": 14732353,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/OGL-v7.4.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-7.4.0-1.x86_64.rpm",
+    "size": 9243657,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/ohgithublost-7.4.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_7.4.0_amd64.deb",
+    "size": 9279592,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/ohgithublost_7.4.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_7.4.0_arm64.deb",
+    "size": 8461552,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v7.4.0/ohgithublost_7.4.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v7.4.0",
+  "prerelease": false,
+  "published_at": "2026-10-11T03:35:11Z"
+ },
+ "v8.0.0": {
+  "assets": [
+   {
+    "name": "OGL-v8.0.0-Android.AAB.7z",
+    "size": 63137671,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v8.0.0-Android.AAB.zip",
+    "size": 65873992,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v8.0.0-Android.arm64-v8a.7z",
+    "size": 8449233,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v8.0.0-Android.arm64-v8a.zip",
+    "size": 11221936,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v8.0.0-Android.armeabi-v7a.7z",
+    "size": 8469600,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v8.0.0-Android.armeabi-v7a.zip",
+    "size": 10974596,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v8.0.0-Android.universal-APK.7z",
+    "size": 20808264,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v8.0.0-Android.universal-APK.zip",
+    "size": 30907061,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v8.0.0-Android.x86_64.7z",
+    "size": 8972646,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v8.0.0-Android.x86_64.zip",
+    "size": 11408152,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v8.0.0-boot-manifest.7z",
+    "size": 561,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v8.0.0-boot-manifest.zip",
+    "size": 916,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v8.0.0-Linux.arm64.7z",
+    "size": 7739782,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v8.0.0-Linux.arm64.zip",
+    "size": 12128361,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v8.0.0-Linux.x64.7z",
+    "size": 8513936,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v8.0.0-Linux.x64.zip",
+    "size": 12564841,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v8.0.0-Windows.arm64.7z",
+    "size": 8771488,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v8.0.0-Windows.arm64.zip",
+    "size": 13799560,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v8.0.0-Windows.x64.7z",
+    "size": 9997073,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v8.0.0-Windows.x64.zip",
+    "size": 14762778,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/OGL-v8.0.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-8.0.0-1.x86_64.rpm",
+    "size": 9264809,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/ohgithublost-8.0.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_8.0.0_amd64.deb",
+    "size": 9306280,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/ohgithublost_8.0.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_8.0.0_arm64.deb",
+    "size": 8476300,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.0.0/ohgithublost_8.0.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v8.0.0",
+  "prerelease": false,
+  "published_at": "2026-10-12T01:33:02Z"
+ },
+ "v8.2.0": {
+  "assets": [
+   {
+    "name": "OGL-v8.2.0-Android.AAB.7z",
+    "size": 63495355,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v8.2.0-Android.AAB.zip",
+    "size": 66185032,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v8.2.0-Android.arm64-v8a.7z",
+    "size": 8486241,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v8.2.0-Android.arm64-v8a.zip",
+    "size": 11271945,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v8.2.0-Android.armeabi-v7a.7z",
+    "size": 8509498,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v8.2.0-Android.armeabi-v7a.zip",
+    "size": 11029984,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v8.2.0-Android.universal-APK.7z",
+    "size": 20913125,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v8.2.0-Android.universal-APK.zip",
+    "size": 31056543,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v8.2.0-Android.x86_64.7z",
+    "size": 9013871,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v8.2.0-Android.x86_64.zip",
+    "size": 11459543,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v8.2.0-boot-manifest.7z",
+    "size": 564,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v8.2.0-boot-manifest.zip",
+    "size": 921,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v8.2.0-Linux.arm64.7z",
+    "size": 7770580,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v8.2.0-Linux.arm64.zip",
+    "size": 12181898,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v8.2.0-Linux.x64.7z",
+    "size": 8549247,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v8.2.0-Linux.x64.zip",
+    "size": 12620868,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v8.2.0-Windows.arm64.7z",
+    "size": 8803463,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v8.2.0-Windows.arm64.zip",
+    "size": 13857352,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v8.2.0-Windows.x64.7z",
+    "size": 10032604,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v8.2.0-Windows.x64.zip",
+    "size": 14818306,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/OGL-v8.2.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-8.2.0-1.x86_64.rpm",
+    "size": 9306373,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/ohgithublost-8.2.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_8.2.0_amd64.deb",
+    "size": 9344476,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/ohgithublost_8.2.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_8.2.0_arm64.deb",
+    "size": 8511196,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v8.2.0/ohgithublost_8.2.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v8.2.0",
+  "prerelease": false,
+  "published_at": "2026-10-13T00:09:28Z"
+ },
+ "v9.0.0": {
+  "assets": [
+   {
+    "name": "OGL-v9.0.0-Android.AAB.7z",
+    "size": 63046305,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v9.0.0-Android.AAB.zip",
+    "size": 66223030,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v9.0.0-Android.arm64-v8a.7z",
+    "size": 8494416,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v9.0.0-Android.arm64-v8a.zip",
+    "size": 11275405,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v9.0.0-Android.armeabi-v7a.7z",
+    "size": 8510678,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v9.0.0-Android.armeabi-v7a.zip",
+    "size": 11033687,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v9.0.0-Android.universal-APK.7z",
+    "size": 20931787,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v9.0.0-Android.universal-APK.zip",
+    "size": 31068792,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v9.0.0-Android.x86_64.7z",
+    "size": 9017509,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v9.0.0-Android.x86_64.zip",
+    "size": 11463639,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v9.0.0-boot-manifest.7z",
+    "size": 563,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v9.0.0-boot-manifest.zip",
+    "size": 931,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v9.0.0-Linux.arm64.7z",
+    "size": 7773166,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v9.0.0-Linux.arm64.zip",
+    "size": 12187065,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v9.0.0-Linux.x64.7z",
+    "size": 8552947,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v9.0.0-Linux.x64.zip",
+    "size": 12626067,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v9.0.0-Windows.arm64.7z",
+    "size": 8824656,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v9.0.0-Windows.arm64.zip",
+    "size": 13869266,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v9.0.0-Windows.x64.7z",
+    "size": 10037884,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v9.0.0-Windows.x64.zip",
+    "size": 14826855,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/OGL-v9.0.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-9.0.0-1.x86_64.rpm",
+    "size": 9310321,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/ohgithublost-9.0.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_9.0.0_amd64.deb",
+    "size": 9348456,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/ohgithublost_9.0.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_9.0.0_arm64.deb",
+    "size": 8513808,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.0.0/ohgithublost_9.0.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v9.0.0",
+  "prerelease": false,
+  "published_at": "2026-10-15T13:43:54Z"
+ },
+ "v9.5.0": {
+  "assets": [
+   {
+    "name": "OGL-v9.5.0-Android.AAB.7z",
+    "size": 59658909,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v9.5.0-Android.AAB.zip",
+    "size": 61437896,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v9.5.0-Android.arm64-v8a.7z",
+    "size": 7944380,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v9.5.0-Android.arm64-v8a.zip",
+    "size": 10511194,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v9.5.0-Android.armeabi-v7a.7z",
+    "size": 7913675,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v9.5.0-Android.armeabi-v7a.zip",
+    "size": 10182568,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v9.5.0-Android.universal-APK.7z",
+    "size": 19404081,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v9.5.0-Android.universal-APK.zip",
+    "size": 28659893,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v9.5.0-Android.x86_64.7z",
+    "size": 8443111,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v9.5.0-Android.x86_64.zip",
+    "size": 10677986,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v9.5.0-boot-manifest.7z",
+    "size": 563,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v9.5.0-boot-manifest.zip",
+    "size": 923,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v9.5.0-Linux.arm64.7z",
+    "size": 7783883,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v9.5.0-Linux.arm64.zip",
+    "size": 12208538,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v9.5.0-Linux.x64.7z",
+    "size": 8565797,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v9.5.0-Linux.x64.zip",
+    "size": 12649589,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v9.5.0-Windows.arm64.7z",
+    "size": 8182084,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v9.5.0-Windows.arm64.zip",
+    "size": 12975451,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v9.5.0-Windows.x64.7z",
+    "size": 9384691,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v9.5.0-Windows.x64.zip",
+    "size": 13907658,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/OGL-v9.5.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-9.5.0-1.x86_64.rpm",
+    "size": 9325845,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/ohgithublost-9.5.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_9.5.0_amd64.deb",
+    "size": 9361892,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/ohgithublost_9.5.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_9.5.0_arm64.deb",
+    "size": 8523512,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v9.5.0/ohgithublost_9.5.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v9.5.0",
+  "prerelease": false,
+  "published_at": "2026-10-18T04:01:08Z"
+ }
+}
