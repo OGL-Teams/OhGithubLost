@@ -184,10 +184,13 @@ WRAPPER = """<!DOCTYPE html>
         }
         // 二次探测：Wasm GC struct/array ref 提案（dart2wasm 必需）
         // 字节序列（参考 webassembly feature detect）：包含 (ref any) / (ref struct) 等类型
+        // 字节序列取自 Flutter 引擎自身的 supportsWasmGC()：
+        //   magic + version + type 段（1 个 struct 类型，字段 i8，可变）
+        // 注意历史上这里写过一段手工拼的字节（长度字段与实际内容不符），
+        // 任何浏览器都验证不通过，导致 wasm 产物从未被真正启用。
         if (!WebAssembly.validate(new Uint8Array([
           0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
-          0x01, 0x0d, 0x03, 0x60, 0x01, 0x6e, 0x60, 0x00,
-          0x60, 0x02, 0x6e, 0x6e, 0x01, 0x6e
+          0x01, 0x05, 0x01, 0x5f, 0x01, 0x78, 0x00
         ]))) {
           window.__OGL_VARIANT__ = 'js';
           return;
