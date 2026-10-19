@@ -275,3 +275,45 @@ jobs:
             echo "  预热 $f → $code"
           done
           echo '预热完成（失败不影响发布，运行时会自动回退同源）'
+
+  # ── 冷启动实测（发布后自动执行）───────────────────────────────────────
+  # 口径：**网络加载完成 → 应用首帧**，不含首次下载资源的时间。
+  # 目标 5 秒；超出即红，便于在合入后立刻发现初始化退化。
+  cold-start:
+    name: 冷启动实测（网络完成 → 首帧）
+    needs: build-web
+    if: success()
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 等待站点发布生效
+        run: sleep 90
+
+      - name: 安装 Playwright 与 Chromium
+        run: |
+          npm init -y >/dev/null 2>&1 || true
+          npm install --no-audit --no-fund playwright@1.47.2
+          npx playwright install --with-deps chromium
+
+      - name: 实测冷启动
+        run: |
+          node tool/web_perf_probe.mjs "https://oghapp.344977.xyz/" 5000 | tee probe.md
+
+      - name: 写入作业摘要
+        if: always()
+        run: |
+          if [ -f probe.md ]; then cat probe.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: 上传报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-cold-start-report
+          path: probe.md
+          if-no-files-found: warn
