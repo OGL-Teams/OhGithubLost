@@ -27,10 +27,12 @@
     (function() {
       try {
         // 基础嗅探：WebAssembly 是否存在 + 最小模块验证
-        // 字节序列：\0asm\1\0\0\0\1\5\1\0\5  (magic + version + 1 type + 1 func + 1 table)
+        //   magic + version + type 段（长度 4：1 个 func 类型，无参无返回）
+        // 此前这里手写的字节长度字段与内容不符，验证恒为 false —— 于是所有
+        // 浏览器都被判成 js，wasm 产物从未真正上线。
         if (typeof WebAssembly === 'undefined' ||
             !WebAssembly.validate ||
-            !WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,0,5]))) {
+            !WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,4,1,96,0,0]))) {
           window.__OGL_VARIANT__ = 'js';
           return;
         }
