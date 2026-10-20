@@ -1,175 +1,177 @@
 <!DOCTYPE html>
 <!--
-  OGL Web · 入口页（**自动生成，请勿手改** —— 见 tool/web_publish.py）。
+  OGL Web 入口页（由 tool/web_publish.py 生成，请勿手改）。
 
-  作用：嗅探浏览器 WebAssembly（含 GC 提案）支持情况，按需把当前版本的
-  应用包在 iframe 里：
-    - 支持 → iframe → ./wasm/<版本>/index.html  （dart2wasm，体积极小、首屏快）
-    - 不支持 → iframe → ./js/<版本>/index.html   （dart2js 兜底，兼容老 Safari）
+  职责只有三件：
+    1. 判断浏览器能否运行 dart2wasm（需要 Wasm GC 提案），选定版本桶；
+    2. 把应用装进 iframe —— 地址栏长期不变，换版本只改 iframe 的 src；
+    3. 首次进入时清理历史 Service Worker 与缓存，避免旧页面被缓存锁死。
 
-  版式按屏幕自适应：iframe 占满可视区域（含移动端安全区）。
-  加载期间显示进度条（loading → loaded 淡出）。
-
-  iOS Safari 用户：若希望获得接近原生 App 的体验与全屏画板，请
-  在浏览器中点击底部分享按钮 → "添加到主屏幕"。
+  ★ 资源一律同源、相对路径，`<base>` 不做任何跨源改写。
+    跨源改写会让 Flutter 的路由把跨源地址写进 history，浏览器随即抛出
+    SecurityError（"A history state object with URL 'https://cdn...' cannot
+    be created in a document with origin ..."），整站路由失效。
 -->
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <!-- viewport-fit=cover：让内容铺到刘海/圆角屏的安全区，再由 CSS 的 env() 让出边距 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>OhGithubLost · Web</title>
-  <meta name="theme-color" content="#171A21">
-  <link rel="icon" type="image/png" href="js/950/favicon.png">
-  <!-- WebAssembly 嗅探：必须在 iframe 拿到 src 之前同步执行完毕；
-       dart2wasm 需要 Wasm GC（struct/array ref）提案，旧 Safari 不支持。 -->
-  <script>
-    (function() {
-      try {
-        // 基础嗅探：WebAssembly 是否存在 + 最小模块验证
-        //   magic + version + type 段（长度 4：1 个 func 类型，无参无返回）
-        // 此前这里手写的字节长度字段与内容不符，验证恒为 false —— 于是所有
-        // 浏览器都被判成 js，wasm 产物从未真正上线。
-        if (typeof WebAssembly === 'undefined' ||
-            !WebAssembly.validate ||
-            !WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,4,1,96,0,0]))) {
-          window.__OGL_VARIANT__ = 'js';
-          return;
-        }
-        // 二次探测：Wasm GC struct/array ref 提案（dart2wasm 必需）
-        // 字节序列（参考 webassembly feature detect）：包含 (ref any) / (ref struct) 等类型
-        // 字节序列取自 Flutter 引擎自身的 supportsWasmGC()：
-        //   magic + version + type 段（1 个 struct 类型，字段 i8，可变）
-        // 注意历史上这里写过一段手工拼的字节（长度字段与实际内容不符），
-        // 任何浏览器都验证不通过，导致 wasm 产物从未被真正启用。
-        if (!WebAssembly.validate(new Uint8Array([
-          0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
-          0x01, 0x05, 0x01, 0x5f, 0x01, 0x78, 0x00
-        ]))) {
-          window.__OGL_VARIANT__ = 'js';
-          return;
-        }
-        window.__OGL_VARIANT__ = 'wasm';
-      } catch (e) {
-        window.__OGL_VARIANT__ = 'js';
-      }
-    })();
-  </script>
-  <style>
-    :root {
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-right: env(safe-area-inset-right, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --safe-left: env(safe-area-inset-left, 0px);
-      --ink: #E6EDF3;
-      --panel: #1E222B;
-      --line: #454B5A;
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      background: #171A21; color: var(--ink);
-      font: 13px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      overscroll-behavior: none;
-    }
-    #ogl-frame {
-      position: fixed;
-      top: 0; right: 0; bottom: 0; left: 0;
-      width: 100%; height: 100%;
-      height: 100dvh;
-      border: 0;
-      display: block;
-      background: #171A21;
-    }
-    /* 加载进度条：iframe 加载中显示，onload 后淡出 */
-    #loader {
-      position: fixed;
-      top: 0; right: 0; bottom: 0; left: 0;
-      z-index: 99;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 18px;
-      background: #171A21;
-      transition: opacity 0.4s ease;
-    }
-    #loader.hidden { opacity: 0; pointer-events: none; }
-    #loader .logo {
-      font: 600 22px system-ui, sans-serif;
-      color: #E6EDF3;
-      letter-spacing: 1px;
-    }
-    #loader .bar {
-      width: min(240px, 60vw);
-      height: 3px;
-      background: #2F3441;
-      border-radius: 2px;
-      overflow: hidden;
-      position: relative;
-    }
-    #loader .bar::after {
-      content: '';
-      position: absolute;
-      top: 0; left: -60%;
-      width: 60%; height: 100%;
-      background: linear-gradient(90deg, transparent, #4B9FFF, transparent);
-      animation: slide 1.4s ease-in-out infinite;
-    }
-    @keyframes slide {
-      0% { left: -60%; }
-      100% { left: 100%; }
-    }
-    #loader .hint {
-      font: 12px system-ui, sans-serif;
-      color: #454B5A;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>OhGithubLost</title>
+<meta name="theme-color" content="#171A21">
+<meta name="description" content="OGL · OhGithubLost — GitHub 仓库管理器（Web 版）">
+<link rel="icon" type="image/png" href="js/950/favicon.png">
+<style>
+  :root {
+    --bg: #171A21;
+    --ink: #E6EDF3;
+    --muted: #8D96A8;
+    --line: #2A2F3B;
+    --accent: #4C8DFF;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    background: var(--bg); color: var(--ink);
+    font: 14px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+  }
+  #app {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%; height: 100dvh;
+    border: 0; display: block; background: var(--bg);
+  }
+  #boot {
+    position: fixed; inset: 0; z-index: 9;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 14px;
+    padding: calc(env(safe-area-inset-top, 0px) + 24px) 24px
+             calc(env(safe-area-inset-bottom, 0px) + 24px);
+    background: var(--bg);
+    transition: opacity .35s ease;
+  }
+  #boot[data-state="done"] { opacity: 0; pointer-events: none; }
+  #boot .brand { font-size: 20px; font-weight: 600; letter-spacing: .5px; }
+  #boot .bar {
+    width: min(220px, 60vw); height: 3px; border-radius: 2px;
+    background: var(--line); overflow: hidden;
+  }
+  #boot .bar::after {
+    content: ""; display: block; width: 40%; height: 100%;
+    background: var(--accent); border-radius: 2px;
+    animation: slide 1.2s ease-in-out infinite;
+  }
+  @keyframes slide {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(250%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #boot .bar::after { animation: none; width: 100%; opacity: .5; }
+  }
+  #boot .hint { color: var(--muted); font-size: 13px; text-align: center; max-width: 30em; }
+  #boot .retry {
+    display: none;
+    margin-top: 4px; padding: 8px 18px;
+    border: 1px solid var(--line); border-radius: 8px;
+    background: transparent; color: var(--ink);
+    font: inherit; cursor: pointer;
+  }
+  #boot[data-state="error"] .retry { display: inline-block; }
+  #boot[data-state="error"] .bar { display: none; }
+</style>
 </head>
 <body>
-  <!-- iOS Safari 提示：通过"添加到主屏幕"启动可获得全屏 + 离线缓存（更像原生 App） -->
-  <noscript>
-    <div style="position:fixed;top:env(safe-area-inset-top,8px);left:8px;right:8px;z-index:100;
-                padding:10px 14px;border-radius:10px;background:#1E222B;color:#E6EDF3;
-                font:13px/1.5 system-ui,-apple-system,sans-serif;">
-      本页面需要启用 JavaScript 才能加载 OGL Web 应用。请在浏览器设置中开启 JS 后刷新页面。
-    </div>
-  </noscript>
-  <div id="loader">
-    <div class="logo">OGL</div>
-    <div class="bar"></div>
-    <div class="hint">加载中…</div>
-  </div>
-  <!-- ★ iframe 直接指向本版本的**默认目录**（`950/`），该目录已由 CI
-       发布，**零 404、零额外探测请求**。
-       为什么不在这里做 wasm/js 嗅探：iframe 即使加载到 404 页也只会触发
-       `load`（不是 `error`），"嗅探失败再回退"在 iframe 上根本不可靠。
-       等 wasm 桶真正上 CI 之后，改为服务端写死路径（或改用 fetch 预检），
-       在此之前——稳定优先，直接命中 js 产物。 -->
-  <iframe id="ogl-frame" src="about:blank" title="OhGithubLost" allow="clipboard-write; fullscreen; notifications"></iframe>
-  <script>
-    (function () {
-      var f = document.getElementById('ogl-frame');
-      var version = '9.5.0';
-      // 版本号 → 纯数字目录名（与 version_dir_name() 规则一致）：'7.4.2' → '742'
-      var dir = version.replace(/[^0-9]/g, '');
-      // 头部同步嗅探已把结果写入 window.__OGL_VARIANT__（'wasm' | 'js'）；
-      // 两个桶都由 CI 发布：app/wasm/<dir>/ 与 app/js/<dir>/。
-      var variant = window.__OGL_VARIANT__ || 'js';
-      f.src = variant === 'wasm'
-        ? './wasm/' + dir + '/'
-        : './js/' + dir + '/';
-      var loader = document.getElementById('loader');
-      // iframe onload = HTML 文档已加载完成（Flutter 引擎还在初始化，但基础资源没有 404）
-      f.addEventListener('load', function () {
-        loader.classList.add('hidden');
-        setTimeout(function () { loader.style.display = 'none'; }, 500);
-      });
-      // 超时兜底：20 秒后也淡出（不让进度条永远卡着）
-      setTimeout(function () {
-        loader.classList.add('hidden');
-        setTimeout(function () { loader.style.display = 'none'; }, 500);
-      }, 20000);
-    })();
-  </script>
+<iframe id="app" src="about:blank" title="OhGithubLost"
+        allow="clipboard-write; fullscreen; notifications"></iframe>
+
+<div id="boot" data-state="loading" role="status" aria-live="polite">
+  <div class="brand">OhGithubLost</div>
+  <div class="bar" aria-hidden="true"></div>
+  <div class="hint" id="hint">正在加载…</div>
+  <button class="retry" type="button" onclick="location.reload()">重新加载</button>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var VERSION = "9.5.0";
+  var DIR = "950";
+  // 每次发布都会变：用于让 iframe 绕过上一版 index.html 的强缓存
+  var STAMP = "20261020141527";
+
+  var frame = document.getElementById("app");
+  var boot = document.getElementById("boot");
+  var hint = document.getElementById("hint");
+
+  // dart2wasm 需要 Wasm GC。字节序列取自 Flutter 引擎的 supportsWasmGC()。
+  function supportsWasmGC() {
+    try {
+      return typeof WebAssembly === "object"
+        && typeof WebAssembly.validate === "function"
+        && WebAssembly.validate(new Uint8Array([
+          0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+          0x01, 0x05, 0x01, 0x5f, 0x01, 0x78, 0x00
+        ]));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // 清理历史遗留：旧版注册过 Service Worker，会把入口页锁在旧内容上。
+  // 只在发布戳变化时执行一次，不影响正常缓存。
+  function purgeOnce() {
+    try {
+      var key = "ogl.boot.stamp";
+      if (localStorage.getItem(key) === STAMP) return;
+      localStorage.setItem(key, STAMP);
+      if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+        navigator.serviceWorker.getRegistrations().then(function (list) {
+          list.forEach(function (reg) { reg.unregister(); });
+        }).catch(function () {});
+      }
+      if (window.caches && caches.keys) {
+        caches.keys().then(function (keys) {
+          keys.forEach(function (name) { caches.delete(name); });
+        }).catch(function () {});
+      }
+    } catch (e) {}
+  }
+
+  function finish() {
+    boot.setAttribute("data-state", "done");
+    setTimeout(function () { boot.style.display = "none"; }, 400);
+  }
+
+  function fail(reason) {
+    boot.setAttribute("data-state", "error");
+    hint.textContent = reason;
+  }
+
+  purgeOnce();
+
+  var variant = supportsWasmGC() ? "wasm" : "js";
+  var src = "./" + variant + "/" + DIR + "/?v=" + encodeURIComponent(STAMP);
+  hint.textContent = "正在加载 " + VERSION + "…";
+
+  frame.addEventListener("load", function () {
+    if (frame.getAttribute("src") === "about:blank") return;
+    finish();
+  });
+  frame.addEventListener("error", function () {
+    fail("资源加载失败，请检查网络后重试。");
+  });
+
+  // 兜底：30 秒仍未就绪则给出明确指引，而不是让进度条一直转。
+  setTimeout(function () {
+    if (boot.getAttribute("data-state") === "loading") {
+      fail("加载时间超出预期。可尝试刷新页面，或改用最新版浏览器。");
+    }
+  }, 30000);
+
+  frame.src = src;
+})();
+</script>
 </body>
 </html>
