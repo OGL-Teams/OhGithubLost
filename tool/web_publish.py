@@ -130,9 +130,6 @@ ROOT_HEADERS = """\
   Cache-Control: public, max-age=0, must-revalidate
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
-# 版本桶内的入口页同理：桶名不随内容变化，强缓存会把旧入口锁死。
-/*/index.html
-  Cache-Control: public, max-age=0, must-revalidate
 /versions.json
   Cache-Control: public, max-age=0, must-revalidate
 
@@ -171,6 +168,8 @@ WRAPPER = """<!DOCTYPE html>
 <title>OhGithubLost</title>
 <meta name="theme-color" content="#171A21">
 <meta name="description" content="OGL · OhGithubLost — GitHub 仓库管理器（Web 版）">
+<!-- 构建标记：排查线上问题时先看这里，确认浏览器拿到的是哪一次发布 -->
+<meta name="ogl-build" content="__OGL_STAMP__">
 <link rel="icon" type="image/png" href="js/__CURRENT__/favicon.png">
 <style>
   :root {
@@ -439,9 +438,16 @@ def main() -> int:
 
     # ★ Netlify 缓存策略文件**必须写在发布根**（app/_headers），
     #   写在版本桶里不生效（详见 ROOT_HEADERS 注释）。
+    # ★ 版本桶里的 index.html 必须每次回源：桶名不随内容变化，强缓存会把
+    #   旧入口锁死（曾导致用户长期停在带 CDN 改写的旧页面并触发 SecurityError）。
+    #   Netlify 的路径规则不支持中段通配（`/*/index.html` 不生效），
+    #   因此这里按当前版本目录生成**精确路径**，并放在通配规则之前。
+    bucket_rules = ''.join(
+        '%s/%s/index.html\n  Cache-Control: public, max-age=0, must-revalidate\n'
+        % (sub, dir_name) for sub in ('/js', '/wasm'))
     headers_path = os.path.join(app_dir, '_headers')
     with open(headers_path, 'w', encoding='utf-8') as fh:
-        fh.write(ROOT_HEADERS)
+        fh.write(bucket_rules + ROOT_HEADERS)
     print('已写入 app/_headers（Netlify 发布根缓存策略）')
     return 0
 
