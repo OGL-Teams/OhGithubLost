@@ -1,10 +1,11 @@
+/js/950/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/wasm/950/index.html
+  Cache-Control: public, max-age=0, must-revalidate
 # 入口与版本清单：始终回源校验（新版本要立刻可见）
 /
   Cache-Control: public, max-age=0, must-revalidate
 /index.html
-  Cache-Control: public, max-age=0, must-revalidate
-# 版本桶内的入口页同理：桶名不随内容变化，强缓存会把旧入口锁死。
-/*/index.html
   Cache-Control: public, max-age=0, must-revalidate
 /versions.json
   Cache-Control: public, max-age=0, must-revalidate
