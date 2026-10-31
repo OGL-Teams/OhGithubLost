@@ -1173,10 +1173,6 @@ class _SettingsPageState extends State<SettingsPage> {
       ogLShowDialog<T>(
         context: context,
         barrierDismissible: barrierDismissible,
-        animationStyle: AnimationStyle(
-          duration: OgLAnim.fast(context),
-          curve: OgLAnim.curve(context),
-        ),
         builder: builder,
       );
 
