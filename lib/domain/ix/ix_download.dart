@@ -20,7 +20,7 @@ import 'package:flutter/foundation.dart';
 import '../../kernel/contract/download_engine.dart';
 import '../../kernel/contract/storage_export.dart';
 import '../../kernel/diagnostics.dart';
-import 'ix_download_backend_web.dart';
+import 'ix_download_backend_io.dart';
 import 'ix_download_error.dart';
 
 /// 下载分类（决定落到哪个子目录）。
@@ -1075,6 +1075,7 @@ class IxDownloadManager extends ChangeNotifier {
     await _backend.cancel(id);
     _specs.remove(id);
     _snapshots.remove(id);
+    _touchTasksCache();
     _lastSample.remove(id);
     _expectedSha256.remove(id);
     _urlCandidates.remove(id);
@@ -1107,6 +1108,7 @@ class IxDownloadManager extends ChangeNotifier {
       _urlCandidates.remove(id);
       _exportedToSaf.remove(id);
     }
+    _touchTasksCache();
     _safeNotify();
   }
 

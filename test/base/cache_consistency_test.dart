@@ -320,7 +320,9 @@ void main() {
   });
 
   group('D5 写后失效与回读校验', () {
-    test('回读指纹不一致时判定失败，并清掉本地缓存', () async {
+    test('回读指纹不一致：提交仍按成功收尾（回执权威），本地以写入内容呈现', () async {
+      // v10.1.0：PUT 响应里的 sha 是服务端权威回执；回读只用于本地缓存
+      // 对齐（读路径瞬时陈旧不应把"已成功"改判成失败——那会诱发重复提交）。
       remote.seed(_keyA, 'remote-v1', 'sha-v1');
       remote.corruptReadback = true;
 
@@ -333,12 +335,12 @@ void main() {
         ),
       );
 
-      expect(outcome.ok, isFalse);
-      expect(outcome.conflict, WriteConflict.verificationFailed);
+      expect(outcome.ok, isTrue);
+      expect(outcome.sha, 'sha-written');
       expect(
         await cache.localCount(),
-        0,
-        reason: '校验失败后不得留下任何本地条目',
+        1,
+        reason: '本地缓存回退为写入内容，等待下次读取自愈',
       );
     });
 
