@@ -142,7 +142,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       if (!mounted || draft == null) {
         return;
       }
-      if (draft == null || draft.content == widget.initialText) {
+      if (draft.content == widget.initialText) {
         await widget.surface.domain.api.discardDraft(
           widget.fullName,
           widget.path,
