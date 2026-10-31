@@ -25,6 +25,7 @@ import '../../kernel/boot/trust_warnings.dart';
 import '../../kernel/diagnostics.dart';
 import '../../kernel/log/og_l_log_file.dart';
 import '../i18n/og_l_i18n.dart';
+import 'overlays.dart';
 import 'system_notifier.dart';
 
 /// 取 `shell` 分片文案。
@@ -214,9 +215,34 @@ class OgLAppLog extends ChangeNotifier {
   /// 只合并"通知"，**数据仍然逐条立即入表**，不改变任何可见内容。
   bool _notifyScheduled = false;
 
+  /// 非 info 级条目数（首页徽标用）。
+  ///
+  /// 徽标只关心"多少条警告/错误"，不需要整表。把它做成 ValueNotifier，
+  /// 订阅方（首页 AppBar）只在数字变化时重建一次子树，而不是每条日志
+  /// 都把 filter 跑一遍——与 [entries] 的缓存视图配合，把日志写入的
+  /// 常驻成本从 O(n) 降到 O(1)。
+  final ValueNotifier<int> alertCount = ValueNotifier<int>(0);
+
+  void _recountAlerts() {
+    alertCount.value = _entries
+        .where((OgLAppLogEntry e) => e.severity != OgLNoticeSeverity.info)
+        .length;
+  }
+
   /// 全部条目（**最新在前**，方便直接看）。
-  List<OgLAppLogEntry> get entries =>
-      List<OgLAppLogEntry>.unmodifiable(_entries.reversed.toList());
+  ///
+  /// 缓存的反向视图：`add` 时才重建，读取零拷贝。此前每次 getter 都
+  /// `reversed.toList()` 复制 2000 条——而首页徽标 / 设置页日志组都订阅
+  /// 本类，下载进行中每 200ms 一次通知就会全壳重算这张表。
+  List<OgLAppLogEntry> get entries => _reversedView;
+
+  List<OgLAppLogEntry> _reversedView = const <OgLAppLogEntry>[];
+
+  void _rebuildReversedView() {
+    _reversedView = List<OgLAppLogEntry>.unmodifiable(
+      _entries.reversed.toList(),
+    );
+  }
 
   /// 追加一条。
   ///
@@ -237,6 +263,8 @@ class OgLAppLog extends ChangeNotifier {
     while (_entries.length > maxEntries) {
       _entries.removeAt(0);
     }
+    _rebuildReversedView();
+    _recountAlerts();
     _notifyCoalesced();
     OgLLogFile.line(
       area,
@@ -323,7 +351,9 @@ class OgLAppLog extends ChangeNotifier {
       return;
     }
     _entries.clear();
+    _rebuildReversedView();
     _readIds.clear();
+    _recountAlerts();
     notifyListeners();
   }
 }
@@ -497,7 +527,7 @@ class _OgLNoticeHostState extends State<OgLNoticeHost>
       _presentAmbient(notice);
       return;
     }
-    showDialog<void>(
+    ogLShowDialog<void>(
       context: navContext,
       // 严重告警**必须被阅读**：遮罩点击与系统返回键都不允许关掉，
       // 只留「知道了」这一个出口（避免误触把关键告警一扫而过）。

@@ -118,7 +118,10 @@ class _ActionLogPageState extends State<ActionLogPage> {
                     .toList()
                   ..sort();
                 if (keys.isEmpty) {
-                  return Center(child: Text(_t('noMatchingJob')));
+                  return OgLAsyncEmptyPane(
+                    icon: Icons.filter_alt_off_outlined,
+                    text: _t('noMatchingJob'),
+                  );
                 }
                 return ListView(
                   padding: const EdgeInsets.all(OgLSpace.md),

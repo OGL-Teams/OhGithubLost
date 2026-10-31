@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/overlays.dart';
 import '../app/permissions.dart';
 import '../i18n/og_l_i18n.dart';
 import '../settings.dart';
@@ -156,7 +157,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         return;
       case OgLPermissionStatus.needsUserAction:
       case OgLPermissionStatus.unsupported:
-        await showDialog<void>(
+        await ogLShowDialog<void>(
           context: context,
           builder: (BuildContext dialogContext) => AlertDialog(
             title: Text(info.title),

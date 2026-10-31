@@ -254,7 +254,7 @@ class _RepoPageState extends State<RepoPage> {
     if (_forkBusy) {
       return;
     }
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('forkTitle')),
@@ -580,7 +580,10 @@ class _BranchSheetState extends State<_BranchSheet> {
             ),
             Expanded(
               child: shown.isEmpty
-                  ? Center(child: Text(_t('noMatchingBranch')))
+                  ? OgLAsyncEmptyPane(
+                      icon: Icons.account_tree_outlined,
+                      text: _t('noMatchingBranch'),
+                    )
                   : ListView.builder(
                       itemCount: shown.length,
                       itemBuilder: (BuildContext context, int index) {
@@ -746,6 +749,31 @@ class _CodeTabState extends State<_CodeTab> {
   );
   final TextEditingController _filter = TextEditingController();
   final TextEditingController _newPath = TextEditingController();
+
+  /// 排序缓存：[PagedController] 的列表对象未变时直接复用上一次排序结果。
+  /// （过滤框逐字输入只重建过滤，不再整目录排序。）
+  List<GhContent>? _sortedCache;
+  List<GhContent>? _sortedSource;
+
+  /// 目录排序视图（目录在前，其余按名称），带身份缓存。
+  List<GhContent> _sortedItems() {
+    final List<GhContent> source = _entries.items;
+    if (identical(_sortedSource, source) && _sortedCache != null) {
+      return _sortedCache!;
+    }
+    final List<GhContent> sorted = List<GhContent>.of(source)
+      ..sort((GhContent a, GhContent b) {
+        if (a.isDirectory != b.isDirectory) {
+          return a.isDirectory ? -1 : 1;
+        }
+        return ghPathName(a.path)
+            .toLowerCase()
+            .compareTo(ghPathName(b.path).toLowerCase());
+      });
+    _sortedSource = source;
+    _sortedCache = sorted;
+    return sorted;
+  }
 
   /// 文件列表滚动位置：`ScrollAwareAction` 读它判定「收边 / 弹回 / 近底部」。
   final ScrollController _scroll = ScrollController();
@@ -1240,7 +1268,7 @@ class _CodeTabState extends State<_CodeTab> {
     }
     _newPath.text = _path.isEmpty ? '' : '$_path/';
     final TextEditingController content = TextEditingController();
-    final bool? ok = await showDialog<bool>(
+    final bool? ok = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => StatefulBuilder(
         builder: (BuildContext context, StateSetter setLocal) {
@@ -1400,7 +1428,7 @@ class _CodeTabState extends State<_CodeTab> {
       await _deleteDirectory(entry);
       return;
     }
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('deleteFileAction')),
@@ -1495,7 +1523,7 @@ class _CodeTabState extends State<_CodeTab> {
     if (!mounted) {
       return;
     }
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('deleteDirAction')),
@@ -1578,7 +1606,7 @@ class _CodeTabState extends State<_CodeTab> {
     }
     final TextEditingController target =
         TextEditingController(text: entry.path);
-    final bool? ok = await showDialog<bool>(
+    final bool? ok = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('renameFileTitle')),
@@ -1702,7 +1730,7 @@ class _CodeTabState extends State<_CodeTab> {
   void _showEntryDetails(GhContent entry) {
     final ThemeData theme = Theme.of(context);
     final String url = _rawUrlOf(entry) ?? '';
-    showDialog<void>(
+    ogLShowDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(ghPathName(entry.path)),
@@ -2260,16 +2288,9 @@ class _CodeTabState extends State<_CodeTab> {
               listenable: _entries,
               builder: (BuildContext context, Widget? _) {
                 final String q = _filter.text.trim().toLowerCase();
-                final List<GhContent> sorted =
-                    List<GhContent>.of(_entries.items)
-                      ..sort((GhContent a, GhContent b) {
-                        if (a.isDirectory != b.isDirectory) {
-                          return a.isDirectory ? -1 : 1;
-                        }
-                        return ghPathName(a.path)
-                            .toLowerCase()
-                            .compareTo(ghPathName(b.path).toLowerCase());
-                      });
+                // 排序结果按列表身份缓存：过滤框每敲一个字符只重跑过滤，
+                // 不再对整目录做 O(n log n) 拷贝 + 排序（大目录逐字卡顿）。
+                final List<GhContent> sorted = _sortedItems();
                 final List<GhContent> shown = q.isEmpty
                     ? sorted
                     : sorted
@@ -2440,7 +2461,7 @@ class _IssuesTabState extends State<_IssuesTab> {
   }
 
   Future<void> _close(int number) async {
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('closeIssue', {'number': number})),
@@ -2891,7 +2912,7 @@ class _BranchesTabState extends State<_BranchesTab> {
 
   Future<void> _create() async {
     _createName.clear();
-    final String? input = await showDialog<String>(
+    final String? input = await ogLShowDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('newBranch')),
@@ -2938,7 +2959,7 @@ class _BranchesTabState extends State<_BranchesTab> {
 
   Future<void> _rename(GhBranch branch) async {
     _renameName.text = branch.name;
-    final String? input = await showDialog<String>(
+    final String? input = await ogLShowDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('renameBranch')),
@@ -2978,7 +2999,7 @@ class _BranchesTabState extends State<_BranchesTab> {
   }
 
   Future<void> _delete(GhBranch branch) async {
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('deleteBranchTitle')),
@@ -3609,7 +3630,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
   }
 
   Future<void> _deleteRepo() async {
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('deleteRepo')),

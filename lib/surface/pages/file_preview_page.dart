@@ -240,27 +240,37 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   }
 
   /// 图片：可缩放查看（Material 自带 `InteractiveViewer`，不引额外依赖）。
-  Widget _image(Uint8List bytes) => InteractiveViewer(
-        minScale: 0.5,
-        maxScale: 6,
-        child: Center(
-          child: Image.memory(
-            bytes,
-            fit: BoxFit.contain,
-            errorBuilder:
-                (BuildContext context, Object error, StackTrace? stack) =>
-                    _notice(Theme.of(context), Icons.broken_image_outlined,
-                        _t('previewTooLarge')),
-          ),
+  ///
+  /// 解码按**屏幕尺寸**降采样（`cacheWidth`）：手机原图常是 12MP，全分辨率
+  /// 解码一次占 48MB 位图内存、主线程卡数百毫秒；显示区只有一屏，缩放由
+  /// `InteractiveViewer` 对已降采样位图做 GPU 变换，清晰度足够。
+  Widget _image(Uint8List bytes) {
+    final double dpr = MediaQuery.devicePixelRatioOf(context);
+    final Size screen = MediaQuery.sizeOf(context);
+    final int targetWidth = (screen.width * dpr).round();
+    return InteractiveViewer(
+      minScale: 0.5,
+      maxScale: 6,
+      child: Center(
+        child: Image.memory(
+          bytes,
+          cacheWidth: targetWidth,
+          fit: BoxFit.contain,
+          errorBuilder:
+              (BuildContext context, Object error, StackTrace? stack) =>
+                  _notice(Theme.of(context), Icons.broken_image_outlined,
+                      _t('previewTooLarge')),
         ),
-      );
+      ),
+    );
+  }
 
   /// SVG：矢量渲染（可缩放），失败或超限时退化为源码。
   ///
   /// 为什么给退化路径：SVG 也可能是超大文件或被 Contents API 截断的内容，
   /// 渲染不出来时**让用户看到源码**比显示一句「加载失败」有用得多。
   Widget _svg(Uint8List bytes) {
-    final String source = utf8.decode(bytes, allowMalformed: true);
+    final String source = _textOf(bytes);
     return Column(
       children: <Widget>[
         Expanded(
@@ -281,8 +291,23 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   }
 
   /// 文本族（XML / 其它）：复用既有代码查看器（自带语法高亮与查找）。
-  Widget _text(Uint8List bytes) {
+  /// 源码文本缓存（按字节身份）：重试 / 切换显示模式时不再重复 decode
+  /// 最多 1MB 的内容（SVG 失败退化路径此前还会 decode 两遍）。
+  Uint8List? _textSource;
+  String? _textCache;
+
+  String _textOf(Uint8List bytes) {
+    if (identical(_textSource, bytes) && _textCache != null) {
+      return _textCache!;
+    }
     final String source = utf8.decode(bytes, allowMalformed: true);
+    _textSource = bytes;
+    _textCache = source;
+    return source;
+  }
+
+  Widget _text(Uint8List bytes) {
+    final String source = _textOf(bytes);
     return Column(
       children: <Widget>[
         if (widget.kind == OgLPreviewKind.svg)

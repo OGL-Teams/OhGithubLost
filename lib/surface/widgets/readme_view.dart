@@ -21,6 +21,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
@@ -306,9 +307,8 @@ class ReadmeView extends StatelessWidget {
         final Uri? uri = resolveReadmeUri(href, base: linkBase);
         if (uri == null) {
           // 打不开时**可见地**告诉用户，而不是点了没反应。
-          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-            SnackBar(content: Text(_t('linkInvalid'))),
-          );
+          // 走统一提示通道（样式 / 时长 / 语气全局一致）。
+          OgLNotifier.of(context).warning(_t('linkInvalid'));
           return;
         }
         open(uri);
@@ -440,10 +440,40 @@ class _ReadmeImage extends StatelessWidget {
   /// 失败文案样式。
   final TextStyle fallbackStyle;
 
-  /// 字节缓存：同一张图重复出现或重建时不再请求（上限 32 张）。
+  /// 字节缓存：同一张图重复出现或重建时不再请求。
   ///
   /// 键包含 [_scope]（仓库 + 分支），否则不同仓库的同名图片会互相串用。
+  /// 上限按**总字节数**（32MB）LRU 淘汰——此前只限张数（32 张），连翻
+  /// 大图会把原始字节攒到上百 MB，进程级存活导致内存单调增长。
+  static const int _cacheMaxBytes = 32 << 20;
   static final Map<String, Uint8List> _cache = <String, Uint8List>{};
+  static final Map<String, int> _cacheOrder = <String, int>{};
+  static int _cacheClock = 0;
+  static int _cacheBytes = 0;
+
+  static void _cachePut(String key, Uint8List bytes) {
+    final int existing = _cacheOrder[key] ?? 0;
+    if (existing != 0) {
+      _cacheBytes -= _cache[key]?.length ?? 0;
+    }
+    while (
+        _cacheBytes + bytes.length > _cacheMaxBytes && _cacheOrder.isNotEmpty) {
+      final String oldest = _cacheOrder.keys
+          .reduce((a, b) => _cacheOrder[a]! < _cacheOrder[b]! ? a : b);
+      _cacheBytes -= _cache[oldest]?.length ?? 0;
+      _cache.remove(oldest);
+      _cacheOrder.remove(oldest);
+    }
+    _cacheClock++;
+    _cacheOrder[key] = _cacheClock;
+    _cache[key] = bytes;
+    _cacheBytes += bytes.length;
+  }
+
+  static int _targetWidth(BuildContext context) =>
+      (MediaQuery.sizeOf(context).width *
+              MediaQuery.devicePixelRatioOf(context))
+          .round();
 
   @override
   Widget build(BuildContext context) {
@@ -455,7 +485,9 @@ class _ReadmeImage extends StatelessWidget {
     final Uint8List? cached = _cache[cacheKey];
     if (cached != null) {
       return _frame(Image.memory(cached,
-          fit: BoxFit.contain, alignment: Alignment.centerLeft));
+          cacheWidth: _targetWidth(context),
+          fit: BoxFit.contain,
+          alignment: Alignment.centerLeft));
     }
     return _frame(
       FutureBuilder<Uint8List?>(
@@ -470,7 +502,9 @@ class _ReadmeImage extends StatelessWidget {
                 style: fallbackStyle);
           }
           return Image.memory(bytes,
-              fit: BoxFit.contain, alignment: Alignment.centerLeft);
+              cacheWidth: _targetWidth(context),
+              fit: BoxFit.contain,
+              alignment: Alignment.centerLeft);
         },
       ),
     );
@@ -484,11 +518,8 @@ class _ReadmeImage extends StatelessWidget {
     try {
       final Uint8List? bytes = await loader(path);
       if (bytes != null && bytes.isNotEmpty) {
-        if (_cache.length >= 32) {
-          _cache.remove(_cache.keys.first);
-        }
         // 与 build() 用同一套键：作用域 + 仓库内路径。
-        _cache['$_scope|$path'] = bytes;
+        _cachePut('$_scope|$path', bytes);
       }
       return bytes;
     } catch (_) {

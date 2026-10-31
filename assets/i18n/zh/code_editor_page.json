@@ -31,5 +31,6 @@
   "undo": "撤销",
   "unsaved": " ·未保存",
   "wrapOff": "关闭自动换行",
-  "wrapOn": "开启自动换行"
+  "wrapOn": "开启自动换行",
+  "queuedInBackground": "已加入提交队列，结果将在通知中心报告"
 }

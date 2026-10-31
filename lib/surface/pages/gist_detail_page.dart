@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/clipboard_x.dart';
@@ -164,7 +165,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
   Future<void> _editFile(_GistFile file) async {
     final TextEditingController controller =
         TextEditingController(text: file.content);
-    final String? updated = await showDialog<String>(
+    final String? updated = await ogLShowDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('editFileName', {'name': file.name})),
@@ -229,7 +230,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
   }
 
   Future<void> _deleteGist() async {
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('deleteTitle')),
@@ -334,7 +335,8 @@ class _GistDetailPageState extends State<GistDetailPage> {
                 ),
               ),
             ],
-            const Divider(height: 32),
+            const SizedBox(height: OgLSpace.lg),
+            const Divider(height: 1),
             for (final _GistFile file in detail.files)
               Card(
                 clipBehavior: Clip.antiAlias,

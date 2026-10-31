@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -130,7 +131,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _remove(GhAccount account) async {
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('removeTitle')),

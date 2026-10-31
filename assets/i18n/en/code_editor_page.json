@@ -31,5 +31,6 @@
   "undo": "Undo",
   "unsaved": " · Unsaved",
   "wrapOff": "Disable word wrap",
-  "wrapOn": "Enable word wrap"
+  "wrapOn": "Enable word wrap",
+  "queuedInBackground": "Queued for commit. The result will appear in notifications."
 }

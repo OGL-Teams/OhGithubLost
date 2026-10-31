@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
@@ -154,7 +155,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
     if (_busy) {
       return;
     }
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('cancelRun')),
@@ -449,7 +450,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
                               ),
                           ],
                         ),
-                        const Divider(height: 32),
+                        const SizedBox(height: OgLSpace.lg),
+                        const Divider(height: 1),
                         // 构建产物：有才显示（老运行的产物已被 GitHub 清理时不留空位）。
                         if (detail.artifacts.isNotEmpty) ...<Widget>[
                           Text(_t('artifacts'),
@@ -458,7 +460,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
                           for (final Map<String, dynamic> artifact
                               in detail.artifacts)
                             _artifactTile(theme, artifact),
-                          const Divider(height: 32),
+                          const SizedBox(height: OgLSpace.lg),
+                          const Divider(height: 1),
                         ],
                         Text(_t('jobs'), style: theme.textTheme.titleMedium),
                         const SizedBox(height: OgLSpace.sm),

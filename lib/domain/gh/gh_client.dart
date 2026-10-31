@@ -13,6 +13,7 @@ library;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:isolate';
 
 import '../../base/net/net_bridge.dart';
 import '../../kernel/contract/disk_types.dart';
@@ -306,10 +307,27 @@ class GhResponse {
   /// 分页信息。
   GhPage get page => GhPage.parse(headers['link']);
 
+  /// 按 body 大小选择解析位置。
+  Object? _decode() {
+    final String source = body;
+    if (source.length < _isolateJsonThreshold) {
+      return jsonDecode(source);
+    }
+    // Isolate.run：把字符串拷进新 isolate 解析，只回传结果。
+    return Isolate.run(() => jsonDecode(source));
+  }
+
+  /// 大响应阈值：超过则把解析移出 UI isolate。
+  ///
+  /// 500KB 级的 `jsonDecode` 在主线程要 200-800ms，整帧冻结
+  /// （AppBar / 底部栏同时无响应）；常见响应（<50KB）留在主线程，
+  /// 避免 isolate 启动开销（~2ms）反而拖慢小请求。
+  static const int _isolateJsonThreshold = 50 * 1024;
+
   /// 解析为对象 Map（失败返回 `null`）。
   Map<String, dynamic>? get jsonObject {
     try {
-      final decoded = jsonDecode(body);
+      final Object? decoded = _decode();
       return decoded is Map ? Map<String, dynamic>.from(decoded) : null;
     } catch (_) {
       return null;
@@ -319,7 +337,7 @@ class GhResponse {
   /// 解析为对象列表（失败返回空列表）。
   List<Map<String, dynamic>> get jsonList {
     try {
-      final decoded = jsonDecode(body);
+      final Object? decoded = _decode();
       if (decoded is! List) {
         return const <Map<String, dynamic>>[];
       }

@@ -196,116 +196,116 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         () => _fontSize = (_fontSize + delta).clamp(10.0, 24.0).toDouble());
   }
 
+  /// 保存：**乐观提交**。
+  ///
+  /// 点保存后立即入待同步队列并返回（页面可离开），写链路在后台走完：
+  /// · 成功 → 通知中心报「已提交」；
+  /// · 冲突 → 通知中心报原因，草稿保留原内容，重新进入编辑器即可处理；
+  /// · 网络失败 → 队列保留 pending，启动 / 周期重放自动补交。
+  ///
+  /// 此前 UI 同步等完整写链路（4 个 API 往返 × 各 60s 超时），网络稍慢
+  /// 用户就要在页面里干等几十秒——"提交入队"本来就该异步。
   Future<void> _save() async {
     if (_saving) {
       return;
     }
-    setState(() => _saving = true);
+    _saving = true;
+    final String text = _controller.text;
+    final String baseSha = _draftBaseSha ?? widget.baseSha;
+    // 先落草稿（幂等）：后台写期间离开页面，内容也不会丢。
+    unawaited(_persistDraft());
+    // 标记"已提交态"以放行退出：内容与草稿一致，dispose 不再回写。
+    _saved = true;
+    _savedText = text;
+    if (mounted) {
+      setState(() {});
+      _notifier.info(_t('queuedInBackground'));
+      // 写链路在页面退出后继续（不依赖 context）。
+      unawaited(_submitInBackground(text, baseSha));
+      Navigator.of(context).pop(true);
+    }
+  }
+
+  /// 后台提交：不持有页面 context，结果只走通知中心与日志。
+  Future<void> _submitInBackground(String text, String baseSha) async {
+    final String title = _t('editTitle');
     try {
-      final String text = _controller.text;
       GhWriteResult result = await widget.surface.domain.api.putContentLocked(
         widget.fullName,
         widget.path,
         content: text,
         message: 'docs: update ${widget.path}',
-        baseSha: _draftBaseSha ?? widget.baseSha,
+        baseSha: baseSha,
         branch: widget.branch,
       );
       if (!result.ok && result.canForceOverwrite) {
-        final bool? overwrite = await _showConflictDialog(result);
-        if (overwrite != true) {
-          _notifier.warning(_t('cancelledRemoteUpdated'));
-          return;
-        }
-        // ★ 复核远端：对话框展示的是**第一次失败时**的快照，用户确认
-        //   期间远端可能又被第三方推进。force 顶掉的必须是用户看过的
-        //   版本——变了就中止本次覆盖（草稿仍在，可重新保存走新冲突）。
-        final GhContent? fresh = await widget.surface.domain.api.content(
-          widget.fullName,
-          widget.path,
-          branch: widget.branch,
-          refresh: true,
-        );
-        if (fresh != null && result.sha != null && fresh.sha != result.sha) {
-          OgLAppLog.instance.add(
-            _t('editTitle'),
-            '强制覆盖前发现远端又已更新'
-            '（确认时 ${result.sha?.substring(0, 8)}，'
-            '现在 ${fresh.sha.substring(0, 8)}）',
-            severity: OgLNoticeSeverity.warning,
-          );
-          _notifier.warning(_t('remoteChangedAgain'));
-          return;
-        }
-        result = await widget.surface.domain.api.putContentLocked(
-          widget.fullName,
-          widget.path,
-          content: text,
-          message: 'docs: update ${widget.path}',
-          baseSha: _draftBaseSha ?? widget.baseSha,
-          branch: widget.branch,
-          force: true,
-          confirmed: true,
-        );
-      }
-      if (!result.ok) {
-        // 冲突一律翻译成用户可读文案（不再把 `staleSha` 这类枚举名端给用户）。
+        // 后台没有对话框可用：冲突如实上报，等用户重新进入处理。
         final String conflict = ghWriteConflictText(result.conflict);
         OgLAppLog.instance.add(
-          _t('editTitle'),
+          title,
+          _t('commitFailedConflict', {
+            'conflict': conflict,
+            'detail': result.detail ?? '',
+          }),
+          severity: OgLNoticeSeverity.warning,
+        );
+        if (_notifierMounted) {
+          _notifier.warning(
+            _t('commitFailedConflict', {
+              'conflict': conflict,
+              'detail': result.detail ?? conflict,
+            }),
+          );
+        }
+        return;
+      }
+      if (!result.ok) {
+        final String conflict = ghWriteConflictText(result.conflict);
+        OgLAppLog.instance.add(
+          title,
           _t('commitFailedConflict', {
             'conflict': conflict,
             'detail': result.detail ?? '',
           }),
           severity: OgLNoticeSeverity.critical,
         );
-        if (mounted) {
+        if (_notifierMounted) {
           _notifier.warning(
             _t('commitFailedDetail', {'detail': result.detail ?? conflict}),
           );
         }
         return;
       }
-      OgLAppLog.instance.result(_t('editTitle'), _t('committed'), widget.path);
-      // ★ 提交已成功（result.ok）：保存态**先**落定，再做草稿清理——
-      //   清理失败（磁盘 IO 等）只是卫生问题，绝不能伪装成"提交失败"，
-      //   否则用户重存会撞上自己刚提交的版本（D2 误报冲突）。
-      _saved = true;
-      _savedText = text;
+      OgLAppLog.instance.result(title, _t('committed'), widget.path);
       try {
         await widget.surface.domain.api.discardDraft(
           widget.fullName,
           widget.path,
           branch: widget.branch,
         );
-      } catch (draftError) {
-        OgLAppLog.instance.add(
-          _t('editTitle'),
-          '草稿清理失败（提交已成功）：$draftError',
-          severity: OgLNoticeSeverity.warning,
-        );
+      } catch (_) {
+        // 草稿清理失败不影响"提交已成功"的事实。
       }
-      if (mounted) {
+      if (_notifierMounted) {
         _notifier.success(_t('committedPath', {'path': widget.path}));
-        Navigator.of(context).pop(true);
       }
     } catch (error) {
       OgLAppLog.instance.add(
-        _t('editTitle'),
+        title,
         _t('commitFailedDetail', {'detail': error}),
         severity: OgLNoticeSeverity.critical,
       );
-      if (mounted) {
+      if (_notifierMounted) {
         _notifier.warning(_t('commitFailedDetail', {'detail': error}));
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _saving = false);
       }
     }
   }
 
-  Future<bool?> _showConflictDialog(GhWriteResult result) => showDialog<bool>(
+  /// 后台回调可用性：页面 State 已 dispose 后不再弹 UI（日志仍会记录）。
+  bool get _notifierMounted => mounted;
+
+  Future<bool?> _showConflictDialog(GhWriteResult result) =>
+      ogLShowDialog<bool>(
         context: context,
         builder: (BuildContext dialogContext) => AlertDialog(
           title: Text(_t('remoteUpdated')),

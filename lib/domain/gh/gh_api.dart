@@ -382,6 +382,17 @@ class GhApi implements CacheRemote {
     await store.save(key, content, baseSha: baseSha);
   }
 
+  /// 清空全部草稿（账号移除 / 切号时调用）。
+  ///
+  /// 返回删除的条数；存储未接线时返回 0（无草稿可清）。
+  Future<int> clearAllDrafts() async {
+    final store = _cache?.drafts;
+    if (store == null) {
+      return 0;
+    }
+    return store.clear();
+  }
+
   /// 丢弃某文件的草稿（提交成功后缓存引擎也会自动清理）。
   Future<void> discardDraft(
     String fullName,

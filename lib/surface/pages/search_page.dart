@@ -357,7 +357,10 @@ class _SearchPageState extends State<SearchPage> {
           ),
           Expanded(
             child: controller == null
-                ? Center(child: Text(_t('startHint')))
+                ? OgLAsyncEmptyPane(
+                    icon: Icons.search_outlined,
+                    text: _t('startHint'),
+                  )
                 : AsyncView<List<_SearchHit>>(
                     controller: controller,
                     emptyIcon: Icons.search_off,
