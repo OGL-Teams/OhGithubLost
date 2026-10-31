@@ -71,7 +71,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
     bool draft = _release.isDraft;
     bool prerelease = _release.isPrerelease;
 
-    final bool? submit = await showDialog<bool>(
+    final bool? submit = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => StatefulBuilder(
         builder: (BuildContext ctx, StateSetter setLocal) => AlertDialog(
@@ -183,7 +183,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
   }
 
   Future<void> _delete() async {
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('deleteTitle')),
@@ -496,7 +496,8 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                   ),
                 ),
               ],
-              const Divider(height: 32),
+              const SizedBox(height: OgLSpace.lg),
+              const Divider(height: 1),
               Text(_t('assets'), style: theme.textTheme.titleMedium),
               const SizedBox(height: OgLSpace.sm),
               if (_release.assets.isEmpty)

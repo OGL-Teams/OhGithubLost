@@ -134,7 +134,8 @@ class _CommitPageState extends State<CommitPage> {
                           ),
                         ),
                       ),
-                      const Divider(height: 32),
+                      const SizedBox(height: OgLSpace.lg),
+                      const Divider(height: 1),
                       Text(_t('changedFiles'),
                           style: theme.textTheme.titleMedium),
                       const SizedBox(height: OgLSpace.sm)

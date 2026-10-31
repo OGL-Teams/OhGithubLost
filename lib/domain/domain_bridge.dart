@@ -201,6 +201,42 @@ class GhModule extends OgLModule {
 
     // ★ 失败写入重放（D8）：把上次中断的写入在启动后补做。
     // 只依赖磁盘上的提交日志，失败不阻断启动（记录后照常进入界面）。
+    // 运行中每 30s 再查一次队列：此前只在启动时重放，运行中失败的任务
+    // 会一直挂在"待同步"里（用户看到的就是"提交入队后迟迟不成功"）。
+    // 队列连续空转 3 次后自停：常驻定时器只在有待办时有意义。
+    var idleTicks = 0;
+    Timer.periodic(const Duration(seconds: 30), (Timer timer) {
+      if (idleTicks >= 3) {
+        timer.cancel();
+        return;
+      }
+      unawaited(
+        base.disk.cache.replayPending().then((List<WriteOutcome> outcomes) {
+          if (outcomes.isEmpty) {
+            idleTicks++;
+            return;
+          }
+          idleTicks = 0;
+          final int ok = outcomes.where((WriteOutcome o) => o.ok).length;
+          context.diagnostics.info(
+            'CONS',
+            '待同步重放完成',
+            code: 'OGL-CONS-REPLAY',
+            data: <String, Object?>{
+              'replayed': outcomes.length,
+              'succeeded': ok,
+            },
+          );
+        }).catchError((Object error) {
+          context.diagnostics.warn(
+            'CONS',
+            '待同步重放失败',
+            code: 'OGL-CONS-REPLAY-ERR',
+            data: <String, Object?>{'error': '$error'},
+          );
+        }),
+      );
+    });
     unawaited(
       base.disk.cache.replayPending().then((outcomes) {
         final int ok = outcomes.where((o) => o.ok).length;

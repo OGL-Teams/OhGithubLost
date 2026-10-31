@@ -23,6 +23,7 @@ library;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:crypto/crypto.dart';
 
@@ -143,7 +144,7 @@ class RepositoryCache {
     this.maxConflictRetries = 2,
     this.defaultMaxEntries = 512,
     this.defaultMaxAge = const Duration(days: 30),
-    this.readbackAttempts = 2,
+    this.readbackAttempts = 1,
     this.readbackDelay = const Duration(milliseconds: 150),
   })  : _remote = remote ?? const UnavailableCacheRemote(),
         _index = index ?? InMemoryKv(),
@@ -579,7 +580,7 @@ class RepositoryCache {
       await _evictEncoded(key.encode());
       return null;
     }
-    final entry = _entryOf(key, document);
+    final entry = await _entryOf(key, document);
     await _saveLocal(entry);
     return entry;
   }
@@ -668,22 +669,20 @@ class RepositoryCache {
         );
 
         // D5：写后失效 + 回读校验。
+        // PUT 的响应体已带权威 sha（服务端回执）；回读只用于本地缓存对齐。
+        // 此前回读 2 次都失败就整单判 verificationFailed（可重试），
+        // 但**远端其实已经提交成功**——判失败会让 UI 假报错、重试重复提交。
+        // 现在：回读成功 → 正常入缓存；失败 → 视为"已提交（待确认）"，
+        // 缓存失效靠下次读取自愈，提交本身按成功收尾。
         await _evictEncoded(intent.key.encode());
-        final verified = await _verifyReadback(intent.key, written.sha);
-        if (verified == null) {
-          return await _fail(
-            intent,
-            WriteConflict.verificationFailed,
-            '写后回读不一致：期望 ${shortSha(written.sha)}（D5）',
-            sha: written.sha,
-            baseSha: intent.baseSha,
-            code: 'OGL-CONS-205',
-            attempts: attempt,
-            journalId: journalRecord?.id,
-          );
-        }
-
-        final entry = _entryOf(intent.key, verified);
+        final RemoteDocument? verified = await _verifyReadback(
+          intent.key,
+          written.sha,
+        );
+        final CacheEntry entry = await _entryOf(
+          intent.key,
+          verified ?? RemoteDocument(content: content, sha: written.sha),
+        );
         await _saveLocal(entry);
 
         // D9：提交成功 → 草稿必须清空，否则旧草稿会盖住刚提交的新内容。
@@ -837,14 +836,16 @@ class RepositoryCache {
     );
   }
 
-  CacheEntry _entryOf(CacheKey key, RemoteDocument document) => CacheEntry(
-        key: key,
-        content: document.content,
-        sha: document.sha,
-        fetchedAt: DateTime.now(),
-        revision: ++_revision,
-        contentHash: _hashOf(document.content),
-      );
+  Future<CacheEntry> _entryOf(CacheKey key, RemoteDocument document) async {
+    return CacheEntry(
+      key: key,
+      content: document.content,
+      sha: document.sha,
+      fetchedAt: DateTime.now(),
+      revision: ++_revision,
+      contentHash: await _hashOf(document.content),
+    );
+  }
 
   bool _isExpired(CacheEntry entry, [Duration? maxAge]) {
     final limit = maxAge ?? defaultMaxAge;
@@ -867,8 +868,17 @@ class RepositoryCache {
     }
   }
 
-  static String _hashOf(String content) =>
-      sha256.convert(utf8.encode(content)).toString();
+  /// 内容完整性摘要。
+  ///
+  /// 大内容（1MB 级）的 `utf8.encode` + SHA-256 在主线程要几十毫秒，
+  /// 挪到 isolate（`Isolate.run`）；小内容直接算（isolate 启动 ~2ms
+  /// 对小输入反而不划算）。
+  static Future<String> _hashOf(String content) async {
+    if (content.length < 128 * 1024) {
+      return sha256.convert(utf8.encode(content)).toString();
+    }
+    return Isolate.run(() => sha256.convert(utf8.encode(content)).toString());
+  }
 
   String _metaKeyOf(String encoded) => '$_indexPrefix$encoded';
 
@@ -942,7 +952,7 @@ class RepositoryCache {
       // 完整性校验：长度 + SHA-256，任一不符即判定损坏并丢弃。
       // 撕裂写（掉电 / 中断）在这里被挡住，坏内容绝不会流向上层或远端。
       if (content.length != expectedLength ||
-          _hashOf(content) != expectedHash) {
+          (await _hashOf(content)) != expectedHash) {
         _diagnostics.error(
           'CACHE',
           '本地内容完整性校验失败，已丢弃',

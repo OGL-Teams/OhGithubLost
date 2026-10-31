@@ -145,7 +145,8 @@ class _PullPageState extends State<PullPage> {
                             ),
                           ),
                         ),
-                      const Divider(height: 32),
+                      const SizedBox(height: OgLSpace.lg),
+                      const Divider(height: 1),
                       Text(_t('changedFiles'),
                           style: theme.textTheme.titleMedium),
                       const SizedBox(height: OgLSpace.sm)

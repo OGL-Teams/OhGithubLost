@@ -200,6 +200,9 @@ class SurfaceBridge {
       // 切号必须一并清空，否则会出现"用 B 账号看到 A 账号缓存"的串台。
       await domain.api.invalidateReadCache();
       net?.dns?.cache.clear();
+      // 草稿：被移除账号的草稿永久残留磁盘，草稿箱在切回前仍显示失效条目。
+      // （草稿键含 accountId，不会跨账号串内容；这里清的是"被移除者"的残留。）
+      await domain.api.clearAllDrafts();
     } catch (error) {
       // 不允许静默：清不掉也要留痕（通知中心可见）。
       OgLAppLog.instance.add(

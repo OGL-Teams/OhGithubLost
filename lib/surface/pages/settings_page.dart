@@ -29,6 +29,7 @@ import '../../kernel/log/og_l_log_file.dart';
 import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/overlays.dart';
 import '../app/permissions.dart';
 import '../app/project_info.dart';
 import '../i18n/og_l_i18n.dart';
@@ -1037,7 +1038,7 @@ class _SettingsPageState extends State<SettingsPage> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: const Icon(Icons.chevron_right, size: 24),
+        trailing: const Icon(Icons.chevron_right, size: OgLIconSize.md),
         onTap: onTap,
       );
 
@@ -1169,7 +1170,7 @@ class _SettingsPageState extends State<SettingsPage> {
     required WidgetBuilder builder,
     bool barrierDismissible = true,
   }) =>
-      showDialog<T>(
+      ogLShowDialog<T>(
         context: context,
         barrierDismissible: barrierDismissible,
         animationStyle: AnimationStyle(

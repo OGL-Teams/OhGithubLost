@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/notifier.dart';
+import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -84,7 +85,7 @@ class _DraftsPageState extends State<DraftsPage> {
   ///
   /// 删除草稿**无法恢复**（内容不落任何远端），所以必须先问一句。
   Future<void> _confirmDelete(GhDraft draft) async {
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('deleteDraft')),
@@ -122,7 +123,7 @@ class _DraftsPageState extends State<DraftsPage> {
   }
 
   void _view(GhDraft draft) {
-    showDialog<void>(
+    ogLShowDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(draft.fileName),

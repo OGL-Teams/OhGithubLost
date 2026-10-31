@@ -211,13 +211,23 @@ class WriteJournal {
   }
 
   /// 标记可重试失败（保留 pending，供后续重放）。
+  /// 重试上限：超过后转 abandoned——
+  /// 无上限的 pending 会让"待同步"永远挂着（用户看到的就是"迟迟不成功"）。
+  /// 上限内保持 pending（启动 / 网络恢复时自动重放）。
+  static const int maxAttempts = 5;
+
   Future<void> fail(String id, String error) async {
     final record = await _read(id);
     if (record == null) {
       return;
     }
+    final int attempts = record.attempts + 1;
+    if (attempts >= maxAttempts) {
+      await abandon(id, '重试 $attempts 次仍未成功：$error');
+      return;
+    }
     await _write(record.copyWith(
-      attempts: record.attempts + 1,
+      attempts: attempts,
       lastError: error,
     ));
   }

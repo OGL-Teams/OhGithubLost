@@ -548,10 +548,27 @@ class IxDownloadManager extends ChangeNotifier {
 
   /// 任务列表（新的在前）。
   List<IxDownloadTask> get tasks {
+    // 快照未变时复用上次排序：下载进行中每 200ms 一次通知，
+    // 每次重建都重排全表（O(n log n) + 全量分配）纯属浪费。
+    if (_tasksCacheVersion == _tasksCacheUsed) {
+      return _tasksCache!;
+    }
     final List<IxDownloadTask> list = _snapshots.values.toList();
     list.sort((IxDownloadTask a, IxDownloadTask b) =>
         b.createdAt.compareTo(a.createdAt));
+    _tasksCacheUsed = _tasksCacheVersion;
+    _tasksCache = list;
     return list;
+  }
+
+  /// 快照变更计数：任何 `_snapshots` 写点后调用 [_touchTasksCache]。
+  int _tasksCacheVersion = 0;
+  int _tasksCacheUsed = -1;
+  List<IxDownloadTask>? _tasksCache;
+
+  /// 使 [tasks] 的排序缓存失效（快照内容或集合已变）。
+  void _touchTasksCache() {
+    _tasksCacheVersion++;
   }
 
   /// 是否有任务。
@@ -656,6 +673,7 @@ class IxDownloadManager extends ChangeNotifier {
       createdAt: DateTime.now(),
     );
     _snapshots[id] = queued;
+    _touchTasksCache();
     // 期望摘要（sha256）；为空表示该资源没有可比对的摘要（如实标记未校验）。
     if (expectedSha256 != null && expectedSha256.isNotEmpty) {
       _expectedSha256[id] = expectedSha256;
@@ -671,6 +689,7 @@ class IxDownloadManager extends ChangeNotifier {
       return _snapshots[id] ?? queued;
     }
     _snapshots[id] = queued.copyWith(savePath: savePath);
+    _touchTasksCache();
     _safeNotify();
 
     // 并发 > 1 且装配层给了分片引擎、且后端支持分片 → 走**多连接分片**；
@@ -772,6 +791,7 @@ class IxDownloadManager extends ChangeNotifier {
       received: 0,
       total: probe.total!,
     );
+    _touchTasksCache();
     _safeNotify();
 
     try {
@@ -839,6 +859,7 @@ class IxDownloadManager extends ChangeNotifier {
               code: 'OGL-DL-202',
             ),
           );
+          _touchTasksCache();
           _safeNotify();
         }
       }
@@ -892,6 +913,7 @@ class IxDownloadManager extends ChangeNotifier {
         total: 0,
         bytesPerSecond: 0,
       );
+      _touchTasksCache();
       _safeNotify();
       await _backend.enqueue(fallback);
     } catch (error) {
@@ -911,6 +933,7 @@ class IxDownloadManager extends ChangeNotifier {
             code: 'OGL-DL-205',
           ),
         );
+        _touchTasksCache();
         _safeNotify();
       }
     }
@@ -940,6 +963,7 @@ class IxDownloadManager extends ChangeNotifier {
       total: total,
       bytesPerSecond: speed,
     );
+    _touchTasksCache();
     _notifyThrottled();
   }
 
@@ -1030,6 +1054,7 @@ class IxDownloadManager extends ChangeNotifier {
         // ★ 显式清空上一次的失败原因（哨兵语义：只有显式 null 才清）。
         error: null,
       );
+      _touchTasksCache();
       _safeNotify();
     }
     final int? connections = _rangeConnections[id];
@@ -1089,6 +1114,7 @@ class IxDownloadManager extends ChangeNotifier {
     final IxDownloadTask? snap = _snapshots[id];
     if (snap != null) {
       _snapshots[id] = snap.copyWith(status: status);
+      _touchTasksCache();
       _safeNotify();
       if (status == IxDownloadStatus.completed) {
         unawaited(_maybeExportToSaf(id));
@@ -1151,6 +1177,7 @@ class IxDownloadManager extends ChangeNotifier {
         return ok;
       }
       _snapshots[id] = fresh.copyWith(verified: ok);
+      _touchTasksCache();
       if (ok) {
         _diagnostics?.info(
           'DL',
@@ -1200,6 +1227,7 @@ class IxDownloadManager extends ChangeNotifier {
           status: IxDownloadStatus.failed,
           error: IxDownloadError(IxDownloadErrorKind.unknown, '$error'),
         );
+        _touchTasksCache();
         _safeNotify();
       }
     }
@@ -1227,6 +1255,7 @@ class IxDownloadManager extends ChangeNotifier {
             code: 'OGL-DL-403',
           ),
         );
+        _touchTasksCache();
         _safeNotify();
       }
       return;
@@ -1315,6 +1344,7 @@ class IxDownloadManager extends ChangeNotifier {
         // 免得旧错误挂在新状态上（进度事件不走这里，不会误清）。
         error: _errorOfDescription(event.error),
       );
+      _touchTasksCache();
       _safeNotify();
       return;
     }
@@ -1339,6 +1369,7 @@ class IxDownloadManager extends ChangeNotifier {
       bytesPerSecond: speed,
       status: IxDownloadStatus.running,
     );
+    _touchTasksCache();
     _notifyThrottled();
   }
 
@@ -1380,6 +1411,7 @@ class IxDownloadManager extends ChangeNotifier {
         return;
       }
       _snapshots[id] = fresh.copyWith(received: size, total: size);
+      _touchTasksCache();
       _safeNotify();
     } catch (error) {
       // 不允许静默：按事件码上报到通知中心。

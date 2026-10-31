@@ -309,24 +309,19 @@ class _DashboardPageState extends State<DashboardPage> {
       appBar: AppBar(
         title: Text(_t('home')),
         actions: <Widget>[
-          ListenableBuilder(
-            listenable: OgLAppLog.instance,
-            builder: (BuildContext context, Widget? _) {
-              final int alerts = OgLAppLog.instance.entries
-                  .where((OgLAppLogEntry e) =>
-                      e.severity != OgLNoticeSeverity.info)
-                  .length;
-              return IconButton(
-                icon: alerts > 0
-                    ? Badge(
-                        label: Text('$alerts'),
-                        child: const Icon(Icons.notifications_outlined),
-                      )
-                    : const Icon(Icons.notifications_outlined),
-                tooltip: _t('notifications'),
-                onPressed: _openNotifications,
-              );
-            },
+          ValueListenableBuilder<int>(
+            valueListenable: OgLAppLog.instance.alertCount,
+            builder: (BuildContext context, int alerts, Widget? _) =>
+                IconButton(
+              icon: alerts > 0
+                  ? Badge(
+                      label: Text('$alerts'),
+                      child: const Icon(Icons.notifications_outlined),
+                    )
+                  : const Icon(Icons.notifications_outlined),
+              tooltip: _t('notifications'),
+              onPressed: _openNotifications,
+            ),
           ),
           ListenableBuilder(
             listenable: widget.surface.domain.downloads,

@@ -12,6 +12,7 @@ import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
@@ -98,7 +99,7 @@ class _IssuePageState extends State<IssuePage> {
       return;
     }
     final bool closing = _state == 'open';
-    final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(closing
@@ -264,7 +265,8 @@ class _IssuePageState extends State<IssuePage> {
                               Text(open ? _t('closeIssueTitle') : _t('reopen')),
                         ),
                       ),
-                      const Divider(height: 32),
+                      const SizedBox(height: OgLSpace.lg),
+                      const Divider(height: 1),
                       Text(_t('comments'), style: theme.textTheme.titleMedium),
                       const SizedBox(height: OgLSpace.sm)
                     ],
@@ -339,7 +341,8 @@ class _IssuePageState extends State<IssuePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      const Divider(height: 32),
+                      const SizedBox(height: OgLSpace.lg),
+                      const Divider(height: 1),
                       Text(_t('postComment'),
                           style: theme.textTheme.titleMedium),
                       const SizedBox(height: OgLSpace.sm),

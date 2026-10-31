@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_radius.dart';
@@ -132,7 +133,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<void> _confirmReset() async {
-    final bool? ok = await showDialog<bool>(
+    final bool? ok = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('resetTitle')),
