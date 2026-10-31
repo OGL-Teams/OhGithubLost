@@ -133,7 +133,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   /// 进入编辑器时尝试恢复上次未提交的草稿。
   Future<void> _restoreDraft() async {
     try {
-      final DraftRecord? draft =
+      final GhDraftRecord? draft =
           await widget.surface.domain.api.loadDraftRecord(
         widget.fullName,
         widget.path,
@@ -372,6 +372,47 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       );
 
   Future<bool?> _confirmDiscard() => ogLConfirmDiscardChanges(context);
+
+  /// 统一提示入口（Phase 5 后半收敛）：**提示长什么样、什么语气只有一处定义**
+  /// （见 [OgLNotifier]，即 `surface/app/notifier.dart`）—— 本页不再自造 SnackBar。
+  ///
+  /// 语气分工：[OgLNotifier.success] 操作已生效 / [OgLNotifier.info] 普通说明 /
+  /// [OgLNotifier.warning] 失败与"被拦下"（权限不足、目标不存在、写回失败…）。
+  OgLNotifier get _notifier => OgLNotifier(ScaffoldMessenger.of(context));
+
+  static String _short(String? sha) => sha == null || sha.isEmpty
+      ? '—'
+      : (sha.length <= 8 ? sha : sha.substring(0, 8));
+
+  static String _preview(String text) => text.length <= 4000
+      ? text
+      : _t('previewTruncated', {'text': text.substring(0, 4000)});
+
+  /// 只读预览（弹层）：与编辑器同一套库渲染，便于核对排版与高亮。
+  void _previewSheet() {
+    final _EditorPrefs settings = _EditorPrefs(widget.surface);
+    ogLShowSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      // 底部让位：弹层延伸到屏幕底边（useSafeArea 只管顶部 / 左右），
+      // 编辑器最后一屏不会被手势条 / 浏览器下沿盖住。
+      builder: (BuildContext sheetContext) => SafeArea(
+        top: false,
+        child: SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.8,
+          child: OgLCodeViewer(
+            code: _controller.text,
+            path: widget.path,
+            fontSize: settings.fontSize,
+            wrap: _wrap,
+            highlight: settings.highlight,
+            codeTheme: settings.theme(sheetContext),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _statusBar(ThemeData theme) => Material(
         color: theme.colorScheme.surfaceContainerHighest,

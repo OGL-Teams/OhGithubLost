@@ -190,6 +190,17 @@ class RepositoryCache {
   /// 当前提交日志（未绑定为 `null`）。
   WriteJournal? get journal => _journal;
 
+  /// 读取一条草稿的编辑态快照（正文 + 基线）。
+  ///
+  /// 逻辑层通过它拿到草稿，而不必知道底座 `DraftRecord` 的实现类型。
+  Future<DraftSnapshot?> loadDraftSnapshot(CacheKey key) async {
+    final DraftRecord? record = await _drafts?.load(key);
+    if (record == null) {
+      return null;
+    }
+    return DraftSnapshot(content: record.content, baseSha: record.baseSha);
+  }
+
   /// 当前草稿仓库（未绑定为 `null`）。
   DraftStore? get drafts => _drafts;
 

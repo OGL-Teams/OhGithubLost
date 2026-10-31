@@ -517,3 +517,18 @@ String _short(String? sha) {
 
 /// 指纹短显示（跨文件复用）。
 String shortSha(String? sha) => _short(sha);
+
+/// 一条草稿的**编辑态快照**：正文 + 起草时的远端版本基线。
+///
+/// 放在内核契约里，是为了让逻辑层能读到"内容 + 基线"而不必知道
+/// 底座草稿存储的实现类型（分层纪律：只能向下依赖**契约**）。
+class DraftSnapshot {
+  /// 创建快照。
+  const DraftSnapshot({required this.content, this.baseSha});
+
+  /// 草稿正文。
+  final String content;
+
+  /// 起草时基于的远端版本（乐观锁基线）；缺失表示没有可用基线。
+  final String? baseSha;
+}
