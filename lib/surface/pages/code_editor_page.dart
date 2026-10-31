@@ -312,14 +312,6 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   /// [OgLNotifier.warning] 失败与"被拦下"（权限不足、目标不存在、写回失败…）。
   OgLNotifier get _notifier => OgLNotifier(ScaffoldMessenger.of(context));
 
-  static String _short(String? sha) => sha == null || sha.isEmpty
-      ? '—'
-      : (sha.length <= 8 ? sha : sha.substring(0, 8));
-
-  static String _preview(String text) => text.length <= 4000
-      ? text
-      : _t('previewTruncated', {'text': text.substring(0, 4000)});
-
   /// 只读预览（弹层）：与编辑器同一套库渲染，便于核对排版与高亮。
   void _previewSheet() {
     final _EditorPrefs settings = _EditorPrefs(widget.surface);
