@@ -55,9 +55,6 @@ class _NewRepoPageState extends State<NewRepoPage> {
   /// 返回前的「放弃确认」（复用 `code_editor_page` 分片的既有文案，语义一致）。
   Future<bool?> _confirmDiscard() => ogLConfirmDiscardChanges(context);
 
-        },
-      );
-
   /// 任一字段变化 → 重建：`PopScope` 的 `canPop` 依赖文本内容，
   /// 否则输入后返回键仍按「未修改」直接放行（静默丢失输入）。
   void _onFieldChanged() {

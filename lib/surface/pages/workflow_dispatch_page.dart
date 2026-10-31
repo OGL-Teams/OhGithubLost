@@ -13,8 +13,8 @@ import 'package:yaml/yaml.dart';
 
 import '../app/async.dart';
 import '../app/error_surface.dart';
-import '../app/notifier.dart';
 import '../app/overlays.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
@@ -391,9 +391,137 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
 
   /// 返回前的「放弃确认」（复用 `code_editor_page` 分片的既有文案，语义一致）。
   Future<bool?> _confirmDiscard() => ogLConfirmDiscardChanges(context);
-
-        },
-      );
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return PopScope(
+      // 返回时若表单已输入内容，先确认再离开 —— 不允许静默丢弃。
+      canPop: !_dirty,
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (didPop) {
+          return;
+        }
+        final bool? leave = await _confirmDiscard();
+        if (leave == true && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(_t('manualTrigger')),
+          actions: <Widget>[
+            TextButton(
+              onPressed: _busy ? null : _submit,
+              child: Text(_busy ? _t('triggering') : _t('trigger')),
+            ),
+          ],
+        ),
+        body: AsyncView<List<Map<String, dynamic>>>(
+          controller: _workflowsC(),
+          emptyIcon: Icons.play_circle_outline,
+          emptyText: _t('noWorkflows'),
+          builder:
+              (BuildContext context, List<Map<String, dynamic>> workflows) {
+            if (_selected == null && workflows.isNotEmpty) {
+              // 默认选中第一个工作流——不能在 build 中直接 setState，
+              // 放到下一帧执行。
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && _selected == null) {
+                  _selectWorkflow(workflows.first);
+                }
+              });
+            }
+            return ListView(
+              padding: const EdgeInsets.all(OgLSpace.lg),
+              children: <Widget>[
+                Text(_t('title'), style: theme.textTheme.titleSmall),
+                const SizedBox(height: OgLSpace.sm),
+                Card(
+                  child: Column(
+                    children: <Widget>[
+                      for (final Map<String, dynamic> wf in workflows)
+                        ListTile(
+                          leading: Icon(
+                            _selected == ghInt(wf, 'id').toString()
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                          ),
+                          title: Text(
+                            ghStr(wf, 'name'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            '${ghStr(wf, 'path')} · ${ghStr(wf, 'state')}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: _busy ? null : () => _selectWorkflow(wf),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: OgLSpace.lg),
+                Text(_t('refLabel'), style: theme.textTheme.titleSmall),
+                const SizedBox(height: OgLSpace.sm),
+                TextField(
+                  controller: _ref,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'main',
+                  ),
+                ),
+                const SizedBox(height: OgLSpace.lg),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child:
+                          Text(_t('inputs'), style: theme.textTheme.titleSmall),
+                    ),
+                    if (_loadingForm)
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: OgLSpace.sm),
+                ..._formSection(theme),
+                const SizedBox(height: OgLSpace.lg),
+                ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  title:
+                      Text(_t('advanced'), style: theme.textTheme.titleSmall),
+                  childrenPadding: const EdgeInsets.only(bottom: OgLSpace.sm),
+                  children: <Widget>[
+                    TextField(
+                      controller: _inputs,
+                      minLines: 3,
+                      maxLines: 8,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 13,
+                      ),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: _t('jsonHint'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: OgLSpace.sm),
+                Text(
+                  _t('dispatchHint') + _t('dispatchHint2'),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
 
   /// 参数表单区：按类型渲染控件；无参数则给出说明。
   List<Widget> _formSection(ThemeData theme) {

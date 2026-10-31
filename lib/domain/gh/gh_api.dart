@@ -350,11 +350,11 @@ class GhApi implements CacheRemote {
     String? branch,
   }) async {
     final key = await _cacheKeyFor(fullName, path, branch);
-    final store = _cache?.drafts;
-    if (key == null || store == null) {
+    final cache = _cache;
+    if (key == null || cache == null) {
       return null;
     }
-    final DraftSnapshot? snapshot = await store.loadDraftSnapshot(key);
+    final DraftSnapshot? snapshot = await cache.loadDraftSnapshot(key);
     if (snapshot == null) {
       return null;
     }
