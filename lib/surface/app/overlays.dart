@@ -41,8 +41,8 @@ library;
 
 import 'package:flutter/material.dart';
 
-import 'animations.dart';
 import '../i18n/og_l_i18n.dart';
+import 'animations.dart';
 
 /// 按档位加速的底部弹层（半页以上的动态面板）。
 ///

@@ -3427,6 +3427,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
   /// 返回前的「放弃确认」（复用 `code_editor_page` 分片的既有文案，语义一致）。
   Future<bool?> _confirmDiscard() => ogLConfirmDiscardChanges(context);
 
+  void _onFieldChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void initState() {
     super.initState();

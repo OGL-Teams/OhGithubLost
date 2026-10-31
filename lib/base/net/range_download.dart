@@ -24,7 +24,6 @@ library;
 import 'package:flutter/foundation.dart';
 
 import '../../kernel/contract/download_engine.dart';
-
 export 'range_download_io.dart' show OgLRangeDownloader;
 
 /// 一个字节区间（**闭区间**：`start..end` 含两端）。
