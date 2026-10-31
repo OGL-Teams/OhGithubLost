@@ -14,10 +14,6 @@
 /// 新增页面若要暴露新的领域类型，**请改这个文件**，而不是把 domain 路径写进页面。
 library;
 
-/// AI：设置 / 消息 / 会话 / 工具调用（`AiService` 仅作类型，实例经 SurfaceBridge 取用）。
-export '../domain/ai/ai_models.dart';
-export '../domain/ai/ai_service.dart' show AiException, AiService;
-
 /// 账户：仅暴露状态枚举与账户 DTO，**隐藏** `GhAuthService`。
 export '../domain/gh/gh_auth.dart' hide GhAuthService;
 

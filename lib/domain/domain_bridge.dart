@@ -13,7 +13,6 @@ import 'dart:async';
 
 import '../base/base_bridge.dart';
 import '../base/disk/og_l_storage.dart';
-import '../base/net/ai_http_client_web.dart';
 import '../base/net/net_bridge.dart';
 import '../base/net/net_transport.dart';
 import '../base/net/range_download.dart';
@@ -21,8 +20,6 @@ import '../kernel/bridge_registry.dart';
 import '../kernel/contract/module.dart';
 import '../kernel/contract/storage_export.dart';
 import '../kernel/environment.dart';
-import 'ai/ai_service.dart';
-import 'ai/ai_tools.dart';
 import 'gh/gh_api.dart';
 import 'gh/gh_auth.dart';
 import 'gh/gh_client.dart';
@@ -49,7 +46,6 @@ class DomainBridge {
     required this.notifications,
     required this.sysInfo,
     required this.sysAccess,
-    required this.ai,
     IxDownloadManager? downloads,
     IxActionLogs? actionLogs,
     IxPresign? presign,
@@ -83,9 +79,6 @@ class DomainBridge {
 
   /// Mod 能力守门。
   final SysAccessGuard sysAccess;
-
-  /// AI 助手（会话 / 设置 / 补全编排；密钥走 vault）。
-  final AiService ai;
 
   /// 内建下载管理器。
   final IxDownloadManager downloads;
@@ -174,6 +167,28 @@ class GhModule extends OgLModule {
       base.disk.cache,
       accountId: () async => (await auth.activeAccountId()) ?? 'guest',
     );
+
+    // 历史版本遗留的 AI 数据只在本地删除一次：不触碰 GitHub 账号、
+    // 令牌或仓库内容。失败仅记录，不能阻断应用启动。
+    unawaited(() async {
+      try {
+        await base.disk.vault.deleteSecret('ai.secret');
+        for (final String key in await base.disk.kv.keys()) {
+          if (key == 'ai.settings' ||
+              key.startsWith('ai.conv.') ||
+              key.startsWith('ai.audit.')) {
+            await base.disk.kv.remove(key);
+          }
+        }
+      } catch (error) {
+        context.diagnostics.warn(
+          'GH',
+          '历史数据清理未完成',
+          code: 'OGL-GH-CLEANUP',
+          data: <String, Object?>{'error': '$error'},
+        );
+      }
+    }());
 
     // ★ R4：只读端点缓存（releases / branches / commits / issues / pulls /
     //   Actions / 仓库详情 …）。与底座一致性缓存互补：前者面向文件内容，
@@ -416,19 +431,6 @@ class DomainLayerModule extends OgLModule {
     );
     context.di.register<RepoFileService>(repoFiles);
 
-    // ── AI 助手：依赖经抽象注入（DiskKv / DiskVault / AiHttpClient）。
-    //    工具注册表暂时为空——GitHub 操作工具（建 Issue / 读文件 / 建 PR …）
-    //    在后续相位由 `domain/gh` 的只读/受控工具逐项接入。
-    final base = BaseBridge.of(context.bridges);
-    final AiService ai = AiService(
-      store: base.disk.kv,
-      vault: base.disk.vault,
-      // Web 的 AiHttpClientWeb 构造会创建 http.Client()，因此不能 const。
-      http: AiHttpClientWeb(),
-      tools: buildAiTools(context.di.resolve<GhApi>()),
-    );
-    context.di.register<AiService>(ai);
-
     final bridge = DomainBridge(
       auth: ghAuth,
       api: context.di.resolve<GhApi>(),
@@ -438,7 +440,6 @@ class DomainLayerModule extends OgLModule {
       notifications: context.di.resolve<IxNotificationCenter>(),
       sysInfo: context.di.resolve<SysInfoService>(),
       sysAccess: context.di.resolve<SysAccessGuard>(),
-      ai: ai,
       downloads: context.di.resolve<IxDownloadManager>(),
       actionLogs: context.di.resolve<IxActionLogs>(),
       repoFiles: repoFiles,

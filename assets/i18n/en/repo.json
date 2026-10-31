@@ -195,5 +195,6 @@
   "defaultAction": "Default",
   "selectBranch": "Select branch",
   "issueMeta": "by {author} · {comments} comments · {date}",
-  "binaryNoEdit": "Binary files can't be edited as text"
+  "binaryNoEdit": "Binary files can't be edited as text",
+  "readFailedEditor": "Unable to edit: the file is not valid UTF-8 text."
 }

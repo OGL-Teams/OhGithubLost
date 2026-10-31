@@ -22,6 +22,10 @@ import 'gh_client.dart';
 import 'gh_draft.dart';
 import 'gh_models.dart';
 
+/// 仓库路径按段编码，保留 `/` 分隔且不会把 `#` / `?` 当成 URL 语法。
+String _ghPath(String path) =>
+    path.split('/').map(Uri.encodeComponent).join('/');
+
 /// GitHub 端点封装。
 class GhApi implements CacheRemote {
   /// 创建封装。
@@ -340,7 +344,7 @@ class GhApi implements CacheRemote {
   ///
   /// 键与写入路径完全一致（同一账号 / 仓库 / 分支 / 路径），
   /// 因此编辑器保存的草稿能被草稿箱与"重新进入"读到。
-  Future<String?> loadDraft(
+  Future<DraftRecord?> loadDraftRecord(
     String fullName,
     String path, {
     String? branch,
@@ -350,8 +354,13 @@ class GhApi implements CacheRemote {
     if (key == null || store == null) {
       return null;
     }
-    return (await store.load(key))?.content;
+    return store.load(key);
   }
+
+  /// 兼容只读取正文的调用方。
+  Future<String?> loadDraft(String fullName, String path,
+          {String? branch}) async =>
+      (await loadDraftRecord(fullName, path, branch: branch))?.content;
 
   /// 保存草稿（编辑器防抖调用）。
   Future<void> saveDraft(
@@ -567,7 +576,7 @@ class GhApi implements CacheRemote {
   }) async {
     try {
       final object = await client.getObject(
-        '/repos/$fullName/contents/$path',
+        '/repos/$fullName/contents/${_ghPath(path)}',
         query: <String, String>{
           if (branch != null && branch.isNotEmpty) 'ref': branch,
         },
@@ -632,7 +641,7 @@ class GhApi implements CacheRemote {
   }) async {
     try {
       final response = await client.send(GhRequest(
-        path: '/repos/$fullName/contents/$path',
+        path: '/repos/$fullName/contents/${_ghPath(path)}',
         query: <String, String>{
           if (branch != null && branch.isNotEmpty) 'ref': branch,
         },
@@ -679,7 +688,7 @@ class GhApi implements CacheRemote {
     String? branch,
   }) async {
     final response = await client.send(GhRequest(
-      path: '/repos/$fullName/contents/$path',
+      path: '/repos/$fullName/contents/${_ghPath(path)}',
       method: NetMethod.put,
       body: <String, Object?>{
         'message': message,
@@ -892,7 +901,7 @@ class GhApi implements CacheRemote {
   }) =>
       client
           .send(GhRequest(
-            path: '/repos/$fullName/contents/$path',
+            path: '/repos/$fullName/contents/${_ghPath(path)}',
             method: NetMethod.delete,
             body: <String, Object?>{
               'message': message,
@@ -1680,7 +1689,7 @@ class GhApi implements CacheRemote {
     String body;
     try {
       final response = await client.send(GhRequest(
-        path: '/repos/$repo/contents/$path',
+        path: '/repos/$repo/contents/${_ghPath(path)}',
         query: <String, String>{
           if (branch.isNotEmpty) 'ref': branch,
         },

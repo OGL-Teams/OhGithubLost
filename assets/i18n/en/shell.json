@@ -58,13 +58,16 @@
   "storageGrantDesc1": "Once granted, logs and downloaded files can be written to system-visible ogl folder;",
   "storageGrantDesc2": "If not granted, falls back to app-private directory (no functionality impact).",
   "storageHintModern": "On Android 11 or higher, the 'All files access' permission is required to write to the system-visible ogl directory. If your system or ROM does not offer this toggle (allowing only per-folder permissions), files will fall back to the app's private directory. Functionality remains intact, but they will typically not be visible in file managers.",
-  "storageSandbox": "Current platform runs in app sandbox; no extra storage permission needed.",
+  "storageSandbox": "Current platform runs in an app sandbox; no extra storage permission is required.",
   "storageWhere": "Current save location",
-  "systemChannel": "[System Channel] {text}",
-  "systemNotifUnavailable": "System notifications unavailable (background alerts will only be logged): {error}",
+  "systemChannel": "[System channel] {text}",
+  "systemNotifUnavailable": "System notifications are unavailable. Background alerts will only be logged: {error}",
   "minimizeWindow": "Minimize",
   "maximizeWindow": "Maximize",
   "restoreWindow": "Restore",
   "closeWindow": "Close",
-  "ai": "AI"
+  "errorNetwork": "Network unavailable. Check your connection and retry.",
+  "errorAuth": "Access denied. Check your sign-in and token permissions.",
+  "errorNotFound": "The requested content no longer exists.",
+  "errorUnknown": "The operation could not be completed. Try again."
 }

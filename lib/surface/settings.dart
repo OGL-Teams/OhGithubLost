@@ -271,17 +271,8 @@ class OgLSettings {
   /// 支持的语言代码白名单（与展示层 `og_l_i18n.dart` 保持一致）。
   ///
   /// v6.4.0 起收敛为 **6 种**（简中 / 繁中 / 英 / 德 / 法 / 俄）——
-  /// 与 [OgLI18n.locales]、`assets/i18n/` 目录、pubspec 资源声明三处对齐。
-  /// 保持"数据层不认识 UI 资源"的前提下，这里只存**代码**；
-  /// 具体加载由展示层完成，非法代码一律回落 `zh`。
-  static const List<String> languageCodes = <String>[
-    'zh',
-    'zh_TW',
-    'en',
-    'de',
-    'fr',
-    'ru',
-  ];
+  /// 与 [OgLI18n.locales]、语言资源目录及 pubspec 声明保持一致。
+  static const List<String> languageCodes = <String>['zh', 'en'];
 
   static String _asLocale(Object? value) =>
       value is String && languageCodes.contains(value) ? value : 'zh';

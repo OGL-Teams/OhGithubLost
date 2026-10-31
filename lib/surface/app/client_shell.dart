@@ -19,7 +19,6 @@ import 'package:flutter/services.dart';
 import '../../kernel/kernel.dart';
 import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
-import '../pages/ai_chat_page.dart';
 import '../pages/dashboard_page.dart';
 import '../pages/login_page.dart';
 import '../pages/onboarding_page.dart';
@@ -33,16 +32,13 @@ import 'animations.dart';
 import 'back_guard.dart';
 import 'error_surface.dart';
 
-/// 壳内的五个页面（导航值）。
+/// 壳内的四个页面（导航值）。
 enum OgLShellTab {
   /// 仓库（我的仓库 / 星标）。
   home,
 
   /// 搜索（仓库 / 代码）。
   search,
-
-  /// AI 助手。
-  ai,
 
   /// 我的（账户管理 / 多账号切换 / Gist / 草稿 / 危险区）。
   profile,
@@ -229,13 +225,6 @@ class _OgLClientShellState extends State<OgLClientShell> {
           key: ValueKey<String>('search-${_accountId ?? 'guest'}'),
           surface: widget.surface,
         );
-      case OgLShellTab.ai:
-        // 按账号 key 化（生命周期审计 L3）：与 home/search 一致——
-        // 切号重建 State，避免 A 的会话上下文在 B 名下继续显示/续写。
-        return AiChatPage(
-          key: ValueKey<String>('ai-${_accountId ?? 'guest'}'),
-          surface: widget.surface,
-        );
       case OgLShellTab.profile:
         return ProfilePage(surface: widget.surface, onAccountsChanged: _check);
       case OgLShellTab.settings:
@@ -332,11 +321,6 @@ class _OgLClientShellState extends State<OgLClientShell> {
               label: OgLI18n.instance.t('shell', 'search'),
             ),
             NavigationDestination(
-              icon: const Icon(Icons.smart_toy_outlined),
-              selectedIcon: const Icon(Icons.smart_toy),
-              label: OgLI18n.instance.t('shell', 'ai'),
-            ),
-            NavigationDestination(
               icon: const Icon(Icons.person_outline),
               selectedIcon: const Icon(Icons.person),
               label: OgLI18n.instance.t('shell', 'profile'),
@@ -376,11 +360,6 @@ class _OgLClientShellState extends State<OgLClientShell> {
               NavigationRailDestination(
                 icon: const Icon(Icons.search),
                 label: Text(OgLI18n.instance.t('shell', 'search')),
-              ),
-              NavigationRailDestination(
-                icon: const Icon(Icons.smart_toy_outlined),
-                selectedIcon: const Icon(Icons.smart_toy),
-                label: Text(OgLI18n.instance.t('shell', 'ai')),
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.person_outline),

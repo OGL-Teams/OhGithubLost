@@ -33,7 +33,7 @@ class SettingsSectionPage extends StatelessWidget {
       body: ValueListenableBuilder<Set<String>>(
         valueListenable: collapseState,
         builder: (BuildContext context, Set<String> _, Widget? __) => ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(OgLSpace.lg),
           children: <Widget>[for (final Widget Function() b in builders) b()],
         ),
       ),

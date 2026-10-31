@@ -42,7 +42,7 @@ import 'surface/surface_bridge.dart';
 /// 应用版本（零外部资源：不读 pubspec，直接内联常量）。
 ///
 /// 与 `pubspec.yaml` 的 `version:` 保持一致，发布流程会做一致性校验。
-const String kOgLAppVersion = '9.5.0';
+const String kOgLAppVersion = '10.0.0';
 
 /// 发布构建注入的引导清单 JSON（由 `--dart-define-from-file` 提供；调试构建为空）。
 ///

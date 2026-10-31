@@ -27,7 +27,6 @@ import '../kernel/bridge_registry.dart';
 import '../kernel/contract/module.dart';
 import 'app/error_surface.dart';
 import 'app/motion.dart';
-import 'app/web_install.dart';
 import 'i18n/og_l_i18n.dart';
 import 'settings.dart';
 import 'theme.dart';
@@ -45,8 +44,7 @@ class SurfaceBridge {
     this.cache,
     this.storageProbe,
     this.uiPrefs,
-    OgLWebPrefsStore? webPrefs,
-  }) : webStartup = OgLWebStartup(webPrefs ?? OgLMemoryWebPrefs());
+  });
 
   /// 从内核桥表解析（展示层的标准取用方式）。
   static SurfaceBridge of(KernelBridgeRegistry bridges) =>
@@ -76,24 +74,6 @@ class SurfaceBridge {
   /// （重置后分组开合保持原样，用户不会突然找不到刚才那一组）。
   final DiskKv? uiPrefs;
 
-  /// Web 启动偏好（「打开时询问添加到桌面」开关 + 加速服务弹窗的已读标记）。
-  ///
-  /// **只在 Web 上有行为**：设置页仅在 `kIsWeb` 时展示对应开关，`main.dart`
-  /// 也只在 Web 上读取它。非 Web 构建里它依然存在，但保持默认值、无人读取
-  /// （因此不是"假选项"，只是一个惰性对象）。
-  final OgLWebStartup webStartup;
-
-  /// 设置项「打开时询问添加到桌面」（**默认开**）。
-  ///
-  /// 存储键 `ogl.web.installPromptEnabled`。只有浏览器里才有人读它；
-  /// 为什么它不放进 `OgLSettings`（那份配置文件属于所有平台，塞两个永远
-  /// 不生效的字段会变成"假选项"）见 `app/web_install.dart` 的 [OgLWebStartup]。
-  bool get webInstallPromptEnabled => webStartup.installPromptEnabled;
-
-  /// 改写「打开时询问添加到桌面」（立即生效 + 尽力落盘）。
-  Future<void> setWebInstallPromptEnabled(bool enabled) =>
-      webStartup.setInstallPromptEnabled(enabled);
-
   /// 读一条界面偏好（无记录 / 未接线 / 读失败一律 `null`）。
   Future<String?> readUiPref(String key) async {
     try {
@@ -109,7 +89,11 @@ class SurfaceBridge {
     try {
       await uiPrefs?.write(key, value);
     } catch (error) {
-      debugPrint('OGL 界面偏好写入失败：$key -> $error');
+      OgLAppLog.instance.add(
+        '界面偏好',
+        '写入失败：$key -> $error',
+        severity: OgLNoticeSeverity.warning,
+      );
     }
   }
 
@@ -452,38 +436,6 @@ class SurfaceBridge {
   /// 设置下载并发连接数（非法档位由 `settings` 回落默认）。
   Future<void> setDownloadConnections(int value) =>
       settings.setDownloadConnections(value);
-
-  /// AI 助手是否启用（设置页 / 客户端 tab 入口 / AI 子页都按它判可见性）。
-  ///
-  /// 数据源是 AI 设置（`AiSettings.enabled` + provider + 模型），不现造：
-  /// `domain.ai.settings()` 已存在；新增的 `hasAi` 只是把"读一次"封装成
-  /// 一个**同步可见**的派生属性 —— 之前各页面都是各读各的 Future，UI
-  /// 重建节奏也各走各的。
-  ///
-  /// 缓存策略：构造时读一次，结果写进 [_cachedHasAi]。后续页面要"立刻
-  /// 跟上"AI 开关的变更，就调一次 [refreshAi];失败时保留旧值（不是 false）。
-  bool _cachedHasAi = false;
-
-  /// 读 AI 当前是否启用（页面进入时一次性调用即可）。
-  Future<bool> hasAi() async {
-    try {
-      // 类型化读取（`AiSettings` 经 `types.dart` 导出）：不要用 dynamic +
-      // `is Object` 的写法 —— 后者会把 `enabled` 的静态解析打断，编译期直接报
-      // "The getter 'enabled' isn't defined for the type 'Object'"。
-      final AiSettings s = await domain.ai.settings();
-      _cachedHasAi = s.enabled;
-    } catch (_) {
-      // 读不到就保留旧值：hasAi 是"该不该让用户看到 AI 入口"的开关，
-      // 读失败不该让入口从屏幕上消失。
-    }
-    return _cachedHasAi;
-  }
-
-  /// 当前缓存值（同步版本；用于 build 里就近决定要不要渲染 AI 入口）。
-  bool get hasAiCached => _cachedHasAi;
-
-  /// 刷新缓存（在 AI 设置保存后调用，例如设置页 / AI 子页写完时）。
-  Future<void> refreshAi() => hasAi();
 
   /// 仓库文件操作服务（统一文件操作入口）。
   RepoFileService get repoFiles => domain.repoFiles;

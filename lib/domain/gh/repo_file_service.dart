@@ -624,6 +624,7 @@ class RepoFileService {
     String content, {
     String? message,
     String? expectedHeadSha,
+    String? expectedFileSha,
     void Function(RepoFileProgress)? onProgress,
     RepoFileCancelToken? cancelToken,
   }) =>
@@ -756,7 +757,7 @@ class RepoFileService {
         fullName,
         RepoFilePaths.encodeForUrl(source),
         message: message ?? 'delete: $source',
-        baseSha: probe.content!.sha,
+        baseSha: expectedFileSha ?? probe.content!.sha,
         branch: ref,
       );
       _emit(onProgress, RepoFilePhase.committing, 1, 1, source);

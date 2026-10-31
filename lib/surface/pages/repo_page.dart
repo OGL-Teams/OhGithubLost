@@ -1175,14 +1175,28 @@ class _CodeTabState extends State<_CodeTab> {
   }
 
   Future<void> _openEditor(GhContent file) async {
+    final GhContent? latest = await widget.surface.domain.api.content(
+      widget.fullName,
+      file.path,
+      branch: widget.branch,
+      refresh: true,
+    );
+    if (!mounted) return;
+    if (latest == null ||
+        latest.isDirectory ||
+        latest.isTooLarge ||
+        latest.text == null) {
+      _notifier.warning(_t('readFailedEditor'));
+      return;
+    }
     final bool? saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
         builder: (BuildContext context) => CodeEditorPage(
           surface: widget.surface,
           fullName: widget.fullName,
           path: file.path,
-          initialText: file.text ?? '',
-          baseSha: file.sha,
+          initialText: latest.text!,
+          baseSha: latest.sha,
           branch: widget.branch,
         ),
       ),
@@ -1421,6 +1435,7 @@ class _CodeTabState extends State<_CodeTab> {
         widget.branch,
         entry.path,
         message: 'chore: delete ${entry.path}',
+        expectedFileSha: entry.sha,
       );
       if (!result.ok) {
         _reportRepoFailures(
@@ -3410,34 +3425,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       (_cnameInitial != null && _cname.text != _cnameInitial);
 
   /// 返回前的「放弃确认」（复用 `code_editor_page` 分片的既有文案，语义一致）。
-  Future<bool?> _confirmDiscard() => showDialog<bool>(
-        context: context,
-        builder: (BuildContext dialogContext) {
-          final OgLI18n i18n = OgLI18n.instance;
-          return AlertDialog(
-            title: Text(i18n.t('code_editor_page', 'discardTitle')),
-            content: Text(i18n.t('code_editor_page', 'discardDesc')),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: Text(i18n.t('code_editor_page', 'continueEditing')),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: Text(i18n.t('code_editor_page', 'discardChanges')),
-              ),
-            ],
-          );
-        },
-      );
-
-  /// 任一字段变化 → 重建：`PopScope` 的 `canPop` 依赖文本内容，
-  /// 否则输入后返回键仍按「未修改」直接放行（静默丢失输入）。
-  void _onFieldChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
+  Future<bool?> _confirmDiscard() => ogLConfirmDiscardChanges(context);
 
   @override
   void initState() {

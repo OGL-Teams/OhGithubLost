@@ -109,6 +109,7 @@ class DraftStore extends ChangeNotifier {
   final String namespace;
 
   final DiskKv _store;
+  final Map<String, Future<void>> _operations = <String, Future<void>>{};
   KernelDiagnostics _diagnostics;
 
   /// 绑定诊断中枢（装配阶段调用）。
@@ -116,24 +117,38 @@ class DraftStore extends ChangeNotifier {
     _diagnostics = diagnostics;
   }
 
+  /// 同一草稿的读写删除串行执行，避免旧写入覆盖新内容或复活已提交内容。
+  Future<T> _ordered<T>(CacheKey key, Future<T> Function() action) async {
+    final String name = _keyOf(key);
+    final Future<void> previous = _operations[name] ?? Future<void>.value();
+    final Future<T> result = previous.then<T>((_) => action());
+    _operations[name] = result.then<void>((_) {}).catchError((_) {});
+    try {
+      return await result;
+    } finally {
+      _operations.remove(name);
+    }
+  }
+
   /// 保存草稿（不存在则新建；[baseSha] 缺省沿用已有值）。
   Future<DraftRecord> save(
     CacheKey key,
     String content, {
     String? baseSha,
-  }) async {
-    final existing = await load(key);
-    final record = DraftRecord(
-      key: key,
-      content: content,
-      baseSha: baseSha ?? existing?.baseSha,
-      revision: (existing?.revision ?? 0) + 1,
-      updatedAt: DateTime.now(),
-    );
-    await _store.write(_keyOf(key), jsonEncode(record.toJson()));
-    notifyListeners();
-    return record;
-  }
+  }) =>
+      _ordered(key, () async {
+        final DraftRecord? existing = await load(key);
+        final DraftRecord record = DraftRecord(
+          key: key,
+          content: content,
+          baseSha: baseSha ?? existing?.baseSha,
+          revision: (existing?.revision ?? 0) + 1,
+          updatedAt: DateTime.now(),
+        );
+        await _store.write(_keyOf(key), jsonEncode(record.toJson()));
+        notifyListeners();
+        return record;
+      });
 
   /// 读取草稿；不存在返回 `null`。
   Future<DraftRecord?> load(CacheKey key) async {
@@ -153,10 +168,10 @@ class DraftStore extends ChangeNotifier {
   Future<bool> has(CacheKey key) async => await load(key) != null;
 
   /// 丢弃草稿（提交成功后由缓存引擎调用）。
-  Future<void> discard(CacheKey key) async {
-    await _store.remove(_keyOf(key));
-    notifyListeners();
-  }
+  Future<void> discard(CacheKey key) => _ordered(key, () async {
+        await _store.remove(_keyOf(key));
+        notifyListeners();
+      });
 
   /// 列出全部草稿（按更新时间升序，便于"恢复上次编辑"列表）。
   Future<List<DraftRecord>> all() async {

@@ -94,24 +94,3 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  # AI 审计（Agnes）：对「正则规则覆盖不到」的盲区做高智能度复核。
-  # 规则审计（上面 quality job）是确定的、零成本的；AI 审计是启发式的、
-  # 补盲区的 —— 两者互补，不是替代。
-  ai_audit:
-    name: AI 审计（Agnes · 补正则盲区）
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    # 注：secrets 上下文不能用于 job 的 if: 条件（Actions 限制），
-    # 因此这里始终运行；密钥经 env 传入，脚本内部判空则跳过并显式标注。
-    steps:
-      - name: 拉取代码
-        uses: actions/checkout@v4
-
-      - name: 准备依赖
-        run: pip install --quiet --disable-pip-version-check pyyaml requests 2>/dev/null || true
-
-      - name: AI 审计（架构 / 安全 / i18n / 性能 / 变更记录）
-        env:
-          AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
-          OGL_AI_MODEL: agnes-2.5-flash
-        run: python3 tool/ai_audit.py
