@@ -13,6 +13,7 @@
 ///    据此实时刷新，不再靠"一次性 FutureBuilder"造成状态滞后。
 library;
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -118,15 +119,42 @@ class DraftStore extends ChangeNotifier {
   }
 
   /// 同一草稿的读写删除串行执行，避免旧写入覆盖新内容或复活已提交内容。
+  ///
+  /// 注意：**队列内部不得再调用会入队的公开方法**（读取失败时若回调删除，
+  /// 就会等待自己正在执行的那一步 → 自死锁）。因此失败分支只做直接清理。
   Future<T> _ordered<T>(CacheKey key, Future<T> Function() action) async {
     final String name = _keyOf(key);
     final Future<void> previous = _operations[name] ?? Future<void>.value();
-    final Future<T> result = previous.then<T>((_) => action());
-    _operations[name] = result.then<void>((_) {}).catchError((_) {});
+    final Completer<void> done = Completer<void>();
+    _operations[name] = done.future;
     try {
-      return await result;
+      return await previous.then<T>((_) => action());
     } finally {
-      _operations.remove(name);
+      done.complete();
+      // 只清掉自己这一格：后面排队的新操作不能被顺手移除。
+      if (identical(_operations[name], done.future)) {
+        _operations.remove(name);
+      }
+    }
+  }
+
+  /// 读取草稿（**不排队**）：仅供队列内部与只读查询使用。
+  Future<DraftRecord?> _loadUnlocked(CacheKey key) async {
+    final String? raw = await _store.read(_keyOf(key));
+    if (raw == null) {
+      return null;
+    }
+    try {
+      final DraftRecord? record =
+          DraftRecord.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      if (record == null) {
+        await _store.remove(_keyOf(key));
+      }
+      return record;
+    } catch (_) {
+      // 记录损坏：直接清掉，不走队列（此刻可能正在队列里）。
+      await _store.remove(_keyOf(key));
+      return null;
     }
   }
 
@@ -137,7 +165,7 @@ class DraftStore extends ChangeNotifier {
     String? baseSha,
   }) =>
       _ordered(key, () async {
-        final DraftRecord? existing = await load(key);
+        final DraftRecord? existing = await _loadUnlocked(key);
         final DraftRecord record = DraftRecord(
           key: key,
           content: content,
@@ -151,18 +179,8 @@ class DraftStore extends ChangeNotifier {
       });
 
   /// 读取草稿；不存在返回 `null`。
-  Future<DraftRecord?> load(CacheKey key) async {
-    final raw = await _store.read(_keyOf(key));
-    if (raw == null) {
-      return null;
-    }
-    try {
-      return DraftRecord.fromJson(jsonDecode(raw) as Map<String, dynamic>);
-    } catch (_) {
-      await discard(key);
-      return null;
-    }
-  }
+  Future<DraftRecord?> load(CacheKey key) =>
+      _ordered(key, () => _loadUnlocked(key));
 
   /// 是否存在草稿。
   Future<bool> has(CacheKey key) async => await load(key) != null;

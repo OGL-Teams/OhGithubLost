@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 
 import '../app/animations.dart';
 import '../app/error_surface.dart';
-import '../app/notifier.dart';
 import '../app/overlays.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/og_l_space.dart';
@@ -53,9 +53,6 @@ class _NewGistPageState extends State<NewGistPage> {
 
   /// 返回前的「放弃确认」（复用 `code_editor_page` 分片的既有文案，语义一致）。
   Future<bool?> _confirmDiscard() => ogLConfirmDiscardChanges(context);
-
-        },
-      );
 
   /// 任一字段变化 → 重建：`PopScope` 的 `canPop` 依赖文本内容，
   /// 否则输入后返回键仍按「未修改」直接放行（静默丢失输入）。
