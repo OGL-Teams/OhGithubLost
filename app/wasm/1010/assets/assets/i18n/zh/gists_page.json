@@ -1,0 +1,13 @@
+{
+  "created": "已创建 Gist",
+  "empty": "还没有 Gist 片段",
+  "fileCount": "{count} 个文件 · ",
+  "missingId": "这条 Gist 缺少 id，无法打开",
+  "new": "新建",
+  "noDescription": "（无描述）",
+  "noOpenLink": "这条 Gist 没有可打开的链接",
+  "openInBrowser": "在浏览器打开",
+  "private": "私密",
+  "public": "公开",
+  "title": "Gist 片段"
+}

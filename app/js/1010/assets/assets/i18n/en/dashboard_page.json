@@ -1,0 +1,16 @@
+{
+  "downloads": "Downloads",
+  "emptyMine": "No repositories yet",
+  "emptyStarred": "No starred repositories yet",
+  "home": "Home",
+  "loadMore": "Load more ({count} so far)",
+  "mine": "Mine",
+  "newRepo": "New Repository",
+  "notifications": "Notifications",
+  "private": "Private",
+  "repoCreated": "Repository created",
+  "repoCreatedName": "Created {name}",
+  "retry": "Retry",
+  "starred": "Starred",
+  "starsCount": "{count} stars"
+}

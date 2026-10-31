@@ -1,5 +1,15 @@
 [
   {
+    "version": "10.1.0",
+    "dir": "1010",
+    "variant": "js"
+  },
+  {
+    "version": "10.1.0",
+    "dir": "1010",
+    "variant": "wasm"
+  },
+  {
     "version": "10.0.0",
     "dir": "1000",
     "variant": "js"

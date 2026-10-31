@@ -1,6 +1,6 @@
-/js/1000/index.html
+/js/1010/index.html
   Cache-Control: public, max-age=0, must-revalidate
-/wasm/1000/index.html
+/wasm/1010/index.html
   Cache-Control: public, max-age=0, must-revalidate
 # 入口与版本清单：始终回源校验（新版本要立刻可见）
 /
