@@ -17,6 +17,7 @@ import '../base/net/net_bridge.dart';
 import '../base/net/net_transport.dart';
 import '../base/net/range_download.dart';
 import '../kernel/bridge_registry.dart';
+import '../kernel/contract/disk_types.dart';
 import '../kernel/contract/module.dart';
 import '../kernel/contract/storage_export.dart';
 import '../kernel/environment.dart';
