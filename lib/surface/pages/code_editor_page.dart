@@ -77,6 +77,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   /// 草稿自动保存（防抖）。
   Timer? _draftTimer;
 
+  String? _draftBaseSha;
   bool _saving = false;
   bool _saved = false;
 
@@ -132,7 +133,8 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   /// 进入编辑器时尝试恢复上次未提交的草稿。
   Future<void> _restoreDraft() async {
     try {
-      final String? draft = await widget.surface.domain.api.loadDraft(
+      final DraftRecord? draft =
+          await widget.surface.domain.api.loadDraftRecord(
         widget.fullName,
         widget.path,
         branch: widget.branch,
@@ -140,7 +142,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       if (!mounted || draft == null) {
         return;
       }
-      if (draft == widget.initialText) {
+      if (draft == null || draft.content == widget.initialText) {
         await widget.surface.domain.api.discardDraft(
           widget.fullName,
           widget.path,
@@ -153,7 +155,8 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       if (_controller.text != widget.initialText) {
         return;
       }
-      _controller.text = draft;
+      _controller.text = draft.content;
+      _draftBaseSha = draft.baseSha;
       _notifier.info(_t('draftRestored'));
     } catch (_) {
       // 草稿读取失败不影响编辑。
@@ -181,7 +184,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         widget.path,
         _controller.text,
         branch: widget.branch,
-        baseSha: widget.baseSha,
+        baseSha: _draftBaseSha ?? widget.baseSha,
       );
     } catch (_) {
       // 草稿落盘失败不阻断编辑。
@@ -205,7 +208,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         widget.path,
         content: text,
         message: 'docs: update ${widget.path}',
-        baseSha: widget.baseSha,
+        baseSha: _draftBaseSha ?? widget.baseSha,
         branch: widget.branch,
       );
       if (!result.ok && result.canForceOverwrite) {
@@ -239,7 +242,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
           widget.path,
           content: text,
           message: 'docs: update ${widget.path}',
-          baseSha: widget.baseSha,
+          baseSha: _draftBaseSha ?? widget.baseSha,
           branch: widget.branch,
           force: true,
           confirmed: true,
@@ -368,64 +371,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         ),
       );
 
-  Future<bool?> _confirmDiscard() => showDialog<bool>(
-        context: context,
-        builder: (BuildContext dialogContext) => AlertDialog(
-          title: Text(_t('discardTitle')),
-          content: Text(_t('discardDesc')),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(_t('continueEditing')),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(_t('discardChanges')),
-            ),
-          ],
-        ),
-      );
-
-  /// 统一提示入口（Phase 5 后半收敛）：**提示长什么样、什么语气只有一处定义**
-  /// （见 [OgLNotifier]，即 `surface/app/notifier.dart`）—— 本页不再自造 SnackBar。
-  ///
-  /// 语气分工：[OgLNotifier.success] 操作已生效 / [OgLNotifier.info] 普通说明 /
-  /// [OgLNotifier.warning] 失败与"被拦下"（权限不足、目标不存在、写回失败…）。
-  OgLNotifier get _notifier => OgLNotifier(ScaffoldMessenger.of(context));
-
-  static String _short(String? sha) => sha == null || sha.isEmpty
-      ? '—'
-      : (sha.length <= 8 ? sha : sha.substring(0, 8));
-
-  static String _preview(String text) => text.length <= 4000
-      ? text
-      : _t('previewTruncated', {'text': text.substring(0, 4000)});
-
-  /// 只读预览（弹层）：与编辑器同一套库渲染，便于核对排版与高亮。
-  void _previewSheet() {
-    final _EditorPrefs settings = _EditorPrefs(widget.surface);
-    ogLShowSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      // 底部让位：弹层延伸到屏幕底边（useSafeArea 只管顶部 / 左右），
-      // 编辑器最后一屏不会被手势条 / 浏览器下沿盖住。
-      builder: (BuildContext sheetContext) => SafeArea(
-        top: false,
-        child: SizedBox(
-          height: MediaQuery.of(sheetContext).size.height * 0.8,
-          child: OgLCodeViewer(
-            code: _controller.text,
-            path: widget.path,
-            fontSize: settings.fontSize,
-            wrap: _wrap,
-            highlight: settings.highlight,
-            codeTheme: settings.theme(sheetContext),
-          ),
-        ),
-      ),
-    );
-  }
+  Future<bool?> _confirmDiscard() => ogLConfirmDiscardChanges(context);
 
   Widget _statusBar(ThemeData theme) => Material(
         color: theme.colorScheme.surfaceContainerHighest,

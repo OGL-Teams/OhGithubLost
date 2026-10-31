@@ -1,8 +1,0 @@
-{
-  "linesCount": "{count} Zeilen",
-  "noLogs": "Keine Protokolle (noch unvollständig oder Token hat keine Actions-Berechtigung)",
-  "noMatchingJob": "Kein passendes Job",
-  "reload": "Neu laden",
-  "searchJobHint": "Job-Name suchen",
-  "title": "Laufprotokoll"
-}

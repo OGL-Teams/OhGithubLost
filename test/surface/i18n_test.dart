@@ -30,9 +30,8 @@ Map<String, Map<String, String>> _loadLocale(String code) {
 
 void main() {
   group('语言包完整性', () {
-    test('6 种语言 × 全部页面分片全部存在且可解析', () {
-      // v6.4.0 起由 15 种收敛为 6 种（详见 OgLI18n.locales 的注释）。
-      expect(OgLI18n.locales.length, 6);
+    test('2 种语言 × 全部页面分片全部存在且可解析', () {
+      expect(OgLI18n.locales.length, 2);
       for (final OgLLocale locale in OgLI18n.locales) {
         _loadLocale(locale.code);
       }
@@ -68,19 +67,12 @@ void main() {
   group('OgLI18n 兜底', () {
     test('缺失键回落英文基线，再回落键名（绝不返回空串）', () {
       final OgLI18n i18n = OgLI18n.instance;
+      i18n.debugInject('zh', <String, Map<String, String>>{
+        'shell': <String, String>{},
+      });
       i18n.debugInject('en', <String, Map<String, String>>{
         'shell': <String, String>{'home': 'Home'},
       });
-      // 用一个非当前语种验证"缺失键 → 回落基线"这段链路。这里用 de：
-      // 它仍在 `OgLI18n.locales` 里，不会出现"拿一个不存在的语种测试兜底"
-      // 这种自相矛盾的写法。
-      i18n.debugInject('de', <String, Map<String, String>>{
-        'shell': <String, String>{'home': 'Startseite'},
-      });
-      expect(i18n.t('shell', 'home'), 'Startseite');
-      // de 缺失的键 → 回落 en。
-      i18n.debugInject(
-          'de', <String, Map<String, String>>{'shell': <String, String>{}});
       expect(i18n.t('shell', 'home'), 'Home');
       // 两边都没有 → 返回键名。
       expect(i18n.t('shell', 'missing'), 'missing');

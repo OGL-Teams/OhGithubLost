@@ -195,5 +195,6 @@
   "defaultAction": "默认",
   "selectBranch": "选择分支",
   "issueMeta": "由 {author} 发起 · {comments} 条评论 · {date}",
-  "binaryNoEdit": "二进制文件不支持文本编辑"
+  "binaryNoEdit": "二进制文件不支持文本编辑",
+  "readFailedEditor": "无法编辑：未能读取有效的 UTF-8 文本内容。"
 }

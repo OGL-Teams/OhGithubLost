@@ -649,7 +649,7 @@ class GhContent extends GhRecord {
     try {
       // ★ 必须是 UTF-8 解码：`String.fromCharCodes` 会把多字节字符拆成乱码，
       //   中文 / emoji 文件内容全毁——曾因此出现“解码错误”。
-      return utf8.decode(base64Decode(normalized), allowMalformed: true);
+      return utf8.decode(base64Decode(normalized));
     } catch (_) {
       return null;
     }

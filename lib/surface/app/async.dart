@@ -174,13 +174,20 @@ class AsyncController<T> extends ChangeNotifier {
     return value.runtimeType.toString();
   }
 
-  /// 错误 → 人话（只暴露"人话"，不让异常栈糊到用户脸上）。
+  /// 用户提示只保留可理解的原因，原始异常与堆栈由日志负责。
   String _describe(Object error) {
-    final String text = error.toString();
-    if (text.startsWith('Exception: ')) {
-      return _t('failedWith', {'label': label, 'text': text.substring(11)});
-    }
-    return _t('failedParen', {'label': label, 'text': text});
+    final String text = error.toString().replaceFirst('Exception: ', '');
+    final String lower = text.toLowerCase();
+    final String reason = lower.contains('socket') || lower.contains('network')
+        ? _t('errorNetwork')
+        : lower.contains('401') ||
+                lower.contains('403') ||
+                lower.contains('auth')
+            ? _t('errorAuth')
+            : lower.contains('404')
+                ? _t('errorNotFound')
+                : _t('errorUnknown');
+    return _t('failedWith', {'label': label, 'text': reason});
   }
 }
 

@@ -42,6 +42,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'animations.dart';
+import '../i18n/og_l_i18n.dart';
 
 /// 按档位加速的底部弹层（半页以上的动态面板）。
 ///
@@ -69,3 +70,40 @@ Future<T?> ogLShowSheet<T>({
     builder: builder,
   );
 }
+
+/// 按全局动效档位显示对话框，避免各页面出现不同的进出节奏。
+Future<T?> ogLShowDialog<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+}) {
+  final Duration duration = OgLAnim.medium(context);
+  return showDialog<T>(
+    context: context,
+    transitionDuration: duration,
+    reverseTransitionDuration: duration,
+    builder: builder,
+  );
+}
+
+/// 所有编辑页共用的放弃修改确认；按钮明确说明结果，不使用泛化的“确定”。
+Future<bool?> ogLConfirmDiscardChanges(BuildContext context) =>
+    ogLShowDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final OgLI18n i18n = OgLI18n.instance;
+        return AlertDialog(
+          title: Text(i18n.t('code_editor_page', 'discardTitle')),
+          content: Text(i18n.t('code_editor_page', 'discardDesc')),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(i18n.t('code_editor_page', 'continueEditing')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(i18n.t('code_editor_page', 'discardChanges')),
+            ),
+          ],
+        );
+      },
+    );

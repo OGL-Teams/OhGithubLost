@@ -437,38 +437,6 @@ class SurfaceBridge {
   Future<void> setDownloadConnections(int value) =>
       settings.setDownloadConnections(value);
 
-  /// AI 助手是否启用（设置页 / 客户端 tab 入口 / AI 子页都按它判可见性）。
-  ///
-  /// 数据源是 AI 设置（`AiSettings.enabled` + provider + 模型），不现造：
-  /// `domain.ai.settings()` 已存在；新增的 `hasAi` 只是把"读一次"封装成
-  /// 一个**同步可见**的派生属性 —— 之前各页面都是各读各的 Future，UI
-  /// 重建节奏也各走各的。
-  ///
-  /// 缓存策略：构造时读一次，结果写进 [_cachedHasAi]。后续页面要"立刻
-  /// 跟上"AI 开关的变更，就调一次 [refreshAi];失败时保留旧值（不是 false）。
-  bool _cachedHasAi = false;
-
-  /// 读 AI 当前是否启用（页面进入时一次性调用即可）。
-  Future<bool> hasAi() async {
-    try {
-      // 类型化读取（`AiSettings` 经 `types.dart` 导出）：不要用 dynamic +
-      // `is Object` 的写法 —— 后者会把 `enabled` 的静态解析打断，编译期直接报
-      // "The getter 'enabled' isn't defined for the type 'Object'"。
-      final AiSettings s = await domain.ai.settings();
-      _cachedHasAi = s.enabled;
-    } catch (_) {
-      // 读不到就保留旧值：hasAi 是"该不该让用户看到 AI 入口"的开关，
-      // 读失败不该让入口从屏幕上消失。
-    }
-    return _cachedHasAi;
-  }
-
-  /// 当前缓存值（同步版本；用于 build 里就近决定要不要渲染 AI 入口）。
-  bool get hasAiCached => _cachedHasAi;
-
-  /// 刷新缓存（在 AI 设置保存后调用，例如设置页 / AI 子页写完时）。
-  Future<void> refreshAi() => hasAi();
-
   /// 仓库文件操作服务（统一文件操作入口）。
   RepoFileService get repoFiles => domain.repoFiles;
 

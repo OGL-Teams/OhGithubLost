@@ -66,5 +66,8 @@
   "maximizeWindow": "最大化",
   "restoreWindow": "还原",
   "closeWindow": "关闭",
-  "ai": "AI"
+  "errorNetwork": "网络连接失败，请检查网络后重试",
+  "errorAuth": "没有访问权限，请检查登录状态与令牌权限",
+  "errorNotFound": "请求的内容不存在或已删除",
+  "errorUnknown": "操作未完成，请稍后重试"
 }
