@@ -74,7 +74,9 @@ void main() {
     await c.load();
     expect(c.data, isNull);
     expect(c.failureMessage, isNotNull);
-    expect(c.failureMessage, contains('网络断了'));
+    // 用户提示只给可理解的原因，原始异常文本不外泄。
+    expect(c.failureMessage, isNot(contains('网络断了')));
+    expect(c.failureMessage, isNotEmpty);
 
     await c.load();
     expect(c.data, 7);

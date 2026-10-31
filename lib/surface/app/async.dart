@@ -174,17 +174,34 @@ class AsyncController<T> extends ChangeNotifier {
     return value.runtimeType.toString();
   }
 
+  /// 分类关键词（中文异常来自本地提示，英文来自系统层）。
+  /// i18n-allow: 这些是**匹配用的关键词**，不是界面文案。
+  static const String _mentionsNetwork = '网络';
+  static const String _mentionsAuth = '权限';
+  static const String _mentionsMissing = '不存在';
+
   /// 用户提示只保留可理解的原因，原始异常与堆栈由日志负责。
+  ///
+  /// 分类依据**同时看中文与英文**：本项目的异常来源既有系统级英文
+  /// （SocketException / timeout），也有本地中文提示。
   String _describe(Object error) {
     final String text = error.toString().replaceFirst('Exception: ', '');
     final String lower = text.toLowerCase();
-    final String reason = lower.contains('socket') || lower.contains('network')
+    final bool network = lower.contains('socket') ||
+        lower.contains('network') ||
+        lower.contains('timeout') ||
+        _mentionsNetwork;
+    final bool auth = lower.contains('401') ||
+        lower.contains('403') ||
+        lower.contains('auth') ||
+        lower.contains('permission') ||
+        _mentionsAuth;
+    final bool missing = lower.contains('404') || _mentionsMissing;
+    final String reason = network
         ? _t('errorNetwork')
-        : lower.contains('401') ||
-                lower.contains('403') ||
-                lower.contains('auth')
+        : auth
             ? _t('errorAuth')
-            : lower.contains('404')
+            : missing
                 ? _t('errorNotFound')
                 : _t('errorUnknown');
     return _t('failedWith', {'label': label, 'text': reason});

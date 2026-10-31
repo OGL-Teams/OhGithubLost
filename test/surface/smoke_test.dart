@@ -115,7 +115,9 @@ void main() {
       ),
     );
     expect(find.text('内容=1'), findsOneWidget);
-    expect(find.textContaining('刷新失败演示'), findsOneWidget);
+    // 原始异常不再直接展示；此处断言提示存在且不含原始文本。
+    expect(find.textContaining('刷新失败演示'), findsNothing);
+    expect(find.textContaining('失败'), findsWidgets);
   });
 
   testWidgets('ReadmeView：Markdown 渲染成组件树', (WidgetTester tester) async {
