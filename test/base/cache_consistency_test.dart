@@ -336,7 +336,7 @@ void main() {
       );
 
       expect(outcome.ok, isTrue);
-      expect(outcome.sha, 'sha-written');
+      expect(outcome.sha, 'sha-r1', reason: '回执 sha 来自写入响应');
       expect(
         await cache.localCount(),
         1,
