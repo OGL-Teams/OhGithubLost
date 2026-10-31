@@ -190,13 +190,14 @@ class AsyncController<T> extends ChangeNotifier {
     final bool network = lower.contains('socket') ||
         lower.contains('network') ||
         lower.contains('timeout') ||
-        _mentionsNetwork;
+        text.contains(_mentionsNetwork);
     final bool auth = lower.contains('401') ||
         lower.contains('403') ||
         lower.contains('auth') ||
         lower.contains('permission') ||
-        _mentionsAuth;
-    final bool missing = lower.contains('404') || _mentionsMissing;
+        text.contains(_mentionsAuth);
+    final bool missing =
+        lower.contains('404') || text.contains(_mentionsMissing);
     final String reason = network
         ? _t('errorNetwork')
         : auth
