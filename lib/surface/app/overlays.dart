@@ -76,11 +76,8 @@ Future<T?> ogLShowDialog<T>({
   required BuildContext context,
   required WidgetBuilder builder,
 }) {
-  final Duration duration = OgLAnim.medium(context);
   return showDialog<T>(
     context: context,
-    transitionDuration: duration,
-    reverseTransitionDuration: duration,
     builder: builder,
   );
 }

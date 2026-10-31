@@ -624,7 +624,6 @@ class RepoFileService {
     String content, {
     String? message,
     String? expectedHeadSha,
-    String? expectedFileSha,
     void Function(RepoFileProgress)? onProgress,
     RepoFileCancelToken? cancelToken,
   }) =>
@@ -699,6 +698,7 @@ class RepoFileService {
     bool isDirectory = false,
     String? message,
     String? expectedHeadSha,
+    String? expectedFileSha,
     void Function(RepoFileProgress)? onProgress,
     RepoFileCancelToken? cancelToken,
   }) {

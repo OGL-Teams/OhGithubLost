@@ -392,6 +392,9 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
   /// 返回前的「放弃确认」（复用 `code_editor_page` 分片的既有文案，语义一致）。
   Future<bool?> _confirmDiscard() => ogLConfirmDiscardChanges(context);
 
+        },
+      );
+
   /// 参数表单区：按类型渲染控件；无参数则给出说明。
   List<Widget> _formSection(ThemeData theme) {
     if (_formError != null) {

@@ -344,7 +344,7 @@ class GhApi implements CacheRemote {
   ///
   /// 键与写入路径完全一致（同一账号 / 仓库 / 分支 / 路径），
   /// 因此编辑器保存的草稿能被草稿箱与"重新进入"读到。
-  Future<DraftRecord?> loadDraftRecord(
+  Future<GhDraftRecord?> loadDraftRecord(
     String fullName,
     String path, {
     String? branch,
@@ -354,7 +354,11 @@ class GhApi implements CacheRemote {
     if (key == null || store == null) {
       return null;
     }
-    return store.load(key);
+    final DraftSnapshot? snapshot = await store.loadDraftSnapshot(key);
+    if (snapshot == null) {
+      return null;
+    }
+    return GhDraftRecord(content: snapshot.content, baseSha: snapshot.baseSha);
   }
 
   /// 兼容只读取正文的调用方。
