@@ -75,9 +75,16 @@ Future<T?> ogLShowSheet<T>({
 Future<T?> ogLShowDialog<T>({
   required BuildContext context,
   required WidgetBuilder builder,
+  bool barrierDismissible = true,
+  AnimationStyle? animationStyle,
 }) {
+  final Duration duration = OgLAnim.medium(context);
   return showDialog<T>(
     context: context,
+    barrierDismissible: barrierDismissible,
+    sheetAnimationStyle: animationStyle,
+    transitionDuration: duration,
+    reverseTransitionDuration: duration,
     builder: builder,
   );
 }
