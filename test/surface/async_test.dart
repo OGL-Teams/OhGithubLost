@@ -74,7 +74,9 @@ void main() {
     await c.load();
     expect(c.data, isNull);
     expect(c.failureMessage, isNotNull);
-    expect(c.failureMessage, contains('网络断了'));
+    // 用户提示只给可理解的原因，原始异常文本不外泄。
+    expect(c.failureMessage, isNot(contains('网络断了')));
+    expect(c.failureMessage, isNotEmpty);
 
     await c.load();
     expect(c.data, 7);
@@ -137,5 +139,30 @@ void main() {
     await c.loadIfNeeded();
     await c.loadIfNeeded();
     expect(calls, 1);
+  });
+
+  test('dispose 后：在途请求回来不再通知（不触发 ChangeNotifier 断言）', () async {
+    // 搜索页换模式 / gist 详情页退出时会 `dispose()` 旧控制器，而在途请求
+    // 仍会走 `finally` 里的通知路径 —— 没有 `_disposed` 守卫时 debug 下
+    // 直接断言崩溃（"A AsyncController was used after being disposed"）。
+    final Completer<int> gate = Completer<int>();
+    final AsyncController<int> c = AsyncController<int>(
+      label: '测试',
+      loader: () => gate.future,
+      isEmpty: (int value) => false,
+    );
+    int notified = 0;
+    c.addListener(() => notified += 1);
+    final Future<void> pending = c.load();
+    expect(c.isLoading, isTrue);
+    c.dispose();
+    gate.complete(42);
+    // 不抛 = 通过：守卫拦住了 dispose 之后的 notifyListeners。
+    await pending;
+    expect(notified, 1, reason: '只有 dispose 前那次"加载中"通知');
+    // 释放后也不该再发起新请求（load / loadIfNeeded 都是空操作）。
+    await c.load();
+    await c.loadIfNeeded();
+    expect(notified, 1);
   });
 }
