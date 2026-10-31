@@ -187,33 +187,25 @@ void main() {
       expect(healthy.store[_key().encode()]!.content, 'new');
     });
 
-    test('远端已写入但回读不一致 ⇒ 重放必须以冲突收尾，绝不覆盖他人提交', () async {
+    test('远端已写入但回读不一致 ⇒ 按成功收尾（回执权威），不重复提交', () async {
+      // v10.1.0：PUT 响应里的 sha 是服务端权威回执，回读只用于本地缓存对齐。
+      // 回读不一致不得把"已成功"改判成冲突——否则重放会再写一遍。
       final kv = InMemoryKv();
       final journal = WriteJournal(store: kv);
       final remote = ChaosRemote()..seed(_key(), 'old', 'sha-old');
-      remote.swapAfterWrite = true; // 我们刚写完，别人又推了一版。
-
+      remote.swapAfterWrite = true;
       final cache = RepositoryCache(
         remote: remote,
         index: kv,
         blobs: InMemoryFileStore(),
-        readbackAttempts: 2,
         readbackDelay: Duration.zero,
       )..attachJournal(journal);
 
       final outcome =
-          await cache.write(_intent(content: 'mine', baseSha: 'sha-old'));
-      expect(outcome.ok, isFalse);
-      expect(outcome.conflict, WriteConflict.verificationFailed);
+          await cache.write(_intent(content: 'new', baseSha: 'sha-old'));
 
-      final results = await cache.replayPending(confirmed: true);
-      expect(results.single.conflict, WriteConflict.staleSha);
-      expect(
-        remote.store[_key().encode()]!.content,
-        '别人的提交',
-        reason: '数据无价：宁可失败，也绝不覆盖他人提交',
-      );
-      expect(await journal.pendingCount(), 0, reason: '语义冲突应被标记为已放弃');
+      expect(outcome.ok, isTrue, reason: 'PUT 已成功，不得让用户重试再写一遍');
+      expect(await journal.pendingCount(), 0, reason: '提交应已收尾出队');
     });
   });
 

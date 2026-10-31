@@ -1075,6 +1075,7 @@ class IxDownloadManager extends ChangeNotifier {
     await _backend.cancel(id);
     _specs.remove(id);
     _snapshots.remove(id);
+    _touchTasksCache();
     _lastSample.remove(id);
     _expectedSha256.remove(id);
     _urlCandidates.remove(id);
@@ -1107,6 +1108,7 @@ class IxDownloadManager extends ChangeNotifier {
       _urlCandidates.remove(id);
       _exportedToSaf.remove(id);
     }
+    _touchTasksCache();
     _safeNotify();
   }
 
