@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<!--
+  OGL Web · 版本桶入口（由 flutter build web 模板生成，随产物发布）。
+
+  ★ 只做一件事：加载 Flutter 引擎并启动应用。
+    资源一律**同源相对路径**，不改写 <base>、不拼接外部域名。
+    跨源改写会让 Flutter 把跨源地址写进 history，浏览器抛 SecurityError
+    （"A history state object with URL 'https://cdn...' cannot be created in
+    a document with origin ..."），路由随之整站失效 —— 这是旧版踩过的坑。
+
+  ★ 版本桶目录名不随内容变化，因此本文件的缓存策略在发布根 `_headers`
+    里单独设为 must-revalidate；只有带版本号的资源才用一年强缓存。
+-->
+<html lang="zh">
+<head>
+  <base href="./">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>OhGithubLost</title>
+  <meta name="description" content="OGL · OhGithubLost — GitHub 仓库管理器（Web 版）">
+  <meta name="theme-color" content="#171A21">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OGL">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <style>
+    html, body { margin: 0; height: 100%; background: #171A21; }
+    #ogl-boot {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; text-align: center;
+      color: #8D96A8;
+      font: 13px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    #ogl-boot.error { color: #E6EDF3; }
+  </style>
+</head>
+<body>
+  <div id="ogl-boot">正在启动…</div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var boot = document.getElementById("ogl-boot");
+      // 两个桶的目录布局相同，靠自身路径判断该预取哪一份主包。
+      var isWasm = location.pathname.indexOf("/wasm/") !== -1;
+
+      // 预取主包：与 flutter_bootstrap.js 并行，省一次串行往返。
+      // 属性必须与运行时实际的取法一致，否则浏览器会当作两次请求
+      // （旧版就因此把同一份 wasm 下过两遍）。wasm 走 fetch，故加 crossorigin。
+      try {
+        var preload = document.createElement("link");
+        preload.rel = "preload";
+        preload.as = isWasm ? "fetch" : "script";
+        preload.href = isWasm ? "main.dart.wasm" : "main.dart.js";
+        if (isWasm) preload.crossOrigin = "anonymous";
+        document.head.appendChild(preload);
+      } catch (e) {}
+
+      function fail(message) {
+        if (!boot) return;
+        boot.className = "error";
+        boot.textContent = message;
+      }
+
+      var script = document.createElement("script");
+      script.src = "flutter_bootstrap.js";
+      script.async = true;
+      script.addEventListener("error", function () {
+        fail("启动资源加载失败，请刷新重试。");
+      });
+      document.body.appendChild(script);
+
+      // 兜底提示：引擎若在 30 秒内仍未接管页面，说明环境无法运行。
+      setTimeout(function () {
+        if (boot && boot.textContent === "正在启动…") {
+          fail("启动超时。请确认浏览器版本，或刷新后重试。");
+        }
+      }, 30000);
+    })();
+  </script>
+</body>
+</html>
