@@ -20,7 +20,7 @@ import 'package:flutter/foundation.dart';
 import '../../kernel/contract/download_engine.dart';
 import '../../kernel/contract/storage_export.dart';
 import '../../kernel/diagnostics.dart';
-import 'ix_download_backend_io.dart';
+import 'ix_download_backend_web.dart';
 import 'ix_download_error.dart';
 
 /// 下载分类（决定落到哪个子目录）。
