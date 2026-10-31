@@ -74,10 +74,6 @@ Future<T?> ogLShowSettingsChoice<T>({
 }) =>
     ogLShowDialog<T>(
       context: context,
-      animationStyle: AnimationStyle(
-        duration: OgLAnim.fast(context),
-        curve: OgLAnim.curve(context),
-      ),
       builder: (BuildContext dialogContext) => SimpleDialog(
         title: Text(title),
         children: <Widget>[
