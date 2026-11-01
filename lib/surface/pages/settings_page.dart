@@ -22,6 +22,7 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter/services.dart';
 
 import '../../kernel/kernel.dart';
@@ -1544,15 +1545,17 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                   ),
                   const Divider(height: 24),
-                  Text(ogLAccelAgreement()),
+                  MarkdownBody(
+                    data: ogLAccelAgreement(),
+                    selectable: true,
+                    shrinkWrap: true,
+                  ),
                   const Divider(height: 28),
                   // 语言效力：以中文文本为准。放在正文最后、勾选之前。
-                  Text(
-                    _tc('accelLangNote'),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontStyle: FontStyle.italic,
-                        ),
+                  MarkdownBody(
+                    data: _tc('accelLangNote'),
+                    selectable: true,
+                    shrinkWrap: true,
                   ),
                   const SizedBox(height: OgLSpace.sm),
                   Text(
@@ -1623,9 +1626,10 @@ class _SettingsPageState extends State<SettingsPage> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: OgLSpace.sm),
-            Text(
-              _tc('accelPrefixOnlyBody'),
-              style: Theme.of(context).textTheme.bodySmall,
+            MarkdownBody(
+              data: _tc('accelPrefixOnlyBody'),
+              selectable: true,
+              shrinkWrap: true,
             ),
             const Divider(height: 20),
             TextField(

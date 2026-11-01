@@ -335,8 +335,9 @@ class _RepoPageState extends State<RepoPage> {
     }
     setState(() {
       _branch = next;
-      // 换分支后目录回到根：新分支不一定存在同一条路径。
-      _codePath = '';
+      // P3：不再预防性清空路径——目录在新分支不存在时 listDirectory
+      // 返回空/404，列表自然为空；此前"切回原分支也回根"是纯损失。
+      // （清空的动作只保留给"用户点面包屑回根"。）
     });
     OgLAppLog.instance.result('仓库', _t('branchSwitched'), next);
   }
@@ -346,8 +347,16 @@ class _RepoPageState extends State<RepoPage> {
     final ThemeData theme = Theme.of(context);
     final String branchKey = _branch.isEmpty ? 'default' : _branch;
     // R3：只有对自己有 push 权限的仓库才暴露"写入类"入口（新建文件 / 仓库设置）。
-    // 判据唯一：`repo.permissions.push`（缺失 = 不可写，不做降级猜测）。
-    final bool canWrite = _repo.isWritable;
+    // 判据唯一：`repo.permissions.push`。
+    //
+    // P1：permissions 只由 `GET /repos` 返回——star / 搜索 / 列表进入时
+    // `canPush == null`，随后 `_loadRepoPermissions` 才补齐。若在未决期间
+    // 按"不可写"渲染（7 个标签），详情返回后变 8 个标签，
+    // `DefaultTabController` 的 length 变化会重建 TabController、把用户
+    // 弹回第一个标签（正是"路径割裂"的主要来源）。因此：**权限未决
+    // （null）时按可写占位**，标签数量从首帧起保持稳定；详情返回后若确认
+    // 不可写，再收敛为只读。
+    final bool canWrite = _repo.isWritableIncludeUnknown;
     final List<Tab> tabs = <Tab>[
       Tab(text: OgLI18n.instance.t('repo', 'code')),
       Tab(text: OgLI18n.instance.t('repo', 'issues')),
@@ -365,14 +374,19 @@ class _RepoPageState extends State<RepoPage> {
         fullName: _full,
         branch: _branch,
         canWrite: canWrite,
-        // 这里在 _RepoPageState 内部，`widget.repo` 才是有效的。
-        repoPrivate: widget.repo.isPrivate,
+        // P6：用**当前**的 _repo（详情返回后 isPrivate 可能与入口对象不同，
+        // star/搜索入口的对象常缺省）——下载加速据此决定是否带认证头。
+        repoPrivate: _repo.isPrivate,
         initialPath: _codeInitialPath,
         path: _codePath,
         onPathChanged: (String path) => setState(() => _codePath = path),
         onInitialPathConsumed: () => setState(() => _codeInitialPath = null),
       ),
-      _IssuesTab(surface: widget.surface, fullName: _full),
+      _IssuesTab(
+        surface: widget.surface,
+        fullName: _full,
+        canWrite: canWrite,
+      ),
       _PullsTab(surface: widget.surface, fullName: _full),
       _ReleasesTab(
         key: ValueKey<String>('rel-$branchKey'),
@@ -1062,6 +1076,13 @@ class _CodeTabState extends State<_CodeTab> {
         await _goTo(content.path);
       } else {
         setState(() => _file = content);
+        // P2：打开**文件**也把其父目录写回页面级路径——
+        // 此前只有目录才写回：从搜索直达 `a/b/c.dart` 后切到别的标签再回来，
+        // `_codePath` 仍是空串，用户被丢回仓库根目录（路径"割裂"）。
+        final String parent = _dirOf(content.path);
+        if (parent != widget.path) {
+          widget.onPathChanged(parent);
+        }
       }
     } catch (error) {
       _notifier.warning(_t('readFailed', {'error': error}));
@@ -3785,13 +3806,23 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
                 children: <Widget>[
                   Text(_t('deleteRepoWarning')),
                   const SizedBox(height: OgLSpace.md),
-                  FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: theme.colorScheme.error,
+                  // A1：删除仓库需要 **admin** 权限——仅 push 的协作者此前
+                  // 也能看到按钮，点了只会 403。按权限收敛。
+                  if (widget.repo.canAdmin == true)
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: theme.colorScheme.error,
+                      ),
+                      onPressed: _deleteRepo,
+                      child: Text(_t('deleteRepo')),
+                    )
+                  else
+                    Text(
+                      _t('deleteRepoNoPermission'),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                    onPressed: _deleteRepo,
-                    child: Text(_t('deleteRepo')),
-                  ),
                 ],
               ),
             ),

@@ -35,6 +35,7 @@ ALLOW = {
     'lib/surface/app/error_surface.dart': '通知宿主自身的窄列表',
     # `MarkdownBody` 在 Column 里必须 shrinkWrap（父级无界）。
     'lib/surface/widgets/readme_view.dart': 'MarkdownBody 位于无界父级，必须 shrinkWrap',
+    'lib/surface/pages/settings_page.dart': '协议/说明正文用 MarkdownBody（弹窗内、内容有限），必须 shrinkWrap',
     # 需要整份窗口指标（insets + padding + size），无法用窄选择器。
     'lib/surface/app/keyboard_guard.dart': '需 insets/padding/size 多项指标',
     # 需要 textScaler + disableAnimations 并据此 copyWith MediaQuery。

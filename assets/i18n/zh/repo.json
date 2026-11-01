@@ -48,7 +48,7 @@
   "deleteBranchDesc": "将删除分支「{name}」。该操作不可直接撤销。",
   "deleteBranchTitle": "删除分支",
   "deleteDirAction": "删除目录",
-  "deleteDirDesc": "将删除目录 {path} 下的 **{count}** 个文件，",
+  "deleteDirDesc": "将删除目录 {path} 下的 {count} 个文件，",
   "deleteDirDesc2": "并在一次提交中完成。该操作不易撤销。",
   "deleteDirFailed": "删除目录失败：{error}",
   "deleteDirTitle": "删除目录",
@@ -196,5 +196,6 @@
   "selectBranch": "选择分支",
   "issueMeta": "由 {author} 发起 · {comments} 条评论 · {date}",
   "binaryNoEdit": "二进制文件不支持文本编辑",
-  "readFailedEditor": "无法编辑：未能读取有效的 UTF-8 文本内容。"
+  "readFailedEditor": "无法编辑：未能读取有效的 UTF-8 文本内容。",
+  "deleteRepoNoPermission": "需要仓库管理员权限才能删除"
 }
