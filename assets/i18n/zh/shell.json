@@ -49,7 +49,7 @@
   "permSelfTestAllReady": "{ready}/{total} 项就绪（{ms} ms）",
   "permSelfTestPending": "本次会话尚未完成自检",
   "permSelfTestProblems": "{count} 项需要处理",
-  "permStorageProblem": "缺少文件权限，文件将保存在应用私有目录。请到系统设置开启「文件与媒体」权限。",
+  "permStorageProblem": "缺少文件访问权限，文件将保存在应用私有目录。请到系统设置开启「文件与媒体」权限。",
   "profile": "个人",
   "retry": "重试",
   "search": "搜索",
