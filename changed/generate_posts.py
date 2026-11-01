@@ -121,8 +121,9 @@ def main() -> int:
             body = handle.read().strip()
 
         info = releases[tag]
-        date = info['published_at'][:10]
         stamp = post_datetime(info['published_at'])
+        # 文件名与正文日期统一用站点时区（跨零点时不会出现日期不一致）
+        date = stamp[:10]
         title = '%s %s' % (version_label(tag), channel_of(tag))
         description = summary_of(body)
 
