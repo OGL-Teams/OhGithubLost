@@ -1,0 +1,8 @@
+{
+  "linesCount": "共 {count} 行",
+  "noLogs": "没有日志（可能尚未完成，或令牌缺少 Actions 权限）",
+  "noMatchingJob": "没有匹配的 job",
+  "reload": "重新拉取",
+  "searchJobHint": "搜索 job 名",
+  "title": "运行日志"
+}

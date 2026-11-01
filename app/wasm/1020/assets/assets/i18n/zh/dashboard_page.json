@@ -1,0 +1,16 @@
+{
+  "downloads": "下载管理",
+  "emptyMine": "还没有仓库",
+  "emptyStarred": "还没有星标仓库",
+  "home": "首页",
+  "loadMore": "加载更多（已 {count} 条）",
+  "mine": "我的",
+  "newRepo": "新建仓库",
+  "notifications": "通知中心",
+  "private": "私有",
+  "repoCreated": "已创建仓库",
+  "repoCreatedName": "已创建 {name}",
+  "retry": "重试",
+  "starred": "星标",
+  "starsCount": "{count} 星标"
+}

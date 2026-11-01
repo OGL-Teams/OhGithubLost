@@ -1,0 +1,17 @@
+{
+  "cancel": "Cancel",
+  "copiedEvent": "Copied event",
+  "copy": "Copy",
+  "empty": "No matching events",
+  "filterAll": "All",
+  "filterError": "Errors",
+  "filterWarning": "Warnings",
+  "markAllRead": "Mark All Read",
+  "markRead": "Mark Read",
+  "reset": "Reset",
+  "resetDesc": "Clears all in-memory events (disk logs are preserved).",
+  "resetTitle": "Reset Notification Center",
+  "title": "Notifications",
+  "unread": "Unread",
+  "toggleNotification": "Toggle notification"
+}

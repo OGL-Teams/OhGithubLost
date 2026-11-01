@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Description (optional, Markdown supported)",
+  "createFailed": "Creation failed: {error}",
+  "created": "Created",
+  "draft": "Draft",
+  "draftDesc": "Save as draft, do not publish yet",
+  "prerelease": "Pre-release",
+  "prereleaseDesc": "Mark as pre-release",
+  "publish": "Create Release",
+  "publishing": "Publishing…",
+  "tagLabel": "Tag",
+  "tagRequired": "Please fill in a tag first (e.g., v1.0.0)",
+  "title": "New Release",
+  "titleLabel": "Title (optional)"
+}
