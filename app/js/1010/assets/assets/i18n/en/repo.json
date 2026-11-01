@@ -48,7 +48,7 @@
   "deleteBranchDesc": "This will delete branch “{name}”. This action cannot be easily undone.",
   "deleteBranchTitle": "Delete Branch",
   "deleteDirAction": "Delete Directory",
-  "deleteDirDesc": "Will delete **{count}** file(s) under {path},",
+  "deleteDirDesc": "Will delete {count} file(s) under {path},",
   "deleteDirDesc2": "and complete it in a single Commit. This action is hard to undo.",
   "deleteDirFailed": "Failed to delete directory: {error}",
   "deleteDirTitle": "Delete Directory",
@@ -196,5 +196,6 @@
   "selectBranch": "Select branch",
   "issueMeta": "by {author} · {comments} comments · {date}",
   "binaryNoEdit": "Binary files can't be edited as text",
-  "readFailedEditor": "Unable to edit: the file is not valid UTF-8 text."
+  "readFailedEditor": "Unable to edit: the file is not valid UTF-8 text.",
+  "deleteRepoNoPermission": "Repository admin permission is required to delete."
 }
