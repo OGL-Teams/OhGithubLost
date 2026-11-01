@@ -2425,10 +2425,18 @@ class _CodeTabState extends State<_CodeTab> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _IssuesTab extends StatefulWidget {
-  const _IssuesTab({required this.surface, required this.fullName});
+  const _IssuesTab({
+    required this.surface,
+    required this.fullName,
+    required this.canWrite,
+  });
 
   final SurfaceBridge surface;
   final String fullName;
+
+  /// 关闭 / 重开 issue 需要 triage 以上权限；`permissions` 只有 push/admin，
+  /// 按 canWrite 保守收敛（无权限访客不再看到"点了就 403"的按钮）。
+  final bool canWrite;
 
   @override
   State<_IssuesTab> createState() => _IssuesTabState();
@@ -2587,7 +2595,7 @@ class _IssuesTabState extends State<_IssuesTab> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    trailing: ghStr(item, 'state') == 'open'
+                    trailing: ghStr(item, 'state') == 'open' && widget.canWrite
                         ? IconButton(
                             icon: const Icon(Icons.task_alt),
                             tooltip: _t('close'),
