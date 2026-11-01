@@ -197,5 +197,6 @@
   "issueMeta": "by {author} · {comments} comments · {date}",
   "binaryNoEdit": "Binary files can't be edited as text",
   "readFailedEditor": "Unable to edit: the file is not valid UTF-8 text.",
-  "deleteRepoNoPermission": "Repository admin permission is required to delete."
+  "deleteRepoNoPermission": "Repository admin permission is required to delete.",
+  "settingsNeedAdmin": "Repository settings require admin permission."
 }

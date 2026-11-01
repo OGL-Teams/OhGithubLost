@@ -42,5 +42,6 @@
   "oauthStep2": "Step 2: enter this code",
   "oauthWaiting": "Waiting for authorization…",
   "oauthClientMissing": "OAuth is not configured in this build. Use a token instead.",
-  "oauthGranted": "Authorized. Finishing sign-in…"
+  "oauthGranted": "Authorized. Finishing sign-in…",
+  "vaultReadBackFailed": "The token could not be saved to secure storage. Sign-in was not completed. Please try again."
 }

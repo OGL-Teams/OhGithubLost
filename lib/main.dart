@@ -262,6 +262,30 @@ void main() async {
       severity: OgLNoticeSeverity.info,
     );
     OgLAppLog.instance.result('启动', '进入界面（runApp）', '启动报告已就绪');
+
+    // ★ 把中枢通知中心接到应用日志（展示层订阅中枢，方向正确）。
+    //   此前 IxNotificationCenter 装配齐全、下载器也在往里 push，
+    //   但**没有任何消费端**——下载成功/失败的通知永远不显示。
+    //   通知中心有去重/计数/危险红点能力，日志有界面；两者接通才闭环。
+    // 组合根允许直接触达 domain（main 已是唯一装配处），
+    // 展示层仍只经 SurfaceBridge 取用。
+    final IxNotificationCenter notifications =
+        surfaceModule.bridge.domain.notifications;
+    void forwardNotifications() {
+      for (final IxNotification item in notifications.items) {
+        OgLAppLog.instance.add(
+          item.title,
+          item.message,
+          severity: switch (item.level) {
+            IxNotificationLevel.info => OgLNoticeSeverity.info,
+            IxNotificationLevel.warning => OgLNoticeSeverity.warning,
+            IxNotificationLevel.danger => OgLNoticeSeverity.critical,
+          },
+        );
+      }
+    }
+
+    notifications.addListener(forwardNotifications);
     runApp(OgLApp(surface: surfaceModule.bridge, report: report));
 
     // ── 首屏之后：权限自检（不阻塞启动）────────────────────────────────

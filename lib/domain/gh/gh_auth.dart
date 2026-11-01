@@ -381,9 +381,13 @@ class GhAuthService extends ChangeNotifier {
       // 还有其它已登录账号时自动切换到第一个，而不是把用户踢回登录门
       // （switchTo 本就支持——删当前账号不该比切账号代价更大）。
       final remaining = await accounts();
-      if (remaining.isNotEmpty) {
-        await switchTo(remaining.first.id);
-        return;
+      // 逐个尝试：remaining 里可能有"缺令牌"的账号，switchTo 会返回 false。
+      // 此前忽略返回值 → activeKey 已删但 _state 仍是 signedIn，
+      // 出现"显示已登录、实际无激活令牌"的不一致。
+      for (final account in remaining) {
+        if (await switchTo(account.id)) {
+          return;
+        }
       }
       _setState(GhAuthState.signedOut);
     } else {

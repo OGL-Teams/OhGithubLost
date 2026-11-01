@@ -356,7 +356,14 @@ class _RepoPageState extends State<RepoPage> {
     // 弹回第一个标签（正是"路径割裂"的主要来源）。因此：**权限未决
     // （null）时按可写占位**，标签数量从首帧起保持稳定；详情返回后若确认
     // 不可写，再收敛为只读。
-    final bool canWrite = _repo.isWritableIncludeUnknown;
+    // 两个判据分工（此前混用同一个宽松判据 → 游客/未决态误放写入口）：
+    //  · showSettingsTab：只决定**标签数量**是否稳定（含"未决"占位），
+    //    避免 permissions 异步返回导致 TabController 重建、用户被弹回第一个标签。
+    //  · canWrite：**真正的写入许可**，严格按 `canPush == true`。
+    //    游客（无 permissions 字段）与详情请求失败（canPush 仍为 null）
+    //    一律视为**只读**——写入口不显示，而不是点了到服务端才 401。
+    final bool showSettingsTab = _repo.isWritableIncludeUnknown;
+    final bool canWrite = _repo.isWritable;
     final List<Tab> tabs = <Tab>[
       Tab(text: OgLI18n.instance.t('repo', 'code')),
       Tab(text: OgLI18n.instance.t('repo', 'issues')),
@@ -365,7 +372,8 @@ class _RepoPageState extends State<RepoPage> {
       Tab(text: OgLI18n.instance.t('repo', 'branches')),
       Tab(text: OgLI18n.instance.t('repo', 'commits')),
       Tab(text: OgLI18n.instance.t('repo', 'actions')),
-      if (canWrite) Tab(text: OgLI18n.instance.t('repo', 'repoSettings')),
+      if (showSettingsTab)
+        Tab(text: OgLI18n.instance.t('repo', 'repoSettings')),
     ];
     final List<Widget> tabViews = <Widget>[
       _CodeTab(
@@ -414,7 +422,7 @@ class _RepoPageState extends State<RepoPage> {
         fullName: _full,
         branch: _branch,
       ),
-      if (canWrite)
+      if (showSettingsTab)
         _RepoSettingsTab(
           surface: widget.surface,
           repo: _repo,
@@ -2763,6 +2771,9 @@ class _ReleasesTabState extends State<_ReleasesTab> {
       page: page,
     ),
     cacheKey: 'releases:${widget.fullName}',
+    // 必须与 loader 的 per_page 一致：否则 done 判定（list.length < pageSize）
+    // 会在第一页就成立（10 < 30），列表被截断到 10 条且永远不出「加载更多」。
+    pageSize: _kHeavyPageSize,
     onManualRefresh: () => widget.surface.domain.api.invalidateReadCache(),
   );
 
@@ -3243,6 +3254,8 @@ class _ActionsTabState extends State<_ActionsTab> {
       PagedController<Map<String, dynamic>>(
     loader: _load,
     cacheKey: 'actions:${widget.fullName}:${widget.branch}',
+    // 同上：与 per_page 对齐，避免第一页即判 done。
+    pageSize: _kHeavyPageSize,
     onManualRefresh: () => widget.surface.domain.api.invalidateReadCache(),
   );
 
@@ -3718,124 +3731,134 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       child: ListView(
         padding: const EdgeInsets.all(OgLSpace.lg),
         children: <Widget>[
-          Text(_t('basicInfo'), style: theme.textTheme.titleMedium),
-          const SizedBox(height: OgLSpace.sm),
-          TextField(
-            controller: _name,
-            decoration: InputDecoration(
-              labelText: _t('repoName'),
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: OgLSpace.md),
-          TextField(
-            controller: _description,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: _t('description'),
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: OgLSpace.md),
-          Align(
-            alignment: Alignment.centerRight,
-            child: FilledButton(
-              onPressed: _busy ? null : _saveBasic,
-              child: Text(_t('saveBasicInfo')),
-            ),
-          ),
-          const Divider(height: 32),
-          Text('Pages', style: theme.textTheme.titleMedium),
-          const SizedBox(height: OgLSpace.sm),
-          FutureBuilder<Map<String, dynamic>?>(
-            future: _pagesFuture,
-            builder: (BuildContext context,
-                AsyncSnapshot<Map<String, dynamic>?> snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return Text(_t('reading'));
-              }
-              final Map<String, dynamic>? info = snapshot.data;
-              if (info == null) {
-                return Text(_t('notEnabled'));
-              }
-              final String url = ghStr(info, 'html_url');
-              final String status = ghStr(info, 'status');
-              final String statusPart = status.isEmpty ? _t('enabled') : status;
-              final String urlPart =
-                  url.isEmpty ? '' : '\n${_t('address', {'url': url})}';
-              return Text(_t('statusLabel', {
-                'status': '$statusPart$urlPart',
-              }));
-            },
-          ),
-          const SizedBox(height: OgLSpace.sm),
-          Wrap(
-            spacing: 8,
-            children: <Widget>[
-              FilledButton.tonal(
-                onPressed: _busy ? null : _enablePages,
-                child: Text(_t('enableDefaultBranch')),
+          // 仓库设置属 **admin** 级操作（改名/Pages/CNAME 都需要管理员权限）。
+          // push-only 协作者与游客此前能看到整页表单，点下去才 403；现在直接说明。
+          if (widget.repo.canAdmin != true)
+            OgLAsyncEmptyPane(
+              icon: Icons.lock_outline,
+              text: _t('settingsNeedAdmin'),
+            )
+          else ...<Widget>[
+            Text(_t('basicInfo'), style: theme.textTheme.titleMedium),
+            const SizedBox(height: OgLSpace.sm),
+            TextField(
+              controller: _name,
+              decoration: InputDecoration(
+                labelText: _t('repoName'),
+                border: OutlineInputBorder(),
               ),
-              OutlinedButton(
-                onPressed: _busy ? null : _disablePages,
-                child: Text(_t('disable')),
+            ),
+            const SizedBox(height: OgLSpace.md),
+            TextField(
+              controller: _description,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: _t('description'),
+                border: OutlineInputBorder(),
               ),
-            ],
-          ),
-          const SizedBox(height: OgLSpace.lg),
-          TextField(
-            controller: _cname,
-            decoration: InputDecoration(
-              labelText: _t('customDomain'),
-              hintText: 'example.com',
-              border: OutlineInputBorder(),
             ),
-          ),
-          const SizedBox(height: OgLSpace.sm),
-          Align(
-            alignment: Alignment.centerRight,
-            child: FilledButton.tonal(
-              onPressed: _busy ? null : _saveCname,
-              child: Text(_t('saveCname')),
+            const SizedBox(height: OgLSpace.md),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton(
+                onPressed: _busy ? null : _saveBasic,
+                child: Text(_t('saveBasicInfo')),
+              ),
             ),
-          ),
-          const Divider(height: 32),
-          Text(
-            _t('dangerZone'),
-            style: theme.textTheme.titleMedium
-                ?.copyWith(color: theme.colorScheme.error),
-          ),
-          const SizedBox(height: OgLSpace.sm),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(OgLSpace.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(_t('deleteRepoWarning')),
-                  const SizedBox(height: OgLSpace.md),
-                  // A1：删除仓库需要 **admin** 权限——仅 push 的协作者此前
-                  // 也能看到按钮，点了只会 403。按权限收敛。
-                  if (widget.repo.canAdmin == true)
-                    FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: theme.colorScheme.error,
+            const Divider(height: 32),
+            Text('Pages', style: theme.textTheme.titleMedium),
+            const SizedBox(height: OgLSpace.sm),
+            FutureBuilder<Map<String, dynamic>?>(
+              future: _pagesFuture,
+              builder: (BuildContext context,
+                  AsyncSnapshot<Map<String, dynamic>?> snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return Text(_t('reading'));
+                }
+                final Map<String, dynamic>? info = snapshot.data;
+                if (info == null) {
+                  return Text(_t('notEnabled'));
+                }
+                final String url = ghStr(info, 'html_url');
+                final String status = ghStr(info, 'status');
+                final String statusPart =
+                    status.isEmpty ? _t('enabled') : status;
+                final String urlPart =
+                    url.isEmpty ? '' : '\n${_t('address', {'url': url})}';
+                return Text(_t('statusLabel', {
+                  'status': '$statusPart$urlPart',
+                }));
+              },
+            ),
+            const SizedBox(height: OgLSpace.sm),
+            Wrap(
+              spacing: 8,
+              children: <Widget>[
+                FilledButton.tonal(
+                  onPressed: _busy ? null : _enablePages,
+                  child: Text(_t('enableDefaultBranch')),
+                ),
+                OutlinedButton(
+                  onPressed: _busy ? null : _disablePages,
+                  child: Text(_t('disable')),
+                ),
+              ],
+            ),
+            const SizedBox(height: OgLSpace.lg),
+            TextField(
+              controller: _cname,
+              decoration: InputDecoration(
+                labelText: _t('customDomain'),
+                hintText: 'example.com',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: OgLSpace.sm),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.tonal(
+                onPressed: _busy ? null : _saveCname,
+                child: Text(_t('saveCname')),
+              ),
+            ),
+            const Divider(height: 32),
+            Text(
+              _t('dangerZone'),
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(color: theme.colorScheme.error),
+            ),
+            const SizedBox(height: OgLSpace.sm),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(OgLSpace.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(_t('deleteRepoWarning')),
+                    const SizedBox(height: OgLSpace.md),
+                    // A1：删除仓库需要 **admin** 权限——仅 push 的协作者此前
+                    // 也能看到按钮，点了只会 403。按权限收敛。
+                    if (widget.repo.canAdmin == true)
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: theme.colorScheme.error,
+                        ),
+                        onPressed: _deleteRepo,
+                        child: Text(_t('deleteRepo')),
+                      )
+                    else
+                      Text(
+                        _t('deleteRepoNoPermission'),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                      onPressed: _deleteRepo,
-                      child: Text(_t('deleteRepo')),
-                    )
-                  else
-                    Text(
-                      _t('deleteRepoNoPermission'),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: OgLSpace.xl),
+            const SizedBox(height: OgLSpace.xl),
+          ], // ← admin 分支结束
         ],
       ),
     );
