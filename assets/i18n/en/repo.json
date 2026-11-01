@@ -198,5 +198,14 @@
   "binaryNoEdit": "Binary files can't be edited as text",
   "readFailedEditor": "Unable to edit: the file is not valid UTF-8 text.",
   "deleteRepoNoPermission": "Repository admin permission is required to delete.",
-  "settingsNeedAdmin": "Repository settings require admin permission."
+  "settingsNeedAdmin": "Repository settings require admin permission.",
+  "otherSettings": "Other settings",
+  "defaultBranchLabel": "Default branch",
+  "archiveHint": "An archived repository is read-only. You can unarchive anytime.",
+  "archivedHint": "This repository is archived (read-only).",
+  "archiveRepo": "Archive repository",
+  "unarchiveRepo": "Unarchive repository",
+  "archiveConfirm": "An archived repository becomes read-only: no commits, no new issues. Archive it?",
+  "unarchiveConfirm": "Unarchiving makes the repository writable again. Continue?",
+  "confirm": "Confirm"
 }

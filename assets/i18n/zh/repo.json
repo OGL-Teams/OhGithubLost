@@ -198,5 +198,14 @@
   "binaryNoEdit": "二进制文件不支持文本编辑",
   "readFailedEditor": "无法编辑：未能读取有效的 UTF-8 文本内容。",
   "deleteRepoNoPermission": "需要仓库管理员权限才能删除",
-  "settingsNeedAdmin": "仓库设置需要管理员权限"
+  "settingsNeedAdmin": "仓库设置需要管理员权限",
+  "otherSettings": "其他设置",
+  "defaultBranchLabel": "默认分支",
+  "archiveHint": "归档后仓库变为只读，可随时取消。",
+  "archivedHint": "该仓库已归档（只读）。",
+  "archiveRepo": "归档仓库",
+  "unarchiveRepo": "取消归档",
+  "archiveConfirm": "归档后仓库变为只读：不能提交、不能开议题。确定归档？",
+  "unarchiveConfirm": "取消归档后仓库恢复可写。确定？",
+  "confirm": "确定"
 }
