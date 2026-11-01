@@ -97,9 +97,43 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _input.dispose();
     _results?.dispose();
     super.dispose();
+  }
+
+  /// 输入防抖器（真正的防抖，不是每次按键都发请求）。
+  Timer? _debounce;
+
+  /// 防抖窗口：输入停顿这么久才真正发起搜索。
+  ///
+  /// 这是**输入节流**，不是动画时长，因此不走 `OgLAnim` 档位表
+  /// （300ms 是打字节奏的经验值，与动效档位无关）。
+  static const Duration _debounceWindow = Duration(milliseconds: 300);
+
+  void _scheduleSearch() {
+    _debounce?.cancel();
+    _debounce = Timer(_debounceWindow, () {
+      if (!mounted) {
+        return;
+      }
+      final String q = _input.text.trim();
+      // 空串不搜（否则每次清空都会打一次请求）。
+      if (q.isEmpty) {
+        final AsyncController<List<_SearchHit>>? old = _results;
+        setState(() {
+          _results = null;
+          _query = '';
+        });
+        old?.dispose();
+        return;
+      }
+      if (q == _query && _results != null) {
+        return;
+      }
+      unawaited(_run());
+    });
   }
 
   Future<void> _run() async {
@@ -348,6 +382,9 @@ class _SearchPageState extends State<SearchPage> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.search),
                   ),
+                  // 输入即搜（300ms 防抖）：只有回车才搜的话，用户会以为
+                  // "搜不出来"——尤其手机上键盘遮挡时更难发现要按回车。
+                  onChanged: (String _) => _scheduleSearch(),
                   onSubmitted: (String _) async {
                     await _run();
                   },
