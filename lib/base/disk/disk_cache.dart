@@ -25,9 +25,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
-
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../kernel/diagnostics.dart';
 import 'disk_draft.dart';
