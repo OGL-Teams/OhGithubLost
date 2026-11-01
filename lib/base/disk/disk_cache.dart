@@ -25,6 +25,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:crypto/crypto.dart';
 
 import '../../kernel/diagnostics.dart';
@@ -874,7 +876,9 @@ class RepositoryCache {
   /// 挪到 isolate（`Isolate.run`）；小内容直接算（isolate 启动 ~2ms
   /// 对小输入反而不划算）。
   static Future<String> _hashOf(String content) async {
-    if (content.length < 128 * 1024) {
+    // Web 上 `Isolate.run` 不可用（dart:isolate 在浏览器里没有真实 isolate），
+    // 必须留在主线程算——否则大文件写入直接抛 UnsupportedError。
+    if (kIsWeb || content.length < 128 * 1024) {
       return sha256.convert(utf8.encode(content)).toString();
     }
     return Isolate.run(() => sha256.convert(utf8.encode(content)).toString());

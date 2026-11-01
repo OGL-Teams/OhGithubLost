@@ -13,7 +13,6 @@ library;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:isolate';
 
 import '../../base/net/net_bridge.dart';
 import '../../kernel/contract/disk_types.dart';
@@ -307,22 +306,14 @@ class GhResponse {
   /// 分页信息。
   GhPage get page => GhPage.parse(headers['link']);
 
-  /// 按 body 大小选择解析位置。
-  Object? _decode() {
-    final String source = body;
-    if (source.length < _isolateJsonThreshold) {
-      return jsonDecode(source);
-    }
-    // Isolate.run：把字符串拷进新 isolate 解析，只回传结果。
-    return Isolate.run(() => jsonDecode(source));
-  }
-
-  /// 大响应阈值：超过则把解析移出 UI isolate。
+  /// 解析响应体（**同步**）。
   ///
-  /// 500KB 级的 `jsonDecode` 在主线程要 200-800ms，整帧冻结
-  /// （AppBar / 底部栏同时无响应）；常见响应（<50KB）留在主线程，
-  /// 避免 isolate 启动开销（~2ms）反而拖慢小请求。
-  static const int _isolateJsonThreshold = 50 * 1024;
+  /// ⚠️ 这里必须同步：调用方是 `jsonObject` / `jsonList` 两个同步 getter。
+  /// 曾把大 body（≥50 KB）丢给 `Isolate.run` —— 那返回 `Future`，getter 拿到的
+  /// 是 Future 而非 Map/List，于是**超过 50 KB 的响应全部解析成空**
+  /// （仓库列表、搜索结果列表都超过它，表现为"数据取到了却什么都不显示"）。
+  /// 要真正异步化，得把这两个 getter 连同调用方一起改成 `Future`，属独立重构。
+  Object? _decode() => jsonDecode(body);
 
   /// 解析为对象 Map（失败返回 `null`）。
   Map<String, dynamic>? get jsonObject {
