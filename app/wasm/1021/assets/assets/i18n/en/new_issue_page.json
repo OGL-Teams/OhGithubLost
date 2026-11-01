@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Body (optional, Markdown supported)",
+  "createFailed": "Creation failed: {error}",
+  "created": "Created",
+  "submit": "Create Issue",
+  "submitting": "Submitting…",
+  "title": "New Issue",
+  "titleLabel": "Title",
+  "titleRequired": "Please fill in the title first"
+}

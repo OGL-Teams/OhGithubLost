@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "正文（可选，支持 Markdown）",
+  "createFailed": "创建失败：{error}",
+  "created": "已创建",
+  "submit": "创建议题",
+  "submitting": "提交中…",
+  "title": "新建议题",
+  "titleLabel": "标题",
+  "titleRequired": "请先填写标题"
+}

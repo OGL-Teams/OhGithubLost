@@ -1,0 +1,16 @@
+{
+  "codeResults": "\"{q}\" code results: {count}",
+  "codeSearch": "Code Search",
+  "noRepoForResult": "Result has no accessible repo (index may not be ready)",
+  "noResults": "No results for \"{query}\"",
+  "openFileHint": "Tap to open file directly",
+  "private": "Private",
+  "queryHint": "Keyword (supports repo:… language:… qualifiers)",
+  "repoResults": "\"{q}\" repo results: {count}",
+  "repoSearch": "Repo Search",
+  "search": "Search",
+  "starsCount": "{count} stars",
+  "startHint": "Enter keyword to start searching",
+  "tabCode": "Code",
+  "tabRepos": "Repos"
+}

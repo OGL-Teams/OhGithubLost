@@ -1,0 +1,12 @@
+{
+  "copyContent": "Copy Content",
+  "delete": "Delete",
+  "deleteDraft": "Delete Draft",
+  "deleted": "Draft deleted",
+  "draft": "Draft",
+  "empty": "No uncommitted drafts yet",
+  "title": "Drafts",
+  "deleteDraftDesc": "This draft will be deleted from this device. This cannot be undone.",
+  "openInEditor": "Open in editor",
+  "draftGone": "This draft no longer exists"
+}
