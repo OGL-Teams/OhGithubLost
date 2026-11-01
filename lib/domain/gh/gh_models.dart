@@ -322,6 +322,12 @@ class GhRepo extends GhRecord {
   /// 是否可写（[canPush] 为真的**唯一**判据；不做任何降级猜测）。
   bool get isWritable => canPush == true;
 
+  /// 权限**未决**（`canPush == null`，详情接口尚未返回）时的占位判断：
+  /// 按可写渲染，保持标签数量稳定；详情返回后由 [isWritable] 收敛。
+  /// 只用于"标签数量这类结构性 UI"，真正的写入入口仍以 [isWritable] 为准
+  /// （写入操作在入口处还有第二道校验）。
+  bool get isWritableIncludeUnknown => canPush != false;
+
   @override
   final Map<String, dynamic> raw;
 
