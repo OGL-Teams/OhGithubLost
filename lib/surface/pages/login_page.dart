@@ -56,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
   String? _error;
   String _phase = '';
 
-  /// OAuth Device Flow 进行中状态（null = 未启动）。
+  /// OAuth Device Flow 状态（null = 未启动）。
   GhOAuthStatus? _oauthStatus;
   GhOAuthCode? _oauthCode;
   String? _oauthError;
@@ -86,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
     await _finishLogin(token);
   }
 
-  /// OAuth Device Flow 登录（Client ID 未注入时按钮不出现，见 build）。
+  /// OAuth Device Flow 登录（Client ID 未注入时按钮不显示，见 build）。
   Future<void> _loginWithOAuth() async {
     const String clientId = kOgLGitHubClientId;
     if (clientId.isEmpty) {
@@ -98,69 +98,82 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _busy = true;
       _oauthError = null;
-      _oauthStatus = GhOAuthStatus.pending;
       _error = null;
       _phase = '';
+      _oauthStatus = GhOAuthStatus.pending;
     });
     try {
-      final flow = GhOAuthDeviceFlow(clientId: clientId);
-      final code = await flow.start();
-      if (!mounted) return;
+      final GhOAuthDeviceFlow flow = GhOAuthDeviceFlow(clientId: clientId);
+      final GhOAuthCode code = await flow.start();
+      if (!mounted) {
+        return;
+      }
       setState(() => _oauthCode = code);
-      final String token = await flow.poll(
+      final String raw = await flow.poll(
         code,
         onStatus: (GhOAuthStatus status) {
-          if (mounted) setState(() => _oauthStatus = status);
+          if (mounted) {
+            setState(() => _oauthStatus = status);
+          }
         },
       );
-      if (!mounted) return;
-      setState(() => _busy = false);
-      // 复用令牌验证链（与 PAT 登录完全一致：验证 → 转正 → 回读自检）。
-      await _finishLogin(GhToken(token));
+      if (!mounted) {
+        return;
+      }
+      setState(() => _oauthCode = null);
+      await _finishLogin(GhToken(raw));
     } on GhAuthException catch (error) {
       if (mounted) {
         setState(() {
           _oauthError = error.message;
           _busy = false;
+          _oauthCode = null;
         });
       }
-    } catch (error) {
+    } on Object catch (error) {
       if (mounted) {
         setState(() {
           _oauthError = '$error';
           _busy = false;
+          _oauthCode = null;
         });
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _oauthCode = null);
       }
     }
   }
 
-  /// PAT 与 OAuth 共用的验证链（从 [_login] 抽出）。
+  /// PAT 与 OAuth 共用的验证链：暂存 → 验证 → 转正 → 清缓存 → 回读自检。
   Future<void> _finishLogin(GhToken token) async {
     setState(() {
       _busy = true;
       _error = null;
       _phase = OgLI18n.instance.t('login', 'verifying');
     });
+
     final auth = widget.surface.domain.auth;
     final api = widget.surface.domain.api;
     final String pendingId = 'pending-${DateTime.now().millisecondsSinceEpoch}';
     try {
+      OgLAppLog.instance.add(_t('signIn'), '1/4 暂存待验证账户（$pendingId）');
       await auth.saveAccount(
           GhAccount(
               id: pendingId,
               login: OgLI18n.instance.t('login', 'pendingSuffix')),
           token);
       await auth.switchTo(pendingId);
+
       if (mounted) {
-        setState(() => _phase = OgLI18n.instance.t('login', 'phaseVerify'));
+        setState(() {
+          _phase = OgLI18n.instance.t('login', 'phaseVerify');
+        });
       }
+      OgLAppLog.instance.add(_t('signIn'), '2/4 验证令牌（GET /user）…');
       final me = await api.currentUser();
+      OgLAppLog.instance.add(_t('signIn'), '3/4 验证成功：@${me.login}');
+
       if (mounted) {
-        setState(() => _phase = OgLI18n.instance.t('login', 'phasePromote'));
+        setState(() {
+          _phase = OgLI18n.instance.t('login', 'phasePromote');
+        });
       }
       await auth.saveAccount(
         GhAccount(id: 'user-${me.id}', login: me.login, name: me.name),
@@ -170,8 +183,11 @@ class _LoginPageState extends State<LoginPage> {
       await auth.removeAccount(pendingId);
       await widget.surface.clearAllCaches();
       clearOgLRepoPageCaches();
+
       if (mounted) {
-        setState(() => _phase = OgLI18n.instance.t('login', 'phaseVault'));
+        setState(() {
+          _phase = OgLI18n.instance.t('login', 'phaseVault');
+        });
       }
       final readBack = await auth.activeToken();
       OgLAppLog.instance.add(
@@ -343,20 +359,15 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ],
-            ],
-          )),
-    );
-
-              // ── OAuth Device Flow（Client ID 未注入时隐藏）───────
+              // ── OAuth Device Flow（Client ID 未注入时整块隐藏）──────
               if (kOgLGitHubClientId.isNotEmpty) ...<Widget>[
                 const SizedBox(height: OgLSpace.lg),
                 Row(
                   children: <Widget>[
                     const Expanded(child: Divider()),
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: OgLSpace.md,
-                      ),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: OgLSpace.md),
                       child: Text(
                         OgLI18n.instance.t('login', 'orDivider'),
                         style: Theme.of(context).textTheme.bodySmall,
@@ -369,9 +380,7 @@ class _LoginPageState extends State<LoginPage> {
                 OutlinedButton.icon(
                   onPressed: _busy ? null : _loginWithOAuth,
                   icon: const Icon(Icons.open_in_new),
-                  label: Text(
-                    OgLI18n.instance.t('login', 'oauthButton'),
-                  ),
+                  label: Text(OgLI18n.instance.t('login', 'oauthButton')),
                 ),
                 if (_oauthCode != null) ...<Widget>[
                   const SizedBox(height: OgLSpace.lg),
@@ -409,27 +418,10 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                           ),
                           const SizedBox(height: OgLSpace.md),
-                          if (_oauthStatus == GhOAuthStatus.pending)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                                const SizedBox(width: OgLSpace.md),
-                                Text(
-                                  OgLI18n.instance.t('login', 'oauthWaiting'),
-                                ),
-                              ],
-                            )
-                          else
-                            Text(
-                              OgLI18n.instance.t('login', 'oauthWaiting'),
-                            ),
+                          Text(
+                            OgLI18n.instance.t('login', 'oauthWaiting'),
+                            textAlign: TextAlign.center,
+                          ),
                         ],
                       ),
                     ),
@@ -446,5 +438,8 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
               ],
+            ],
+          )),
+    );
   }
 }
