@@ -463,7 +463,6 @@ class SurfaceBridge {
     domain.downloads.preferredConnections = value;
   }
 
-
   /// 仓库文件操作服务（统一文件操作入口）。
   RepoFileService get repoFiles => domain.repoFiles;
 
