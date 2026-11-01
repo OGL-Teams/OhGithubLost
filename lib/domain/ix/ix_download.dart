@@ -20,8 +20,9 @@ import 'package:flutter/foundation.dart';
 import '../../kernel/contract/download_engine.dart';
 import '../../kernel/contract/storage_export.dart';
 import '../../kernel/diagnostics.dart';
-import 'ix_download_backend_io.dart';
+import 'ix_download_backend_web.dart';
 import 'ix_download_error.dart';
+import 'ix_notify.dart';
 
 /// 下载分类（决定落到哪个子目录）。
 enum IxDownloadCategory {
@@ -497,10 +498,11 @@ class IxDownloadManager extends ChangeNotifier {
     StorageExporter? storageExporter,
     Future<String?> Function()? downloadDirProvider,
     IxDownloadBackend? backend,
-    this.notifications,
+    IxNotificationCenter? notifications,
   })  : _diagnostics = diagnostics,
         _engine = engine,
         _exporter = storageExporter,
+        notifications = notifications,
         _backend = backend ?? createDownloadBackend() {
     _subscription = _backend.events.listen(_onEvent);
     _backend.downloadDirProvider = downloadDirProvider;
