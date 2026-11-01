@@ -54,6 +54,7 @@ ALLOW = {
     'lib/surface/pages/gist_detail_page.dart': 'Gist 页含代码等宽文本',
     'lib/surface/pages/new_gist_page.dart': '新建 Gist 页含代码等宽文本',
     'lib/surface/pages/drafts_page.dart': '草稿页含代码等宽文本',
+    'lib/surface/pages/search_page.dart': '搜索输入防抖窗口（打字节流，非动效时长）',
     'lib/surface/pages/pull_page.dart': 'PR 页含代码等宽文本',
     'lib/surface/util/og_l_log_file*.dart': '日志格式定义',
     'lib/surface/app/motion.dart': '动效档位表 —— 时长的唯一来源',
