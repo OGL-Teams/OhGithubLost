@@ -13,5 +13,7 @@
   "resetTitle": "Reset Notification Center",
   "title": "Notifications",
   "unread": "Unread",
-  "toggleNotification": "Toggle notification"
+  "toggleNotification": "Toggle notification",
+  "filterUnread": "Unread",
+  "emptyUnread": "No unread notifications"
 }
