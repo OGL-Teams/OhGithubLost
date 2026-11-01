@@ -3575,6 +3575,76 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
     }
   }
 
+  /// 分支列表（默认分支下拉用；懒加载一次）。
+  Future<List<GhBranch>>? _branchesFuture;
+
+  /// 设置默认分支（GitHub 侧 PATCH default_branch）。
+  Future<void> _setDefaultBranch(String branch) async {
+    setState(() => _busy = true);
+    try {
+      final GhRepo updated = await widget.surface.domain.api.updateRepo(
+        _full,
+        defaultBranch: branch,
+      );
+      if (mounted) {
+        widget.onRepoChanged(updated);
+        OgLNotifier.of(context).success(_t('saved'));
+      }
+    } catch (error) {
+      if (mounted) {
+        OgLNotifier.of(context).warning(_t('saveFailed', {'error': error}));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  /// 归档 / 取消归档（归档后仓库只读，属重要状态变更）。
+  Future<void> _toggleArchive() async {
+    final bool target = !widget.repo.isArchived;
+    final bool? ok = await ogLShowDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: Text(target ? _t('archiveRepo') : _t('unarchiveRepo')),
+        content: Text(target ? _t('archiveConfirm') : _t('unarchiveConfirm')),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(_t('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(OgLI18n.instance.t('common', 'confirm')),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) {
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      final GhRepo updated = await widget.surface.domain.api.updateRepo(
+        _full,
+        archived: target,
+      );
+      if (mounted) {
+        widget.onRepoChanged(updated);
+        OgLNotifier.of(context).success(_t('saved'));
+      }
+    } catch (error) {
+      if (mounted) {
+        OgLNotifier.of(context).warning(_t('saveFailed', {'error': error}));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
   Future<void> _saveCname() async {
     if (_busy) {
       return;
@@ -3773,6 +3843,79 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
                 onPressed: _busy ? null : _saveBasic,
                 child: Text(_t('saveBasicInfo')),
               ),
+            ),
+            const Divider(height: 32),
+            // ── 其他仓库设置（此前只有改名/描述、Pages、CNAME、删除）──
+            // GitHub 网页端还有两项最常用的：默认分支、归档。
+            Text(_t('otherSettings'), style: theme.textTheme.titleMedium),
+            const SizedBox(height: OgLSpace.sm),
+            Text(
+              _t('defaultBranchLabel'),
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: OgLSpace.xxs),
+            FutureBuilder<List<GhBranch>>(
+              future: _branchesFuture ??=
+                  widget.surface.domain.api.branches(_full, perPage: 100),
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<GhBranch>> snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return Text(_t('reading'));
+                }
+                final List<GhBranch> list = snapshot.data ?? const <GhBranch>[];
+                if (list.isEmpty) {
+                  return Text(_t('notEnabled'));
+                }
+                final String current = widget.repo.defaultBranch;
+                final bool exists = list.any((GhBranch b) => b.name == current);
+                return DropdownButtonFormField<String>(
+                  initialValue: exists ? current : null,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                  items: <DropdownMenuItem<String>>[
+                    for (final GhBranch b in list)
+                      DropdownMenuItem<String>(
+                        value: b.name,
+                        child: Text(b.name),
+                      ),
+                  ],
+                  onChanged: _busy
+                      ? null
+                      : (String? value) {
+                          if (value != null && value != current) {
+                            unawaited(_setDefaultBranch(value));
+                          }
+                        },
+                );
+              },
+            ),
+            const SizedBox(height: OgLSpace.md),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    widget.repo.isArchived
+                        ? _t('archivedHint')
+                        : _t('archiveHint'),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: OgLSpace.md),
+                OutlinedButton(
+                  onPressed: _busy ? null : () => unawaited(_toggleArchive()),
+                  child: Text(
+                    widget.repo.isArchived
+                        ? _t('unarchiveRepo')
+                        : _t('archiveRepo'),
+                  ),
+                ),
+              ],
             ),
             const Divider(height: 32),
             Text('Pages', style: theme.textTheme.titleMedium),

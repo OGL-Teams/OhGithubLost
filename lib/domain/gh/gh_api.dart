@@ -245,6 +245,9 @@ class GhApi implements CacheRemote {
     String? description,
     bool? private,
     String? defaultBranch,
+    String? homepage,
+    bool? archived,
+    List<String>? topics,
   }) async {
     final response = await client.send(GhRequest(
       path: '/repos/$fullName',
@@ -254,6 +257,9 @@ class GhApi implements CacheRemote {
         if (description != null) 'description': description,
         if (private != null) 'private': private,
         if (defaultBranch != null) 'default_branch': defaultBranch,
+        if (homepage != null) 'homepage': homepage,
+        if (archived != null) 'archived': archived,
+        if (topics != null) 'topics': topics,
       },
       label: 'PATCH /repos/$fullName',
     ));
