@@ -15,6 +15,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/animations.dart';
+import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../app/overlays.dart';
@@ -122,10 +123,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   bool _match(OgLAppLogEntry entry) {
     switch (_filter) {
-      case 1:
+      case 1: // 仅未读
+        return !OgLAppLog.instance.isRead(entry);
+      case 2: // 仅告警
         return entry.severity == OgLNoticeSeverity.warning ||
             entry.severity == OgLNoticeSeverity.critical;
-      case 2:
+      case 3: // 仅错误
         return entry.severity == OgLNoticeSeverity.critical;
       default:
         return true;
@@ -191,8 +194,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
             child: SegmentedButton<int>(
               segments: <ButtonSegment<int>>[
                 ButtonSegment<int>(value: 0, label: Text(_t('filterAll'))),
-                ButtonSegment<int>(value: 1, label: Text(_t('filterWarning'))),
-                ButtonSegment<int>(value: 2, label: Text(_t('filterError'))),
+                // 「只有未读」是最常用的一种看法（通知中心的本职），此前没有。
+                ButtonSegment<int>(value: 1, label: Text(_t('filterUnread'))),
+                ButtonSegment<int>(value: 2, label: Text(_t('filterWarning'))),
+                ButtonSegment<int>(value: 3, label: Text(_t('filterError'))),
               ],
               selected: <int>{_filter},
               showSelectedIcon: false,
@@ -210,8 +215,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 final List<OgLAppLogEntry> entries =
                     OgLAppLog.instance.entries.where(_match).toList();
                 if (entries.isEmpty) {
-                  return Center(
-                    child: Text(_t('empty'), style: theme.textTheme.bodySmall),
+                  return OgLAsyncEmptyPane(
+                    icon: _filter == 1
+                        ? Icons.mark_email_read_outlined
+                        : Icons.notifications_none,
+                    text: _filter == 1 ? _t('emptyUnread') : _t('empty'),
                   );
                 }
                 return ListView.separated(

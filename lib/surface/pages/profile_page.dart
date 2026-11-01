@@ -240,13 +240,25 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: <Widget>[
                   for (final GhAccount account in accounts)
                     ListTile(
-                      leading: const Icon(Icons.key),
+                      leading: Icon(
+                        account.id == _activeId
+                            ? Icons.check_circle
+                            : Icons.account_circle_outlined,
+                        color: account.id == _activeId
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
+                      ),
                       title: Text('@${account.login}'),
                       subtitle: Text(
                         account.id == _activeId
                             ? _t('currentAccount')
                             : _t('switchable'),
                       ),
+                      // 整行可点切换：账号行看上去就是一个可选条目，
+                      // 只让行尾小按钮能点不符合预期。
+                      onTap: account.id == _activeId
+                          ? null
+                          : () => _switchTo(account),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
