@@ -48,6 +48,7 @@ import 'about_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
 import 'onboarding_page.dart';
+import 'profile_page.dart';
 
 /// 设置页。
 class SettingsPage extends StatefulWidget {
@@ -323,7 +324,11 @@ class _SettingsPageState extends State<SettingsPage> {
             onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(_t('cancel')),
           ),
+          // 破坏性操作确认键统一红色（与删除文件 / 移除账号一致）。
           FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(_t('reset')),
           ),
@@ -910,6 +915,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final TextEditingController doh =
         TextEditingController(text: value.dnsCustomDohUrl);
     final bool? ok = await _showOgLDialog<bool>(
+      barrierDismissible: false,
       builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(_t('dnsCustom')),
         content: Column(
@@ -1739,6 +1745,17 @@ class _SettingsPageState extends State<SettingsPage> {
                     subtitle: Text(
                       _t('accountId', <String, Object?>{'id': account.id}),
                       style: theme.textTheme.bodySmall,
+                    ),
+                    // 账户管理（切换 / 移除 / 退出）在「个人」页——
+                    // 此前这条不可点、也无跳转，用户找不到退出登录入口。
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => unawaited(
+                      Navigator.of(context).push(MaterialPageRoute<void>(
+                        builder: (BuildContext context) => ProfilePage(
+                          surface: widget.surface,
+                          onAccountsChanged: () async {},
+                        ),
+                      )),
                     ),
                   );
                 },

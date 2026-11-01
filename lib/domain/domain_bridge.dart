@@ -392,6 +392,8 @@ class IxModule extends OgLModule {
     notifications = IxNotificationCenter();
     downloads = IxDownloadManager(
       diagnostics: context.diagnostics,
+      // F-1：下载完成 / 失败投递到通知中心（离开下载页也能看到结果）。
+      notifications: notifications,
       // 多连接分片引擎（硬件层实现，逻辑层只认契约）。
       engine: OgLRangeDownloader(),
       // 成品导出（存储②档：把成品粘贴到用户选的 SAF 文件夹）。

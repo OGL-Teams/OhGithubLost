@@ -437,8 +437,13 @@ class SurfaceBridge {
   Future<void> removeDownload(String id) => domain.downloads.remove(id);
 
   /// 设置下载并发连接数（非法档位由 `settings` 回落默认）。
-  Future<void> setDownloadConnections(int value) =>
-      settings.setDownloadConnections(value);
+  ///
+  /// 同步推给下载管理器：对**失败重试 / 继续**的任务立即生效
+  /// （此前沿用入队时的旧值，改设置后重试大文件仍然用老并发）。
+  Future<void> setDownloadConnections(int value) async {
+    await settings.setDownloadConnections(value);
+    domain.downloads.preferredConnections = value;
+  }
 
   /// 仓库文件操作服务（统一文件操作入口）。
   RepoFileService get repoFiles => domain.repoFiles;

@@ -497,9 +497,11 @@ class IxDownloadManager extends ChangeNotifier {
     StorageExporter? storageExporter,
     Future<String?> Function()? downloadDirProvider,
     IxDownloadBackend? backend,
+    IxNotificationCenter? notifications,
   })  : _diagnostics = diagnostics,
         _engine = engine,
         _exporter = storageExporter,
+        notifications = notifications,
         _backend = backend ?? createDownloadBackend() {
     _subscription = _backend.events.listen(_onEvent);
     _backend.downloadDirProvider = downloadDirProvider;
@@ -517,6 +519,21 @@ class IxDownloadManager extends ChangeNotifier {
   /// 走分片引擎的任务 → 取消令牌（暂停 / 取消 / 重试都靠它）。
   final Map<String, DownloadCancelToken> _rangeTokens =
       <String, DownloadCancelToken>{};
+
+  /// 通知中心（由装配根注入；`null` = 不投递，仅诊断留痕）。
+  ///
+  /// F-1：下载完成 / 失败必须到达用户——此前只写诊断日志，
+  /// 用户离开下载页后失败完全不可见（链路注释声称"不允许静默"，实际断了）。
+  final IxNotificationCenter? notifications;
+
+  /// 当前**用户设置**的连接数（由装配层在设置变化时同步进来；null=未接入）。
+  ///
+  /// 分层纪律：domain 不读 settings，由 SurfaceBridge 反向推送。
+  int? preferredConnections;
+
+  /// 每个分片任务的**回合号**：resume/retry 都会 +1。旧轮回调看到自己的
+  /// 回合号不是当前值，就说明它已被取代——一切状态写入必须静默退出。
+  final Map<String, int> _roundOf = <String, int>{};
 
   /// 走分片引擎的任务 → 并发数（重试用同一份参数）。
   final Map<String, int> _rangeConnections = <String, int>{};
@@ -717,15 +734,17 @@ class IxDownloadManager extends ChangeNotifier {
     if (snap == null || spec == null) {
       return;
     }
-    // ★ 单飞守卫：已有分片任务在跑（running）时不得再起一轮——
-    //   resume/retry 双击或对 running 任务再 resume 会创建第二个引擎
-    //   fetch，两个 fetch 并发写同一 targetPath，交错写坏文件且互删分片。
-    //   旧 token 先取消（暂停语义），再由本次调用接管。
-    if (_rangeTokens.containsKey(id) &&
-        _snapshots[id]?.status == IxDownloadStatus.running) {
+    // ★ 单飞守卫 + 回合制：resume/retry 双击或对 running 任务再 resume
+    //   会创建第二个引擎 fetch，两个 fetch 并发写同一 targetPath。
+    //   旧 token 先取消（暂停语义），并**把回合号 +1**——旧轮回调看到
+    //   自己的回合号过期就全部静默退出，绝不再写状态（否则会把新一轮
+    //   刚写的 running 打回 canceled，界面与实际背道而驰）。
+    if (_rangeTokens.containsKey(id)) {
       _rangeTokens[id]?.cancel();
       _rangeTokens.remove(id);
     }
+    final int myRound = (_roundOf[id] ?? 0) + 1;
+    _roundOf[id] = myRound;
     final DownloadEngine engine = _engine!;
     final List<String> candidates = _urlCandidates[id] ?? <String>[spec.url];
     final DownloadCancelToken token = engine.newCancelToken();
@@ -783,13 +802,27 @@ class IxDownloadManager extends ChangeNotifier {
       return;
     }
 
-    _snapshots[id] = snap.copyWith(
+    // A-1：探测（15s 超时窗口）期间用户可能点了取消 / 暂停——
+    //   快照状态已变，这里必须中止，绝不能把"已取消"覆盖回 running。
+    final IxDownloadTask beforeRun = _snapshots[id] ?? snap;
+    if (beforeRun.status != IxDownloadStatus.queued &&
+        beforeRun.status != IxDownloadStatus.running) {
+      _diagnostics?.debug(
+        'DL',
+        '分片启动中止（探测期间状态已变更）：${beforeRun.status.name}',
+        code: 'OGL-DL-206-D',
+        data: <String, Object?>{'taskId': id},
+      );
+      return;
+    }
+    _snapshots[id] = beforeRun.copyWith(
       status: IxDownloadStatus.running,
       // ★ 分片引擎**每次都是从 0 重新拉**（暂停 / 失败后临时分片已被清掉），
       //   所以这里必须把已收字节一起归零：留着上一轮的数字，界面会在
       //   "重新下载"的头几秒里显示一个根本不属于本次下载的假进度。
       received: 0,
       total: probe.total!,
+      error: null,
     );
     _touchTasksCache();
     _safeNotify();
@@ -811,6 +844,11 @@ class IxDownloadManager extends ChangeNotifier {
       // 先校验完整性再宣告完成（校验不过则判失败，且不导出到 SAF）。
       await _finishTask(id);
     } on DownloadCanceled {
+      // 回合校验（A-2）：这枚 token 已被新一轮接管（resume/retry），
+      // 旧轮的一切回调必须静默退出——绝不能用旧轮的取消覆盖新轮的 running。
+      if (_roundOf[id] != myRound) {
+        return;
+      }
       _applyStatus(
         id,
         _pausedIds.contains(id)
@@ -861,6 +899,14 @@ class IxDownloadManager extends ChangeNotifier {
           );
           _touchTasksCache();
           _safeNotify();
+          notifications?.push(
+            level: IxNotificationLevel.warning,
+            title: '下载失败',
+            message: '${_fileNameOf(current)}：$error',
+            code: 'OGL-DL-202',
+            source: 'download',
+            subject: id,
+          );
         }
       }
     } finally {
@@ -1003,8 +1049,11 @@ class IxDownloadManager extends ChangeNotifier {
   /// 分片任务没有"库队列"可恢复：重新起一次分片拉取（分片临时文件已在失败时清理，
   /// 因此是**从头发起**；换来的是不出现"假装在续传"的错位文件）。
   Future<void> resume(String id) async {
-    final int? connections = _rangeConnections[id];
-    if (connections != null && _specs.containsKey(id) && _engine != null) {
+    // E-1：优先用**当前设置**的连接数——设置里改了并发，重试/继续就该按
+    // 新值跑（此前沿用入队时快照的旧值，改设置对失败重试的大文件不生效）。
+    final int connections = preferredConnections ?? _rangeConnections[id] ?? 1;
+    if (_specs.containsKey(id) && _engine != null) {
+      _rangeConnections[id] = connections;
       _pausedIds.remove(id);
       _applyStatus(id, IxDownloadStatus.running);
       await _runRanged(id: id, connections: connections);
@@ -1070,6 +1119,7 @@ class IxDownloadManager extends ChangeNotifier {
   Future<void> remove(String id) async {
     _rangeTokens[id]?.cancel();
     _rangeTokens.remove(id);
+    _roundOf.remove(id);
     _rangeConnections.remove(id);
     _pausedIds.remove(id);
     await _backend.cancel(id);
@@ -1259,11 +1309,35 @@ class IxDownloadManager extends ChangeNotifier {
         );
         _touchTasksCache();
         _safeNotify();
+        notifications?.push(
+          level: IxNotificationLevel.danger,
+          title: '下载失败',
+          message: '${_fileNameOf(snap)}：完整性校验未通过，坏文件已删除，可重试',
+          code: 'OGL-DL-403',
+          source: 'download',
+          subject: id,
+        );
       }
       return;
     }
     _applyStatus(id, IxDownloadStatus.completed); // 内部会触发 SAF 导出。
     unawaited(_fillCompletedSize(id));
+    final IxDownloadTask? done = _snapshots[id];
+    if (done != null) {
+      notifications?.push(
+        level: IxNotificationLevel.info,
+        title: '下载完成',
+        message: _fileNameOf(done),
+        source: 'download',
+        subject: id,
+      );
+    }
+  }
+
+  /// 成品文件名（通知用；从路径取末段，无法解析时退回任务名）。
+  String _fileNameOf(IxDownloadTask task) {
+    final List<String> parts = task.savePath.split('/');
+    return parts.isEmpty ? task.fileName : parts.last;
   }
 
   /// 下载完成后，把成品**导出**到用户授权的 SAF 文件夹（存储②档）。
@@ -1365,11 +1439,17 @@ class IxDownloadManager extends ChangeNotifier {
       }
     }
     _lastSample[id] = (at: now, received: received);
+    // A-4：进度事件只更新数字，**不无条件改状态**——
+    // 单连接库任务在库的重试退避窗口里被用户"暂停"后，后续仍可能到达
+    // 一两条进度/running 事件；若这里强制写回 running，按钮就会在
+    // 「暂停 / 进行中」之间闪烁，且暂停实际未生效。
+    final bool statusLive = snap.status == IxDownloadStatus.running ||
+        snap.status == IxDownloadStatus.queued;
     _snapshots[id] = snap.copyWith(
       received: received,
       total: total,
       bytesPerSecond: speed,
-      status: IxDownloadStatus.running,
+      status: statusLive ? IxDownloadStatus.running : snap.status,
     );
     _touchTasksCache();
     _notifyThrottled();
