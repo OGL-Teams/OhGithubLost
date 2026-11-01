@@ -23,6 +23,7 @@ import 'download_manager_page.dart';
 import 'new_repo_page.dart';
 import 'notifications_page.dart';
 import 'repo_page.dart';
+import 'search_page.dart';
 
 /// 取 `dashboard_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -129,9 +130,23 @@ class _DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 
+  /// 跳到搜索页（星标为空时给一条"去哪找仓库"的路）。
+  void _goSearch() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => SearchPage(surface: widget.surface),
+      ),
+    );
+  }
+
   void _segmentChanged(int value) {
     setState(() => _segment = value);
-    unawaited(_refreshActive());
+    // 已有数据就不再重拉：每次切段都 refresh 会让列表先清空、再重新请求，
+    // 用户看到的是"一切回就白一下"。空或出错时才自动去取。
+    final _RepoPaged active = _active;
+    if (active.items.isEmpty && !active.loading) {
+      unawaited(_refreshActive());
+    }
   }
 
   /// 刷新当前分段，并按新数据重新登记头像（同 id 幂等，重复调用无成本）。
@@ -384,15 +399,32 @@ class _DashboardPageState extends State<DashboardPage> {
                   );
                 }
                 if (p.items.isEmpty) {
-                  return OgLAsyncEmptyPane(
-                    icon: Icons.folder_outlined,
-                    text: _segment == 0 ? _t('emptyMine') : _t('emptyStarred'),
-                    action: _segment == 0
-                        ? FilledButton(
-                            onPressed: _createRepo,
-                            child: Text(_t('newRepo')),
-                          )
-                        : null,
+                  // 空态也要能下拉刷新（此前 RefreshIndicator 只包了"有数据"分支，
+                  // 刚好在"没数据需要手动重试"时失效）。
+                  return RefreshIndicator(
+                    onRefresh: _refreshActive,
+                    child: ListView(
+                      children: <Widget>[
+                        SizedBox(
+                          height: MediaQuery.sizeOf(context).height * 0.5,
+                          child: OgLAsyncEmptyPane(
+                            icon: Icons.folder_outlined,
+                            text: _segment == 0
+                                ? _t('emptyMine')
+                                : _t('emptyStarred'),
+                            action: _segment == 0
+                                ? FilledButton(
+                                    onPressed: _createRepo,
+                                    child: Text(_t('newRepo')),
+                                  )
+                                : FilledButton.tonal(
+                                    onPressed: _goSearch,
+                                    child: Text(_t('goSearch')),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 }
                 return RefreshIndicator(
