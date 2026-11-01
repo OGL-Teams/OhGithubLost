@@ -69,5 +69,6 @@
   "errorNetwork": "Network unavailable. Check your connection and retry.",
   "errorAuth": "Access denied. Check your sign-in and token permissions.",
   "errorNotFound": "The requested content no longer exists.",
-  "errorUnknown": "The operation could not be completed. Try again."
+  "errorUnknown": "The operation could not be completed. Try again.",
+  "goSearch": "Search repositories"
 }
