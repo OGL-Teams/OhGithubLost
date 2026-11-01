@@ -56,6 +56,11 @@ class _LoginPageState extends State<LoginPage> {
   String? _error;
   String _phase = '';
 
+  /// OAuth Device Flow 进行中状态（null = 未启动）。
+  GhOAuthStatus? _oauthStatus;
+  GhOAuthCode? _oauthCode;
+  String? _oauthError;
+
   @override
   void dispose() {
     _input.dispose();
@@ -78,88 +83,106 @@ class _LoginPageState extends State<LoginPage> {
       );
       return;
     }
+    await _finishLogin(token);
+  }
 
+  /// OAuth Device Flow 登录（Client ID 未注入时按钮不出现，见 build）。
+  Future<void> _loginWithOAuth() async {
+    const String clientId = kOgLGitHubClientId;
+    if (clientId.isEmpty) {
+      setState(() {
+        _oauthError = OgLI18n.instance.t('login', 'oauthClientMissing');
+      });
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _oauthError = null;
+      _oauthStatus = GhOAuthStatus.pending;
+      _error = null;
+      _phase = '';
+    });
+    try {
+      final flow = GhOAuthDeviceFlow(clientId: clientId);
+      final code = await flow.start();
+      if (!mounted) return;
+      setState(() => _oauthCode = code);
+      final String token = await flow.poll(
+        code,
+        onStatus: (GhOAuthStatus status) {
+          if (mounted) setState(() => _oauthStatus = status);
+        },
+      );
+      if (!mounted) return;
+      setState(() => _busy = false);
+      // 复用令牌验证链（与 PAT 登录完全一致：验证 → 转正 → 回读自检）。
+      await _finishLogin(GhToken(token));
+    } on GhAuthException catch (error) {
+      if (mounted) {
+        setState(() {
+          _oauthError = error.message;
+          _busy = false;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _oauthError = '$error';
+          _busy = false;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _oauthCode = null);
+      }
+    }
+  }
+
+  /// PAT 与 OAuth 共用的验证链（从 [_login] 抽出）。
+  Future<void> _finishLogin(GhToken token) async {
     setState(() {
       _busy = true;
       _error = null;
       _phase = OgLI18n.instance.t('login', 'verifying');
     });
-
     final auth = widget.surface.domain.auth;
     final api = widget.surface.domain.api;
     final String pendingId = 'pending-${DateTime.now().millisecondsSinceEpoch}';
     try {
-      OgLAppLog.instance.add(_t('signIn'), '1/4 暂存待验证账户（$pendingId）');
       await auth.saveAccount(
           GhAccount(
               id: pendingId,
               login: OgLI18n.instance.t('login', 'pendingSuffix')),
           token);
       await auth.switchTo(pendingId);
-
       if (mounted) {
-        setState(() {
-          _phase = OgLI18n.instance.t('login', 'phaseVerify');
-        });
+        setState(() => _phase = OgLI18n.instance.t('login', 'phaseVerify'));
       }
-      OgLAppLog.instance.add(_t('signIn'), '2/4 验证令牌（GET /user）…');
       final me = await api.currentUser();
-      OgLAppLog.instance.add(_t('signIn'), '3/4 验证成功：@${me.login}');
-
       if (mounted) {
-        setState(() {
-          _phase = OgLI18n.instance.t('login', 'phasePromote');
-        });
+        setState(() => _phase = OgLI18n.instance.t('login', 'phasePromote'));
       }
-      // ★ promote 调序（生命周期审计 L1）：**先**saveAccount+switchTo
-      //   **再**删 pending。旧顺序先删 pending（激活态被清空、广播
-      //   signedOut），若 save/switch 中途失败，用户原本正常的会话
-      //   被破坏成"未登录"且无回滚。新顺序下失败时 pending 仍在、
-      //   catch 清理路径照常工作。
       await auth.saveAccount(
         GhAccount(id: 'user-${me.id}', login: me.login, name: me.name),
         token,
       );
       await auth.switchTo('user-${me.id}');
       await auth.removeAccount(pendingId);
-      // ★ 与「我的」页移出账号时同样的要求：切号必须清**全部**缓存。
-      //   只清仓库缓存会留下 DNS 缓存与页面分页快照，多账号下正是
-      //   「用 B 账号看到 A 账号内容」的串台来源（桥层注释已写明）。
       await widget.surface.clearAllCaches();
       clearOgLRepoPageCaches();
-
       if (mounted) {
-        setState(() {
-          _phase = OgLI18n.instance.t('login', 'phaseVault');
-        });
+        setState(() => _phase = OgLI18n.instance.t('login', 'phaseVault'));
       }
       final readBack = await auth.activeToken();
       OgLAppLog.instance.add(
         _t('signIn'),
         '4/4 保险库回读：${readBack?.masked ?? "读取失败（令牌可能未落库）"}',
       );
-
-      if (!mounted) {
-        return;
+      if (mounted) {
+        await widget.onLoggedIn();
       }
-      setState(() {
-        _phase = OgLI18n.instance.t('login', 'phaseDone');
-      });
-      OgLAppLog.instance.add(_t('signIn'), '完成：@${me.login}');
-      await widget.onLoggedIn();
-    } catch (error, stackTrace) {
-      OgLAppLog.instance.add(
-        _t('signIn'),
-        '失败（原始异常）：$error\n$stackTrace',
-        severity: OgLNoticeSeverity.critical,
-      );
-      // ★ 清理"待验证"半成品：若失败时激活的仍是占位账户，
-      // 连同它的令牌一起删除——否则下次启动会把「（待验证）」当成
-      // "已登录"（跳过登录门、每个请求 401，用户看到的是"登录状态坏了"）。
+    } on Object catch (error) {
       try {
-        // ★ 按 pendingId 精确清理（生命周期审计 L2）：旧逻辑只清"激活中"
-        //   的半成品——用户在验证期间切了号、或新一轮登录覆盖了 activeKey
-        //   时，僵尸账号（含令牌）会永久残留。
         await auth.removeAccount(pendingId);
       } on Object catch (cleanupError) {
         OgLAppLog.instance.add(
@@ -176,7 +199,6 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     } finally {
-      // 已卸载时 `_busy` 无人再读：不必、也不应在已 dispose 的 State 上回写。
       if (mounted) {
         setState(() => _busy = false);
       }
@@ -324,5 +346,105 @@ class _LoginPageState extends State<LoginPage> {
             ],
           )),
     );
+
+              // ── OAuth Device Flow（Client ID 未注入时隐藏）───────
+              if (kOgLGitHubClientId.isNotEmpty) ...<Widget>[
+                const SizedBox(height: OgLSpace.lg),
+                Row(
+                  children: <Widget>[
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: OgLSpace.md,
+                      ),
+                      child: Text(
+                        OgLI18n.instance.t('login', 'orDivider'),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: OgLSpace.lg),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _loginWithOAuth,
+                  icon: const Icon(Icons.open_in_new),
+                  label: Text(
+                    OgLI18n.instance.t('login', 'oauthButton'),
+                  ),
+                ),
+                if (_oauthCode != null) ...<Widget>[
+                  const SizedBox(height: OgLSpace.lg),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(OgLSpace.lg),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          Text(
+                            OgLI18n.instance.t('login', 'oauthStep1'),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: OgLSpace.sm),
+                          SelectableText(
+                            _oauthCode!.verificationUri,
+                            style: const TextStyle(fontFamily: 'monospace'),
+                          ),
+                          const SizedBox(height: OgLSpace.md),
+                          Text(
+                            OgLI18n.instance.t('login', 'oauthStep2'),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: OgLSpace.sm),
+                          SelectableText(
+                            _oauthCode!.userCode,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  fontFamily: 'monospace',
+                                  letterSpacing: 4,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          const SizedBox(height: OgLSpace.md),
+                          if (_oauthStatus == GhOAuthStatus.pending)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                                const SizedBox(width: OgLSpace.md),
+                                Text(
+                                  OgLI18n.instance.t('login', 'oauthWaiting'),
+                                ),
+                              ],
+                            )
+                          else
+                            Text(
+                              OgLI18n.instance.t('login', 'oauthWaiting'),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                if (_oauthError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: OgLSpace.md),
+                    child: Text(
+                      _oauthError!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
+              ],
   }
 }
