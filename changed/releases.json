@@ -930,6 +930,128 @@
   "prerelease": false,
   "published_at": "2026-11-01T05:38:26Z"
  },
+ "v10.2.1": {
+  "assets": [
+   {
+    "name": "OGL-v10.2.1-Android.AAB.7z",
+    "size": 59230989,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v10.2.1-Android.AAB.zip",
+    "size": 61150351,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v10.2.1-Android.arm64-v8a.7z",
+    "size": 7798118,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v10.2.1-Android.arm64-v8a.zip",
+    "size": 10358371,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v10.2.1-Android.armeabi-v7a.7z",
+    "size": 7767824,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v10.2.1-Android.armeabi-v7a.zip",
+    "size": 10023068,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v10.2.1-Android.universal-APK.7z",
+    "size": 19251605,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v10.2.1-Android.universal-APK.zip",
+    "size": 28449724,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v10.2.1-Android.x86_64.7z",
+    "size": 8298248,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v10.2.1-Android.x86_64.zip",
+    "size": 10521510,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v10.2.1-boot-manifest.7z",
+    "size": 566,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v10.2.1-boot-manifest.zip",
+    "size": 923,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v10.2.1-Linux.arm64.7z",
+    "size": 7715309,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v10.2.1-Linux.arm64.zip",
+    "size": 12041277,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v10.2.1-Linux.x64.7z",
+    "size": 8493770,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v10.2.1-Linux.x64.zip",
+    "size": 12475218,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v10.2.1-Windows.arm64.7z",
+    "size": 8119317,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v10.2.1-Windows.arm64.zip",
+    "size": 12822277,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v10.2.1-Windows.x64.7z",
+    "size": 9323093,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v10.2.1-Windows.x64.zip",
+    "size": 13753684,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/OGL-v10.2.1-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-10.2.1-1.x86_64.rpm",
+    "size": 9229229,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/ohgithublost-10.2.1-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_10.2.1_amd64.deb",
+    "size": 9284536,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/ohgithublost_10.2.1_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_10.2.1_arm64.deb",
+    "size": 8459376,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v10.2.1/ohgithublost_10.2.1_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v10.2.1",
+  "prerelease": false,
+  "published_at": "2026-11-01T14:49:17Z"
+ },
  "v2.0.0": {
   "assets": [
    {
