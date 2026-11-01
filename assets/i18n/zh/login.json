@@ -35,5 +35,11 @@
   "vaultNote": "令牌只保存在本机安全保险库（Android Keystore / iOS Keychain / 桌面密钥服务）；请求只发往 api.github.com。",
   "verifyFailed": "验证失败：{error}",
   "verifying": "正在验证…",
-  "whyToken": "令牌只保存在本机。"
+  "whyToken": "令牌只保存在本机。",
+  "orDivider": "或",
+  "oauthButton": "使用 GitHub 授权登录",
+  "oauthStep1": "第 1 步：在浏览器打开",
+  "oauthStep2": "第 2 步：输入以下代码",
+  "oauthWaiting": "等待授权…",
+  "oauthClientMissing": "此版本未配置 OAuth 登录，请使用令牌登录。"
 }

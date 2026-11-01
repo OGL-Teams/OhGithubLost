@@ -35,5 +35,11 @@
   "vaultNote": "Token is stored only in local secure vault (Android Keystore / iOS Keychain / Desktop Key Service); requests are sent only to api.github.com.",
   "verifyFailed": "Verification failed: {error}",
   "verifying": "Verifying…",
-  "whyToken": "Token is stored locally only."
+  "whyToken": "Token is stored locally only.",
+  "orDivider": "or",
+  "oauthButton": "Sign in with GitHub",
+  "oauthStep1": "Step 1: open in your browser",
+  "oauthStep2": "Step 2: enter this code",
+  "oauthWaiting": "Waiting for authorization…",
+  "oauthClientMissing": "OAuth is not configured in this build. Use a token instead."
 }

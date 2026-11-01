@@ -63,12 +63,12 @@ class OnboardingPage extends StatefulWidget {
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
-  static const int _stepCount = 6;
+  static const int _stepCount = 3;
 
-  /// 「权限」页在 6 步中的下标（第 3 步）。
+  /// 「权限」页在 3 步中的下标（第 2 步）。
   ///
   /// 只有这一步需要等 `_infos`（权限探测结果）；其余步骤不应被它连累。
-  static const int _permissionStepIndex = 2;
+  static const int _permissionStepIndex = 1;
 
   late final OgLPermissionGateway _gateway = ogLPermissionGateway(
     storageProbe: widget.surface.ensureStorage,
@@ -232,14 +232,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 controller: _page,
                 onPageChanged: (int value) => setState(() => _step = value),
                 children: <Widget>[
-                  _preferencesStep(theme),
+                  // 简化后的三步：欢迎+偏好合并 → 权限+隐私合并 → 许可+完成。
+                  // 原 6 步把"欢迎"与"外观偏好"拆开、又单独一页隐私说明，
+                  // 新用户要点 6 次才能开始用——没人读，也没人想读。
                   _welcomeStep(theme),
                   _permissionStep(theme),
-                  _privacyStep(theme),
-                  _doneStep(theme),
-                  // 最后一页：开源许可与隐私承诺。
-                  // 放在最后是刻意的 —— 它包含一段**明确的法律承诺**与一处
-                  // **排除项**（可选 Web 功能），用户应当在点「完成」之前读到。
                   _licenseStep(theme),
                 ],
               ),
@@ -316,64 +313,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
   ///
   /// 放在最前面：语言决定用户能不能看懂后面的每一步，外观决定整体观感。
   /// 两者都**即时生效**（改完立刻能看到），并复用设置页的同一套状态与词条。
-  Widget _preferencesStep(ThemeData theme) => ListenableBuilder(
-        listenable: widget.surface.settings,
-        builder: (BuildContext context, Widget? _) {
-          final OgLSettings value = widget.surface.settings.settings;
-          return _stepBody(
-            theme,
-            children: <Widget>[
-              Text(_ts('language'), style: theme.textTheme.titleMedium),
-              const SizedBox(height: OgLSpace.sm),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: <Widget>[
-                  for (final OgLLocale locale in OgLI18n.locales)
-                    ChoiceChip(
-                      label: Text(locale.label),
-                      selected: locale.code == value.languageCode,
-                      onSelected: (bool selected) {
-                        if (selected) {
-                          unawaited(
-                            widget.surface.settings.setLanguage(locale.code),
-                          );
-                        }
-                      },
-                    ),
-                ],
-              ),
-              const SizedBox(height: OgLSpace.xl),
-              Text(_ts('appearance'), style: theme.textTheme.titleMedium),
-              const SizedBox(height: OgLSpace.sm),
-              SegmentedButton<OgLThemeMode>(
-                segments: <ButtonSegment<OgLThemeMode>>[
-                  ButtonSegment<OgLThemeMode>(
-                    value: OgLThemeMode.system,
-                    label: Text(_ts('followSystem')),
-                  ),
-                  ButtonSegment<OgLThemeMode>(
-                    value: OgLThemeMode.light,
-                    label: Text(_ts('light')),
-                  ),
-                  ButtonSegment<OgLThemeMode>(
-                    value: OgLThemeMode.dark,
-                    label: Text(_ts('dark')),
-                  ),
-                ],
-                selected: <OgLThemeMode>{value.mode},
-                onSelectionChanged: (Set<OgLThemeMode> selection) {
-                  if (selection.isNotEmpty) {
-                    unawaited(widget.surface.settings.setMode(selection.first));
-                  }
-                },
-              ),
-              const SizedBox(height: OgLSpace.sm),
-              Text(_ts('appearanceDesc'), style: theme.textTheme.bodySmall),
-            ],
-          );
-        },
-      );
 
   Widget _welcomeStep(ThemeData theme) => _stepBody(
         theme,
@@ -463,98 +402,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
         ],
       );
 
-  Widget _privacyStep(ThemeData theme) => _stepBody(
-        theme,
-        children: <Widget>[
-          Text(_t('dataPrivacy'), style: theme.textTheme.titleMedium),
-          const SizedBox(height: OgLSpace.sm),
-          Card(
-            color: theme.colorScheme.secondaryContainer,
-            child: Padding(
-              padding: const EdgeInsets.all(OgLSpace.md),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Icon(
-                    Icons.lock_outline,
-                    color: theme.colorScheme.onSecondaryContainer,
-                  ),
-                  const SizedBox(width: OgLSpace.sm),
-                  Expanded(
-                    child: Text(
-                      _t('tokenVault') + _t('tokenVault2'),
-                      style: TextStyle(
-                        color: theme.colorScheme.onSecondaryContainer,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: OgLSpace.md),
-          Card(
-            child: ListTile(
-              leading: Icon(Icons.folder_outlined),
-              title: Text(_t('fileLocation')),
-              subtitle: Text(_t('fileLocationDesc')),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: Icon(Icons.description_outlined),
-              title: Text(_t('traceable')),
-              subtitle: Text(_t('traceableDesc')),
-            ),
-          ),
-        ],
-      );
-
-  Widget _doneStep(ThemeData theme) => _stepBody(
-        theme,
-        children: <Widget>[
-          const SizedBox(height: OgLSpace.xl),
-          Icon(
-            Icons.check_circle_outline,
-            size: 56,
-            color: theme.colorScheme.primary,
-          ),
-          const SizedBox(height: OgLSpace.lg),
-          Text(
-            widget.review ? _t('readyTitle') : _t('readyTitle2'),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.headlineSmall,
-          ),
-          const SizedBox(height: OgLSpace.sm),
-          Text(
-            _t('readyDesc'),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium,
-          ),
-        ],
-      );
-
-  /// 最后一页：**开源许可与隐私承诺**。
-  ///
-  /// 两件事必须让用户在点「完成」之前看到：
-  /// 1. **保证**：不收集数据 —— 无遥测/分析/广告，令牌只在本机；
-  /// 2. **排除项**：可选的 Web（浏览器）版本**不在这项保证之内** —— 它跑在
-  ///    浏览器与托管方的环境里，本应用无法替那些环节作出承诺。该功能默认关闭，
-  ///    只有用户主动开启才受此例外约束。
-  ///
-  /// 正文很长（1100+ 字符），故用可滚动的 `ListView` 承载（`_stepBody` 本身
-  /// 就是 ListView），并用 `SelectableText` 让用户能复制条款全文。
-  /// 最后一页：**开源许可与隐私承诺**。
-  ///
-  /// ## 版式取舍（用户明确要求）
-  /// - **上面只放「重点（人话版）」**：一眼能读完的要点，不放细节；
-  /// - **细节不丢**：完整法律文本原样保留，但**默认折叠**在下方 ——
-  ///   想看的人点开就能看到全文，不想看的人不会被一屏法务术语劝退；
-  /// - **显著声明以中文为准**：其他语言的译本只有解释作用，不构成权利义务依据。
-  ///
-  /// 正文分节对齐业界通行的「无追踪」隐私政策结构（开源许可 / 数据收集承诺 /
-  /// 数据位置 / 第三方服务 / Web 例外 / 儿童 / 安全 / 事件通知 / 权利与删除 /
-  /// 变更与生效 / 同意 / 联系方式），避免漏掉标准条款。
   Widget _licenseStep(ThemeData theme) => _stepBody(
         theme,
         children: <Widget>[
