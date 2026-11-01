@@ -188,10 +188,15 @@ ThemeData buildOgLTheme(
     ],
 
     // ── 卡片 ────────────────────────────────────────────────────────────
-    // Material 3 靠 tonal elevation 而非投影：elevation 0 + 描边，
-    // 层级由 surfaceContainer 色阶表达。
+    // Material 3 靠 tonal elevation 而非投影：elevation 0 + 色阶 + 描边。
+    // 此前卡片未设 color（= surface，与页面同色）也无描边——层级被压扁，
+    // 用户感知"对比度低、没有特点"。现在：卡片用低一档的 container 底色
+    // + outlineVariant 细描边，与页面明确分层。
     cardTheme: CardThemeData(
-      shape: shapeLg,
+      color: scheme.surfaceContainerLow,
+      shape: shapeLg.copyWith(
+        side: BorderSide(color: scheme.outlineVariant),
+      ),
       elevation: 0,
       margin: const EdgeInsets.symmetric(
         horizontal: OgLSpace.lg,
@@ -257,7 +262,7 @@ ThemeData buildOgLTheme(
       centerTitle: false,
       elevation: 0,
       scrolledUnderElevation: 0,
-      backgroundColor: scheme.surface,
+      backgroundColor: scheme.surfaceContainer,
       surfaceTintColor: Colors.transparent,
       titleTextStyle: TextStyle(
         color: scheme.onSurface,
@@ -272,6 +277,28 @@ ThemeData buildOgLTheme(
       elevation: 0,
       backgroundColor: scheme.surfaceContainer,
       surfaceTintColor: Colors.transparent,
+      // 选中态用品牌色（primaryContainer 药丸 + onPrimaryContainer 图标）：
+      // 此前走默认 secondaryContainer 且底色同阶，选中项几乎看不出来。
+      indicatorColor: scheme.primaryContainer,
+      iconTheme: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+        return IconThemeData(
+          color: states.contains(WidgetState.selected)
+              ? scheme.onPrimaryContainer
+              : scheme.onSurfaceVariant,
+        );
+      }),
+      labelTextStyle:
+          WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+        return TextStyle(
+          fontSize: 12,
+          fontWeight: states.contains(WidgetState.selected)
+              ? FontWeight.w600
+              : FontWeight.w500,
+          color: states.contains(WidgetState.selected)
+              ? scheme.onPrimaryContainer
+              : scheme.onSurfaceVariant,
+        );
+      }),
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
     ),
 
@@ -285,6 +312,9 @@ ThemeData buildOgLTheme(
       minVerticalPadding: OgLSpace.sm,
       horizontalTitleGap: OgLSpace.md,
       iconColor: scheme.onSurfaceVariant,
+      // 选中行给主题色反馈（此前 selected 无任何视觉差异）。
+      selectedColor: scheme.primary,
+      selectedTileColor: scheme.primaryContainer.withValues(alpha: 0x55),
     ),
 
     // ── 分割线 ──────────────────────────────────────────────────────────
@@ -298,6 +328,8 @@ ThemeData buildOgLTheme(
     chipTheme: ChipThemeData(
       shape: shapeSm,
       backgroundColor: scheme.surfaceContainerHigh,
+      selectedColor: scheme.secondaryContainer,
+      showCheckmark: false,
       side: BorderSide.none,
       padding: const EdgeInsets.symmetric(
         horizontal: OgLSpace.sm,
@@ -370,7 +402,7 @@ ThemeData buildOgLTheme(
         shape: shapePill,
         minimumSize: minButton,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
-        side: BorderSide(color: scheme.outlineVariant),
+        side: BorderSide(color: scheme.outline),
         textStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,

@@ -220,7 +220,7 @@ class SurfaceBridge {
       // 切号必须一并清空，否则会出现"用 B 账号看到 A 账号缓存"的串台。
       await domain.api.invalidateReadCache();
       net?.dns?.cache.clear();
-      // 草稿：被移除账号的草稿永久残留磁盘，草稿箱在切回前仍显示失效条目。
+      // 草稿：被移除账号的草稿永久残留磁盘。
       await domain.api.clearAllDrafts();
     } catch (error) {
       // 不允许静默：清不掉也要留痕（通知中心可见）。
@@ -456,6 +456,12 @@ class SurfaceBridge {
   Future<void> removeDownload(String id) => domain.downloads.remove(id);
 
   /// 设置下载并发连接数（非法档位由 `settings` 回落默认）。
+  ///
+  /// 同步推给下载管理器：对失败重试 / 继续的任务立即生效。
+  Future<void> setDownloadConnections(int value) async {
+    await settings.setDownloadConnections(value);
+    domain.downloads.preferredConnections = value;
+  }
   Future<void> setDownloadConnections(int value) =>
       settings.setDownloadConnections(value);
 
