@@ -13,5 +13,7 @@
   "resetTitle": "重置通知中心",
   "title": "通知中心",
   "unread": "未读",
-  "toggleNotification": "切换通知"
+  "toggleNotification": "切换通知",
+  "filterUnread": "未读",
+  "emptyUnread": "没有未读消息"
 }
