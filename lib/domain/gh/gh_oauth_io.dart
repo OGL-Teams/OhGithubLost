@@ -43,7 +43,7 @@ Future<GhOAuthCode> startDeviceFlow(String clientId) async {
       interval: (decoded['interval'] as num?)?.toInt() ?? 5,
     );
   } finally {
-    client.close(forceClose: true);
+    client.close(force: true);
   }
 }
 
@@ -105,7 +105,7 @@ Future<String> pollDeviceFlow(
       onStatus?.call(GhOAuthStatus.failed);
       throw GhAuthException('授权失败：$error', statusCode: 500);
     } finally {
-      client.close(forceClose: true);
+      client.close(force: true);
     }
   }
   onStatus?.call(GhOAuthStatus.expired);

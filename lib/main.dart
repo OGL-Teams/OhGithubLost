@@ -20,6 +20,7 @@ import './surface/util/og_l_space.dart';
 import 'base/base_bootstrap.dart';
 import 'base/log/log_dirs.dart';
 import 'domain/domain_bridge.dart';
+import 'domain/ix/ix_notify.dart';
 import 'kernel/boot/boot_fs.dart';
 import 'kernel/boot/boot_loader.dart';
 import 'kernel/boot/integrity_verifier.dart';

@@ -19,6 +19,7 @@ library;
 
 import 'dart:async';
 
+import 'gh_oauth_types.dart';
 import 'gh_oauth_stub.dart' if (dart.library.io) 'gh_oauth_io.dart' as impl;
 
 export 'gh_oauth_types.dart';
