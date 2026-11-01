@@ -6,5 +6,7 @@
   "draft": "草稿",
   "empty": "还没有未提交的草稿",
   "title": "草稿箱",
-  "deleteDraftDesc": "将从本机删除这份草稿，操作不可撤销。"
+  "deleteDraftDesc": "将从本机删除这份草稿，操作不可撤销。",
+  "openInEditor": "在编辑器中打开",
+  "draftGone": "草稿已不存在"
 }
