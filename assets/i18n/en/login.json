@@ -41,5 +41,6 @@
   "oauthStep1": "Step 1: open in your browser",
   "oauthStep2": "Step 2: enter this code",
   "oauthWaiting": "Waiting for authorization…",
-  "oauthClientMissing": "OAuth is not configured in this build. Use a token instead."
+  "oauthClientMissing": "OAuth is not configured in this build. Use a token instead.",
+  "oauthGranted": "Authorized. Finishing sign-in…"
 }

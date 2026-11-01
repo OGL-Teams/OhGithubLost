@@ -25,7 +25,6 @@ import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../app/permissions.dart';
 import '../i18n/og_l_i18n.dart';
-import '../settings.dart';
 import '../surface_bridge.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
@@ -37,8 +36,6 @@ String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
         args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
 /// 取 `settings` 分片文案（引导里的「语言 / 外观」直接复用设置页的词条）。
-String _ts(String key) => OgLI18n.instance.t('settings', key);
-
 /// 首次引导页。
 class OnboardingPage extends StatefulWidget {
   /// 创建引导页。

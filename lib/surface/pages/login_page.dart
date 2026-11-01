@@ -419,8 +419,11 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: OgLSpace.md),
                           Text(
-                            OgLI18n.instance.t('login', 'oauthWaiting'),
+                            _oauthStatus == GhOAuthStatus.granted
+                                ? OgLI18n.instance.t('login', 'oauthGranted')
+                                : OgLI18n.instance.t('login', 'oauthWaiting'),
                             textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
                       ),
