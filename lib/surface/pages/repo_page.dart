@@ -2425,10 +2425,15 @@ class _CodeTabState extends State<_CodeTab> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _IssuesTab extends StatefulWidget {
-  const _IssuesTab({required this.surface, required this.fullName});
+  const _IssuesTab({
+    required this.surface,
+    required this.fullName,
+    required this.canWrite,
+  });
 
   final SurfaceBridge surface;
   final String fullName;
+  final bool canWrite;
 
   @override
   State<_IssuesTab> createState() => _IssuesTabState();
