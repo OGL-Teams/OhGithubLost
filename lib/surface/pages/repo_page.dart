@@ -777,15 +777,23 @@ class _CodeTabState extends State<_CodeTab> {
   List<GhContent>? _sortedCache;
   List<GhContent>? _sortedSource;
 
+  /// 缓存签名里的「文件夹优先」值：开关切换后必须重排（items 身份没变）。
+  bool? _sortedCacheDirFirst;
+
   /// 目录排序视图（目录在前，其余按名称），带身份缓存。
   List<GhContent> _sortedItems() {
     final List<GhContent> source = _entries.items;
-    if (identical(_sortedSource, source) && _sortedCache != null) {
+    final bool dirFirstNow = widget.surface.settings.settings.foldersFirst;
+    if (identical(_sortedSource, source) &&
+        _sortedCache != null &&
+        _sortedCacheDirFirst == dirFirstNow) {
       return _sortedCache!;
     }
+    // 「文件夹优先」是**真实开关**：此前排序无条件把目录排在前面，
+    // 设置里的 foldersFirst 存了却从没被读——关掉它没有任何效果。
     final List<GhContent> sorted = List<GhContent>.of(source)
       ..sort((GhContent a, GhContent b) {
-        if (a.isDirectory != b.isDirectory) {
+        if (dirFirstNow && a.isDirectory != b.isDirectory) {
           return a.isDirectory ? -1 : 1;
         }
         return ghPathName(a.path)
@@ -794,6 +802,7 @@ class _CodeTabState extends State<_CodeTab> {
       });
     _sortedSource = source;
     _sortedCache = sorted;
+    _sortedCacheDirFirst = dirFirstNow;
     return sorted;
   }
 
