@@ -7,8 +7,10 @@ library;
 import 'package:flutter/material.dart';
 
 import '../app/async.dart';
+import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../util/clipboard_x.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/log_body.dart';
@@ -60,6 +62,22 @@ class _ActionLogPageState extends State<ActionLogPage> {
     super.dispose();
   }
 
+  /// 复制当前已加载的全部日志（按 job 分段拼接）。
+  Future<void> _copyAll() async {
+    final Map<String, String>? data = _logs?.data;
+    if (data == null || data.isEmpty) {
+      OgLNotifier.of(context).info(_t('nothingToCopy'));
+      return;
+    }
+    final String text = data.entries
+        .map((MapEntry<String, String> e) => '=== ${e.key} ===\n${e.value}')
+        .join('\n\n');
+    await ogLCopyText(text, tag: _t('title'));
+    if (mounted) {
+      OgLNotifier.of(context).info(_t('copied', {'label': _t('title')}));
+    }
+  }
+
   AsyncController<Map<String, String>> _logsC() {
     final existing = _logs;
     if (existing != null) {
@@ -82,6 +100,12 @@ class _ActionLogPageState extends State<ActionLogPage> {
       appBar: AppBar(
         title: Text(_t('title')),
         actions: <Widget>[
+          // 复制整份日志：排查问题要把它贴给别人，逐块手选太笨。
+          IconButton(
+            icon: const Icon(Icons.copy_all_outlined),
+            tooltip: _t('copyAll'),
+            onPressed: _copyAll,
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: _t('reload'),
