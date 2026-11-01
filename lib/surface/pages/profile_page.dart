@@ -227,129 +227,133 @@ class _ProfilePageState extends State<ProfilePage> {
         controller: controller,
         emptyIcon: Icons.key_outlined,
         emptyText: _t('notLoggedIn'),
-        builder: (BuildContext context, List<GhAccount> accounts) => ListView(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                  OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
-              child: Text(_t('accounts')),
-            ),
-            Card(
-              margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
-              child: Column(
-                children: <Widget>[
-                  for (final GhAccount account in accounts)
-                    ListTile(
-                      leading: Icon(
-                        account.id == _activeId
-                            ? Icons.check_circle
-                            : Icons.account_circle_outlined,
-                        color: account.id == _activeId
-                            ? Theme.of(context).colorScheme.primary
-                            : null,
-                      ),
-                      title: Text('@${account.login}'),
-                      subtitle: Text(
-                        account.id == _activeId
-                            ? _t('currentAccount')
-                            : _t('switchable'),
-                      ),
-                      // 整行可点切换：账号行看上去就是一个可选条目，
-                      // 只让行尾小按钮能点不符合预期。
-                      onTap: account.id == _activeId
-                          ? null
-                          : () => _switchTo(account),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          if (account.id != _activeId)
-                            TextButton(
-                              onPressed: () => _switchTo(account),
-                              child: Text(_t('switch')),
-                            ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            tooltip: _t('remove'),
-                            onPressed: () => _remove(account),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
+        builder: (BuildContext context, List<GhAccount> accounts) =>
+            RefreshIndicator(
+          onRefresh: _refresh,
+          child: ListView(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                    OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
+                child: Text(_t('accounts')),
               ),
-            ),
-            const SizedBox(height: OgLSpace.lg),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                  OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.xxs),
-              child: Text(_t('content')),
-            ),
-            Card(
-              margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
-              child: ListTile(
-                leading: const Icon(Icons.edit_note),
-                title: Text(_t('drafts')),
-                subtitle: ListenableBuilder(
-                  listenable: widget.surface.domain.api.draftsChanged,
-                  builder: (BuildContext context, Widget? _) =>
-                      FutureBuilder<int>(
-                    future: widget.surface.domain.api.draftCount(),
-                    builder:
-                        (BuildContext context, AsyncSnapshot<int> snapshot) {
-                      final int count = snapshot.data ?? 0;
-                      return Text(count == 0
-                          ? _t('noDrafts')
-                          : _t('draftCount', {'count': count}));
-                    },
-                  ),
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: _openDrafts,
-              ),
-            ),
-            const SizedBox(height: OgLSpace.sm),
-            Card(
-              margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
-              child: ListTile(
-                leading: const Icon(Icons.article_outlined),
-                title: Text(_t('gists')),
-                subtitle: Text(_t('gistsDesc')),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: _openGists,
-              ),
-            ),
-            const SizedBox(height: OgLSpace.lg),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                  OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.xxs),
-              child: Text(_t('dangerZone')),
-            ),
-            Card(
-              margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
-              child: Padding(
-                padding: const EdgeInsets.all(OgLSpace.lg),
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(_t('logoutDesc')),
-                    const SizedBox(height: OgLSpace.md),
-                    OutlinedButton(
-                      onPressed: accounts.isEmpty
-                          ? null
-                          : () async {
-                              final GhAccount? current = _currentOf(accounts);
-                              if (current != null) {
-                                await _remove(current);
-                              }
-                            },
-                      child: Text(_t('logout')),
-                    ),
+                    for (final GhAccount account in accounts)
+                      ListTile(
+                        leading: Icon(
+                          account.id == _activeId
+                              ? Icons.check_circle
+                              : Icons.account_circle_outlined,
+                          color: account.id == _activeId
+                              ? Theme.of(context).colorScheme.primary
+                              : null,
+                        ),
+                        title: Text('@${account.login}'),
+                        subtitle: Text(
+                          account.id == _activeId
+                              ? _t('currentAccount')
+                              : _t('switchable'),
+                        ),
+                        // 整行可点切换：账号行看上去就是一个可选条目，
+                        // 只让行尾小按钮能点不符合预期。
+                        onTap: account.id == _activeId
+                            ? null
+                            : () => _switchTo(account),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            if (account.id != _activeId)
+                              TextButton(
+                                onPressed: () => _switchTo(account),
+                                child: Text(_t('switch')),
+                              ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline),
+                              tooltip: _t('remove'),
+                              onPressed: () => _remove(account),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: OgLSpace.xl),
-          ],
+              const SizedBox(height: OgLSpace.lg),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                    OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.xxs),
+                child: Text(_t('content')),
+              ),
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
+                child: ListTile(
+                  leading: const Icon(Icons.edit_note),
+                  title: Text(_t('drafts')),
+                  subtitle: ListenableBuilder(
+                    listenable: widget.surface.domain.api.draftsChanged,
+                    builder: (BuildContext context, Widget? _) =>
+                        FutureBuilder<int>(
+                      future: widget.surface.domain.api.draftCount(),
+                      builder:
+                          (BuildContext context, AsyncSnapshot<int> snapshot) {
+                        final int count = snapshot.data ?? 0;
+                        return Text(count == 0
+                            ? _t('noDrafts')
+                            : _t('draftCount', {'count': count}));
+                      },
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _openDrafts,
+                ),
+              ),
+              const SizedBox(height: OgLSpace.sm),
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
+                child: ListTile(
+                  leading: const Icon(Icons.article_outlined),
+                  title: Text(_t('gists')),
+                  subtitle: Text(_t('gistsDesc')),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _openGists,
+                ),
+              ),
+              const SizedBox(height: OgLSpace.lg),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                    OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.xxs),
+                child: Text(_t('dangerZone')),
+              ),
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
+                child: Padding(
+                  padding: const EdgeInsets.all(OgLSpace.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(_t('logoutDesc')),
+                      const SizedBox(height: OgLSpace.md),
+                      OutlinedButton(
+                        onPressed: accounts.isEmpty
+                            ? null
+                            : () async {
+                                final GhAccount? current = _currentOf(accounts);
+                                if (current != null) {
+                                  await _remove(current);
+                                }
+                              },
+                        child: Text(_t('logout')),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: OgLSpace.xl),
+            ],
+          ),
         ),
       ),
     );
