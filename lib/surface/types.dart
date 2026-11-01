@@ -18,10 +18,10 @@ library;
 export '../domain/gh/gh_auth.dart' hide GhAuthService;
 
 /// 客户端：仅暴露异常类型，**隐藏** `GhClient` 与限流快照的内部构造。
-export '../domain/gh/gh_oauth.dart';
 export '../domain/gh/gh_client.dart' hide GhClient;
 export '../domain/gh/gh_draft.dart' show GhDraft, GhDraftRecord;
 export '../domain/gh/gh_models.dart';
+export '../domain/gh/gh_oauth.dart';
 
 /// 仓库文件操作：暴露结果 / 进度 / 阶段 / 逐项明细，**隐藏**服务实现。
 export '../domain/gh/repo_file_service.dart' hide RepoFileService;
