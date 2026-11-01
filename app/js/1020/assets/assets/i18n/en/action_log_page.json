@@ -4,5 +4,7 @@
   "noMatchingJob": "No matching job found",
   "reload": "Refresh",
   "searchJobHint": "Search job name",
-  "title": "Run Logs"
+  "title": "Run Logs",
+  "copyAll": "Copy all",
+  "nothingToCopy": "No logs to copy"
 }
