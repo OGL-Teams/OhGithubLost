@@ -18,13 +18,10 @@
 library;
 
 import 'dart:async';
-import 'dart:convert';
 
-import '../../kernel/log/og_l_log_file.dart';
-import 'gh_client.dart';
-import 'gh_oauth_types.dart';
-import 'gh_oauth_stub.dart'
-    if (dart.library.io) 'gh_oauth_io.dart' as impl;
+import 'gh_oauth_stub.dart' if (dart.library.io) 'gh_oauth_io.dart' as impl;
+
+export 'gh_oauth_types.dart';
 
 /// Device Flow 配置（Client ID 由构建注入；空串 = 功能未启用）。
 const String kOgLGitHubClientId = String.fromEnvironment(
@@ -55,7 +52,6 @@ class GhOAuthDeviceFlow {
   Future<String> poll(
     GhOAuthCode code, {
     void Function(GhOAuthStatus status)? onStatus,
-  }) => impl.pollDeviceFlow(clientId, code, onStatus: onStatus);
+  }) =>
+      impl.pollDeviceFlow(clientId, code, onStatus: onStatus);
 }
-
-export 'gh_oauth_types.dart';
