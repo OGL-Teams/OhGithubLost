@@ -498,11 +498,10 @@ class IxDownloadManager extends ChangeNotifier {
     StorageExporter? storageExporter,
     Future<String?> Function()? downloadDirProvider,
     IxDownloadBackend? backend,
-    IxNotificationCenter? notifications,
+    this.notifications,
   })  : _diagnostics = diagnostics,
         _engine = engine,
         _exporter = storageExporter,
-        notifications = notifications,
         _backend = backend ?? createDownloadBackend() {
     _subscription = _backend.events.listen(_onEvent);
     _backend.downloadDirProvider = downloadDirProvider;
