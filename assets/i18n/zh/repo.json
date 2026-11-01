@@ -197,5 +197,6 @@
   "issueMeta": "由 {author} 发起 · {comments} 条评论 · {date}",
   "binaryNoEdit": "二进制文件不支持文本编辑",
   "readFailedEditor": "无法编辑：未能读取有效的 UTF-8 文本内容。",
-  "deleteRepoNoPermission": "需要仓库管理员权限才能删除"
+  "deleteRepoNoPermission": "需要仓库管理员权限才能删除",
+  "settingsNeedAdmin": "仓库设置需要管理员权限"
 }

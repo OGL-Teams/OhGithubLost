@@ -152,6 +152,8 @@ class _LoginPageState extends State<LoginPage> {
     final auth = widget.surface.domain.auth;
     final api = widget.surface.domain.api;
     final String pendingId = 'pending-${DateTime.now().millisecondsSinceEpoch}';
+    // 记住登录前的激活账号：失败回滚时要回到**它**，而不是"最旧的账号"。
+    final String? previousActive = await auth.activeAccountId();
     try {
       OgLAppLog.instance.add(_t('signIn'), '1/4 暂存待验证账户（$pendingId）');
       await auth.saveAccount(
@@ -194,12 +196,22 @@ class _LoginPageState extends State<LoginPage> {
         _t('signIn'),
         '4/4 保险库回读：${readBack?.masked ?? "读取失败（令牌可能未落库）"}',
       );
+      // 回读自检是**门**，不是日志：读不回来说明令牌没有真正落库，
+      // 放行会得到"看起来登上了、处处 401"的假登录。
+      if (readBack == null) {
+        throw StateError(OgLI18n.instance.t('login', 'vaultReadBackFailed'));
+      }
       if (mounted) {
         await widget.onLoggedIn();
       }
     } on Object catch (error) {
       try {
+        // 回滚到登录前的激活账号（若有），再清掉本次的临时/半成品账号。
+        // 顺序：先恢复激活态，避免 removeAccount 把 activeKey 清成"最旧账号"。
         await auth.removeAccount(pendingId);
+        if (previousActive != null && previousActive != pendingId) {
+          await auth.switchTo(previousActive);
+        }
       } on Object catch (cleanupError) {
         OgLAppLog.instance.add(
           _t('signIn'),
