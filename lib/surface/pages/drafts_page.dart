@@ -18,6 +18,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/clipboard_x.dart';
+import 'code_editor_page.dart';
 
 /// 取 `drafts_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -122,6 +123,38 @@ class _DraftsPageState extends State<DraftsPage> {
     }
   }
 
+  /// 在编辑器中打开该草稿（带上草稿内容与**它起草时的基线**）。
+  ///
+  /// 基线必须取草稿记录里的 baseSha——用当前远端 sha 会绕过冲突检查，
+  /// 覆盖别人在起草之后的修改。
+  Future<void> _openInEditor(GhDraft draft) async {
+    final GhDraftRecord? record =
+        await widget.surface.domain.api.loadDraftRecord(
+      draft.repo,
+      draft.path,
+      branch: draft.branch.isEmpty ? null : draft.branch,
+    );
+    if (!mounted) {
+      return;
+    }
+    if (record == null) {
+      OgLNotifier.of(context).warning(_t('draftGone'));
+      return;
+    }
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => CodeEditorPage(
+          surface: widget.surface,
+          fullName: draft.repo,
+          path: draft.path,
+          branch: draft.branch.isEmpty ? null : draft.branch,
+          initialText: record.content,
+          baseSha: record.baseSha ?? '',
+        ),
+      ),
+    );
+  }
+
   void _view(GhDraft draft) {
     ogLShowDialog<void>(
       context: context,
@@ -143,6 +176,14 @@ class _DraftsPageState extends State<DraftsPage> {
               Navigator.of(dialogContext).pop();
             },
             child: Text(_t('copyContent')),
+          ),
+          // 草稿箱此前只能"看"和"删"——真正要接着改，必须能进编辑器。
+          FilledButton.tonal(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              unawaited(_openInEditor(draft));
+            },
+            child: Text(_t('openInEditor')),
           ),
           FilledButton(
             onPressed: () {

@@ -44,6 +44,26 @@ class AboutPage extends StatelessWidget {
   OgLNotifier _notifier(BuildContext context) =>
       OgLNotifier(ScaffoldMessenger.of(context));
 
+  /// 打开外链（失败时把链接复制到剪贴板并如实提示，不谎报成功）。
+  Future<void> _openUrl(BuildContext context, String url) async {
+    if (url.isEmpty) {
+      return;
+    }
+    try {
+      await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (error) {
+      await ogLCopyText(url, tag: 'link');
+      if (context.mounted) {
+        _notifier(context).warning(
+          _t('copied', {'label': Uri.decodeFull(url)}),
+        );
+      }
+    }
+  }
+
   /// 打开仓库页面（赞助 = 给仓库加星，落在 GitHub 上完成）。
   Future<void> _openSponsor(BuildContext context) async {
     final String url = OgLProjectInfo.repositoryUrl;
@@ -105,6 +125,8 @@ class AboutPage extends StatelessWidget {
                   leading: const Icon(Icons.link),
                   title: Text(_t('repo')),
                   subtitle: Text(OgLProjectInfo.repositoryUrl),
+                  // 整行可点：仓库地址是"想去看一眼"的东西，只能复制太别扭。
+                  onTap: () => _openUrl(context, OgLProjectInfo.repositoryUrl),
                   trailing: IconButton(
                     icon: const Icon(Icons.content_copy, size: 18),
                     tooltip: _t('copyRepoUrl'),
@@ -121,6 +143,13 @@ class AboutPage extends StatelessWidget {
                   subtitle: Text(
                     '${OgLProjectInfo.licenseId} · ${OgLProjectInfo.licenseName}',
                   ),
+                  // 许可全文有链接却没给出口：点开即看官方原文。
+                  onTap: OgLProjectInfo.licenseUrl.isEmpty
+                      ? null
+                      : () => _openUrl(context, OgLProjectInfo.licenseUrl),
+                  trailing: OgLProjectInfo.licenseUrl.isEmpty
+                      ? null
+                      : const Icon(Icons.open_in_new, size: 18),
                 ),
               ],
             ),
