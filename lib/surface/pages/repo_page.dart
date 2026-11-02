@@ -673,8 +673,10 @@ Widget _pagedBody<T>(
   if (paged.items.isEmpty && paged.loading) {
     return const Center(child: CircularProgressIndicator());
   }
-  if (paged.items.isEmpty && paged.error != null) {
-    // 失败必须可见且可重试（与 AsyncView 同一套面板，Phase 5 后半收敛）。
+  // 错误优先于一切：有 error 就显示错误面板（可重试）。
+  // 此前只判 `items.isEmpty && error != null` —— 若上一页成功、本页失败，
+  // items 里还留着旧数据，错误会被"吃掉"，用户看到的是旧列表而不知请求已失败。
+  if (paged.error != null) {
     return OgLAsyncErrorPane(message: paged.error!, onRetry: paged.refresh);
   }
   if (paged.items.isEmpty) {
