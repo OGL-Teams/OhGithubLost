@@ -668,7 +668,16 @@ class GhApi implements CacheRemote {
         },
         label: 'GET contents/$path',
       ));
-      return response.jsonAsList.map(GhContent.fromJson).toList();
+      final List<GhContent> items =
+          response.jsonAsList.map(GhContent.fromJson).toList();
+      // 目录成功但为空是合法情形（空目录）——留 debug 级痕，
+      // 与"请求失败"区分，方便排查"文件页空白"时知道是哪种。
+      OgLLogFile.line(
+        'GH',
+        '目录列表：${items.length} 条（${response.body.length}B）',
+        level: 'DEBUG',
+      );
+      return items;
     } on GhNotFoundException {
       return const <GhContent>[];
     } on GhAuthException catch (error) {
@@ -676,6 +685,13 @@ class GhApi implements CacheRemote {
       if (_isAbsentStatus(error.statusCode)) {
         return const <GhContent>[];
       }
+      // 401（游客/令牌失效）等：留痕后**原样抛出**——
+      // 上层据此显示错误面板而不是空白页，用户才知道"为什么没有文件"。
+      OgLLogFile.line(
+        'GH',
+        '目录列表失败（${error.statusCode}）：$fullName/$path',
+        level: 'WARN',
+      );
       rethrow;
     }
   }

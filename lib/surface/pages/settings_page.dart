@@ -129,34 +129,24 @@ class _SettingsPageState extends State<SettingsPage> {
     unawaited(_loadGroups());
   }
 
-  /// 读取持久化的展开状态（**未落盘 = 全部展开**）。
+  /// 读取持久化的展开状态（**未持久化 = 默认展开「界面」一组**）。
   ///
-  /// 设计取舍：用户进入设置页最常见的是"想看某项设置"——空集合让所有分组
-  /// 收起 = 「什么都要点一下」是反模式。所以：
-  /// - **首次启动**（未持久化）→ 全展开，让用户直接浏览；
-  /// - **用户收起过某组** → 持久化 → 下次按用户偏好；
-  /// - **用户展开过某组** → 也持久化（不写特殊白名单）。
-  ///
-  /// 这与「让用户自己决定是否要持久化」的更复杂方案相比，少 1 个"主动保存"
-  /// 步骤；用户既不主动保存也不主动重置时，进入即看到所有内容，是更直接的体验。
+  /// 设计取舍（v10.2.1 起）：全部展开会让设置页变成一面"设置墙"——
+  /// 用户要滚很久才能找到目标，也看不出分组结构。默认只展开「界面」：
+  /// 它是所有人都会碰的一组（明暗/主题/语言），其余折叠但标题即摘要。
+  /// 用户展开过的分组照常持久化，下次按用户偏好。
   Future<void> _loadGroups() async {
     if (!mounted) {
       return;
     }
     final String? raw = await widget.surface.readUiPref(_groupsKey);
-    if (raw == null) {
-      // 未持久化：首次打开全部展开（不留全收起这个反模式）。
-      setState(() {
-        _openGroups
-          ..clear()
-          ..addAll(_groupIds);
-      });
-      return;
-    }
-    final Set<String> open = <String>{
-      for (final String id in raw.split(','))
-        if (_groupIds.contains(id)) id,
-    };
+    final Set<String> open = (raw == null)
+        // 首次：只展开「界面」。
+        ? <String>{'interface'}
+        : <String>{
+            for (final String id in raw.split(','))
+              if (_groupIds.contains(id)) id,
+          };
     setState(() {
       _openGroups
         ..clear()
