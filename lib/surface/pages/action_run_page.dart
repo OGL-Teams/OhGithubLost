@@ -28,10 +28,11 @@ import 'download_manager_page.dart';
 
 /// 取 `action_run_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
-  'action_run_page',
-  key,
-  args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')),
-);
+      'action_run_page',
+      key,
+      args:
+          args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')),
+    );
 
 /// 一次运行 + 它的作业列表。
 class _RunDetail {
@@ -234,9 +235,8 @@ class _ActionRunPageState extends State<ActionRunPage> {
           icon: const Icon(Icons.download_outlined),
           // 已过期的产物点了也只是失败，直接禁用比让它报错更诚实。
           tooltip: _t('downloadArtifact'),
-          onPressed: expired
-              ? null
-              : () => unawaited(_downloadArtifact(artifact)),
+          onPressed:
+              expired ? null : () => unawaited(_downloadArtifact(artifact)),
         ),
       ),
     );
@@ -549,10 +549,9 @@ class _ActionRunPageState extends State<ActionRunPage> {
                             OgLSpace.md,
                           ),
                           children: <Widget>[
-                            for (final Object? rawStep
-                                in (job['steps'] is List
-                                    ? job['steps'] as List<Object?>
-                                    : const <Object?>[]))
+                            for (final Object? rawStep in (job['steps'] is List
+                                ? job['steps'] as List<Object?>
+                                : const <Object?>[]))
                               if (rawStep is Map<Object?, Object?>)
                                 Builder(
                                   builder: (BuildContext context) {

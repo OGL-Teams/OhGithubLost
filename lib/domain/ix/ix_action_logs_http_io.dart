@@ -20,9 +20,8 @@ abstract final class IxActionLogsHttp {
   ) async {
     final HttpClient client = _defaultClient();
     try {
-      final HttpClientRequest request = await client
-          .getUrl(uri)
-          .timeout(_connectTimeout);
+      final HttpClientRequest request =
+          await client.getUrl(uri).timeout(_connectTimeout);
       // 原则 40（令牌只在必要的跳使用一次）：日志接口是「302 → 签名 URL」
       // 结构，第二跳在**另一台主机**上且不需要任何令牌。dart:io 的自动重定向
       // 会原样重发全部请求头（含 Authorization）——跨主机 302 等于把令牌送出
@@ -36,12 +35,11 @@ abstract final class IxActionLogsHttp {
         request.headers.set(key, value);
       });
       HttpClientResponse response = await request.close().timeout(
-        _receiveTimeout,
-      );
+            _receiveTimeout,
+          );
       var hops = 0;
-      while (response.statusCode >= 300 &&
-          response.statusCode < 400 &&
-          hops < 5) {
+      while (
+          response.statusCode >= 300 && response.statusCode < 400 && hops < 5) {
         final String? location = response.headers.value(
           HttpHeaders.locationHeader,
         );
@@ -56,9 +54,8 @@ abstract final class IxActionLogsHttp {
             statusCode: response.statusCode,
           );
         }
-        final HttpClientRequest followUp = await client
-            .getUrl(next)
-            .timeout(_connectTimeout);
+        final HttpClientRequest followUp =
+            await client.getUrl(next).timeout(_connectTimeout);
         followUp.persistentConnection = false;
         // 重定向后续跳**不携带任何凭证头**（签名地址自带授权）。
         followUp.headers.set('accept', '*/*');
