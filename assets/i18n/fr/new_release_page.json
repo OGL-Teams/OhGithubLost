@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Description (facultatif, Markdown pris en charge)",
+  "createFailed": "Échec de la création : {error}",
+  "created": "Créé",
+  "draft": "Brouillon",
+  "draftDesc": "Enregistrer en tant que brouillon, ne pas publier pour l'instant",
+  "prerelease": "Préversion",
+  "prereleaseDesc": "Marquer comme préversion",
+  "publish": "Créer une Release",
+  "publishing": "Publication en cours…",
+  "tagLabel": "Tag",
+  "tagRequired": "Veuillez d'abord renseigner un tag (ex. v1.0.0)",
+  "title": "Nouvelle Release",
+  "titleLabel": "Titre (facultatif)"
+}

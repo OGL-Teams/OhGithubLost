@@ -1,0 +1,12 @@
+{
+  "copyContent": "Copier le contenu",
+  "delete": "Supprimer",
+  "deleteDraft": "Supprimer le brouillon",
+  "deleteDraftDesc": "Ce brouillon sera supprimé de cet appareil. Cette action ne peut pas être annulée.",
+  "deleted": "Brouillon supprimé",
+  "draft": "Brouillon",
+  "draftGone": "Ce brouillon n'existe plus",
+  "empty": "Aucun brouillon non validé pour le moment",
+  "openInEditor": "Ouvrir dans l'éditeur",
+  "title": "Brouillons"
+}

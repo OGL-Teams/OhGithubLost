@@ -60,6 +60,13 @@ class AsyncController<T> extends ChangeNotifier {
   /// 释放后静默丢弃即可：界面已经不认识这个控制器了。
   bool _disposed = false;
 
+  /// 世代计数：`reset()` 换数据维度时自增；旧世代的在途回写一律丢弃。
+  ///
+  /// 没有它：切目录时旧请求返回会覆盖新目录的数据（撕裂），
+  /// 且旧请求的 `finally` 会把 `_everLoaded` 重新置位，抑制新加载，
+  /// 页面在「数据被旧数据覆盖」或「永久转圈」之间随机。
+  int _generation = 0;
+
   /// 数据（可能为 `null`）。
   T? get data => _data;
 
@@ -113,14 +120,22 @@ class AsyncController<T> extends ChangeNotifier {
     _loading = true;
     _notify();
 
+    final int gen = _generation;
     try {
       final T value = await loader();
+      if (gen != _generation) {
+        // 旧世代结果：reset() 已换数据维度，回写会造成数据撕裂，丢弃。
+        return;
+      }
       _data = value;
       _empty = isEmpty(value);
       _error = null;
       OgLAppLog.instance.result(
           _t('loading'), _t('done', {'label': label}), _summarize(value));
     } catch (error) {
+      if (gen != _generation) {
+        return;
+      }
       _error = _describe(error);
       OgLAppLog.instance.add(
         _t('loading'),
@@ -128,8 +143,10 @@ class AsyncController<T> extends ChangeNotifier {
         severity: OgLNoticeSeverity.critical,
       );
     } finally {
-      _loading = false;
-      _everLoaded = true;
+      if (gen == _generation) {
+        _loading = false;
+        _everLoaded = true;
+      }
       _notify();
     }
   }
@@ -149,6 +166,7 @@ class AsyncController<T> extends ChangeNotifier {
   /// **上一个目录**的文件——挂在新路径下看就是"撕裂"。清空后进入明确的
   /// 加载态，宁可转圈也不展示错误数据。
   void reset() {
+    _generation++; // 作废所有在途请求的回写
     _data = null;
     _error = null;
     _empty = false;

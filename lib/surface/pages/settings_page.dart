@@ -952,12 +952,16 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
     if (ok != true) {
+      ip.dispose();
+      doh.dispose();
       return;
     }
     // 先写 DoH 再写 IP：setDnsCustomIp 会把 serverId 切到 'custom'，
     // 顺序反了会让"填了 IP 但 DoH 还没落盘"的瞬间以明文生效。
     await widget.surface.setDnsCustomDohUrl(doh.text.trim());
     await widget.surface.setDnsCustomIp(ip.text.trim());
+    ip.dispose();
+    doh.dispose();
     if (mounted) {
       _notifier.success(_t('dnsCustomSaved'));
     }

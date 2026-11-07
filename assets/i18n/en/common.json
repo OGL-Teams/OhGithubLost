@@ -122,5 +122,13 @@
   "writeConflictServer": "Server error - please try again later",
   "writeConflictVerificationFailed": "Post-write verification failed - please try again",
   "viewDownloads": "View downloads",
-  "copyFailed": "Copy failed, please copy manually"
+  "copyFailed": "Copy failed, please copy manually",
+  "tokenExitTitle": "Your token is leaving this device",
+  "tokenExitBody": "This download sends your GitHub token (login credential) to the non-GitHub host below, which may log and abuse that token. You proceed at your own risk; choose Cancel if you are unsure.",
+  "tokenExitHost": "Target host: {host}\nDownload target: {target}",
+  "tokenExitConfirm": "Download anyway",
+  "tokenExitCancel": "Cancel",
+  "tokenExitLogConfirmed": "User confirmed sending the token to host {host} (TOKEN-EXIT-01)",
+  "tokenExitLogCancelled": "User cancelled the download: token stays on device, target host {host} (TOKEN-EXIT-01)",
+  "tokenExitCancelled": "Download cancelled: the token will not be sent to host {host}"
 }

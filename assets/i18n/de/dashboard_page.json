@@ -1,0 +1,16 @@
+{
+  "downloads": "Downloads",
+  "emptyMine": "Noch keine Repositories",
+  "emptyStarred": "Noch keine markierten Repositories",
+  "home": "Startseite",
+  "loadMore": "Mehr laden (bisher {count})",
+  "mine": "Meine",
+  "newRepo": "Neues Repository",
+  "notifications": "Benachrichtigungen",
+  "private": "Privat",
+  "repoCreated": "Repository erstellt",
+  "repoCreatedName": "{name} erstellt",
+  "retry": "Erneut versuchen",
+  "starred": "Markiert",
+  "starsCount": "{count} Sterne"
+}

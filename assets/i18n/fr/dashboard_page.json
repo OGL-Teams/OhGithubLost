@@ -1,0 +1,16 @@
+{
+  "downloads": "Téléchargements",
+  "emptyMine": "Aucun dépôt pour l’instant",
+  "emptyStarred": "Aucun dépôt étoilé pour l’instant",
+  "home": "Accueil",
+  "loadMore": "Charger plus ({count} jusqu’à présent)",
+  "mine": "Mes dépôts",
+  "newRepo": "Nouveau dépôt",
+  "notifications": "Notifications",
+  "private": "Privé",
+  "repoCreated": "Dépôt créé",
+  "repoCreatedName": "Créé {name}",
+  "retry": "Réessayer",
+  "starred": "Étoilés",
+  "starsCount": "{count} étoiles"
+}

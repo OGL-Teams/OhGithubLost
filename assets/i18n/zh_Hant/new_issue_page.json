@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "內容（選填，支援 Markdown）",
+  "createFailed": "建立失敗：{error}",
+  "created": "已建立",
+  "submit": "建立問題",
+  "submitting": "正在送出…",
+  "title": "新問題",
+  "titleLabel": "標題",
+  "titleRequired": "請先填寫標題"
+}

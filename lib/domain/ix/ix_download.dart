@@ -861,6 +861,10 @@ class IxDownloadManager extends ChangeNotifier {
       //   「目标不支持（或暂时无法）分片下载：调用方应回退到普通单连接下载」。
       //   旧实现把它当失败上报：于是「多线程下载」一开，**所有小于 1 MB 的
       //   文件必然"下载失败"**（文件与网络其实都没问题）。
+      //   回合校验（A-2 同款）：旧轮回退不能劫持新一轮。
+      if (_roundOf[id] != myRound) {
+        return;
+      }
       await _fallbackToSingle(
         id,
         spec,
@@ -869,11 +873,15 @@ class IxDownloadManager extends ChangeNotifier {
         code: 'OGL-DL-203',
       );
     } catch (error) {
+      // 回合校验（A-2 同款）：旧一轮 fetch 的迟到失败绝不能把新一轮
+      // 刚写入的 running 覆盖成 failed（违反"过期回调必须丢弃"）。
+      if (_roundOf[id] != myRound) {
+        return;
+      }
       // 服务端**忽略 Range**（回 200 而不是 206）：同属"不支持分片"，
       // 一样回退单连接，而不是把用户这次下载判死。
       if (error is DownloadHttpException && error.statusCode == 200) {
-        await _fallbackToSingle(
-          id,
+        await _fallbackToSingle(          id,
           spec,
           url: uri.toString(),
           reason: '服务端忽略 Range（HTTP 200 而非 206）',

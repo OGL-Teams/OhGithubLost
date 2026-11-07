@@ -1,0 +1,91 @@
+# AGENTS.md — OhGithubLost 工程规范与代码地图
+
+> 面向 AI 助手与贡献者的项目导读。项目：Flutter 多平台 GitHub 客户端（v10.2.1，Apache-2.0），
+> Android / Windows / Linux / Web，lib/ 197 个 Dart 文件 ≈ 49,300 行，测试 44 文件 ≈ 10,300 行。
+> 工程底线：**数据可靠性 + 失败如实可见** —— 不静默降级、不预置加速通道、不掩盖版本冲突。
+
+## 1. 五层架构与依赖门禁
+
+依赖方向**只能向下**：`surface(L3) → domain(L2) → base(L1) → kernel(L0)`；`platform/` 仅依赖 kernel。
+CI 由 `tool/layer_audit.py --fatal` 强制（扫描 lib/ 全部相对 import，违规退出 1，当前基线违规 0）。
+
+| 层 | 目录 | 职责 | 关键符号 |
+|---|---|---|---|
+| kernel L0 | `lib/kernel/` | 契约（`contract/`）、DI、模块总线、生命周期、信任链（Ed25519 引导清单签名）、日志接口、诊断 | `OgLKernel`、`KernelDi`、`KernelModuleBus`、`BootLoader`、`BootIntegrityVerifier` |
+| platform | `lib/platform/` | 平台识别 + 窗口能力，**判平台一律走门面，禁止直接用 dart:io / defaultTargetPlatform** | `ogLDetectPlatform()`、`window_capability.dart` |
+| base L1 | `lib/base/` | 网络栈（重试/镜像/DoH/分片下载）+ 磁盘栈（一致性引擎/Journal/草稿/SAF 三档） | `BaseBridge`、`ResilientTransport`、`RepositoryCache`、`NetBridge`、`DiskBridge` |
+| domain L2 | `lib/domain/` | GitHub API 客户端、OAuth、下载与预签名、冲突编排、设备信息 | `DomainBridge`、`GhApi`、`GhClient`、`RepoFileService`、`IxDownloadManager` |
+| surface L3 | `lib/surface/` | 页面、控件、i18n、主题、动效分级、Async 四态构件 | `SurfaceBridge`、`OgLSettingsController`、`AsyncController/AsyncView`、`OgLAnim` |
+
+**桥（bridge）机制**：每层一座层桥（`*bridge.dart`）注册进 `KernelBridgeRegistry`，上层只许 `XxxBridge.of(bridges)` resolve 层桥，禁止直接 import 下层内部文件。合法例外仅 3 文件（layer_audit `ALLOW`）：`domain/domain_bridge.dart`、`surface/surface_bridge.dart`（装配根）、`surface/types.dart`（唯一可 re-export domain DTO/异常的门面）。`KNOWN` 白名单恰 2 项待收敛：`gh_api.dart → base/disk/disk_cache.dart`、`gh_client.dart → base/net/net_bridge.dart`（正解：在 `kernel/contract/` 定义抽象）。
+
+**命名约定**（layer_audit 依赖识别，违反即无法被识别）：页面 `*_page.dart`；桥 `*bridge.dart`；平台实现 `*_io.dart` / `*_web.dart`（条件 import，编译期解析）；服务 `*service.dart` / `*manager.dart` / `*api.dart`；共用构件放 `surface/app/`（一件事一个文件）。
+
+**非门禁层**：`dart analyze lib/kernel lib/base lib/domain lib/platform` 必须 0 问题（不依赖 Flutter SDK）；surface 无 SDK 环境用 `dart format --output=none lib` 兜底。
+
+## 2. CI 门禁清单（全部量化标准）
+
+1. **layer_audit.py --fatal**：分层 import 检查（见上）。
+2. **perf_audit.py --fatal**（扫 lib/surface/）：fatal 硬规则 —— `shrinkWrap: true`、宽依赖 `MediaQuery.of(context)`（须用 `sizeOf`/`paddingOf`/`textScalerOf`）、四类 saveLayer 着色器源：`BackdropFilter(`、`ImageFilter.blur|BlurStyle`、`ColorFiltered(`、`ShaderMask(`（着色器不受整文件 ALLOW 豁免，SHADER_ALLOW 必须保持为空）。只报告不拦截：ListView(children:[...for]) 急加载长列表、非动画 `Opacity(`。白名单：ALLOW 7 文件 + REVIEWED_BOUNDED 7 文件。
+3. **motion_audit.py --fatal**（扫 lib/surface/**）：禁止硬编码动画时长 `Duration(milliseconds: n)`、`ScaleTransition(`/`AnimatedScale(`、`BackdropFilter(`/`ImageFilter.blur(`、`Curves.linear`（一律走 ease-out 阶梯）。白名单仅 `app/motion.dart`、`app/animations.dart`。
+4. **i18n_scan.py --check**：① lib/ 中文界面文案 0 处未本地化（log 豁免、`// i18n-allow:` 豁免）；② 所有语言分片 key 集合与 zh 完全一致；③ 三处语言清单一致（`OgLI18n.locales` × assets/i18n 目录 × pubspec assets）。
+5. **ui_audit.py --fatal**：设计令牌一致性 —— 间距刻度仅 {4,8,12,16,24,32,48,64}（`OgLSpace.*`）；圆角刻度仅 {4,8,12,16,24,999}（`OgLRadius.*`）；`fontSize` 必须走 `textTheme.*`（等宽上下文放行）；字面色禁止（仅放行 `Colors.transparent`、`Colors.entries`），须用 `colorScheme.*` / `OgLSemanticColors`；曲线白名单 10 个（easeOut、easeOutCubic、easeOutQuart、easeOutQuint、easeOutBack、linear、easeInOut、easeInOutCubic、fastOutSlowIn、decelerate）。
+6. **sort_imports.py**：`dart:` → `package:` → 相对路径，组间空行、组内字母序；处理 lib/ 与 test/。
+7. **version_sync.py**：main.dart `kOgLAppVersion` 必须等于 pubspec `version`，`--fix` 可自动改写。
+8. **boot_manifest.py**：四层目录逐文件 sha256 聚合 → coreDigest，Ed25519 签名（私钥仅 CI）；canonical JSON 与 `boot_manifest.dart` 的 `canonicalJsonEncode` 逐字节一致，改动须跑 `test/kernel/boot_release_chain_test.dart`。
+9. **inject_platform_spec.py + platform_spec.yaml**：平台私有文件注入（每条必须写 why；**spec 没写的能力必须在 lib/platform/ 用 Dart 实现，注入不是逃生舱**）。
+10. **verify_apk_cert.py**：发布后 APK 证书校验。
+
+## 3. Lint / 代码风格
+
+- 基线 `flutter_lints ^6.0.0`；**strict-casts / strict-inference / strict-raw-types 三项全开**（jsonDecode 结果一律显式 `as`）。
+- 5 条升级为 error：`unused_import`、`unused_local_variable`、`dead_code`、`missing_required_param`、`missing_return`。
+- 追加 22 条：`always_declare_return_types`、`annotate_overrides`、`avoid_print`、`cancel_subscriptions`、`close_sinks`、`directives_ordering`、`prefer_single_quotes`、`use_super_parameters`、`valid_regexps` 等。
+- 有意不启用：`prefer_final_locals`、`sort_pub_dependencies`、`comment_references`（各有理由，勿随手加回）。
+- **依赖削减**：只用真实被 import 的包（cryptography、crypto、path_provider、secure_storage、markdown、url_launcher、archive、background_downloader）；展示层只用 Material 3 原生组件，不引视觉框架/状态管理库。dependency_overrides：`connectivity_plus: 6.1.4`。
+- **文件头注释是硬惯例**：`/// L1 底座级 · …` 层级前缀 + `library;` + 中文设计说明（含表格/ASCII 图）；事件码 `OGL-BOOT-107`、`OGL-BASE-001` 带层标签。
+- **命名**：类前缀 `OgL`（domain 层 `Gh*`/`Ix*`/`Sys*`），私有常量 `kOgL…`，文件名 snake_case。
+- **import 顺序**：`dart:` → `package:` → 相对路径按层级从深到浅（kernel → base → 同目录），一律相对 import。
+- **错误处理**：一致性引擎返回 `WriteOutcome` 不外抛；网络用类型化异常（`NetException`、`RemoteConflictException`）；内核用 `extends Error`；反序列化永不抛异常（夹紧回落默认）；**失败必留痕（日志/诊断/通知中心），不静默降级**。
+- **状态管理**：自研，统一 `ChangeNotifier`（`GhAuthService`、`IxSession`、`OgLSettingsController`、`AsyncController`、`DraftStore`、`OgLI18n`），跨层状态经层桥共享。
+
+## 4. 启动 / 引导流程
+
+`main.dart` 二次 `runApp` 模式：先渲染零依赖 `OgLBootSplash`（不读磁盘/不碰内核），随后四段 await（日志落盘 → 平台存储 → kernel.boot 信任链校验 → 装配）后顶替为 `OgLApp`。全局错误捕获三件套（FlutterError.onError / platformDispatcher.onError / ErrorWidget.builder 局部错误卡）。发布构建经 `--dart-define-from-file` 注入 CI 签名清单，**缺签名清单 = 拒绝启动**；调试构建走 `developmentBypass` + OGL-BOOT-107 告警。
+
+BootLoader 五阶段：清单自检 → Ed25519 验签（公钥内嵌，私钥仅 CI）→ 官方模块目录指纹 → 扩展策略 → 就绪上报。签名无效 → `KernelBootException`；部分模块失败 → 安全模式（safeMode + excludedModules）。
+
+内核启动链：`BootLoader.run → 过滤排除模块 → ModuleBus.register（拓扑排序）→ seal → Lifecycle.registerAll → Di.seal + Bridges.seal → startAll（失败逆序回滚）→ KernelReport`。Di 与 BridgeRegistry 封存后运行期注册即抛错。
+
+## 5. 关键设计（改动前必读）
+
+- **缓存一致性七道防线（disk_cache.dart，1,016 行）**：D1 写前必读、D2 SHA 乐观锁、D3 409/422 冲突重试、D4 逐键串行互斥、D5 写后回读校验、D6 失败返回结果不外抛、D7 危险操作二次确认。**无绕过开关**。D8 = Write Journal（可恢复事务）；D9 = 草稿先落盘（带 baseSha）。
+- **网络**：`NetBridge → ResilientTransport → IoNetTransport`；**只重试幂等方法**（默认仅 GET/HEAD，PUT/DELETE 刻意移除）；Retry-After 优先 + jitter；镜像通道全部失败回落直连；DoH 只认 https；分片下载每片 ≥1MB。
+- **令牌安全**：令牌只进系统密钥库，toString 脱敏；OAuth Device Flow；预签名第一跳本地完成、**令牌不出设备**；SSRF 防护（拒绝回环/私网/169.254.169.254）。
+- **批量操作**：>200 分批且 expectedHeadSha 链式推进；`IxTaskRunner` 在类型上强制 `IxBatchDecision`（用户确认）否则抛 `IxConfirmationRequired`。
+- **动效四档**（0 静默 → 3 拉满）：降档=降质量不是丢功能，全部参数进 `OgLOAnimQuality` 数据表，页面禁止硬编码。
+- **平台存储失败退回内存但大声上报**（不允许静默丢失登录态）。
+
+## 6. i18n 规范（zh / en 双语）
+
+- 分片 `assets/i18n/<locale>/<page>.json`（一语言一目录一页面一分片），2 空格缩进 + 键排序 + 末尾换行。
+- 取文案 `_t(page, key)` / `t(page, key, {args})`；兜底：当前语言 → 英文基线 → 键名，绝不返回空串。
+- 新增文案：zh 分片加键 → 代码 `_t('键')`（去掉所在行 const）→ 翻译 en（GitHub/Release/Actions/PR/Token/Commit 等术语**不译**）→ `i18n_scan.py --check` 0 失败。
+- 新增页面：文案全走 `_t` → `og_l_i18n.dart` pages 列表注册 → 建 zh/en 分片 → pubspec 加目录 → 跑 i18n_test.dart。
+
+## 7. 测试规范
+
+- 按四层分目录（kernel/base/domain/surface），命名 `<主题>_test.dart`，**全部离线运行**（接口 + 内存实现两步走，CI 不依赖网络/真机）。
+- 重点测试：`boot_release_chain_test.dart`（引导清单契约守卫）、`chaos_test.dart`（破坏性混沌注入）、`durability_test.dart`、`cache_consistency_test.dart`、`i18n_test.dart`、`screenshots/`（`OGL_SCREENSHOTS=1` 落盘）。
+- 评审 checklist（.skills/flutter-reviewer）：build() ≤ 80–100 行、`_build*` 助手抽成独立 widget、尽量 const、禁 print、不裸 catch Error、Future 用 await/unawaited()、build() 内禁网络/IO/listen()、列表用 ValueKey。
+
+## 8. 版本与发布
+
+- CHANGELOG.md 新版本在前，条目分"修复/新增/改进"。
+- release_notes/v<版本>.md 中英对照，固定小节：新增/变更/修复/已知限制/产物；未发布的版本不建文件。
+- 版本一致性门禁：pubspec `version` = `kOgLAppVersion`（version_sync.py）；boot_manifest 的 appVersion 读自 pubspec，buildId = git sha。
+- docs/ 只收"持续有效"的手册；文档引用的符号必须真实存在。
+
+## 9. 文档索引
+
+`docs/ARCHITECTURE.md`（五层架构与门禁）、`docs/PERF.md`（性能与动效）、`docs/I18N.md`、`docs/COLD_START.md`（冷启动）、`docs/NETWORK.md`（出口主机与加速通道）、`docs/USAGE.md`、`docs/5layer-audit-todo.md`（语义审计待办）。

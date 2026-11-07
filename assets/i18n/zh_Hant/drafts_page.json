@@ -1,0 +1,12 @@
+{
+  "copyContent": "複製內容",
+  "delete": "刪除",
+  "deleteDraft": "刪除草稿",
+  "deleteDraftDesc": "此草稿將從此裝置刪除，無法復原。",
+  "deleted": "草稿已刪除",
+  "draft": "草稿",
+  "draftGone": "此草稿已不存在",
+  "empty": "目前沒有任何未提交的草稿",
+  "openInEditor": "在編輯器中開啟",
+  "title": "草稿"
+}

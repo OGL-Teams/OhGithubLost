@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Beschreibung (optional, Markdown unterstützt)",
+  "createFailed": "Erstellung fehlgeschlagen: {error}",
+  "created": "Erstellt",
+  "draft": "Entwurf",
+  "draftDesc": "Als Entwurf speichern, noch nicht veröffentlichen",
+  "prerelease": "Vorveröffentlichung",
+  "prereleaseDesc": "Als Vorveröffentlichung markieren",
+  "publish": "Release erstellen",
+  "publishing": "Wird veröffentlicht…",
+  "tagLabel": "Tag",
+  "tagRequired": "Bitte gib zuerst einen Tag ein (z. B. v1.0.0)",
+  "title": "Neues Release",
+  "titleLabel": "Titel (optional)"
+}

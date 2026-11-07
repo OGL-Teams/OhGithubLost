@@ -1,0 +1,10 @@
+{
+  "copyAll": "Tout copier",
+  "linesCount": "{count} lignes",
+  "noLogs": "Aucun journal (le travail est peut-être incomplet, ou le Token n’a pas les autorisations Actions)",
+  "noMatchingJob": "Aucun travail correspondant trouvé",
+  "nothingToCopy": "Aucun journal à copier",
+  "reload": "Actualiser",
+  "searchJobHint": "Rechercher le nom du travail",
+  "title": "Journaux d’exécution"
+}

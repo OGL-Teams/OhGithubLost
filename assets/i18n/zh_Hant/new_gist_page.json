@@ -1,0 +1,16 @@
+{
+  "content": "內容",
+  "contentHint": "貼上或輸入程式碼／文字",
+  "contentRequired": "內容不能為空",
+  "create": "建立",
+  "createFailed": "建立失敗：{error}",
+  "created": "已建立",
+  "creating": "正在建立…",
+  "description": "描述（選填）",
+  "fileName": "檔案名稱（請包含副檔名以判斷語法高亮語言）",
+  "fileNameHint": "注意：檔案名稱的副檔名會影響語法高亮（例如：main.dart／app.py）。",
+  "fileNameRequired": "請提供檔案名稱",
+  "isPublic": "公開 Gist",
+  "isPublicDesc": "公開後任何人都可以透過連結存取",
+  "title": "新增 Gist"
+}

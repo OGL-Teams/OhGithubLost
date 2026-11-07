@@ -28,6 +28,14 @@ import 'net_self_test.dart';
 import 'net_transport.dart';
 import 'net_types.dart';
 
+/// "未指定"哨兵标记（与真实 `null` 区分；`identical` 比较）。
+class _UnsetMarker {
+  const _UnsetMarker();
+}
+
+/// 哨兵实例：`_writeBody` 的 `bodyOverride` 用它区分「未指定」与「显式 null」。
+const Object _kUnset = _UnsetMarker();
+
 /// 基于 `dart:io HttpClient` 的传输实现（Android / Windows / Linux 共用）。
 class IoNetTransport implements NetTransport {
   /// 创建传输。
@@ -145,37 +153,32 @@ class IoNetTransport implements NetTransport {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
       final Uri uri = Uri.parse(request.url);
-      final HttpClientRequest req = await _client
-          .openUrl(request.method.verb, uri)
-          .timeout(connectTimeout);
-      req.followRedirects = true;
-      req.maxRedirects = 5;
-      request.headers.forEach((String key, String value) {
-        req.headers.set(key, value);
-      });
-      // 核心：**禁用 keep-alive 复用**。复用已被对端（或中间设备）关闭的连接，
-      // 只会得到 "Connection closed before full header"；不复用则不会。
-      req.persistentConnection = false;
-      final Object? body = request.body;
-      if (body != null) {
-        final bool hasContentType = request.headers.keys
-            .any((String key) => key.toLowerCase() == 'content-type');
-        if (!hasContentType) {
-          req.headers.contentType = ContentType(
-            'application',
-            'json',
-            charset: 'utf-8',
-          );
-        }
-        if (body is List<int>) {
-          req.add(body);
-        } else {
-          req.add(utf8.encode('$body'));
-        }
+      // 原则 40（令牌只在必要的跳使用一次）：dart:io 的自动重定向会原样重发
+      // 全部请求头（含 Authorization）到任意目标主机 —— 跨主机重定向等于把
+      // 凭证送给第三方。带凭证头时改为**手动跟随**：同源重定向才带凭证重发，
+      // 跨主机重定向直接把 3xx 响应交给上层（如实失败，绝不偷渡凭证）。
+      final bool hasCredential = request.headers.keys
+          .any((String key) => key.toLowerCase() == 'authorization');
+      final HttpClientResponse response;
+      if (hasCredential) {
+        response = await _sendWithGuardedRedirect(
+          request.method.verb,
+          uri,
+          request,
+          redirectsLeft: 5,
+        );
+      } else {
+        final HttpClientRequest req =
+            await _client.openUrl(request.method.verb, uri)
+                .timeout(connectTimeout);
+        req.followRedirects = true;
+        req.maxRedirects = 5;
+        request.headers.forEach((String key, String value) {
+          req.headers.set(key, value);
+        });
+        _writeBody(req, request);
+        response = await req.close().timeout(receiveTimeout);
       }
-
-      final HttpClientResponse response =
-          await req.close().timeout(receiveTimeout);
       final String text =
           await response.transform(utf8.decoder).join().timeout(receiveTimeout);
       stopwatch.stop();
@@ -231,6 +234,95 @@ class IoNetTransport implements NetTransport {
         '未知网络错误（$error）',
         cause: error,
       );
+    }
+  }
+
+  /// 手动跟随重定向（仅用于带凭证头的请求）：
+  /// - 同源（scheme+host+port 相同）→ 带原凭证重发；
+  /// - 跨主机 → 停止跟随，把 3xx 响应原样交还（上层如实报错，凭证不出设备）。
+  /// - 302 / 303 把方法降级为 GET 且不携带 body（RFC 7231 §6.4.3）。
+  Future<HttpClientResponse> _sendWithGuardedRedirect(
+    String verb,
+    Uri uri,
+    NetRequest request, {
+    required int redirectsLeft,
+    Object? bodyOverride,
+  }) async {
+    final HttpClientRequest req =
+        await _client.openUrl(verb, uri).timeout(connectTimeout);
+    req.followRedirects = false;
+    request.headers.forEach((String key, String value) {
+      req.headers.set(key, value);
+    });
+    _writeBody(req, request, bodyOverride: bodyOverride);
+    final HttpClientResponse response =
+        await req.close().timeout(receiveTimeout);
+    final int status = response.statusCode;
+    final bool isRedirect = status >= 300 && status < 400;
+    final String? location = response.headers.value(HttpHeaders.locationHeader);
+    if (!isRedirect || location == null || redirectsLeft <= 0) {
+      return response;
+    }
+    final Uri next = uri.resolve(location);
+    final bool sameOrigin = next.scheme == uri.scheme &&
+        next.host == uri.host &&
+        next.port == uri.port;
+    if (!sameOrigin) {
+      // 跨主机重定向：不跟随。3xx 会被 ResilientTransport 归为语义性响应交上层。
+      return response;
+    }
+    // 同源跟随：302/303 把方法降级为 GET 且不带 body；其余保持原方法+body。
+    // 凭证头保持原样——同源跳转仍指向同一台已持凭证的服务端。
+    final bool switchToGet =
+        status == HttpStatus.movedTemporarily || status == HttpStatus.seeOther;
+    final Object? nextBody =
+        switchToGet ? null : (identical(bodyOverride, _kUnset)
+            ? request.body
+            : bodyOverride);
+    await response.drain<void>();
+    return _sendWithGuardedRedirect(
+      switchToGet ? NetMethod.get.verb : verb,
+      next,
+      request,
+      redirectsLeft: redirectsLeft - 1,
+      bodyOverride: nextBody,
+    );
+  }
+
+  /// 写请求体（含默认 Content-Type 注入；从 send() 抽出复用）。
+  ///
+  /// [bodyOverride] 用哨兵区分「未指定」（沿用 [NetRequest.body]）与
+  /// 「显式 `null`」（明确无 body）——手动重定向跟随把 302/303 降级为
+  /// GET 时正是传 `null` 以丢弃原 body。
+  void _writeBody(
+    HttpClientRequest req,
+    NetRequest request, {
+    Object? bodyOverride = _kUnset,
+  }) {
+    // 核心：**禁用 keep-alive 复用**。复用已被对端（或中间设备）关闭的连接，
+    // 只会得到 "Connection closed before full header"；不复用则不会。
+    req.persistentConnection = false;
+    final Object? body;
+    if (!identical(bodyOverride, _kUnset)) {
+      body = bodyOverride; // 显式指定（可能是 null = 明确不要 body）。
+    } else {
+      body = request.body;
+    }
+    if (body != null) {
+      final bool hasContentType = request.headers.keys
+          .any((String key) => key.toLowerCase() == 'content-type');
+      if (!hasContentType) {
+        req.headers.contentType = ContentType(
+          'application',
+          'json',
+          charset: 'utf-8',
+        );
+      }
+      if (body is List<int>) {
+        req.add(body);
+      } else {
+        req.add(utf8.encode('$body'));
+      }
     }
   }
 

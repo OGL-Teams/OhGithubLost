@@ -1,0 +1,16 @@
+{
+  "downloads": "下載",
+  "emptyMine": "目前沒有任何倉庫",
+  "emptyStarred": "目前沒有任何已標星的倉庫",
+  "home": "首頁",
+  "loadMore": "載入更多（目前已有 {count} 個）",
+  "mine": "我的",
+  "newRepo": "新倉庫",
+  "notifications": "通知",
+  "private": "私密",
+  "repoCreated": "倉庫已建立",
+  "repoCreatedName": "已建立 {name}",
+  "retry": "重新嘗試",
+  "starred": "已標星",
+  "starsCount": "{count} 個星標"
+}

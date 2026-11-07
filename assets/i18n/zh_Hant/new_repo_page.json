@@ -1,0 +1,12 @@
+{
+  "create": "建立儲存庫",
+  "createFailed": "建立失敗：{error}",
+  "created": "已建立",
+  "creating": "正在建立…",
+  "description": "描述（選填）",
+  "nameLabel": "儲存庫名稱",
+  "nameRequired": "請先填入儲存庫名稱",
+  "private": "私人儲存庫",
+  "privateDesc": "僅自己可見",
+  "title": "新儲存庫"
+}

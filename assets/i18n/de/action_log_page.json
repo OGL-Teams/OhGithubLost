@@ -1,0 +1,10 @@
+{
+  "copyAll": "Alles kopieren",
+  "linesCount": "{count} Zeilen",
+  "noLogs": "Keine Protokolle (Job möglicherweise unvollständig oder Token hat keine Berechtigungen für Actions)",
+  "noMatchingJob": "Kein passender Job gefunden",
+  "nothingToCopy": "Keine Protokolle zum Kopieren",
+  "reload": "Aktualisieren",
+  "searchJobHint": "Jobname suchen",
+  "title": "Ausführungsprotokolle"
+}

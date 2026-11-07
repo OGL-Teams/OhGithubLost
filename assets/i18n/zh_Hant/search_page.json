@@ -1,0 +1,16 @@
+{
+  "codeResults": "\"{q}\" 程式碼結果：{count}",
+  "codeSearch": "程式碼搜尋",
+  "noRepoForResult": "結果沒有可存取的字庫（索引可能尚未完成）",
+  "noResults": "沒有關於 \"{query}\" 的結果",
+  "openFileHint": "輕觸即可直接開啟檔案",
+  "private": "私密",
+  "queryHint": "關鍵字（支援 repo:…、language:… 篩選條件）",
+  "repoResults": "\"{q}\" 字庫結果：{count}",
+  "repoSearch": "字庫搜尋",
+  "search": "搜尋",
+  "starsCount": "{count} 個星號",
+  "startHint": "輸入關鍵字以開始搜尋",
+  "tabCode": "程式碼",
+  "tabRepos": "字庫"
+}

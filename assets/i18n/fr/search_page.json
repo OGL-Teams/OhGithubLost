@@ -1,0 +1,16 @@
+{
+  "codeResults": "Résultats de code pour « {q} » : {count}",
+  "codeSearch": "Recherche de code",
+  "noRepoForResult": "Aucun dépôt accessible pour ce résultat (l'index n'est peut-être pas encore prêt)",
+  "noResults": "Aucun résultat pour « {query} »",
+  "openFileHint": "Appuyez pour ouvrir le fichier directement",
+  "private": "Privé",
+  "queryHint": "Mot-clé (prend en charge les qualificatifs repo:… language:…)",
+  "repoResults": "Résultats de dépôt pour « {q} » : {count}",
+  "repoSearch": "Recherche de dépôts",
+  "search": "Rechercher",
+  "starsCount": "{count} étoile(s)",
+  "startHint": "Saisissez un mot-clé pour commencer la recherche",
+  "tabCode": "Code",
+  "tabRepos": "Dépôts"
+}

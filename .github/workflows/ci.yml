@@ -13,6 +13,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# ★ 严格模式（2026-11-07）：所有审计步骤继续执行，失败全部收集，最后统一 fail。
+# 旧版某一步 fail 后后续步骤全部跳过，一次只暴露一个错误——
+# 现在每步都跑完，报告里能看到全部问题，修复者一次改完而不是挤牙膏。
 jobs:
   quality:
     name: 质量门（analyze + test）
@@ -35,39 +38,57 @@ jobs:
       - name: 获取依赖
         run: flutter pub get
 
+      # ── 审计段：每步失败只记录（|| echo），不中断后续；终审统一 fail ──
+
       # 结构与多语言审计：把「四层依赖方向」「界面文案是否全部本地化」
       # 变成**可执行的门禁**（违反即失败），而不是只写在文档里靠人记。
       - name: 分层审计（依赖只能向下）
-        run: python3 tool/layer_audit.py --fatal
+        run: >-
+          python3 tool/layer_audit.py --fatal || echo "FAIL: layer_audit" >> /tmp/strict_failures.txt
+        if: always()
 
       # 版本一致性：`lib/main.dart` 的 kOgLAppVersion 必须与 pubspec 一致。
       # 历史上它长期停留在 7.4.0 而 pubspec 已到 9.x ——「关于」页与诊断日志
       # 谎报版本，构建与发布流程却浑然不知。这条门禁杜绝复发。
       - name: 版本一致性审计（main.dart 与 pubspec 对齐）
-        run: python3 tool/version_sync.py
+        run: >-
+          python3 tool/version_sync.py || echo "FAIL: version_sync" >> /tmp/strict_failures.txt
+        if: always()
 
       - name: i18n 审计（界面文案 0 遗漏 / 分片键集合一致）
-        run: python3 tool/i18n_scan.py --check
+        run: >-
+          python3 tool/i18n_scan.py --check || echo "FAIL: i18n_scan" >> /tmp/strict_failures.txt
+        if: always()
 
       - name: 动效分级审计（动画必须听档位质量表）
-        run: python3 tool/motion_audit.py --fatal
+        run: >-
+          python3 tool/motion_audit.py --fatal || echo "FAIL: motion_audit" >> /tmp/strict_failures.txt
+        if: always()
 
       # ★ UI 细节度门禁：设计令牌之外的字面值一律拦下。
       #   防的是「卡片圆角 2/6/8/12/24 并存」「间距 10/20/28 散落」
       #   「同一角色按钮两处圆角不同」这类**编译器不会报错**的问题。
       - name: UI 细节度门禁（设计令牌一致性）
-        run: python3 tool/ui_audit.py --fatal
+        run: >-
+          python3 tool/ui_audit.py --fatal || echo "FAIL: ui_audit" >> /tmp/strict_failures.txt
+        if: always()
 
       - name: 性能反模式审计（shrinkWrap / 宽 MediaQuery.of）
-        run: python3 tool/perf_audit.py --fatal
+        run: >-
+          python3 tool/perf_audit.py --fatal || echo "FAIL: perf_audit" >> /tmp/strict_failures.txt
+        if: always()
 
       - name: 图表自检（统计曲线的坐标系 / 刻度 / 降采样）
-        run: python3 tool/stats_chart.py --selftest
+        run: >-
+          python3 tool/stats_chart.py --selftest || echo "FAIL: stats_chart" >> /tmp/strict_failures.txt
+        if: always()
 
       # 平台私有文件注入器自检：必须在 CI 里守住"注入不是逃生舱"这条纪律
       # （缺 `why` 的注入项会被拒绝；幂等性也在此验证）。
       - name: 平台注入器自检（幂等 / 缺 why 拒绝）
-        run: python3 tool/inject_platform_spec_selftest.py
+        run: >-
+          python3 tool/inject_platform_spec_selftest.py || echo "FAIL: inject_platform_spec_selftest" >> /tmp/strict_failures.txt
+        if: always()
 
       # 格式护栏：修「fork 那份 diff 78% 文件被触碰、53% 是空白漂移」类问题。
       # 必须在 analyze 之前跑——空行/缩进不统一会让后续 review 全是噪音。
@@ -75,13 +96,36 @@ jobs:
       # `analysis_options.yaml`，避免 flutter_lints 解析失败误杀）。
       # 范围 `lib test`：源码 + widget 测试都要格式化一致。
       - name: 格式护栏（dart format）
-        run: dart format --set-exit-if-changed --output=none lib test
+        run: >-
+          dart format --set-exit-if-changed --output=none lib test || echo "FAIL: dart format" >> /tmp/strict_failures.txt
+        if: always()
 
       - name: 静态分析（警告即失败）
-        run: flutter analyze --fatal-infos --fatal-warnings
+        run: >-
+          flutter analyze --fatal-infos --fatal-warnings || echo "FAIL: flutter analyze" >> /tmp/strict_failures.txt
+        if: always()
 
       - name: 单元测试（含渲染快照）
-        run: flutter test --reporter expanded
+        run: >-
+          flutter test --reporter expanded || echo "FAIL: flutter test" >> /tmp/strict_failures.txt
+        if: always()
+
+      # ── 严格模式终审：收集到的全部失败一次性抛出（fail） ──
+      - name: 严格模式终审（全部失败一起 fail）
+        if: always()
+        run: |
+          N=$(grep -c 'FAIL:' /tmp/strict_failures.txt 2>/dev/null || echo 0)
+          if [ "$N" -gt 0 ]; then
+            echo "══════════════════════════════════════"
+            echo " 质量门严格模式：共 $N 项失败，全部列出："
+            echo "══════════════════════════════════════"
+            cat /tmp/strict_failures.txt
+            echo "══════════════════════════════════════"
+            echo "::error::质量门共 $N 项失败（修复全部后重跑；单项失败不再遮蔽其余问题）"
+            exit 1
+          else
+            echo "✅ 严格模式终审：全部审计通过。"
+          fi
 
       # 渲染快照产物：把主壳在 N 套主题 × N 种屏幕形态下真实渲染成 PNG 上传。
       # 这样"界面到底长什么样"第一次变成可看、可比、可回溯的事实。

@@ -1,0 +1,16 @@
+{
+  "content": "Contenu",
+  "contentHint": "Collez ou saisissez du code / du texte",
+  "contentRequired": "Le contenu ne peut pas être vide",
+  "create": "Créer",
+  "createFailed": "Échec de la création : {error}",
+  "created": "Créé",
+  "creating": "Création en cours…",
+  "description": "Description (facultatif)",
+  "fileName": "Nom du fichier (incluez l'extension pour déterminer le langage de mise en évidence)",
+  "fileNameHint": "Remarque : l'extension du nom de fichier influence la mise en évidence syntaxique (par exemple, main.dart / app.py).",
+  "fileNameRequired": "Veuillez indiquer un nom de fichier",
+  "isPublic": "Gist public",
+  "isPublicDesc": "Toute personne peut y accéder via le lien lorsqu'il est public",
+  "title": "Nouveau Gist"
+}

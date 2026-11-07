@@ -20,6 +20,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../app/async.dart';
 import '../app/notifier.dart';
+// TOKEN-EXIT-01: 下载令牌出设备警告弹窗（不可关闭）。
+import '../app/token_exit_warning.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -559,6 +561,23 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
         repoPrivate: widget.repoPrivate,
         size: widget.size > 0 ? widget.size : null,
       );
+      // TOKEN-EXIT-01: 计划里的最终地址若带令牌发往非 GitHub 主机，先警告。
+      final bool allowed = await ogLGuardTokenExitDownload(
+        context,
+        url: plan.urls.first,
+        headers: plan.headers,
+        targetSummary: ghPathName(widget.path),
+      );
+      if (!allowed) {
+        if (mounted) {
+          OgLNotifier.of(context).warning(
+            _t('tokenExitCancelled', <String, Object?>{
+              'host': Uri.tryParse(plan.urls.first)?.host ?? plan.urls.first,
+            }),
+          );
+        }
+        return;
+      }
       await widget.surface.domain.downloads.enqueue(
         url: plan.urls.first,
         fallbackUrls: plan.urls.skip(1).toList(),

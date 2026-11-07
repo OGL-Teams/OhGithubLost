@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Corps (facultatif, Markdown pris en charge)",
+  "createFailed": "Échec de la création : {error}",
+  "created": "Créé",
+  "submit": "Créer une demande",
+  "submitting": "Soumission en cours…",
+  "title": "Nouvelle demande",
+  "titleLabel": "Titre",
+  "titleRequired": "Veuillez d'abord remplir le titre"
+}

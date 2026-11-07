@@ -24,6 +24,8 @@ import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../app/paged_controller.dart';
+// TOKEN-EXIT-01: 下载令牌出设备警告弹窗（不可关闭）。
+import '../app/token_exit_warning.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
@@ -297,7 +299,9 @@ class _RepoPageState extends State<RepoPage> {
 
   Future<void> _copyCloneUrl() async {
     await ogLCopyText('https://github.com/$_full.git', tag: '克隆链接');
-    _notifier.success(_t('cloneUrlCopied'));
+    if (mounted) {
+      _notifier.success(_t('cloneUrlCopied'));
+    }
   }
 
   /// 选择分支（Material 底部弹层 + 搜索）。
@@ -1749,6 +1753,21 @@ class _CodeTabState extends State<_CodeTab> {
         repoPrivate: widget.repoPrivate,
         size: entry.size,
       );
+      // TOKEN-EXIT-01: 计划里的最终地址若带令牌发往非 GitHub 主机，先警告。
+      final bool allowed = await ogLGuardTokenExitDownload(
+        context,
+        url: plan.urls.first,
+        headers: plan.headers,
+        targetSummary: ghPathName(entry.path),
+      );
+      if (!allowed) {
+        if (mounted) {
+          _notifier.warning(_t('tokenExitCancelled', <String, Object?>{
+            'host': Uri.tryParse(plan.urls.first)?.host ?? plan.urls.first,
+          }));
+        }
+        return;
+      }
       await widget.surface.domain.downloads.enqueue(
         url: plan.urls.first,
         fallbackUrls: plan.urls.skip(1).toList(),
@@ -2141,7 +2160,9 @@ class _CodeTabState extends State<_CodeTab> {
 
   Future<void> _copyPath(String path) async {
     await ogLCopyText(path, tag: '路径');
-    _notifier.success(_t('pathCopied'));
+    if (mounted) {
+      _notifier.success(_t('pathCopied'));
+    }
   }
 
   void _openFileInBrowser(GhContent file) {

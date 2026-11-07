@@ -1,0 +1,16 @@
+{
+  "content": "Inhalt",
+  "contentHint": "Code / Text einfügen oder eingeben",
+  "contentRequired": "Der Inhalt darf nicht leer sein",
+  "create": "Erstellen",
+  "createFailed": "Erstellung fehlgeschlagen: {error}",
+  "created": "Erstellt",
+  "creating": "Wird erstellt…",
+  "description": "Beschreibung (optional)",
+  "fileName": "Dateiname (Erweiterung angeben, um die Syntaxhervorhebung festzulegen)",
+  "fileNameHint": "Hinweis: Die Dateinamenerweiterung beeinflusst die Syntaxhervorhebung (z. B. main.dart / app.py).",
+  "fileNameRequired": "Bitte gib einen Dateinamen an",
+  "isPublic": "Öffentlicher Gist",
+  "isPublicDesc": "Wenn öffentlich, kann jeder über den Link darauf zugreifen",
+  "title": "Neuer Gist"
+}

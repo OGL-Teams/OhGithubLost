@@ -16,6 +16,8 @@ import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../app/overlays.dart';
+// TOKEN-EXIT-01: 下载令牌出设备警告弹窗（不可关闭）。
+import '../app/token_exit_warning.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -260,6 +262,21 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
       final Map<String, String> headers = presigned
           ? const <String, String>{}
           : await widget.surface.downloadAuthHeaders();
+      // TOKEN-EXIT-01: 未预签名（直连）时认证头若发往非 GitHub 主机，先警告。
+      final bool allowed = await ogLGuardTokenExitDownload(
+        context,
+        url: urls.first,
+        headers: headers,
+        targetSummary: asset.name,
+      );
+      if (!allowed) {
+        if (mounted) {
+          _notifier.warning(_t('tokenExitCancelled', <String, Object?>{
+            'host': Uri.tryParse(urls.first)?.host ?? urls.first,
+          }));
+        }
+        return;
+      }
       await widget.surface.domain.downloads.enqueue(
         url: urls.first,
         fallbackUrls: urls.skip(1).toList(),
@@ -394,7 +411,9 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
       return;
     }
     await ogLCopyText(url, tag: '资产链接');
-    _notifier.success(_t('copiedDownloadLink'));
+    if (mounted) {
+      _notifier.success(_t('copiedDownloadLink'));
+    }
   }
 
   Widget _assetKeyRow(String key, String value) => Padding(

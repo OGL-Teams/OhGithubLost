@@ -4,8 +4,8 @@
 # 设计要点：
 # 1. **全架构**：每个平台按"能构建的每一种架构"各出一件产物；
 # 2. **零外部资源**：仓库不含 assets，故这里无需任何"下载字体/图标/清单"的步骤；
-# 3. **必过项与尽力项分开**：稳定目标失败即红；预览期 runner / 实验性架构
-#    标记 best_effort（continue-on-error），红了不阻塞主线但日志可见；
+# 3. **严格模式**：任何构建腿失败即整体 fail，不再有 best_effort 宽松腿
+#    （预览期 runner / 实验性架构的问题同样必须暴露并修复）；
 # 4. 产物按"平台·架构"分别上传，用户直接下自己那一份；
 # 5. **一键发布**：手动触发（workflow_dispatch）时选择发布通道
 #    （stable / beta / alpha）+ 版本号 + 版本名 + 说明；
@@ -122,7 +122,8 @@ jobs:
     # ★ 6.0.1 起加超时兜底：Linux 腿曾因容器源超时挂死 5h50m，
     #   托管 runner 默认上限 6h，等于白烧配额。45 分钟足够跑完全平台。
     timeout-minutes: 45
-    continue-on-error: ${{ matrix.best_effort == true }}
+    # ★ 2026-11-07 严格模式：构建失败一律 fail，不再有 best_effort 宽松腿。
+    #   任何平台的构建问题都必须暴露并修复，而不是被静默吞掉。
     strategy:
       fail-fast: false
       matrix:
@@ -345,7 +346,9 @@ jobs:
       # （构建时 Gradle 还会自行重试）。
       - name: 预装 CMake（防中途下载损坏）
         if: matrix.build == 'apk' || matrix.build == 'appbundle'
-        continue-on-error: true
+        # ★ 2026-11-07 严格模式：CMake 预装失败不再静默跳过（Gradle 的自动
+        #   重试留作兜底，但预装失败必须可见——否则构建在几分钟后才以一条
+        #   不相干的错误失败，排查方向被带偏）。
         shell: bash
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "cmake;3.22.1" >/dev/null 2>&1 \
@@ -493,7 +496,7 @@ jobs:
   #   - 标签：v{版本名}；beta / alpha 追加 -{通道}（版本名已含通道则不重复）。
   #   - 预发布：通道非 stable 即标 Pre-release。
   #   - 产物：APK / AAB 加版本前缀原样上传，其余平台打包为 zip。
-  # 说明：best_effort 腿失败不影响本任务（continue-on-error 不污染 result）。
+  # 说明：2026-11-07 起严格模式——所有构建腿失败都会让本任务红。
   # ---------------------------------------------------------------------------
   release:
     name: 发布 Release

@@ -563,7 +563,12 @@ class _OgLNoticeHostState extends State<OgLNoticeHost>
     final text = notice.detail == null || notice.detail!.isEmpty
         ? notice.title
         : '${notice.title}：${notice.detail}';
-    messenger?.showSnackBar(SnackBar(content: Text(text)));
+    if (messenger == null) {
+      // 横幅通道不可用（尚未挂到 MaterialApp 树内）：放回队首，绝不静默丢弃。
+      OgLNoticeCenter.instance.requeueFront(notice);
+      return;
+    }
+    messenger.showSnackBar(SnackBar(content: Text(text)));
     _showing = false;
     WidgetsBinding.instance.addPostFrameCallback((_) => _drain());
   }

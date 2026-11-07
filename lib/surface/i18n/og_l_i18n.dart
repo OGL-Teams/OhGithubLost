@@ -32,10 +32,21 @@ class OgLLocale {
 
 /// 系统语言 → 受支持的界面语言代码（**首次启动**用；不认识就回落 `zh`）。
 ///
-/// 只支持简体中文与英文；未识别语言统一回落简体中文。
+/// 按设备语言匹配支持的语言；未识别语言统一回落简体中文。
 String ogLDetectDeviceLocale() {
   final String language = PlatformDispatcher.instance.locale.languageCode;
-  return language == 'en' ? 'en' : 'zh';
+  const Set<String> supported = <String>{
+    'en', 'zh', 'de', 'fr', 'ru',
+  };
+  if (!supported.contains(language)) {
+    return 'zh';
+  }
+  // 中文细分：繁体设备回落繁中，其余中文回落简中。
+  if (language == 'zh') {
+    final String script = PlatformDispatcher.instance.locale.scriptCode ?? '';
+    return script == 'Hant' ? 'zh_Hant' : 'zh';
+  }
+  return language;
 }
 
 /// i18n 内核（全局单例；仅展示层使用）。
@@ -63,7 +74,11 @@ class OgLI18n extends ChangeNotifier {
   /// 英文。键集合由 `tool/i18n_scan.py --check` 强制与 `zh` 一致。
   static const List<OgLLocale> locales = <OgLLocale>[
     OgLLocale('zh', '简体中文'),
+    OgLLocale('zh_Hant', '繁體中文'),
     OgLLocale('en', 'English'),
+    OgLLocale('de', 'Deutsch'),
+    OgLLocale('fr', 'Français'),
+    OgLLocale('ru', 'Русский'),
   ];
 
   /// 需要加载的页面分片（新增页面时在这里补一项即可）。

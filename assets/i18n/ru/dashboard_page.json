@@ -1,0 +1,16 @@
+{
+  "downloads": "Загрузки",
+  "emptyMine": "Репозиториев пока нет",
+  "emptyStarred": "Звёздочных репозиториев пока нет",
+  "home": "Главная",
+  "loadMore": "Загрузить ещё ({count} на данный момент)",
+  "mine": "Мои",
+  "newRepo": "Новый репозиторий",
+  "notifications": "Уведомления",
+  "private": "Приватный",
+  "repoCreated": "Репозиторий создан",
+  "repoCreatedName": "Создано {name}",
+  "retry": "Повторить",
+  "starred": "Звёздочные",
+  "starsCount": "{count} звёзд"
+}

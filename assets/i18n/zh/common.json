@@ -122,5 +122,13 @@
   "writeConflictServer": "服务端错误，请稍后重试",
   "writeConflictVerificationFailed": "写入后校验未通过，请重试",
   "viewDownloads": "查看下载",
-  "copyFailed": "复制失败，请手动复制"
+  "copyFailed": "复制失败，请手动复制",
+  "tokenExitTitle": "令牌将离开设备",
+  "tokenExitBody": "这次下载会把你的 GitHub 令牌（登录凭证）发给下面这台非 GitHub 官方主机，它有可能记录并滥用该令牌。风险自担；不确定时请选择「取消」。",
+  "tokenExitHost": "目标主机：{host}\n下载目标：{target}",
+  "tokenExitConfirm": "仍要下载",
+  "tokenExitCancel": "取消",
+  "tokenExitLogConfirmed": "用户确认将令牌发给主机 {host}（TOKEN-EXIT-01）",
+  "tokenExitLogCancelled": "用户取消下载：令牌不出设备，目标主机 {host}（TOKEN-EXIT-01）",
+  "tokenExitCancelled": "已取消下载：令牌不会发给主机 {host}"
 }
