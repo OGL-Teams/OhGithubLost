@@ -37,9 +37,10 @@ import 'settings_page.dart';
 
 /// 取 `common` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
-    'common', key,
-    args:
-        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+  'common',
+  key,
+  args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')),
+);
 
 /// 文件预览页。
 class FilePreviewPage extends StatefulWidget {
@@ -96,7 +97,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   bool _useRaw = false;
 
   /// raw 直链（`raw.githubusercontent.com`）。
-  String get _rawUrl => 'https://raw.githubusercontent.com/${widget.fullName}/'
+  String get _rawUrl =>
+      'https://raw.githubusercontent.com/${widget.fullName}/'
       '${Uri.encodeComponent(widget.branch)}/'
       '${widget.path.split('/').map(Uri.encodeComponent).join('/')}';
 
@@ -260,8 +262,11 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
           fit: BoxFit.contain,
           errorBuilder:
               (BuildContext context, Object error, StackTrace? stack) =>
-                  _notice(Theme.of(context), Icons.broken_image_outlined,
-                      _t('previewTooLarge')),
+                  _notice(
+                    Theme.of(context),
+                    Icons.broken_image_outlined,
+                    _t('previewTooLarge'),
+                  ),
         ),
       ),
     );
@@ -356,7 +361,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   /// v6.4.1 起，私有仓库若用户已在设置页**知情接受**「令牌交给第三方代理」，
   /// 则与公开仓库一样静默走 raw + 加速；未接受则照常弹窗如实说明。
   Widget _tooLargePane(ThemeData theme) {
-    final bool privateOk = !widget.repoPrivate ||
+    final bool privateOk =
+        !widget.repoPrivate ||
         widget.surface.settings.settings.accelPrivateRepoAccepted;
     if (_useRaw || (_accelOn && privateOk)) {
       return _rawView(theme);
@@ -380,12 +386,16 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
               // 已接受的私有仓库与公开仓库同等待遇，不需要这句解释。
               (widget.repoPrivate &&
                       !widget
-                          .surface.settings.settings.accelPrivateRepoAccepted)
+                          .surface
+                          .settings
+                          .settings
+                          .accelPrivateRepoAccepted)
                   ? _t('fileTooLargeBodyPrivate')
                   : _t('fileTooLargeBody'),
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: OgLSpace.xl),
             FilledButton.icon(
@@ -410,9 +420,12 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
     if (!mounted) {
       return;
     }
-    await Navigator.of(context).push<void>(MaterialPageRoute<void>(
-      builder: (BuildContext context) => SettingsPage(surface: widget.surface),
-    ));
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) =>
+            SettingsPage(surface: widget.surface),
+      ),
+    );
     // 回来时按新的加速设置重判一次取法。
     if (mounted) {
       setState(() {});
@@ -456,33 +469,43 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
               : Future<Map<String, String>>.value(const <String, String>{}),
           builder:
               (BuildContext context, AsyncSnapshot<Map<String, String>> snap) {
-            final Map<String, String> headers =
-                snap.data ?? const <String, String>{};
-            return InteractiveViewer(
-              minScale: 0.5,
-              maxScale: 6,
-              child: Center(
-                child: Image.network(
-                  url,
-                  // 空 map 等同不带头；这里只在私有仓库且未走代理时才有内容。
-                  headers: headers.isEmpty ? null : headers,
-                  fit: BoxFit.contain,
-                  loadingBuilder: (BuildContext context, Widget child,
-                          ImageChunkEvent? progress) =>
-                      progress == null
+                final Map<String, String> headers =
+                    snap.data ?? const <String, String>{};
+                return InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 6,
+                  child: Center(
+                    child: Image.network(
+                      url,
+                      // 空 map 等同不带头；这里只在私有仓库且未走代理时才有内容。
+                      headers: headers.isEmpty ? null : headers,
+                      fit: BoxFit.contain,
+                      loadingBuilder:
+                          (
+                            BuildContext context,
+                            Widget child,
+                            ImageChunkEvent? progress,
+                          ) => progress == null
                           ? child
                           : const Center(child: CircularProgressIndicator()),
-                  errorBuilder:
-                      (BuildContext context, Object error, StackTrace? stack) =>
-                          // ★ 这里**不能**说「文件过大」：>1 MB 已经由
-                          //   `_tooLargePane` 处理过了，走到这里说明是加载失败
-                          //   （认证、限流、网络），说成文件过大会让人白折腾。
-                          _notice(theme, Icons.broken_image_outlined,
-                              _t('previewLoadFailed')),
-                ),
-              ),
-            );
-          },
+                      errorBuilder:
+                          (
+                            BuildContext context,
+                            Object error,
+                            StackTrace? stack,
+                          ) =>
+                              // ★ 这里**不能**说「文件过大」：>1 MB 已经由
+                              //   `_tooLargePane` 处理过了，走到这里说明是加载失败
+                              //   （认证、限流、网络），说成文件过大会让人白折腾。
+                              _notice(
+                                theme,
+                                Icons.broken_image_outlined,
+                                _t('previewLoadFailed'),
+                              ),
+                    ),
+                  ),
+                );
+              },
         );
       case OgLPreviewKind.audio:
         // 音频必然超限：默认就给出「用系统播放器打开」这条唯一可行的路。
@@ -492,7 +515,10 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
       case OgLPreviewKind.unknown:
         // 文本类 > 1 MB 不在预览页展开（编辑器才是它的去处）。
         return _notice(
-            theme, Icons.description_outlined, _t('fileTooLargeTitle'));
+          theme,
+          Icons.description_outlined,
+          _t('fileTooLargeTitle'),
+        );
     }
   }
 
@@ -507,47 +533,49 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   /// 令牌，私有仓库的 raw 一律 404。此前私有仓库也会显示这个按钮，等于给一个
   /// 点了必然失败的动作。私有仓库只给「下载」（下载走本应用的传输层，带认证）。
   Widget _audioCard(ThemeData theme, {String? rawUrl}) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(OgLSpace.xxl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Icon(
-                Icons.music_note_outlined,
-                size: 40,
-                color: theme.colorScheme.outline,
-              ),
-              const SizedBox(height: OgLSpace.md),
-              Text(
-                _t('previewAudioHint'),
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-              const SizedBox(height: OgLSpace.xl),
-              // 有 raw 地址时优先给「播放」：这是**真的能听到声音**的那条路
-              // （走系统播放器；应用内播放需要额外音频依赖且音频必然超过
-              //  Contents API 的 1 MB 上限，内置播放本就不成立）。
-              // ★ 私有仓库不给：系统播放器没有本应用的令牌，点了必然 404。
-              if (rawUrl != null && rawUrl.isNotEmpty && !widget.repoPrivate)
-                FilledButton.icon(
-                  onPressed: () =>
-                      unawaited(openLinkOrCopy(context, rawUrl, tag: 'Audio')),
-                  icon: const Icon(Icons.play_arrow),
-                  label: Text(_t('previewAudioPlay')),
-                ),
-              if (rawUrl != null && rawUrl.isNotEmpty && !widget.repoPrivate)
-                const SizedBox(height: OgLSpace.sm),
-              OutlinedButton.icon(
-                onPressed:
-                    (_busy || _queued) ? null : () => unawaited(_enqueueFile()),
-                icon: const Icon(Icons.download_outlined),
-                label: Text(_t('download')),
-              ),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(OgLSpace.xxl),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(
+            Icons.music_note_outlined,
+            size: 40,
+            color: theme.colorScheme.outline,
           ),
-        ),
-      );
+          const SizedBox(height: OgLSpace.md),
+          Text(
+            _t('previewAudioHint'),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: OgLSpace.xl),
+          // 有 raw 地址时优先给「播放」：这是**真的能听到声音**的那条路
+          // （走系统播放器；应用内播放需要额外音频依赖且音频必然超过
+          //  Contents API 的 1 MB 上限，内置播放本就不成立）。
+          // ★ 私有仓库不给：系统播放器没有本应用的令牌，点了必然 404。
+          if (rawUrl != null && rawUrl.isNotEmpty && !widget.repoPrivate)
+            FilledButton.icon(
+              onPressed: () =>
+                  unawaited(openLinkOrCopy(context, rawUrl, tag: 'Audio')),
+              icon: const Icon(Icons.play_arrow),
+              label: Text(_t('previewAudioPlay')),
+            ),
+          if (rawUrl != null && rawUrl.isNotEmpty && !widget.repoPrivate)
+            const SizedBox(height: OgLSpace.sm),
+          OutlinedButton.icon(
+            onPressed: (_busy || _queued)
+                ? null
+                : () => unawaited(_enqueueFile()),
+            icon: const Icon(Icons.download_outlined),
+            label: Text(_t('download')),
+          ),
+        ],
+      ),
+    ),
+  );
 
   /// 把当前文件加入下载（音频预览的出路）。
   Future<void> _enqueueFile() async {
@@ -555,12 +583,12 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
     try {
       final ({List<String> urls, Map<String, String> headers}) plan =
           await widget.surface.planRepoFileDownload(
-        fullName: widget.fullName,
-        path: widget.path,
-        branch: widget.branch,
-        repoPrivate: widget.repoPrivate,
-        size: widget.size > 0 ? widget.size : null,
-      );
+            fullName: widget.fullName,
+            path: widget.path,
+            branch: widget.branch,
+            repoPrivate: widget.repoPrivate,
+            size: widget.size > 0 ? widget.size : null,
+          );
       // TOKEN-EXIT-01: 计划里的最终地址若带令牌发往非 GitHub 主机，先警告。
       if (!mounted) {
         return;
@@ -591,16 +619,19 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
       );
       if (mounted) {
         setState(() => _queued = true);
-        OgLDownloadNotice.instance.show(context, widget.surface,
-            message: _t('addedToDownload', <String, Object?>{
-              'name': ghPathName(widget.path),
-            }));
+        OgLDownloadNotice.instance.show(
+          context,
+          widget.surface,
+          message: _t('addedToDownload', <String, Object?>{
+            'name': ghPathName(widget.path),
+          }),
+        );
       }
     } catch (error) {
       if (mounted) {
-        OgLNotifier.of(context).warning(
-          _t('addDownloadFailed', <String, Object?>{'error': error}),
-        );
+        OgLNotifier.of(
+          context,
+        ).warning(_t('addDownloadFailed', <String, Object?>{'error': error}));
       }
     } finally {
       if (mounted) {
@@ -610,41 +641,45 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   }
 
   Widget _notice(ThemeData theme, IconData icon, String message) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(OgLSpace.xxl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Icon(icon, size: 40, color: theme.colorScheme.outline),
-              const SizedBox(height: OgLSpace.md),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(OgLSpace.xxl),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: 40, color: theme.colorScheme.outline),
+          const SizedBox(height: OgLSpace.md),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 
   Widget _banner(ThemeData theme, IconData icon, String message) => Container(
-        width: double.infinity,
-        color: theme.colorScheme.surfaceContainerHighest,
-        padding: const EdgeInsets.symmetric(
-            horizontal: OgLSpace.md, vertical: OgLSpace.sm),
-        child: Row(
-          children: <Widget>[
-            Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(width: OgLSpace.sm),
-            Expanded(
-              child: Text(
-                message,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
+    width: double.infinity,
+    color: theme.colorScheme.surfaceContainerHighest,
+    padding: const EdgeInsets.symmetric(
+      horizontal: OgLSpace.md,
+      vertical: OgLSpace.sm,
+    ),
+    child: Row(
+      children: <Widget>[
+        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
+        const SizedBox(width: OgLSpace.sm),
+        Expanded(
+          child: Text(
+            message,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
-          ],
+          ),
         ),
-      );
+      ],
+    ),
+  );
 }

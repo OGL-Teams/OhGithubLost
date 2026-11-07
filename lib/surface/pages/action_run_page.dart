@@ -28,9 +28,10 @@ import 'download_manager_page.dart';
 
 /// 取 `action_run_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
-    'action_run_page', key,
-    args:
-        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+  'action_run_page',
+  key,
+  args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')),
+);
 
 /// 一次运行 + 它的作业列表。
 class _RunDetail {
@@ -94,16 +95,10 @@ class _ActionRunPageState extends State<ActionRunPage> {
       label: _t('title'),
       isEmpty: (_RunDetail value) => false,
       loader: () async {
-        final Map<String, dynamic>? run =
-            await widget.surface.domain.api.workflowRun(
-          widget.fullName,
-          widget.runId,
-        );
-        final List<Map<String, dynamic>> jobs =
-            await widget.surface.domain.api.workflowRunJobs(
-          widget.fullName,
-          widget.runId,
-        );
+        final Map<String, dynamic>? run = await widget.surface.domain.api
+            .workflowRun(widget.fullName, widget.runId);
+        final List<Map<String, dynamic>> jobs = await widget.surface.domain.api
+            .workflowRunJobs(widget.fullName, widget.runId);
         // 产物列表：**失败不阻断**（老运行的产物会被 GitHub 清理，接口可能 404）。
         List<Map<String, dynamic>> artifacts = const <Map<String, dynamic>>[];
         try {
@@ -127,10 +122,15 @@ class _ActionRunPageState extends State<ActionRunPage> {
     }
     setState(() => _busy = true);
     try {
-      await widget.surface.domain.api
-          .rerunWorkflowRun(widget.fullName, widget.runId);
-      OgLAppLog.instance
-          .result('Actions', _t('rerunTriggered'), '#${widget.runId}');
+      await widget.surface.domain.api.rerunWorkflowRun(
+        widget.fullName,
+        widget.runId,
+      );
+      OgLAppLog.instance.result(
+        'Actions',
+        _t('rerunTriggered'),
+        '#${widget.runId}',
+      );
       if (mounted) {
         OgLNotifier.of(context).info(_t('rerunTriggered'));
       }
@@ -142,9 +142,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        OgLNotifier.of(context).warning(
-          _t('rerunFailed', {'error': error}),
-        );
+        OgLNotifier.of(context).warning(_t('rerunFailed', {'error': error}));
       }
     } finally {
       if (mounted) {
@@ -179,10 +177,15 @@ class _ActionRunPageState extends State<ActionRunPage> {
     }
     setState(() => _busy = true);
     try {
-      await widget.surface.domain.api
-          .cancelWorkflowRun(widget.fullName, widget.runId);
-      OgLAppLog.instance
-          .result('Actions', _t('cancelRequested'), '#${widget.runId}');
+      await widget.surface.domain.api.cancelWorkflowRun(
+        widget.fullName,
+        widget.runId,
+      );
+      OgLAppLog.instance.result(
+        'Actions',
+        _t('cancelRequested'),
+        '#${widget.runId}',
+      );
       await _detailC().load();
     } catch (error) {
       OgLAppLog.instance.add(
@@ -191,9 +194,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        OgLNotifier.of(context).warning(
-          _t('cancelFailed', {'error': error}),
-        );
+        OgLNotifier.of(context).warning(_t('cancelFailed', {'error': error}));
       }
     } finally {
       if (mounted) {
@@ -233,8 +234,9 @@ class _ActionRunPageState extends State<ActionRunPage> {
           icon: const Icon(Icons.download_outlined),
           // 已过期的产物点了也只是失败，直接禁用比让它报错更诚实。
           tooltip: _t('downloadArtifact'),
-          onPressed:
-              expired ? null : () => unawaited(_downloadArtifact(artifact)),
+          onPressed: expired
+              ? null
+              : () => unawaited(_downloadArtifact(artifact)),
         ),
       ),
     );
@@ -253,8 +255,10 @@ class _ActionRunPageState extends State<ActionRunPage> {
       return;
     }
     try {
-      final String first =
-          widget.surface.domain.api.artifactDownloadUrl(widget.fullName, id);
+      final String first = widget.surface.domain.api.artifactDownloadUrl(
+        widget.fullName,
+        id,
+      );
       final String direct = await widget.surface.resolveDownloadUrl(first);
       final bool presigned = direct != first;
       final List<String> urls = ogLAccelCandidates(
@@ -262,8 +266,9 @@ class _ActionRunPageState extends State<ActionRunPage> {
         // 预解析失败时**放弃加速**：否则等于把令牌送给代理。
         // 适用范围：Action 构建产物（运行日志不走加速，见 OgLAccelScope）。
         prefixes: presigned
-            ? widget.surface.settings.settings
-                .accelPrefixesFor(OgLAccelScope.actionArtifact)
+            ? widget.surface.settings.settings.accelPrefixesFor(
+                OgLAccelScope.actionArtifact,
+              )
             : const <String>[],
         family: OgLAccelFamily.signed,
       );
@@ -282,9 +287,11 @@ class _ActionRunPageState extends State<ActionRunPage> {
       );
       if (!allowed) {
         if (mounted) {
-          _notifier.warning(_t('tokenExitCancelled', <String, Object?>{
-            'host': Uri.tryParse(urls.first)?.host ?? urls.first,
-          }));
+          _notifier.warning(
+            _t('tokenExitCancelled', <String, Object?>{
+              'host': Uri.tryParse(urls.first)?.host ?? urls.first,
+            }),
+          );
         }
         return;
       }
@@ -297,8 +304,11 @@ class _ActionRunPageState extends State<ActionRunPage> {
         connections: widget.surface.settings.settings.downloadConnections,
       );
       if (mounted) {
-        OgLDownloadNotice.instance.show(context, widget.surface,
-            message: _t('artifactAdded', <String, Object?>{'name': name}));
+        OgLDownloadNotice.instance.show(
+          context,
+          widget.surface,
+          message: _t('artifactAdded', <String, Object?>{'name': name}),
+        );
       }
     } catch (error) {
       if (mounted) {
@@ -357,8 +367,10 @@ class _ActionRunPageState extends State<ActionRunPage> {
     if (d.inSeconds < 60) {
       return _t('durationSecs', {'secs': d.inSeconds});
     }
-    return _t(
-        'durationMinSecs', {'mins': d.inMinutes, 'secs': d.inSeconds % 60});
+    return _t('durationMinSecs', {
+      'mins': d.inMinutes,
+      'secs': d.inSeconds % 60,
+    });
   }
 
   @override
@@ -367,9 +379,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _t('runNumber', {
-            'number': '${ghInt(widget.run, 'run_number')}',
-          }),
+          _t('runNumber', {'number': '${ghInt(widget.run, 'run_number')}'}),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -462,8 +472,13 @@ class _ActionRunPageState extends State<ActionRunPage> {
                             if (htmlUrl.isNotEmpty)
                               TextButton.icon(
                                 onPressed: () {
-                                  unawaited(openLinkOrCopy(context, htmlUrl,
-                                      tag: 'Actions'));
+                                  unawaited(
+                                    openLinkOrCopy(
+                                      context,
+                                      htmlUrl,
+                                      tag: 'Actions',
+                                    ),
+                                  );
                                 },
                                 icon: const Icon(Icons.open_in_new),
                                 label: Text(_t('openInBrowser')),
@@ -474,8 +489,10 @@ class _ActionRunPageState extends State<ActionRunPage> {
                         const Divider(height: 1),
                         // 构建产物：有才显示（老运行的产物已被 GitHub 清理时不留空位）。
                         if (detail.artifacts.isNotEmpty) ...<Widget>[
-                          Text(_t('artifacts'),
-                              style: theme.textTheme.titleMedium),
+                          Text(
+                            _t('artifacts'),
+                            style: theme.textTheme.titleMedium,
+                          ),
                           const SizedBox(height: OgLSpace.sm),
                           for (final Map<String, dynamic> artifact
                               in detail.artifacts)
@@ -487,10 +504,11 @@ class _ActionRunPageState extends State<ActionRunPage> {
                         const SizedBox(height: OgLSpace.sm),
                         if (detail.jobs.isEmpty)
                           Padding(
-                            padding:
-                                EdgeInsets.symmetric(vertical: OgLSpace.lg),
+                            padding: EdgeInsets.symmetric(
+                              vertical: OgLSpace.lg,
+                            ),
                             child: Text(_t('noJobs')),
-                          )
+                          ),
                       ],
                     ),
                   ),
@@ -525,46 +543,55 @@ class _ActionRunPageState extends State<ActionRunPage> {
                             '${ghStr(job, 'conclusion').isEmpty ? '—' : ghStr(job, 'conclusion')}',
                           ),
                           childrenPadding: const EdgeInsets.fromLTRB(
-                              OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.md),
+                            OgLSpace.lg,
+                            0,
+                            OgLSpace.lg,
+                            OgLSpace.md,
+                          ),
                           children: <Widget>[
-                            for (final Object? rawStep in (job['steps'] is List
-                                ? job['steps'] as List<Object?>
-                                : const <Object?>[]))
+                            for (final Object? rawStep
+                                in (job['steps'] is List
+                                    ? job['steps'] as List<Object?>
+                                    : const <Object?>[]))
                               if (rawStep is Map<Object?, Object?>)
-                                Builder(builder: (BuildContext context) {
-                                  final Map<String, dynamic> step =
-                                      Map<String, dynamic>.from(rawStep);
-                                  return ListTile(
-                                    dense: true,
-                                    leading: Icon(
-                                      _statusIcon(
-                                        ghStr(step, 'status'),
-                                        ghStr(step, 'conclusion'),
-                                      ),
-                                      size: 18,
-                                      color: _statusColor(
-                                        theme,
-                                        ghStr(step, 'status'),
-                                        ghStr(step, 'conclusion'),
-                                      ),
-                                    ),
-                                    title: Text(
-                                      '${ghInt(step, 'number')}. ${ghStr(step, 'name')}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    subtitle: Text(
-                                      <String>[
-                                        ghStr(step, 'status'),
-                                        if (ghStr(step, 'conclusion')
-                                            .isNotEmpty)
+                                Builder(
+                                  builder: (BuildContext context) {
+                                    final Map<String, dynamic> step =
+                                        Map<String, dynamic>.from(rawStep);
+                                    return ListTile(
+                                      dense: true,
+                                      leading: Icon(
+                                        _statusIcon(
+                                          ghStr(step, 'status'),
                                           ghStr(step, 'conclusion'),
-                                        if (_durationText(step).isNotEmpty)
-                                          _durationText(step),
-                                      ].join(' · '),
-                                    ),
-                                  );
-                                }),
+                                        ),
+                                        size: 18,
+                                        color: _statusColor(
+                                          theme,
+                                          ghStr(step, 'status'),
+                                          ghStr(step, 'conclusion'),
+                                        ),
+                                      ),
+                                      title: Text(
+                                        '${ghInt(step, 'number')}. ${ghStr(step, 'name')}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      subtitle: Text(
+                                        <String>[
+                                          ghStr(step, 'status'),
+                                          if (ghStr(
+                                            step,
+                                            'conclusion',
+                                          ).isNotEmpty)
+                                            ghStr(step, 'conclusion'),
+                                          if (_durationText(step).isNotEmpty)
+                                            _durationText(step),
+                                        ].join(' · '),
+                                      ),
+                                    );
+                                  },
+                                ),
                           ],
                         ),
                       );

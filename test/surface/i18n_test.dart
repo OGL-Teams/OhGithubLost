@@ -30,8 +30,10 @@ Map<String, Map<String, String>> _loadLocale(String code) {
 
 void main() {
   group('语言包完整性', () {
-    test('2 种语言 × 全部页面分片全部存在且可解析', () {
-      expect(OgLI18n.locales.length, 2);
+    test('全部语言 × 全部页面分片全部存在且可解析', () {
+      // v10.3.0 起支持 6 种语言（zh/zh_Hant/en/de/fr/ru）；数量随 locales 声明走，
+      // 不再硬编码——新增语言时这里自动适配（语言包与声明必须同源）。
+      expect(OgLI18n.locales.length, greaterThanOrEqualTo(6));
       for (final OgLLocale locale in OgLI18n.locales) {
         _loadLocale(locale.code);
       }
