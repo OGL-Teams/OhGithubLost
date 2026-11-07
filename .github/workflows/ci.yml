@@ -97,7 +97,7 @@ jobs:
       # 范围 `lib test`：源码 + widget 测试都要格式化一致。
       - name: 格式护栏（dart format）
         run: >-
-          dart format --set-exit-if-changed --output=none lib test || echo "FAIL: dart format" >> /tmp/strict_failures.txt
+          dart format --language-version=3.6 --set-exit-if-changed --output=none lib test || echo "FAIL: dart format" >> /tmp/strict_failures.txt
         if: always()
 
       - name: 静态分析（警告即失败）

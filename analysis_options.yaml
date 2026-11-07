@@ -8,11 +8,9 @@ include: package:flutter_lints/flutter.yaml
 # ── 格式器风格锁 ──────────────────────────────────────────────────────────
 # dart format 的输出规则随 dart_style 代际变化（本地 3.1.13 vs CI 3.47.5 自带的
 # tall-style 默认），版本不同则同一文件两边各说各话，format 门禁永无宁日。
-# 这里把格式器语言版本钉在 **3.6**（与 pubspec sdk 下限一致）：无论哪个 SDK，
-# format 输出同一套风格，门禁才有唯一真相。
-formatter:
-  language:
-    version: "3.6"
+# 钉版方式：CI 的 format 步骤显式传 `--language-version=3.6`（与 pubspec sdk
+# 下限一致）——分析器不认识 analysis_options 的 formatter 段（会报
+# unsupported_option），所以钉子放在 workflow 里而不是这里。
 
 analyzer:
   # ── 严格语言模式（三项全开）────────────────────────────────────────────
