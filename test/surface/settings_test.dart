@@ -139,9 +139,10 @@ void main() {
           OgLSettings.fromJson(<String, Object?>{'accelScopes': <String>[]})
               .accelScopes,
           isEmpty);
-      // 字段缺失 → 全开（老配置升级后行为不变）。
+      // 字段缺失（老配置升级）→ 保守默认：只开既有 4 类，新增 5 类默认关
+      //（绝不悄悄替用户打开"经过第三方"的新区域）。
       expect(OgLSettings.fromJson(<String, Object?>{}).accelScopes,
-          kOgLAccelAllScopeIds);
+          kOgLAccelDefaultScopeIds);
     });
 
     test('按范围取前缀：关掉的范围拿不到前缀', () {
