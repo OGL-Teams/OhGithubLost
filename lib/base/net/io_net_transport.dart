@@ -47,8 +47,8 @@ class IoNetTransport implements NetTransport {
     HttpClient? client,
     this.connectTimeout = const Duration(seconds: 15),
     this.receiveTimeout = const Duration(seconds: 60),
-  })  : _dns = dns,
-        _client = client ?? HttpClient() {
+  }) : _dns = dns,
+       _client = client ?? HttpClient() {
     _applyPolicy(_client);
   }
 
@@ -86,48 +86,53 @@ class IoNetTransport implements NetTransport {
       return;
     }
     // 自定义 DNS：接管 connectionFactory，把域名换成我们解析出的 IP。
-    client.connectionFactory = (
-      Uri uri,
-      String? proxyHost,
-      int? proxyPort,
-    ) async {
-      const Duration connectTimeout = Duration(seconds: 15);
-      if (proxyHost != null && proxyPort != null) {
-        return Socket.startConnect(proxyHost, proxyPort)
-            .timeout(connectTimeout);
-      }
-      final int port = uri.hasPort && uri.port != 0
-          ? uri.port
-          : (uri.scheme == 'https' ? 443 : 80);
-      final List<String> resolved = await dns.resolve(uri.host);
-      // IPv4 优先（半死 IPv6 通道场景下先走可达地址）。
-      final List<String> v4 =
-          resolved.where((String ip) => !ip.contains(':')).toList();
-      final List<String> v6 =
-          resolved.where((String ip) => ip.contains(':')).toList();
-      final List<String> addresses = <String>[...v4, ...v6];
-      Object? lastError;
-      for (final String address in addresses) {
-        try {
-          return await Socket.startConnect(address, port)
-              .timeout(connectTimeout);
-        } catch (error) {
-          lastError = error;
-        }
-      }
-      // 降级：自定义解析全军覆没 → 交给系统解析再试一次（绝不静默）。
-      try {
-        return await Socket.startConnect(uri.host, port)
-            .timeout(connectTimeout);
-      } catch (error) {
-        lastError = error;
-      }
-      throw NetException(
-        NetErrorKind.connection,
-        'DNS 解析后无法连接 ${uri.host}'
-        '（自定义 ${addresses.length} 地址 + 系统解析均失败）：$lastError',
-      );
-    };
+    client.connectionFactory =
+        (Uri uri, String? proxyHost, int? proxyPort) async {
+          const Duration connectTimeout = Duration(seconds: 15);
+          if (proxyHost != null && proxyPort != null) {
+            return Socket.startConnect(
+              proxyHost,
+              proxyPort,
+            ).timeout(connectTimeout);
+          }
+          final int port = uri.hasPort && uri.port != 0
+              ? uri.port
+              : (uri.scheme == 'https' ? 443 : 80);
+          final List<String> resolved = await dns.resolve(uri.host);
+          // IPv4 优先（半死 IPv6 通道场景下先走可达地址）。
+          final List<String> v4 = resolved
+              .where((String ip) => !ip.contains(':'))
+              .toList();
+          final List<String> v6 = resolved
+              .where((String ip) => ip.contains(':'))
+              .toList();
+          final List<String> addresses = <String>[...v4, ...v6];
+          Object? lastError;
+          for (final String address in addresses) {
+            try {
+              return await Socket.startConnect(
+                address,
+                port,
+              ).timeout(connectTimeout);
+            } catch (error) {
+              lastError = error;
+            }
+          }
+          // 降级：自定义解析全军覆没 → 交给系统解析再试一次（绝不静默）。
+          try {
+            return await Socket.startConnect(
+              uri.host,
+              port,
+            ).timeout(connectTimeout);
+          } catch (error) {
+            lastError = error;
+          }
+          throw NetException(
+            NetErrorKind.connection,
+            'DNS 解析后无法连接 ${uri.host}'
+            '（自定义 ${addresses.length} 地址 + 系统解析均失败）：$lastError',
+          );
+        };
   }
 
   /// 按当前 DNS 策略校正一次客户端（**幂等**，模式没变就什么都不做）。
@@ -157,8 +162,9 @@ class IoNetTransport implements NetTransport {
       // 全部请求头（含 Authorization）到任意目标主机 —— 跨主机重定向等于把
       // 凭证送给第三方。带凭证头时改为**手动跟随**：同源重定向才带凭证重发，
       // 跨主机重定向直接把 3xx 响应交给上层（如实失败，绝不偷渡凭证）。
-      final bool hasCredential = request.headers.keys
-          .any((String key) => key.toLowerCase() == 'authorization');
+      final bool hasCredential = request.headers.keys.any(
+        (String key) => key.toLowerCase() == 'authorization',
+      );
       final HttpClientResponse response;
       if (hasCredential) {
         response = await _sendWithGuardedRedirect(
@@ -168,9 +174,9 @@ class IoNetTransport implements NetTransport {
           redirectsLeft: 5,
         );
       } else {
-        final HttpClientRequest req =
-            await _client.openUrl(request.method.verb, uri)
-                .timeout(connectTimeout);
+        final HttpClientRequest req = await _client
+            .openUrl(request.method.verb, uri)
+            .timeout(connectTimeout);
         req.followRedirects = true;
         req.maxRedirects = 5;
         request.headers.forEach((String key, String value) {
@@ -179,8 +185,10 @@ class IoNetTransport implements NetTransport {
         _writeBody(req, request);
         response = await req.close().timeout(receiveTimeout);
       }
-      final String text =
-          await response.transform(utf8.decoder).join().timeout(receiveTimeout);
+      final String text = await response
+          .transform(utf8.decoder)
+          .join()
+          .timeout(receiveTimeout);
       stopwatch.stop();
       return NetResponse(
         statusCode: response.statusCode,
@@ -190,25 +198,13 @@ class IoNetTransport implements NetTransport {
       );
     } on TimeoutException catch (error) {
       stopwatch.stop();
-      throw NetException(
-        NetErrorKind.timeout,
-        '请求超时（$error）',
-        cause: error,
-      );
+      throw NetException(NetErrorKind.timeout, '请求超时（$error）', cause: error);
     } on HandshakeException catch (error) {
       stopwatch.stop();
-      throw NetException(
-        NetErrorKind.tls,
-        '证书校验失败：$error',
-        cause: error,
-      );
+      throw NetException(NetErrorKind.tls, '证书校验失败：$error', cause: error);
     } on TlsException catch (error) {
       stopwatch.stop();
-      throw NetException(
-        NetErrorKind.tls,
-        'TLS 握手失败：$error',
-        cause: error,
-      );
+      throw NetException(NetErrorKind.tls, 'TLS 握手失败：$error', cause: error);
     } on SocketException catch (error) {
       stopwatch.stop();
       final String report = await _selfTestReport(request);
@@ -229,11 +225,7 @@ class IoNetTransport implements NetTransport {
       );
     } on Object catch (error) {
       stopwatch.stop();
-      throw NetException(
-        NetErrorKind.unknown,
-        '未知网络错误（$error）',
-        cause: error,
-      );
+      throw NetException(NetErrorKind.unknown, '未知网络错误（$error）', cause: error);
     }
   }
 
@@ -248,15 +240,17 @@ class IoNetTransport implements NetTransport {
     required int redirectsLeft,
     Object? bodyOverride,
   }) async {
-    final HttpClientRequest req =
-        await _client.openUrl(verb, uri).timeout(connectTimeout);
+    final HttpClientRequest req = await _client
+        .openUrl(verb, uri)
+        .timeout(connectTimeout);
     req.followRedirects = false;
     request.headers.forEach((String key, String value) {
       req.headers.set(key, value);
     });
     _writeBody(req, request, bodyOverride: bodyOverride);
-    final HttpClientResponse response =
-        await req.close().timeout(receiveTimeout);
+    final HttpClientResponse response = await req.close().timeout(
+      receiveTimeout,
+    );
     final int status = response.statusCode;
     final bool isRedirect = status >= 300 && status < 400;
     final String? location = response.headers.value(HttpHeaders.locationHeader);
@@ -264,7 +258,8 @@ class IoNetTransport implements NetTransport {
       return response;
     }
     final Uri next = uri.resolve(location);
-    final bool sameOrigin = next.scheme == uri.scheme &&
+    final bool sameOrigin =
+        next.scheme == uri.scheme &&
         next.host == uri.host &&
         next.port == uri.port;
     if (!sameOrigin) {
@@ -275,10 +270,9 @@ class IoNetTransport implements NetTransport {
     // 凭证头保持原样——同源跳转仍指向同一台已持凭证的服务端。
     final bool switchToGet =
         status == HttpStatus.movedTemporarily || status == HttpStatus.seeOther;
-    final Object? nextBody =
-        switchToGet ? null : (identical(bodyOverride, _kUnset)
-            ? request.body
-            : bodyOverride);
+    final Object? nextBody = switchToGet
+        ? null
+        : (identical(bodyOverride, _kUnset) ? request.body : bodyOverride);
     await response.drain<void>();
     return _sendWithGuardedRedirect(
       switchToGet ? NetMethod.get.verb : verb,
@@ -309,8 +303,9 @@ class IoNetTransport implements NetTransport {
       body = request.body;
     }
     if (body != null) {
-      final bool hasContentType = request.headers.keys
-          .any((String key) => key.toLowerCase() == 'content-type');
+      final bool hasContentType = request.headers.keys.any(
+        (String key) => key.toLowerCase() == 'content-type',
+      );
       if (!hasContentType) {
         req.headers.contentType = ContentType(
           'application',
@@ -380,8 +375,10 @@ class IoDnsHttpClient implements DnsHttpClient {
     });
     req.persistentConnection = false;
     final HttpClientResponse response = await req.close().timeout(_timeout);
-    final String text =
-        await response.transform(utf8.decoder).join().timeout(_timeout);
+    final String text = await response
+        .transform(utf8.decoder)
+        .join()
+        .timeout(_timeout);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw HttpException('HTTP ${response.statusCode}（$url）', uri: uri);
     }
@@ -393,5 +390,4 @@ class IoDnsHttpClient implements DnsHttpClient {
 NetTransport createPlatformNetTransport(
   DnsService? dns, {
   Duration connectTimeout = const Duration(seconds: 15),
-}) =>
-    IoNetTransport(dns: dns, connectTimeout: connectTimeout);
+}) => IoNetTransport(dns: dns, connectTimeout: connectTimeout);

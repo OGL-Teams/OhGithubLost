@@ -90,10 +90,10 @@ Future<bool> ogLGuardTokenExitDownload(
     return true;
   }
   final bool proceed = await showOgLTokenExitWarning(
-        context,
-        host: host.isEmpty ? url : host,
-        targetSummary: targetSummary,
-      );
+    context,
+    host: host.isEmpty ? url : host,
+    targetSummary: targetSummary,
+  );
   // TOKEN-EXIT-01: 决策留痕（不静默）。OgLAppLog 是 surface 层诊断环，
   // 同步写磁盘日志，供「关于页」回溯。
   OgLAppLog.instance.add(
@@ -137,13 +137,14 @@ Future<bool> showOgLTokenExitWarning(
               const SizedBox(height: OgLSpace.md),
               // 目标主机加粗单列：让用户看清"到底是谁收到了令牌"。
               Text(
-                i18n.t('common', 'tokenExitHost',
-                    args: <String, String>{
-                      'host': host,
-                      'target': targetSummary,
-                    }),
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                i18n.t(
+                  'common',
+                  'tokenExitHost',
+                  args: <String, String>{'host': host, 'target': targetSummary},
+                ),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),

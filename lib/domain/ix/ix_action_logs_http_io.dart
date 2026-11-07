@@ -20,8 +20,9 @@ abstract final class IxActionLogsHttp {
   ) async {
     final HttpClient client = _defaultClient();
     try {
-      final HttpClientRequest request =
-          await client.getUrl(uri).timeout(_connectTimeout);
+      final HttpClientRequest request = await client
+          .getUrl(uri)
+          .timeout(_connectTimeout);
       // 原则 40（令牌只在必要的跳使用一次）：日志接口是「302 → 签名 URL」
       // 结构，第二跳在**另一台主机**上且不需要任何令牌。dart:io 的自动重定向
       // 会原样重发全部请求头（含 Authorization）——跨主机 302 等于把令牌送出
@@ -34,28 +35,30 @@ abstract final class IxActionLogsHttp {
       headers.forEach((String key, String value) {
         request.headers.set(key, value);
       });
-      HttpClientResponse response =
-          await request.close().timeout(_receiveTimeout);
+      HttpClientResponse response = await request.close().timeout(
+        _receiveTimeout,
+      );
       var hops = 0;
       while (response.statusCode >= 300 &&
           response.statusCode < 400 &&
           hops < 5) {
-        final String? location =
-            response.headers.value(HttpHeaders.locationHeader);
+        final String? location = response.headers.value(
+          HttpHeaders.locationHeader,
+        );
         await response.drain<void>();
         if (location == null || location.isEmpty) {
           break;
         }
         final Uri? next = Uri.tryParse(location);
-        if (next == null ||
-            (next.scheme != 'http' && next.scheme != 'https')) {
+        if (next == null || (next.scheme != 'http' && next.scheme != 'https')) {
           throw IxActionLogsException(
             '日志重定向目标不安全（$location）',
             statusCode: response.statusCode,
           );
         }
-        final HttpClientRequest followUp =
-            await client.getUrl(next).timeout(_connectTimeout);
+        final HttpClientRequest followUp = await client
+            .getUrl(next)
+            .timeout(_connectTimeout);
         followUp.persistentConnection = false;
         // 重定向后续跳**不携带任何凭证头**（签名地址自带授权）。
         followUp.headers.set('accept', '*/*');

@@ -35,9 +35,7 @@ class OgLLocale {
 /// 按设备语言匹配支持的语言；未识别语言统一回落简体中文。
 String ogLDetectDeviceLocale() {
   final String language = PlatformDispatcher.instance.locale.languageCode;
-  const Set<String> supported = <String>{
-    'en', 'zh', 'de', 'fr', 'ru',
-  };
+  const Set<String> supported = <String>{'en', 'zh', 'de', 'fr', 'ru'};
   if (!supported.contains(language)) {
     return 'zh';
   }
@@ -174,8 +172,9 @@ class OgLI18n extends ChangeNotifier {
 
   Future<Map<String, String>> _loadPage(String code, String page) async {
     try {
-      final String raw =
-          await rootBundle.loadString('assets/i18n/$code/$page.json');
+      final String raw = await rootBundle.loadString(
+        'assets/i18n/$code/$page.json',
+      );
       final Object? decoded = jsonDecode(raw);
       if (decoded is! Map) {
         return const <String, String>{};
@@ -223,10 +222,7 @@ class OgLI18n extends ChangeNotifier {
 
   /// 仅测试用：注入内存数据（避免测试环境读不到 assets）。
   @visibleForTesting
-  void debugInject(
-    String code,
-    Map<String, Map<String, String>> pagesData,
-  ) {
+  void debugInject(String code, Map<String, Map<String, String>> pagesData) {
     _data[code] = pagesData;
     _locale = code;
   }
