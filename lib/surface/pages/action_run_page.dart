@@ -270,6 +270,24 @@ class _ActionRunPageState extends State<ActionRunPage> {
       final Map<String, String> headers = presigned
           ? const <String, String>{}
           : await widget.surface.downloadAuthHeaders();
+      // TOKEN-EXIT-01: 带令牌发往非 GitHub 主机前先警告（未预解析即直连私有 raw）。
+      if (!mounted) {
+        return;
+      }
+      final bool allowed = await ogLGuardTokenExitDownload(
+        context,
+        url: urls.first,
+        headers: headers,
+        targetSummary: name,
+      );
+      if (!allowed) {
+        if (mounted) {
+          _notifier.warning(_t('tokenExitCancelled', <String, Object?>{
+            'host': Uri.tryParse(urls.first)?.host ?? urls.first,
+          }));
+        }
+        return;
+      }
       await widget.surface.domain.downloads.enqueue(
         url: urls.first,
         fallbackUrls: urls.skip(1).toList(),

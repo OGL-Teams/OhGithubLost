@@ -1754,6 +1754,9 @@ class _CodeTabState extends State<_CodeTab> {
         size: entry.size,
       );
       // TOKEN-EXIT-01: 计划里的最终地址若带令牌发往非 GitHub 主机，先警告。
+      if (!mounted) {
+        return;
+      }
       final bool allowed = await ogLGuardTokenExitDownload(
         context,
         url: plan.urls.first,

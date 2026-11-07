@@ -263,6 +263,9 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
           ? const <String, String>{}
           : await widget.surface.downloadAuthHeaders();
       // TOKEN-EXIT-01: 未预签名（直连）时认证头若发往非 GitHub 主机，先警告。
+      if (!mounted) {
+        return;
+      }
       final bool allowed = await ogLGuardTokenExitDownload(
         context,
         url: urls.first,
