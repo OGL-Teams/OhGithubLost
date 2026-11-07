@@ -9,6 +9,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../app/async.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../app/overlays.dart';
@@ -213,8 +214,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final AsyncController<List<GhAccount>> controller = _accountsC();
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_t('mine')),
+      appBar: OgLAppBar(
+        title: _t('mine'),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.person_add_alt),

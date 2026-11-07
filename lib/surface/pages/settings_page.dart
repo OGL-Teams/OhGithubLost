@@ -30,6 +30,7 @@ import '../../kernel/log/og_l_log_file.dart';
 import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
 import '../app/permissions.dart';
 import '../app/project_info.dart';
@@ -441,7 +442,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(_t('title'))),
+      appBar: OgLAppBar(title: _t('title')),
       // 根级子项逐个挂入场动画（[OgLRevealList] 自动错峰）；不再整页包一层
       // `OgLReveal` —— 那会与路由过渡叠加成双重动画。
       //

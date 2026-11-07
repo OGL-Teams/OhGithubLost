@@ -10,6 +10,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../app/animations.dart';
+import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../settings.dart';
 import '../surface_bridge.dart';
@@ -39,7 +40,7 @@ class NetworkSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_t('network'))),
+      appBar: OgLAppBar(title: _t('network')),
       body: OgLReveal(
         delay: Duration.zero,
         child: ListenableBuilder(

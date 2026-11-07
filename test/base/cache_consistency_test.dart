@@ -124,6 +124,9 @@ const CacheScope _scopeA = CacheScope(
 
 const CacheKey _keyA = CacheKey(scope: _scopeA, path: 'README.md');
 
+/// 新建路径（远端无此文件，供 D1"无基线新建"用例）。
+const CacheKey _keyB = CacheKey(scope: _scopeA, path: 'docs/new.md');
+
 void main() {
   late FakeCacheRemote remote;
   late KernelDiagnostics diagnostics;
@@ -187,13 +190,24 @@ void main() {
   });
 
   group('D1 写前必读', () {
-    test('缺少基线 SHA 直接拒绝', () async {
+    test('远端已存在 + 无基线 → 直接拒绝（不许盲写已有文件）', () async {
+      remote.seed(_keyA, 'remote-v1', 'sha-v1');
       final outcome = await cache.write(
         const WriteIntent(key: _keyA, content: 'x', message: 'test'),
       );
       expect(outcome.ok, isFalse);
       expect(outcome.conflict, WriteConflict.requiresRead);
       expect(remote.writeCount, 0);
+    });
+
+    test('远端不存在 + 无基线 → 合法新建（SD-01：空串基线同义）', () async {
+      // SD-01 语义修正：新建（远端无此路径 + 无基线）不再被 D1 拦下——
+      // GitHub 以"无 sha 即拒绝覆盖"兜底并发创建；此前新建/草稿保存必失败。
+      final outcome = await cache.write(
+        const WriteIntent(key: _keyB, content: 'new', message: 'create'),
+      );
+      expect(outcome.ok, isTrue, reason: outcome.detail);
+      expect(remote.writeCount, 1);
     });
   });
 
@@ -361,6 +375,8 @@ void main() {
 
   group('D6 失败可感知', () {
     test('每次失败都带回可读原因且记入诊断', () async {
+      // 走 D1 拒绝路径（远端存在 + 无基线）：detail + 诊断码必须可见。
+      remote.seed(_keyA, 'remote-v1', 'sha-v1');
       final outcome = await cache.write(
         const WriteIntent(key: _keyA, content: 'x', message: 'test'),
       );

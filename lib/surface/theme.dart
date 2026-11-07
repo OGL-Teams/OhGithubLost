@@ -258,11 +258,16 @@ ThemeData buildOgLTheme(
     ),
 
     // ── 应用栏 ──────────────────────────────────────────────────────────
+    // ★ 全局消除 AppBar 硬边（UI 细化）：默认与页面背景同色（融合），
+    //   不再用 surfaceContainer 造成一条常驻的色块边界；需要浮起感的页面
+    //   经 OgLAppBar 随滚动连续插值到 surfaceContainer（渐变、无阶跃）。
+    //   scrolledUnderElevation=0 + transparent tint 保证所有页面即使尚未
+    //   接入 OgLAppBar，也不会出现 Material 默认的滚动色阶跃。
     appBarTheme: AppBarTheme(
       centerTitle: false,
       elevation: 0,
       scrolledUnderElevation: 0,
-      backgroundColor: scheme.surfaceContainer,
+      backgroundColor: scheme.surface,
       surfaceTintColor: Colors.transparent,
       titleTextStyle: TextStyle(
         color: scheme.onSurface,

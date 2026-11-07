@@ -12,7 +12,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/async.dart';
-import '../app/error_surface.dart';
 import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
