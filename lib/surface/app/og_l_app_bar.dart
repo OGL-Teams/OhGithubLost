@@ -25,8 +25,6 @@
 ///   恒融合，因为 TabBarView 的滚动不属于 AppBar。
 library;
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 /// 与页面背景滚动融合的应用栏。

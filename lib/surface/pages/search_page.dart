@@ -651,7 +651,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   Widget build(BuildContext context) {
     final AsyncController<List<_SearchHit>>? controller = _results;
     return Scaffold(
-      appBar: OgLAppBar(title: Text(_t('searchResults'))),
+      appBar: OgLAppBar(title: _t('searchResults')),
       body: Column(
         children: <Widget>[
           Padding(
