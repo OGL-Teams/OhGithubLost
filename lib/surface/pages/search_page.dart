@@ -1,6 +1,7 @@
-/// L3 展示级 · 发现页（两个 tab：发现 / Issues）。
+/// L3 展示级 · 发现页（微博式纵向信息流 + 三个左右滑动子标签）。
 ///
-/// - **发现**：star 仓库的 Release / Tag 发布提醒（新的在上）+ 热门仓库推荐；
+/// - **动态**：star 仓库的 Release / Tag 发布流，卡片式上下滑动；
+/// - **推荐**：热门仓库纵向列表；
 /// - **Issues**：聚合「我提出的」与「star 仓库新提出的」open issue，
 ///   新的在上，支持 全部 / 我的 / Star 三档筛选；
 /// - 搜索入口在仓库页右上角（搜索图标）与首页空态；本页不再承担搜索框。
@@ -11,6 +12,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/async.dart';
+import '../app/error_surface.dart';
 import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
@@ -55,7 +57,8 @@ class DiscoverPage extends StatefulWidget {
 
 class _DiscoverPageState extends State<DiscoverPage>
     with SingleTickerProviderStateMixin {
-  late final TabController _tab = TabController(length: 2, vsync: this);
+  /// 三个子标签：**动态 / 推荐 / Issues**（左右滑动，仿仓库页 TabBar）。
+  late final TabController _tab = TabController(length: 3, vsync: this);
 
   /// star 仓库（两个 tab 共用）。
   AsyncController<List<GhRepo>>? _starred;
@@ -264,8 +267,10 @@ class _DiscoverPageState extends State<DiscoverPage>
         title: _t('discover'),
         bottom: TabBar(
           controller: _tab,
+          isScrollable: true,
           tabs: <Widget>[
-            Tab(text: _t('tabDiscover')),
+            Tab(text: _t('tabFeed')),
+            Tab(text: _t('recommended')),
             Tab(text: _t('tabIssues')),
           ],
         ),
@@ -273,144 +278,128 @@ class _DiscoverPageState extends State<DiscoverPage>
       body: TabBarView(
         controller: _tab,
         children: <Widget>[
-          _buildDiscoverTab(),
+          _buildFeedTab(),
+          _buildRecommendedTab(),
           _buildIssuesTab(),
         ],
       ),
     );
   }
 
-  // ── tab 1：发现 ──────────────────────────────────────────────────────
+  // ── tab 1：动态（微博式纵向信息流）─────────────────────────────────
 
-  Widget _buildDiscoverTab() => ListView(
-        padding: const EdgeInsets.all(OgLSpace.lg),
-        children: <Widget>[
-          _sectionTitle(_t('releasesSection')),
-          const SizedBox(height: OgLSpace.sm),
-          _releasesCard(),
-          const SizedBox(height: OgLSpace.lg),
-          _sectionTitle(_t('recommended')),
-          const SizedBox(height: OgLSpace.sm),
-          SizedBox(
-            height: 150,
-            child: AsyncView<List<GhRepo>>(
-              controller: _recommended!,
-              fill: false,
-              emptyIcon: Icons.explore_outlined,
-              emptyText: _t('recommendedEmpty'),
-              builder: (BuildContext context, List<GhRepo> repos) =>
-                  ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: repos.length,
-                separatorBuilder: (BuildContext context, int index) =>
-                    const SizedBox(width: OgLSpace.sm),
-                itemBuilder: (BuildContext context, int index) {
-                  final GhRepo repo = repos[index];
-                  return SizedBox(
-                    width: 210,
-                    child: Card(
-                      child: InkWell(
-                        onTap: () => unawaited(_openRepo(repo)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(OgLSpace.md),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                repo.fullName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.titleSmall,
-                              ),
-                              const SizedBox(height: OgLSpace.xxs),
-                              Expanded(
-                                child: Text(
-                                  _repoSubtitle(repo),
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ),
-                              Row(
-                                children: <Widget>[
-                                  const Icon(Icons.star,
-                                      size: 14, color: Colors.transparent),
-                                  const SizedBox(width: OgLSpace.xxs),
-                                  Text('${repo.stars}'),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
-      );
-
-  Widget _sectionTitle(String text) =>
-      Text(text, style: Theme.of(context).textTheme.titleMedium);
-
-  /// star 仓库发布提醒卡（新的在上；tag 无时间戳的排后面）。
-  Widget _releasesCard() {
+  /// 动态 = star 仓库的 Release / Tag 发布流。
+  ///
+  /// 每条是一张独立卡片（头像式图标 + 仓库名 + 版本标题 + 时间占位），
+  /// 上下滑动浏览；不再用横向卡片。
+  Widget _buildFeedTab() {
     if (_releasesLoading) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(OgLSpace.lg),
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
     if (_releasesError != null) {
-      return Card(
-        child: ListTile(
-          leading: Icon(Icons.error_outline,
-              color: Theme.of(context).colorScheme.error),
-          title: Text('$_releasesError'),
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(OgLSpace.lg),
+          child: Text('$_releasesError'),
         ),
       );
     }
     if (_releases.isEmpty) {
-      return Card(
-        child: ListTile(
-          leading: const Icon(Icons.star_border),
-          title: Text(_t('releaseNone')),
-        ),
-      );
+      return Center(child: Text(_t('releaseNone')));
     }
-    // 按 fullName 分组排序没有时间戳（tag 回退），先展示有 URL 的全部条目；
-    // 条目数小（≤20），直接列表。
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: <Widget>[
-          for (final MapEntry<String, ({String title, String url})> entry
-              in _releases.entries)
-            ListTile(
-              dense: _releases.length > 6,
-              leading: const Icon(Icons.new_releases_outlined),
-              title: Text(entry.value.title,
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle:
-                  Text(entry.key, maxLines: 1, overflow: TextOverflow.ellipsis),
-              trailing: const Icon(Icons.chevron_right, size: 18),
-              onTap: () {
-                final GhRepo? repo = _starred?.data
-                    ?.where((GhRepo r) => r.fullName == entry.key)
-                    .firstOrNull;
-                if (repo != null) {
-                  unawaited(_openRepo(repo));
-                }
-              },
+    return RefreshIndicator(
+      onRefresh: _loadReleases,
+      child: ListView.separated(
+        padding: const EdgeInsets.all(OgLSpace.lg),
+        itemCount: _releases.length,
+        separatorBuilder: (BuildContext context, int index) =>
+            const SizedBox(height: OgLSpace.md),
+        itemBuilder: (BuildContext context, int index) {
+          final MapEntry<String, ({String title, String url})> entry =
+              _releases.entries.elementAt(index);
+          final GhRepo? repo = _starred?.data
+              ?.where((GhRepo r) => r.fullName == entry.key)
+              .firstOrNull;
+          return Card(
+            child: InkWell(
+              onTap: repo == null ? null : () => unawaited(_openRepo(repo)),
+              child: Padding(
+                padding: const EdgeInsets.all(OgLSpace.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        const Icon(Icons.new_releases_outlined, size: 18),
+                        const SizedBox(width: OgLSpace.sm),
+                        Expanded(
+                          child: Text(
+                            entry.key,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: OgLSpace.sm),
+                    Text(
+                      entry.value.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: OgLSpace.xxs),
+                    Text(
+                      _t('releaseFromStarred'),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-        ],
+          );
+        },
       ),
     );
   }
+
+  // ── tab 2：推荐（纵向信息流）────────────────────────────────────────
+
+  Widget _buildRecommendedTab() => AsyncView<List<GhRepo>>(
+        controller: _recommended!,
+        emptyIcon: Icons.explore_outlined,
+        emptyText: _t('recommendedEmpty'),
+        builder: (BuildContext context, List<GhRepo> repos) => RefreshIndicator(
+          onRefresh: () => _recommended!.load(),
+          child: ListView.separated(
+            padding: const EdgeInsets.all(OgLSpace.lg),
+            itemCount: repos.length,
+            separatorBuilder: (BuildContext context, int index) =>
+                const SizedBox(height: OgLSpace.sm),
+            itemBuilder: (BuildContext context, int index) {
+              final GhRepo repo = repos[index];
+              return Card(
+                child: ListTile(
+                  leading: const Icon(Icons.star_border),
+                  title: Text(repo.fullName,
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  subtitle: Text(
+                    _repoSubtitle(repo),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: Text('${repo.stars}'),
+                  onTap: () => unawaited(_openRepo(repo)),
+                ),
+              );
+            },
+          ),
+        ),
+      );
 
   // ── tab 2：Issues ────────────────────────────────────────────────────
 

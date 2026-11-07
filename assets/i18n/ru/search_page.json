@@ -14,6 +14,7 @@
   "queryHint": "Ключевое слово (поддерживаются фильтры repo:… и language:…)",
   "recommended": "Рекомендуемые",
   "recommendedEmpty": "Нет рекомендаций",
+  "releaseFromStarred": "Из избранного репозитория",
   "releaseNone": "Пока нет релизов",
   "releasesSection": "Релизы избранных",
   "repoResults": "Результаты репозиториев по запросу «{q}»: {count}",
@@ -26,6 +27,7 @@
   "startHint": "Введите ключевое слово для начала поиска",
   "tabCode": "Код",
   "tabDiscover": "Обзор",
+  "tabFeed": "Лента",
   "tabIssues": "Issues",
   "tabRepos": "Репозитории"
 }

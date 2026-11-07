@@ -14,6 +14,7 @@
   "queryHint": "關鍵字（支援 repo:…、language:… 篩選條件）",
   "recommended": "熱門推薦",
   "recommendedEmpty": "暫無推薦",
+  "releaseFromStarred": "來自你收藏的倉庫",
   "releaseNone": "收藏的倉庫還沒有發布",
   "releasesSection": "收藏倉庫的發布",
   "repoResults": "\"{q}\" 字庫結果：{count}",
@@ -26,6 +27,7 @@
   "startHint": "輸入關鍵字以開始搜尋",
   "tabCode": "程式碼",
   "tabDiscover": "發現",
+  "tabFeed": "動態",
   "tabIssues": "Issues",
   "tabRepos": "字庫"
 }

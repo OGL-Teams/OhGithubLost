@@ -14,6 +14,7 @@
   "queryHint": "Mot-clé (prend en charge les qualificatifs repo:… language:…)",
   "recommended": "Recommandés",
   "recommendedEmpty": "Aucune recommandation",
+  "releaseFromStarred": "D’un dépôt favori",
   "releaseNone": "Aucune publication",
   "releasesSection": "Publications des favoris",
   "repoResults": "Résultats de dépôt pour « {q} » : {count}",
@@ -26,6 +27,7 @@
   "startHint": "Saisissez un mot-clé pour commencer la recherche",
   "tabCode": "Code",
   "tabDiscover": "Découvrir",
+  "tabFeed": "Fil",
   "tabIssues": "Issues",
   "tabRepos": "Dépôts"
 }

@@ -14,6 +14,7 @@
   "queryHint": "关键字（支持 repo:… language:… 等限定符）",
   "recommended": "热门推荐",
   "recommendedEmpty": "暂无推荐",
+  "releaseFromStarred": "来自你 star 的仓库",
   "releaseNone": "star 的仓库还没有发布",
   "releasesSection": "star 仓库的发布",
   "repoResults": "「{q}」仓库结果：{count} 个",
@@ -26,6 +27,7 @@
   "startHint": "输入关键字开始搜索",
   "tabCode": "代码",
   "tabDiscover": "发现",
+  "tabFeed": "动态",
   "tabIssues": "Issues",
   "tabRepos": "仓库"
 }

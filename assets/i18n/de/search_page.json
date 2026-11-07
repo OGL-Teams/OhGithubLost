@@ -14,6 +14,7 @@
   "queryHint": "Schlüsselwort (unterstützt repo:… language:…-Filter)",
   "recommended": "Empfohlen",
   "recommendedEmpty": "Keine Empfehlungen",
+  "releaseFromStarred": "Aus einem markierten Repo",
   "releaseNone": "Noch keine Releases",
   "releasesSection": "Releases markierter Repos",
   "repoResults": "\"{q}\" Repo-Ergebnisse: {count}",
@@ -26,6 +27,7 @@
   "startHint": "Gib ein Schlüsselwort ein, um die Suche zu starten",
   "tabCode": "Code",
   "tabDiscover": "Entdecken",
+  "tabFeed": "Feed",
   "tabIssues": "Issues",
   "tabRepos": "Repos"
 }
