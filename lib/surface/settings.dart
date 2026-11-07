@@ -272,7 +272,16 @@ class OgLSettings {
   ///
   /// v6.4.0 起收敛为 **6 种**（简中 / 繁中 / 英 / 德 / 法 / 俄）——
   /// 与 [OgLI18n.locales]、语言资源目录及 pubspec 声明保持一致。
-  static const List<String> languageCodes = <String>['zh', 'en'];
+  /// ★ 必须与 `OgLI18n.locales` 同步维护：白名单缺一种语言，设置页就能
+  ///   选中它但存储时被回落成 `zh`（选择即失效，v10.3.0 实际踩坑）。
+  static const List<String> languageCodes = <String>[
+    'zh',
+    'zh_Hant',
+    'en',
+    'de',
+    'fr',
+    'ru',
+  ];
 
   static String _asLocale(Object? value) =>
       value is String && languageCodes.contains(value) ? value : 'zh';
