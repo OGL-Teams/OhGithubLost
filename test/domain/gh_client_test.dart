@@ -292,10 +292,23 @@ void main() {
     });
 
     test('目录列表为空时返回空列表', () async {
+      // 合法空目录 = 200 + []；404 不再被折叠成空（见下一条）。
       final api = GhApi(
-        client: _client(_bridge(<NetResponse>[_json(null, status: 404)])),
+        client: _client(_bridge(<NetResponse>[_json(<Object?>[])])),
       );
       expect(await api.listDirectory('alice/blog', 'src'), isEmpty);
+    });
+
+    test('目录 404（非仓库空）必须可见，不得伪装成空列表', () async {
+      final api = GhApi(
+        client: _client(_bridge(<NetResponse>[
+          _json(<String, dynamic>{'message': 'Not Found'}, status: 404),
+        ])),
+      );
+      await expectLater(
+        api.listDirectory('alice/blog', 'missing'),
+        throwsA(isA<GhNotFoundException>()),
+      );
     });
 
     test('批量提交：先校验基线，再建 blob，最后成树成提交移引用', () async {

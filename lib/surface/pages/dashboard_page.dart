@@ -134,7 +134,8 @@ class _DashboardPageState extends State<DashboardPage> {
   void _goSearch() {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => SearchPage(surface: widget.surface),
+        builder: (BuildContext context) =>
+            DiscoverPage(surface: widget.surface),
       ),
     );
   }

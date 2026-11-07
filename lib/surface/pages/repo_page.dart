@@ -273,10 +273,10 @@ class _RepoPageState extends State<RepoPage> {
       prefixes: current.accelPrefixesFor(OgLAccelScope.repoArchive),
       // 归档体积大：bytes 置 null = 按「值得加速」处理（阈值判定见 download_proxy）。
       family: OgLAccelFamily.raw,
-      repoPrivate: widget.repoPrivate,
+      repoPrivate: widget.repo.isPrivate,
       privateAccelAccepted: current.accelPrivateRepoAccepted,
     );
-    final Map<String, String> headers = widget.repoPrivate
+    final Map<String, String> headers = widget.repo.isPrivate
         ? await widget.surface.downloadAuthHeaders()
         : const <String, String>{};
     try {
@@ -1057,6 +1057,7 @@ class _CodeTabState extends State<_CodeTab> {
     final ({
       Uri? base,
       String? proxy,
+      String? extProxy,
       Future<Map<String, String>>? headers
     }) plan = _readmeImagePlan('');
     final String proxy = plan.proxy ?? '';
@@ -1212,7 +1213,7 @@ class _CodeTabState extends State<_CodeTab> {
           path: entry.path,
           branch: widget.branch,
           kind: kind,
-          repoPrivate: widget.repoPrivate,
+          repoPrivate: widget.repo.isPrivate,
           size: entry.size,
         ),
       ));
@@ -1823,7 +1824,7 @@ class _CodeTabState extends State<_CodeTab> {
         fullName: widget.fullName,
         path: entry.path,
         branch: widget.branch,
-        repoPrivate: widget.repoPrivate,
+        repoPrivate: widget.repo.isPrivate,
         size: entry.size,
       );
       // TOKEN-EXIT-01: 计划里的最终地址若带令牌发往非 GitHub 主机，先警告。
@@ -2066,7 +2067,7 @@ class _CodeTabState extends State<_CodeTab> {
     //   Future 提供，所以这条路对私有仓库同样成立；未接受时照旧退回
     //   API 取字节（那条带令牌）。
     final bool accel = widget.surface.repoFileAccelerated(
-      repoPrivate: widget.repoPrivate,
+      repoPrivate: widget.repo.isPrivate,
       size: null,
       scope: OgLAccelScope.readmeImage,
     );
@@ -2096,7 +2097,8 @@ class _CodeTabState extends State<_CodeTab> {
       extProxy: widget.surface.settings.settings
           .accelPrefixesFor(OgLAccelScope.readmeExternalImage)
           .firstOrNull,
-      headers: widget.repoPrivate ? widget.surface.downloadAuthHeaders() : null,
+      headers:
+          widget.repo.isPrivate ? widget.surface.downloadAuthHeaders() : null,
     );
   }
 
@@ -2166,6 +2168,7 @@ class _CodeTabState extends State<_CodeTab> {
     final ({
       Uri? base,
       String? proxy,
+      String? extProxy,
       Future<Map<String, String>>? headers
     }) plan = _readmeImagePlan('');
     return ExpansionTile(

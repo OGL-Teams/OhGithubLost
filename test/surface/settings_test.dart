@@ -110,10 +110,18 @@ void main() {
       expect(on.activeAccelPrefixes, isEmpty);
     });
 
-    test('适用范围：默认全开；逐项可关；全关仍合法', () {
+    test('适用范围：既有 4 类默认开，新增 5 类默认关', () {
       final OgLSettings s = OgLSettings.defaults;
+      for (final String id in kOgLAccelDefaultScopeIds) {
+        final OgLAccelScope scope = OgLAccelScope.values
+            .firstWhere((OgLAccelScope item) => item.id == id);
+        expect(s.accelScopeEnabled(scope), isTrue, reason: id);
+      }
       for (final OgLAccelScope scope in OgLAccelScope.values) {
-        expect(s.accelScopeEnabled(scope), isTrue, reason: scope.id);
+        if (kOgLAccelDefaultScopeIds.contains(scope.id)) {
+          continue;
+        }
+        expect(s.accelScopeEnabled(scope), isFalse, reason: scope.id);
       }
       // 往返 JSON 不丢。
       final OgLSettings off = s.copyWith(

@@ -60,9 +60,22 @@ void main() {
       expect(await _api(transport).content('a/b', 'missing.txt'), isNull);
     });
 
-    test('目录不存在（404）⇒ 空列表', () async {
-      final transport = ScriptedTransport(<Object>[_json(null, status: 404)]);
-      expect(await _api(transport).listDirectory('a/b', 'nope/'), isEmpty);
+    test('空仓库（409 Git Repository is empty）⇒ 空列表', () async {
+      final transport = ScriptedTransport(<Object>[
+        _json(<String, dynamic>{'message': 'Git Repository is empty.'},
+            status: 409),
+      ]);
+      expect(await _api(transport).listDirectory('a/b', ''), isEmpty);
+    });
+
+    test('目录 404 不再被当作空列表（必须可见）', () async {
+      final transport = ScriptedTransport(<Object>[
+        _json(<String, dynamic>{'message': 'Not Found'}, status: 404),
+      ]);
+      await expectLater(
+        _api(transport).listDirectory('a/b', 'nope/'),
+        throwsA(isA<GhNotFoundException>()),
+      );
     });
 
     test('议题返回空数组 ⇒ 空列表（不是失败）', () async {

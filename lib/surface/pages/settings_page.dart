@@ -1009,19 +1009,21 @@ class _SettingsPageState extends State<SettingsPage> {
     ThemeData theme, {
     required IconData icon,
     required String title,
-    required String subtitle,
+    String? subtitle,
     required VoidCallback onTap,
   }) =>
       ListTile(
         contentPadding: kOgLSettingsRowPadding,
         leading: Icon(icon),
         title: Text(title),
-        subtitle: Text(
-          subtitle,
-          style: theme.textTheme.bodySmall,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+        subtitle: subtitle == null
+            ? null
+            : Text(
+                subtitle,
+                style: theme.textTheme.bodySmall,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
         trailing: const Icon(Icons.chevron_right, size: OgLIconSize.md),
         onTap: onTap,
       );

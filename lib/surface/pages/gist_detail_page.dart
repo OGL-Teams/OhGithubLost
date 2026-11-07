@@ -131,15 +131,15 @@ class _GistDetailPageState extends State<GistDetailPage> {
             final String name = ghStr(f, 'filename');
             String content = ghStr(f, 'content');
             final bool truncated = f['truncated'] == true;
+            final String rawUrl = ghStr(f, 'raw_url');
             // 服务端标了截断（或内容为空）→ 回退 raw 拉全文。
             // 拉不到就把"可能被截断"如实带进 `_GistFile`：卡片会标注
             // 「内容可能被截断」，**绝不把被截断的内容当完整展示**。
             bool truncatedUnresolved = truncated;
             if (truncated || content.isEmpty) {
-              final String raw = ghStr(f, 'raw_url');
-              if (raw.isNotEmpty) {
+              if (rawUrl.isNotEmpty) {
                 try {
-                  content = await widget.surface.domain.api.rawText(raw);
+                  content = await widget.surface.domain.api.rawText(rawUrl);
                   truncatedUnresolved = false; // 拿到全文：解除标注。
                 } catch (_) {
                   // raw 拉全文失败：**显式**置位（不看服务端 flag）——
@@ -155,7 +155,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
               content: content,
               size: ghInt(f, 'size'),
               truncated: truncatedUnresolved,
-              rawUrl: raw,
+              rawUrl: rawUrl,
             ));
           }
         }

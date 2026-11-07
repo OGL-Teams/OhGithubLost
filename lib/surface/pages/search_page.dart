@@ -10,7 +10,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/async.dart';
-import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -242,10 +241,9 @@ class SearchResultsPage extends StatefulWidget {
 }
 
 class _SearchResultsPageState extends State<SearchResultsPage> {
-  late final TextEditingController _input =
-      TextEditingController(text: widget.query);
-  int _mode = widget.mode;
-  String _query = widget.query;
+  late final TextEditingController _input;
+  late int _mode;
+  late String _query;
   AsyncController<List<_SearchHit>>? _results;
   Timer? _debounce;
 
@@ -254,6 +252,9 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   @override
   void initState() {
     super.initState();
+    _input = TextEditingController(text: widget.query);
+    _mode = widget.mode;
+    _query = widget.query;
     unawaited(_run());
   }
 
