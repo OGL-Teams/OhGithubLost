@@ -776,7 +776,8 @@ class GhApi implements CacheRemote {
       body: <String, Object?>{
         'message': message,
         'content': base64Encode(utf8.encode(content)),
-        if (baseSha != null) 'sha': baseSha,
+        // SD-01：空串基线等价于"没有基线"（新建），绝不发 sha:'' 给服务端。
+        if (baseSha != null && baseSha.isNotEmpty) 'sha': baseSha,
         if (branch != null) 'branch': branch,
       },
       label: 'PUT contents/$path',
@@ -841,7 +842,8 @@ class GhApi implements CacheRemote {
       //   1) force=true → 先取远端当前 sha，用**当下最新值**做基线
       //      （引擎路径的语义正是"以刚读到的远端版本为期望"）；
       //   2) 409/422 异常折成结构化 staleSha，UI 照常弹冲突对话框。
-      String? expected = baseSha;
+      String? expected =
+          (baseSha.isEmpty) ? null : baseSha; // SD-01：空串 = 新建，不带 sha
       if (force) {
         final GhContent? latest =
             await _contentNetwork(fullName, path, branch: branch);

@@ -300,16 +300,19 @@ class SurfaceBridge {
 
   /// 把「需要认证的第一跳地址」解析为**可直接下载**的地址。
   ///
-  /// Release 附件 / Action 日志 / Action 产物都是「302 → 短期签名 URL」结构，
-  /// 由域层 `IxPresign` 在**本地**走完第一跳（令牌不出设备），拿到绑定单对象
-  /// 且约 30 分钟有效的签名地址；页面随后才决定是否把它交给加速通道。
-  ///
-  /// 解析失败时**如实回退**到原始地址（宁可慢，也不静默失败）。
+  /// 解析失败时**如实回退**到原始地址（宁可慢，也不静默失败），
+  /// 并写一条带原因的日志——此前 `catch (_) { return url; }` 把
+  /// presign 失败原因完全吞掉，用户看到的是"点了没反应"。
   Future<String> resolveDownloadUrl(String url) async {
     try {
       final result = await domain.presign.resolve(url);
       return result.url ?? url;
-    } catch (_) {
+    } catch (error) {
+      OgLAppLog.instance.add(
+        '下载',
+        '签名地址解析失败，已回退直连：$error',
+        severity: OgLNoticeSeverity.warning,
+      );
       return url;
     }
   }

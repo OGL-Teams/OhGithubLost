@@ -604,8 +604,20 @@ class RepositoryCache {
     }
 
     // D1：写前必读——没有基线就不允许写。
+    // ★ 空串基线 = 无基线（SD-01）：调用方契约里 baseSha 是 `required String`
+    //   （putContentLocked / drafts_page 的"新建"语义只能用空串表达），
+    //   只判 `== null` 会把空串误当成"基线存在"，进而落入 D2 的
+    //   `'' != latest.sha` 恒真分支——新建文件的保存被永远拦成 staleSha。
+    final String? baselineSha =
+        (intent.baseSha == null || intent.baseSha!.isEmpty)
+            ? null
+            : intent.baseSha;
     final latest = await _remote.read(intent.key);
-    if (intent.baseSha == null && !intent.force) {
+    // ★ D1 的完整语义（SD-01）：
+    //   - 远端**已存在**且没有基线 → 拦下（不许盲写已有文件）；
+    //   - 远端**不存在**且没有基线 → 合法新建（GitHub 用"无 sha 即拒绝覆盖"
+    //     兜底并发创建；此前一律拦成 requiresRead，新建/草稿保存 100% 失败）。
+    if (baselineSha == null && !intent.force && latest != null) {
       return _fail(
         intent,
         WriteConflict.requiresRead,
@@ -615,7 +627,7 @@ class RepositoryCache {
     }
 
     // D2：SHA 乐观锁——本地基线必须与远端一致。
-    if (!intent.force && latest != null && intent.baseSha != latest.sha) {
+    if (!intent.force && latest != null && baselineSha != latest.sha) {
       return _fail(
         intent,
         WriteConflict.staleSha,
@@ -631,8 +643,8 @@ class RepositoryCache {
     // D2′：基线存在、远端却已消失——大概率是**他人删除了它**。
     // 这不是"可以写"的情形：带着旧 sha 去覆盖一个已不存在的目标，
     // 轻则被服务端拒绝，重则在"删除又重建"的竞态里把新内容写歪。
-    // 必须拦下并交回用户（新建请显式传 baseSha = null）。
-    if (!intent.force && intent.baseSha != null && latest == null) {
+    // 必须拦下并交回用户（新建请显式传 baseSha = null 或空串）。
+    if (!intent.force && baselineSha != null && latest == null) {
       return _fail(
         intent,
         WriteConflict.staleSha,
@@ -656,7 +668,9 @@ class RepositoryCache {
 
     var content = intent.content;
     // force 仍然以"刚读到的远端版本"为期望值：既不盲写，也不放行并发覆盖。
-    var expectedSha = intent.force ? latest?.sha : intent.baseSha;
+    // ★ 用归一化基线（SD-01）：空串原样发给 GitHub 等于带一个非法 sha，
+    //   服务端 422；无基线（新建）必须不带 sha 才能命中"无 sha 即拒绝覆盖"。
+    var expectedSha = intent.force ? latest?.sha : baselineSha;
     var attempt = 0;
 
     while (true) {
