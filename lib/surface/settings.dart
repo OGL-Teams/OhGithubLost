@@ -233,7 +233,8 @@ class OgLSettings {
     return result;
   }
 
-  /// 解析加速适用范围：只保留认识的 id；字段缺失 → 全开（= 历史行为）。
+  /// 解析加速适用范围：只保留认识的 id；字段缺失（老配置升级）→ 保守默认
+  /// （只开既有 4 类，新增 5 类默认关——绝不悄悄替用户打开"经过第三方"的区域）。
   static List<String> _asAccelScopes(Object? value) {
     if (value is! List) {
       return kOgLAccelDefaultScopeIds;
