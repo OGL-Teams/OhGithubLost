@@ -15,7 +15,6 @@ import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
-import '../settings.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/accel.dart';
