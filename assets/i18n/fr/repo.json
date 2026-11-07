@@ -197,6 +197,7 @@
   "saveFailed": "Échec de l'enregistrement : {error}",
   "saved": "Enregistré",
   "searchBranch": "Rechercher des branches",
+  "searchInRepo": "Rechercher",
   "selectBranch": "Sélectionner une branche",
   "settingsNeedAdmin": "Les paramètres du dépôt nécessitent une autorisation d'administrateur.",
   "sizeLabel": "Taille",

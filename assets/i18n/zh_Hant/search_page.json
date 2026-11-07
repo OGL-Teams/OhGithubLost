@@ -2,6 +2,11 @@
   "codeResults": "\"{q}\" 程式碼結果：{count}",
   "codeSearch": "程式碼搜尋",
   "discover": "發現",
+  "issuesAll": "全部",
+  "issuesEmpty": "沒有新 issue",
+  "issuesFeed": "Issues 聚合",
+  "issuesMine": "我提出的",
+  "issuesStar": "收藏倉庫",
   "noRepoForResult": "結果沒有可存取的字庫（索引可能尚未完成）",
   "noResults": "沒有關於 \"{query}\" 的結果",
   "openFileHint": "輕觸即可直接開啟檔案",
@@ -9,6 +14,8 @@
   "queryHint": "關鍵字（支援 repo:…、language:… 篩選條件）",
   "recommended": "熱門推薦",
   "recommendedEmpty": "暫無推薦",
+  "releaseNone": "收藏的倉庫還沒有發布",
+  "releasesSection": "收藏倉庫的發布",
   "repoResults": "\"{q}\" 字庫結果：{count}",
   "repoSearch": "字庫搜尋",
   "search": "搜尋",
@@ -18,5 +25,7 @@
   "starsCount": "{count} 個星號",
   "startHint": "輸入關鍵字以開始搜尋",
   "tabCode": "程式碼",
+  "tabDiscover": "發現",
+  "tabIssues": "Issues",
   "tabRepos": "字庫"
 }

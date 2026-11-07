@@ -197,6 +197,7 @@
   "saveFailed": "Сохранение не удалось: {error}",
   "saved": "Сохранено",
   "searchBranch": "Поиск веток",
+  "searchInRepo": "Поиск",
   "selectBranch": "Выберите ветку",
   "settingsNeedAdmin": "Для настройки репозитория требуется право администратора.",
   "sizeLabel": "Размер",

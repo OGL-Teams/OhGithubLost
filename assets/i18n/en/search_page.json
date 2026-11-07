@@ -2,6 +2,11 @@
   "codeResults": "\"{q}\" code results: {count}",
   "codeSearch": "Code Search",
   "discover": "Discover",
+  "issuesAll": "All",
+  "issuesEmpty": "No open issues",
+  "issuesFeed": "Issues feed",
+  "issuesMine": "Mine",
+  "issuesStar": "Starred",
   "noRepoForResult": "Result has no accessible repo (index may not be ready)",
   "noResults": "No results for \"{query}\"",
   "openFileHint": "Tap to open file directly",
@@ -9,6 +14,8 @@
   "queryHint": "Keyword (supports repo:… language:… qualifiers)",
   "recommended": "Recommended",
   "recommendedEmpty": "No recommendations",
+  "releaseNone": "No releases from starred repos yet",
+  "releasesSection": "Releases from starred",
   "repoResults": "\"{q}\" repo results: {count}",
   "repoSearch": "Repo Search",
   "search": "Search",
@@ -18,5 +25,7 @@
   "starsCount": "{count} stars",
   "startHint": "Enter keyword to start searching",
   "tabCode": "Code",
+  "tabDiscover": "Discover",
+  "tabIssues": "Issues",
   "tabRepos": "Repos"
 }

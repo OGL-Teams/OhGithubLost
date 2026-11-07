@@ -1270,6 +1270,86 @@ class GhApi implements CacheRemote {
         .toList();
   }
 
+  /// 搜议题（服务端，Search 配额）。
+  ///
+  /// [query] 应已含 `is:issue` 等限定；本方法只做传输与解析。
+  /// `items[].repository_url` 可还原所属仓库（`repos/{o}/{r}`）。
+  Future<List<Map<String, dynamic>>> searchIssues(
+    String query, {
+    String? sort,
+    int perPage = 30,
+    int page = 1,
+  }) async {
+    final object = await client.getObject(
+      '/search/issues',
+      query: <String, String>{
+        'q': query,
+        'per_page': '$perPage',
+        'page': '$page',
+        if (sort != null && sort.isNotEmpty) 'sort': sort,
+      },
+      label: 'GET /search/issues',
+    );
+    final items = object?['items'];
+    if (items is! List) {
+      return const <Map<String, dynamic>>[];
+    }
+    return items
+        .whereType<Map<Object?, Object?>>()
+        .map(Map<String, dynamic>.from)
+        .toList();
+  }
+
+  /// 仓库最新 Release / Tag（合并视图）：
+  ///
+  /// Releases 优先（含正文与产物）；仓库没有 Release 时回退取最新的
+  /// tag（`/tags` 只有名字与 sha，如实返回精简字段）。
+  /// 返回 `null` = 该仓库从未发布过任何 Release / tag。
+  Future<({String title, String tagName, String publishedAt, String url})?>
+      latestReleaseOrTag(String fullName) async {
+    try {
+      final response = await client.send(GhRequest(
+        path: '/repos/$fullName/releases/latest',
+        label: 'GET releases/latest',
+      ));
+      final object = response.jsonObject;
+      if (object == null) {
+        return null;
+      }
+      return (
+        title: GhJson.str(object, 'name').isEmpty
+            ? GhJson.str(object, 'tag_name')
+            : GhJson.str(object, 'name'),
+        tagName: GhJson.str(object, 'tag_name'),
+        publishedAt: GhJson.str(object, 'published_at'),
+        url: GhJson.str(object, 'html_url'),
+      );
+    } on GhNotFoundException {
+      // 没有 Release：回退 tag（再没有就是 null，由调用方决定是否显示）。
+    }
+    try {
+      final response = await client.send(GhRequest(
+        path: '/repos/$fullName/tags',
+        query: <String, String>{'per_page': '1'},
+        label: 'GET tags',
+      ));
+      final List<Map<String, dynamic>> items = response.jsonAsList;
+      if (items.isEmpty) {
+        return null;
+      }
+      final Map<String, dynamic> tag = items.first;
+      return (
+        title: GhJson.str(tag, 'name'),
+        tagName: GhJson.str(tag, 'name'),
+        publishedAt: '',
+        url:
+            'https://github.com/$fullName/releases/tag/${GhJson.str(tag, 'name')}',
+      );
+    } on GhNotFoundException {
+      return null;
+    }
+  }
+
   /// 搜代码（**服务端**，消耗 Search 配额）。
   ///
   /// **必须带 `text-match` 媒体类型**：GitHub 只在 Accept 头声明后才会

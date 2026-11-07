@@ -2,6 +2,11 @@
   "codeResults": "\"{q}\" Code-Ergebnisse: {count}",
   "codeSearch": "Code-Suche",
   "discover": "Entdecken",
+  "issuesAll": "Alle",
+  "issuesEmpty": "Keine offenen Issues",
+  "issuesFeed": "Issues-Feed",
+  "issuesMine": "Meine",
+  "issuesStar": "Markierte",
   "noRepoForResult": "Das Ergebnis hat kein zugängliches Repo (der Index ist möglicherweise noch nicht bereit)",
   "noResults": "Keine Ergebnisse für \"{query}\"",
   "openFileHint": "Tippen, um die Datei direkt zu öffnen",
@@ -9,6 +14,8 @@
   "queryHint": "Schlüsselwort (unterstützt repo:… language:…-Filter)",
   "recommended": "Empfohlen",
   "recommendedEmpty": "Keine Empfehlungen",
+  "releaseNone": "Noch keine Releases",
+  "releasesSection": "Releases markierter Repos",
   "repoResults": "\"{q}\" Repo-Ergebnisse: {count}",
   "repoSearch": "Repo-Suche",
   "search": "Suchen",
@@ -18,5 +25,7 @@
   "starsCount": "{count} Sterne",
   "startHint": "Gib ein Schlüsselwort ein, um die Suche zu starten",
   "tabCode": "Code",
+  "tabDiscover": "Entdecken",
+  "tabIssues": "Issues",
   "tabRepos": "Repos"
 }

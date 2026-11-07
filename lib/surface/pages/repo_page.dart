@@ -54,6 +54,7 @@ import 'new_issue_page.dart';
 import 'new_release_page.dart';
 import 'pull_page.dart';
 import 'release_detail_page.dart';
+import 'search_page.dart';
 import 'workflow_dispatch_page.dart';
 
 /// 取 `repo` 分片文案。
@@ -300,6 +301,26 @@ class _RepoPageState extends State<RepoPage> {
     }
   }
 
+  /// 仓库内搜索：跳到搜索结果页，模式=代码（0 仓库 / 1 代码）。
+  ///
+  /// 预填 `repo:<fullName> ` 前缀？不预填——GitHub 代码搜索支持限定词，
+  /// 但用户更常搜的是**全站**内容；仓库内搜索用 `repo:` 限定词由用户自填，
+  /// 搜索页的 hintText 已说明。这里只负责把入口递出去。
+  Future<void> _openSearch() async {
+    if (!mounted) {
+      return;
+    }
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => SearchResultsPage(
+          surface: widget.surface,
+          query: 'repo:$_full ',
+          mode: 1,
+        ),
+      ),
+    );
+  }
+
   Future<void> _fork() async {
     if (_forkBusy) {
       return;
@@ -484,13 +505,14 @@ class _RepoPageState extends State<RepoPage> {
     return DefaultTabController(
       length: tabs.length,
       child: Scaffold(
-        appBar: AppBar(
-          title: OgLSharedTitle(
-            tag: 'ogl-repo:${_repo.fullName}',
-            child: Text(_repo.fullName,
-                maxLines: 1, overflow: TextOverflow.ellipsis),
-          ),
+        appBar: OgLAppBar(
+          title: _repo.fullName,
           actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.search),
+              tooltip: _t('searchInRepo'),
+              onPressed: () => unawaited(_openSearch()),
+            ),
             IconButton(
               icon: Icon(_starred ? Icons.star : Icons.star_border),
               tooltip: _starred ? _t('unstar') : _t('star'),

@@ -2,6 +2,11 @@
   "codeResults": "Результаты кода по запросу «{q}»: {count}",
   "codeSearch": "Поиск кода",
   "discover": "Обзор",
+  "issuesAll": "Все",
+  "issuesEmpty": "Нет открытых issues",
+  "issuesFeed": "Лента Issues",
+  "issuesMine": "Мои",
+  "issuesStar": "Избранные",
   "noRepoForResult": "Результат не содержит доступного репозитория (возможно, индекс ещё не готов)",
   "noResults": "По запросу «{query}» нет результатов",
   "openFileHint": "Нажмите, чтобы открыть файл напрямую",
@@ -9,6 +14,8 @@
   "queryHint": "Ключевое слово (поддерживаются фильтры repo:… и language:…)",
   "recommended": "Рекомендуемые",
   "recommendedEmpty": "Нет рекомендаций",
+  "releaseNone": "Пока нет релизов",
+  "releasesSection": "Релизы избранных",
   "repoResults": "Результаты репозиториев по запросу «{q}»: {count}",
   "repoSearch": "Поиск репозиториев",
   "search": "Поиск",
@@ -18,5 +25,7 @@
   "starsCount": "{count} звёзд",
   "startHint": "Введите ключевое слово для начала поиска",
   "tabCode": "Код",
+  "tabDiscover": "Обзор",
+  "tabIssues": "Issues",
   "tabRepos": "Репозитории"
 }

@@ -197,6 +197,7 @@
   "saveFailed": "Save failed: {error}",
   "saved": "Saved",
   "searchBranch": "Search branches",
+  "searchInRepo": "Search",
   "selectBranch": "Select branch",
   "settingsNeedAdmin": "Repository settings require admin permission.",
   "sizeLabel": "Size",

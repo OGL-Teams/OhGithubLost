@@ -197,6 +197,7 @@
   "saveFailed": "Speichern fehlgeschlagen: {error}",
   "saved": "Gespeichert",
   "searchBranch": "Zweige suchen",
+  "searchInRepo": "Suchen",
   "selectBranch": "Zweig auswählen",
   "settingsNeedAdmin": "Für die Repository-Einstellungen ist eine Admin-Berechtigung erforderlich.",
   "sizeLabel": "Größe",

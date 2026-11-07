@@ -197,6 +197,7 @@
   "saveFailed": "儲存失敗：{error}",
   "saved": "已儲存",
   "searchBranch": "搜尋分支",
+  "searchInRepo": "搜尋",
   "selectBranch": "選擇分支",
   "settingsNeedAdmin": "倉庫設定需要管理員權限。",
   "sizeLabel": "大小",
