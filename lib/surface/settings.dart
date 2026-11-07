@@ -79,7 +79,7 @@ class OgLSettings {
     this.downloadConnections = OgLSettings.kOgLDefaultDownloadConnections,
     this.releaseProxyEnabled = false,
     this.accelPrivateRepoAccepted = false,
-    this.accelScopes = kOgLAccelAllScopeIds,
+    this.accelScopes = kOgLAccelDefaultScopeIds,
     this.releaseProxyChannels = const <OgLAccelChannel>[],
     this.releaseProxySelectedId = '',
     this.releaseProxyConsentVersion = 0,
@@ -236,7 +236,7 @@ class OgLSettings {
   /// 解析加速适用范围：只保留认识的 id；字段缺失 → 全开（= 历史行为）。
   static List<String> _asAccelScopes(Object? value) {
     if (value is! List) {
-      return kOgLAccelAllScopeIds;
+      return kOgLAccelDefaultScopeIds;
     }
     final List<String> out = <String>[];
     for (final Object? item in value) {

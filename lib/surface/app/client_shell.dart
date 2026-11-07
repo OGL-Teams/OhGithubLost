@@ -37,8 +37,8 @@ enum OgLShellTab {
   /// 仓库（我的仓库 / 星标）。
   home,
 
-  /// 搜索（仓库 / 代码）。
-  search,
+  /// 发现（搜索 / 星标动态 / 推荐）。
+  discover,
 
   /// 我的（账户管理 / 多账号切换 / Gist / 草稿 / 危险区）。
   profile,
@@ -220,8 +220,8 @@ class _OgLClientShellState extends State<OgLClientShell> {
           key: ValueKey<String>('dash-${_accountId ?? 'guest'}'),
           surface: widget.surface,
         );
-      case OgLShellTab.search:
-        return SearchPage(
+      case OgLShellTab.discover:
+        return DiscoverPage(
           key: ValueKey<String>('search-${_accountId ?? 'guest'}'),
           surface: widget.surface,
         );
@@ -318,7 +318,7 @@ class _OgLClientShellState extends State<OgLClientShell> {
             ),
             NavigationDestination(
               icon: const Icon(Icons.search),
-              label: OgLI18n.instance.t('shell', 'search'),
+              label: OgLI18n.instance.t('shell', 'discover'),
             ),
             NavigationDestination(
               icon: const Icon(Icons.person_outline),
@@ -359,7 +359,7 @@ class _OgLClientShellState extends State<OgLClientShell> {
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.search),
-                label: Text(OgLI18n.instance.t('shell', 'search')),
+                label: Text(OgLI18n.instance.t('shell', 'discover')),
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.person_outline),

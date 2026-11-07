@@ -93,8 +93,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
       appBar: AppBar(title: Text(_t('legalText'))),
       body: Column(
         children: <Widget>[
-          // ── 定性说明：**唯一具有法律效力的是 Apache-2.0**，本文只是说明 ──
-          //    放在最顶：读者应当先知道本文不产生法律效力，再读内容。
+          // ── 权威声明：唯一具法律效力的是仓库根目录 LICENSE 全文 ──
           Container(
             width: double.infinity,
             color: theme.colorScheme.errorContainer,
@@ -102,12 +101,13 @@ class _LegalTextPageState extends State<LegalTextPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Icon(Icons.info_outline,
+                Icon(Icons.gavel,
                     size: 18, color: theme.colorScheme.onErrorContainer),
                 const SizedBox(width: OgLSpace.sm),
                 Expanded(
                   child: Text(
-                    OgLI18n.instance.t('onboarding', 'legalStatementOnly'),
+                    OgLI18n.instance
+                        .t('onboarding', 'licenseAuthoritativeLine'),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onErrorContainer,
                     ),
@@ -116,51 +116,16 @@ class _LegalTextPageState extends State<LegalTextPage> {
               ],
             ),
           ),
-          // ── 效力声明（语言与官方副本）──
+          // ── 效力与译本：以英文原文为准 ──
           Container(
             width: double.infinity,
             color: theme.colorScheme.secondaryContainer,
             padding: const EdgeInsets.all(OgLSpace.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Icon(Icons.translate,
-                        size: 18,
-                        color: theme.colorScheme.onSecondaryContainer),
-                    const SizedBox(width: OgLSpace.sm),
-                    Expanded(
-                      child: Text(
-                        OgLI18n.instance
-                            .t('onboarding', 'licenseAuthoritative'),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSecondaryContainer,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: OgLSpace.sm),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Icon(Icons.verified_outlined,
-                        size: 18,
-                        color: theme.colorScheme.onSecondaryContainer),
-                    const SizedBox(width: OgLSpace.sm),
-                    Expanded(
-                      child: Text(
-                        OgLI18n.instance.t('onboarding', 'licenseOfficialCopy'),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSecondaryContainer,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            child: Text(
+              OgLI18n.instance.t('onboarding', 'licenseOfficialLine'),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSecondaryContainer,
+              ),
             ),
           ),
           // ── 语言选择：列出**全部可用语言** ──

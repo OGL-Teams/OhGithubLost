@@ -131,13 +131,20 @@ class GhRateLimitException implements Exception {
 /// 资源不存在 / 无权限。
 class GhNotFoundException implements Exception {
   /// 创建异常。
-  const GhNotFoundException(this.path);
+  ///
+  /// [body] 是服务端响应摘要：上层据此区分「仓库确实为空」与
+  /// 「分支/路径不存在 / 令牌无权限」，**不允许把一切 404 都当空目录**。
+  const GhNotFoundException(this.path, {this.body});
 
   /// 请求路径。
   final String path;
 
+  /// 服务端响应摘要（可为空）。
+  final String? body;
+
   @override
-  String toString() => 'GhNotFoundException($path)';
+  String toString() =>
+      'GhNotFoundException($path)${body == null ? '' : ': $body'}';
 }
 
 /// 写冲突分类（**领域层投影**）。
@@ -765,7 +772,7 @@ class GhClient {
           statusCode: 403,
         );
       case 404:
-        throw GhNotFoundException(request.path);
+        throw GhNotFoundException(request.path, body: _snippet(response.body));
       case 409:
       case 422:
         if (request.conflictsAsRemoteConflict) {

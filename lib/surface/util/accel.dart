@@ -58,9 +58,30 @@ const int kOgLAccelConsentVersion = 4;
 /// - [repoFile]：`surface_bridge.planRepoFileDownload`（仓库页下载 /
 ///   预览页「加入下载」）与 `file_preview_page.dart` 的内联 raw 取法；
 /// - [readmeImage]：`repo_page.dart` 的 README 仓库内图片。
+/// - [gistFile]：`gist_detail_page.dart` 的 Gist 文件下载（raw 附件）。
+/// - [repoArchive]：`repo_page.dart` 的「下载 ZIP」归档入口。
+/// - [readmeExternalImage]：`readme_view.dart` 的 README 第三方图床图片。
 ///
-/// **Action 运行日志不走加速**（`ix_action_logs.dart` 直接请求
-/// `api.github.com`），因此这里没有对应项 —— 不凭印象添端点。
+/// ## 保留枚举但本版不接入的两项（**不要误以为已生效**）
+/// - [actionLog]：Actions 运行日志。`ix_action_logs.dart` 直接请求
+///   `api.github.com`（zip 归档，302 → 短期签名地址）。日志归档常是**小文件**
+///   （低于阈值也白加速），且签名地址由 `api.github.com` 的 302 给出 —— 接入
+///   需要改写 `ix_action_logs` 的取日志链路并把签名解出后再交通道，牵动认证
+///   与 Range 语义，本版**不接入**：枚举保留是为了让用户在设置页看到"这一类
+///   存在但默认关"，避免误以为日志已在走通道。
+/// - [avatarImage]：用户 / 组织头像。头像取法散布在 `OgLAnimPreload`
+///   （`NetworkImage` 直连）与多个页面的渲染层，缓存键就是**原始地址**；接
+///   通道会改变缓存键口径并波及预加载策略表，且头像体积极小（加速无收益、
+///   每张都多经一次第三方），风险收益比最差。本版**不接入**。
+///
+/// ## 两类必须**可见**的风险（文案键在 `settings` 分片，设置页有警示卡）
+/// - **API 兼容性**（`accelCompatWarning`）：第三方通道可能不转发
+///   `Accept` / `Authorization` 头、不覆盖全部 REST 端点、不支持
+///   `Range` / `Content-Range`（多连接分片会失效）、改写响应体。开启 API 类
+///   加速可能导致结果异常或空返回。本项目**不内置通道、不保证兼容**。
+/// - **易泄露**（`accelLeakWarning`）：私有 raw 必须带令牌、签名 URL 有有效期、
+///   请求会经过应用外的服务器（对方能看到 URL 与请求头）。私有仓库**默认不
+///   加速**，需用户知情接受（`accelPrivateRepoAccepted`）才放行。
 enum OgLAccelScope {
   /// Release 附件。
   releaseAsset('releaseAsset'),
@@ -72,7 +93,29 @@ enum OgLAccelScope {
   repoFile('repoFile'),
 
   /// README 仓库内图片。
-  readmeImage('readmeImage');
+  readmeImage('readmeImage'),
+
+  /// Gist 文件（raw 附件下载）。**默认关**。
+  gistFile('gistFile'),
+
+  /// 仓库归档（ZIP / tarball）。**默认关**。
+  ///
+  /// 归档走 `github.com/{o}/{r}/archive/...`（302 → codeload），很多前缀式
+  /// 代理能转发，但归档体积大、且私有仓库的归档必须带令牌 —— 默认关。
+  repoArchive('repoArchive'),
+
+  /// Actions 运行日志。**默认关，且本版不接入**（见枚举文档）。
+  actionLog('actionLog'),
+
+  /// 用户 / 组织头像。**默认关，且本版不接入**（见枚举文档）。
+  avatarImage('avatarImage'),
+
+  /// README 里的第三方图床图片（绝对 http/https 地址）。**默认关**。
+  ///
+  /// 与 [readmeImage]（仓库内图片）相对：外部图床的地址不属于
+  /// `raw.githubusercontent.com`，交给通道等于把**你正在读哪个仓库、引用了
+  /// 哪些外链**暴露给第三方 —— 默认关，知情开启。
+  readmeExternalImage('readmeExternalImage');
 
   const OgLAccelScope(this.id);
 
@@ -93,12 +136,27 @@ enum OgLAccelScope {
   String get labelKey => 'accelScope${id[0].toUpperCase()}${id.substring(1)}';
 }
 
-/// 全部范围的 id（**默认值**：不改变既有行为，用户可逐项关掉）。
+/// 全部范围的 id。**默认值只含既有 4 类**（与历史行为一致）；新增的 5 类
+/// （gistFile / repoArchive / actionLog / avatarImage / readmeExternalImage）
+/// **默认关** —— 尤其 actionLog / avatarImage 这类高风险项，绝不能悄悄默认开。
 ///
 /// 刻意写成显式列表而不是从 `values` 派生：它是**落盘默认值**，必须稳定；
 /// 新增范围时应显式加进来，并由测试保证与枚举不漂移
 /// （见 `test/surface/path_rules_test.dart` 的「范围清单与枚举一致」）。
 const List<String> kOgLAccelAllScopeIds = <String>[
+  'releaseAsset',
+  'actionArtifact',
+  'repoFile',
+  'readmeImage',
+  'gistFile',
+  'repoArchive',
+  'actionLog',
+  'avatarImage',
+  'readmeExternalImage',
+];
+
+/// 默认**开启**的范围（既有 4 类，不改历史行为）。
+const List<String> kOgLAccelDefaultScopeIds = <String>[
   'releaseAsset',
   'actionArtifact',
   'repoFile',

@@ -655,45 +655,91 @@ class GhApi implements CacheRemote {
     return _listDirectoryNetwork(fullName, path, branch: branch);
   }
 
+  /// 目录响应是否表示「仓库确实没有内容」。
+  ///
+  /// GitHub 对空仓库返回 409 `Git Repository is empty.` / 404
+  /// `This repository is empty.`；只有这两种才是**合法的空**。
+  /// 其它 404（分支错、令牌无权限、路径不存在）与 422 一律不是空，
+  /// 必须原样抛给上层显示错误面板——此前把它们全折叠成空列表，
+  /// 用户看到的就是「code 页空白，且没有任何报错」。
+  static bool _isEmptyRepositoryMessage(String text) {
+    final String lower = text.toLowerCase();
+    return lower.contains('git repository is empty') ||
+        lower.contains('this repository is empty') ||
+        lower.contains('repository is empty');
+  }
+
   Future<List<GhContent>> _listDirectoryNetwork(
     String fullName,
     String path, {
     String? branch,
   }) async {
+    final GhResponse response;
     try {
-      final response = await client.send(GhRequest(
+      response = await client.send(GhRequest(
         path: '/repos/$fullName/contents/${_ghPath(path)}',
         query: <String, String>{
           if (branch != null && branch.isNotEmpty) 'ref': branch,
         },
         label: 'GET contents/$path',
       ));
-      final List<GhContent> items =
-          response.jsonAsList.map(GhContent.fromJson).toList();
-      // 目录成功但为空是合法情形（空目录）——留 debug 级痕，
-      // 与"请求失败"区分，方便排查"文件页空白"时知道是哪种。
-      OgLLogFile.line(
-        'GH',
-        '目录列表：${items.length} 条（${response.body.length}B）',
-        level: 'DEBUG',
-      );
-      return items;
-    } on GhNotFoundException {
-      return const <GhContent>[];
-    } on GhAuthException catch (error) {
-      // 空仓库（409 "Git Repository is empty."）⇒ 空目录，不是失败。
-      if (_isAbsentStatus(error.statusCode)) {
+    } on GhNotFoundException catch (error) {
+      if (_isEmptyRepositoryMessage(error.body ?? '')) {
         return const <GhContent>[];
       }
-      // 401（游客/令牌失效）等：留痕后**原样抛出**——
-      // 上层据此显示错误面板而不是空白页，用户才知道"为什么没有文件"。
+      // ★ 不再吞掉 404：分支失效 / 无权限 / 路径不存在都必须可见。
       OgLLogFile.line(
         'GH',
-        '目录列表失败（${error.statusCode}）：$fullName/$path',
+        '目录列表 404（不当作空）：$fullName/$path → ${error.body}',
+        level: 'WARN',
+      );
+      rethrow;
+    } on GhAuthException catch (error) {
+      // 409 空仓库（服务端原话为准）⇒ 空目录；409/422 其它语义不当空。
+      if (error.statusCode == 409 && _isEmptyRepositoryMessage(error.message)) {
+        return const <GhContent>[];
+      }
+      OgLLogFile.line(
+        'GH',
+        '目录列表失败（${error.statusCode}）：$fullName/$path → ${error.message}',
         level: 'WARN',
       );
       rethrow;
     }
+
+    // ★ 严格解析：Contents API 的目录响应**必须是数组**。
+    //   jsonAsList 会把解析失败 / 非数组响应静默变成空列表——那正是
+    //   「API 有结果却被非法抛弃」的入口。这里自己解一次，形状不对就抛，
+    //   让 AsyncController 显示错误面板，而不是把空白伪装成空目录。
+    final List<GhContent> items;
+    try {
+      final Object? decoded = jsonDecode(response.body);
+      if (decoded is! List) {
+        throw FormatException(
+          '目录响应不是数组（HTTP ${response.statusCode}）：'
+          '${response.body.length > 160 ? response.body.substring(0, 160) : response.body}',
+        );
+      }
+      items = decoded
+          .whereType<Map<Object?, Object?>>()
+          .map((Map<Object?, Object?> m) =>
+              GhContent.fromJson(Map<String, dynamic>.from(m)))
+          .toList();
+      if (items.length != decoded.length) {
+        throw FormatException('目录响应含 ${decoded.length - items.length} 条非对象条目');
+      }
+    } on FormatException catch (error) {
+      OgLLogFile.line('GH', '目录响应解析失败：$fullName/$path → $error', level: 'ERR');
+      rethrow;
+    }
+    // 目录成功但为空是合法情形（空目录）——留 debug 级痕，
+    // 与"请求失败"区分，方便排查"文件页空白"时知道是哪种。
+    OgLLogFile.line(
+      'GH',
+      '目录列表：${items.length} 条（${response.body.length}B）',
+      level: 'DEBUG',
+    );
+    return items;
   }
 
   /// 读取大文件（>1 MB 时 Contents API 会省略内容，必须走 Blobs）。

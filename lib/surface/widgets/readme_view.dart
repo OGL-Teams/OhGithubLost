@@ -228,6 +228,7 @@ class ReadmeView extends StatelessWidget {
     this.maxImages = 40,
     this.imageLoader,
     this.imageProxyPrefix,
+    this.externalImageProxyPrefix,
     this.imageHeaders,
     super.key,
   });
@@ -256,6 +257,13 @@ class ReadmeView extends StatelessWidget {
   /// 认证头（`Image.network` 支持 headers）。拿不到令牌时调用方不该启用
   /// [imageProxyPrefix]，退回 `imageLoader`（API 取字节）。
   final String? imageProxyPrefix;
+
+  /// README **外链图片**（第三方图床，绝对 http/https 地址）的加速前缀。
+  ///
+  /// 由 `OgLAccelScope.readmeExternalImage` 控制（默认关）。开启后走
+  /// `前缀 + 原址` 这一项，无降级无兜底；第三方会看到你正在读哪个仓库
+  /// 引用了哪些外链，因此设置页有「易泄露」警示。
+  final String? externalImageProxyPrefix;
 
   /// 加速图片的**认证头**（`Future`：令牌要读一次安全保险库）。
   ///
@@ -356,15 +364,21 @@ class ReadmeView extends StatelessWidget {
             );
           }
         }
-        // ② 绝对 http/https（第三方图床）→ 只能直连。
+        // ② 绝对 http/https（第三方图床）→ 直连，或按独立开关走通道。
         final Uri? target = uri.hasScheme
             ? resolveReadmeImageUri(uri.toString())
             : resolveReadmeImageUri(uri.toString(), base: imgBase);
         if (target == null) {
           return Text(_t('readmeImageAlt', {'alt': label}), style: fallback);
         }
+        final String externalProxy = externalImageProxyPrefix ?? '';
+        final Uri finalUrl = (uri.hasScheme &&
+                externalProxy.isNotEmpty &&
+                !target.toString().startsWith(externalProxy))
+            ? Uri.parse('$externalProxy$target')
+            : target;
         return _ReadmeImage.net(
-            url: target, alt: label, fallbackStyle: fallback);
+            url: finalUrl, alt: label, fallbackStyle: fallback);
       },
       styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
         p: body.copyWith(height: 1.5),

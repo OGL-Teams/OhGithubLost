@@ -15,8 +15,12 @@ import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
+import '../settings.dart';
 import '../surface_bridge.dart';
+import '../types.dart';
+import '../util/accel.dart';
 import '../util/clipboard_x.dart';
+import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_space.dart';
@@ -36,12 +40,16 @@ class _GistFile {
     required this.content,
     required this.size,
     required this.truncated,
+    required this.rawUrl,
   });
 
   final String name;
   final String language;
   final String content;
   final int size;
+
+  /// raw 附件地址（`raw_url`；Gist 的 raw 是**匿名可取**的公开地址）。
+  final String rawUrl;
 
   /// 内容**可能被截断**：服务端标了 `truncated` 且 raw 拉全文失败。
   /// 界面据此在卡片上标注，绝不把它当完整内容展示。
@@ -147,6 +155,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
               content: content,
               size: ghInt(f, 'size'),
               truncated: truncatedUnresolved,
+              rawUrl: raw,
             ));
           }
         }
@@ -278,6 +287,45 @@ class _GistDetailPageState extends State<GistDetailPage> {
     }
   }
 
+  /// 下载 Gist 文件（raw 附件）。
+  ///
+  /// Gist 的 raw 地址匿名可取（无令牌参与），所以这里的加速**不涉及令牌出口**；
+  /// 是否走通道由 `OgLAccelScope.gistFile`（默认关）与 `ogLAccelCandidates`
+  /// 统一判定：命中就只给 `前缀 + raw` 这一项 —— **没有降级、没有兜底**，
+  /// 失败如实报错。
+  Future<void> _downloadFile(BuildContext context, _GistFile file) async {
+    final List<String> prefixes = widget.surface.settings.settings
+        .accelPrefixesFor(OgLAccelScope.gistFile);
+    final List<String> candidates = ogLAccelCandidates(
+      url: file.rawUrl,
+      prefixes: prefixes,
+      family: OgLAccelFamily.raw,
+      bytes: file.size <= 0 ? null : file.size,
+      // Gist raw 是公开地址：repoPrivate 恒 false，不涉及私有令牌。
+      repoPrivate: false,
+    );
+    try {
+      await widget.surface.domain.downloads.enqueue(
+        url: candidates.first,
+        fallbackUrls: candidates.skip(1).toList(),
+        fileName: file.name,
+        category: IxDownloadCategory.gist,
+        connections: widget.surface.settings.settings.downloadConnections,
+      );
+      if (!context.mounted) {
+        return;
+      }
+      OgLNotifier.of(context).info(_t('downloadQueued', {'name': file.name}));
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      OgLNotifier.of(context).warning(
+        _t('downloadFailed', {'name': file.name, 'error': '$error'}),
+      );
+    }
+  }
+
   Future<void> _copy(_GistFile file) async {
     await ogLCopyText(file.content, tag: 'Gist 文件');
     if (mounted) {
@@ -401,6 +449,15 @@ class _GistDetailPageState extends State<GistDetailPage> {
                             tooltip: _t('copyContent'),
                             onPressed: () => unawaited(_copy(file)),
                           ),
+                          // 下载 raw 附件：加速与否由 `OgLAccelScope.gistFile`
+                          // 决定（默认关；没有 raw_url 时按钮不出现）。
+                          if (file.rawUrl.isNotEmpty)
+                            IconButton(
+                              icon: const Icon(Icons.download_outlined),
+                              tooltip: _t('downloadFile'),
+                              onPressed: () =>
+                                  unawaited(_downloadFile(context, file)),
+                            ),
                           IconButton(
                             icon: const Icon(Icons.edit_outlined),
                             tooltip: _t('edit'),

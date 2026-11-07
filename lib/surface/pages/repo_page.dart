@@ -27,10 +27,12 @@ import '../app/paged_controller.dart';
 // TOKEN-EXIT-01: 下载令牌出设备警告弹窗（不可关闭）。
 import '../app/token_exit_warning.dart';
 import '../i18n/og_l_i18n.dart';
+import '../settings.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
 import '../util/accel.dart';
+import '../util/download_proxy.dart';
 import '../util/clipboard_x.dart';
 import '../util/file_icons.dart';
 import '../util/file_preview.dart';
@@ -252,6 +254,52 @@ class _RepoPageState extends State<RepoPage> {
     }
   }
 
+  /// 下载仓库归档（ZIP）。
+  ///
+  /// 归档地址是 `https://github.com/{o}/{r}/archive/refs/heads/{branch}.zip`
+  /// （302 → codeload）。是否走加速由 `OgLAccelScope.repoArchive`（**默认关**）
+  /// 决定；命中就只给 `前缀 + 归档地址` 这一项，**没有降级、没有兜底**。
+  ///
+  /// 私有仓库的归档必须带令牌（归档端点没有签名机制）：与 raw 族同规则，
+  /// 只有用户已知情接受「令牌会交给第三方通道」才放行，且命中加速时**不再
+  /// 带认证头**的语义与 `planRepoFileDownload` 一致 —— 私有 + 加速仍带令牌
+  /// （代理会原样转发 Authorization），不加速则直连同地址 + 令牌。
+  Future<void> _downloadZip() async {
+    final OgLSettings current = widget.surface.settings.settings;
+    final String zipUrl = 'https://github.com/$_full/archive/refs/heads/'
+        '${Uri.encodeComponent(_branch)}.zip';
+    final List<String> candidates = ogLAccelCandidates(
+      url: zipUrl,
+      prefixes: current.accelPrefixesFor(OgLAccelScope.repoArchive),
+      // 归档体积大：bytes 置 null = 按「值得加速」处理（阈值判定见 download_proxy）。
+      family: OgLAccelFamily.raw,
+      repoPrivate: widget.repoPrivate,
+      privateAccelAccepted: current.accelPrivateRepoAccepted,
+    );
+    final Map<String, String> headers = widget.repoPrivate
+        ? await widget.surface.downloadAuthHeaders()
+        : const <String, String>{};
+    try {
+      await widget.surface.domain.downloads.enqueue(
+        url: candidates.first,
+        fallbackUrls: candidates.skip(1).toList(),
+        headers: headers,
+        fileName: '${_full.split('/').last}-${_branch}.zip',
+        category: IxDownloadCategory.repo,
+        connections: widget.surface.settings.settings.downloadConnections,
+      );
+      if (!mounted) {
+        return;
+      }
+      OgLDownloadNotice.instance.show(context, widget.surface,
+          message: _t('downloadQueuedZip', {'branch': _branch}));
+    } catch (error) {
+      if (mounted) {
+        _notifier.warning(_t('downloadFailedZip', {'error': '$error'}));
+      }
+    }
+  }
+
   Future<void> _fork() async {
     if (_forkBusy) {
       return;
@@ -454,6 +502,8 @@ class _RepoPageState extends State<RepoPage> {
                 switch (value) {
                   case 'fork':
                     unawaited(_fork());
+                  case 'downloadZip':
+                    unawaited(_downloadZip());
                   case 'browser':
                     _openInBrowser();
                   case 'clone':
@@ -468,6 +518,15 @@ class _RepoPageState extends State<RepoPage> {
                     contentPadding: EdgeInsets.zero,
                     leading: Icon(Icons.call_split),
                     title: Text(_t('forkTitle')),
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'downloadZip',
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.download_outlined),
+                    title: Text(_t('downloadZip')),
                   ),
                 ),
                 PopupMenuItem<String>(
@@ -778,21 +837,32 @@ class _CodeTabState extends State<_CodeTab> {
   final TextEditingController _filter = TextEditingController();
   final TextEditingController _newPath = TextEditingController();
 
-  /// 排序缓存：[PagedController] 的列表对象未变时直接复用上一次排序结果。
-  /// （过滤框逐字输入只重建过滤，不再整目录排序。）
+  /// 排序缓存：[PagedController] 复用**同一个 List 对象**（clear + addAll
+  /// 原地改写），因此 `identical` 恒为真，单靠身份无法判断内容已变。
+  /// 必须同时比较长度与首尾指纹，否则换目录后仍会显示上一目录的排序结果
+  /// （典型表现：code 页「切目录不刷新 / 看起来是空的」）。
   List<GhContent>? _sortedCache;
   List<GhContent>? _sortedSource;
+  int _sortedSourceLength = -1;
+  Object? _sortedSourceFirst;
+  Object? _sortedSourceLast;
 
   /// 缓存签名里的「文件夹优先」值：开关切换后必须重排（items 身份没变）。
   bool? _sortedCacheDirFirst;
 
-  /// 目录排序视图（目录在前，其余按名称），带身份缓存。
+  /// 目录排序视图（目录在前，其余按名称），带内容指纹缓存。
   List<GhContent> _sortedItems() {
     final List<GhContent> source = _entries.items;
     final bool dirFirstNow = widget.surface.settings.settings.foldersFirst;
+    final int lengthNow = source.length;
+    final Object? firstNow = source.isEmpty ? null : source.first;
+    final Object? lastNow = source.isEmpty ? null : source.last;
     if (identical(_sortedSource, source) &&
         _sortedCache != null &&
-        _sortedCacheDirFirst == dirFirstNow) {
+        _sortedCacheDirFirst == dirFirstNow &&
+        _sortedSourceLength == lengthNow &&
+        identical(_sortedSourceFirst, firstNow) &&
+        identical(_sortedSourceLast, lastNow)) {
       return _sortedCache!;
     }
     // 「文件夹优先」是**真实开关**：此前排序无条件把目录排在前面，
@@ -809,6 +879,9 @@ class _CodeTabState extends State<_CodeTab> {
     _sortedSource = source;
     _sortedCache = sorted;
     _sortedCacheDirFirst = dirFirstNow;
+    _sortedSourceLength = lengthNow;
+    _sortedSourceFirst = firstNow;
+    _sortedSourceLast = lastNow;
     return sorted;
   }
 
@@ -1978,8 +2051,12 @@ class _CodeTabState extends State<_CodeTab> {
   /// - **否则** → 都不给，界面退回 `imageLoader`（Contents API 取字节）。
   /// - **私有仓库**：raw 匿名是 404，走加速必须带令牌（通道会原样转发
   ///   `Authorization`），因此额外给出认证头 Future；公开仓库为 `null`。
-  ({Uri? base, String? proxy, Future<Map<String, String>>? headers})
-      _readmeImagePlan(String dir) {
+  ({
+    Uri? base,
+    String? proxy,
+    String? extProxy,
+    Future<Map<String, String>>? headers
+  }) _readmeImagePlan(String dir) {
     // README 图片是**独立的一类**：很多前缀式代理能转发 Release 附件，
     // 却转发不了仓库内图片，所以它有自己的开关。
     //
@@ -1996,7 +2073,14 @@ class _CodeTabState extends State<_CodeTab> {
     final List<String> prefixes = widget.surface.settings.settings
         .accelPrefixesFor(OgLAccelScope.readmeImage);
     if (!accel || prefixes.isEmpty) {
-      return (base: null, proxy: null, headers: null);
+      return (
+        base: null,
+        proxy: null,
+        extProxy: widget.surface.settings.settings
+            .accelPrefixesFor(OgLAccelScope.readmeExternalImage)
+            .firstOrNull,
+        headers: null,
+      );
     }
     final String encodedDir = dir
         .split('/')
@@ -2009,6 +2093,9 @@ class _CodeTabState extends State<_CodeTab> {
     return (
       base: Uri.parse(base),
       proxy: prefixes.first,
+      extProxy: widget.surface.settings.settings
+          .accelPrefixesFor(OgLAccelScope.readmeExternalImage)
+          .firstOrNull,
       headers: widget.repoPrivate ? widget.surface.downloadAuthHeaders() : null,
     );
   }
@@ -2091,6 +2178,7 @@ class _CodeTabState extends State<_CodeTab> {
           markdown: md,
           imageBase: plan.base,
           imageProxyPrefix: plan.proxy,
+          externalImageProxyPrefix: plan.extProxy,
           imageHeaders: plan.headers,
           imageLoader: (String p) => _readImageBytes(_repoPath('', p)),
           onOpenLink: (Uri uri) {
@@ -2254,6 +2342,7 @@ class _CodeTabState extends State<_CodeTab> {
       final ({
         Uri? base,
         String? proxy,
+        String? extProxy,
         Future<Map<String, String>>? headers
       }) plan = _readmeImagePlan(_dirOf(file.path));
       return SingleChildScrollView(
@@ -2262,6 +2351,7 @@ class _CodeTabState extends State<_CodeTab> {
           markdown: text,
           imageBase: plan.base,
           imageProxyPrefix: plan.proxy,
+          externalImageProxyPrefix: plan.extProxy,
           imageHeaders: plan.headers,
           imageLoader: (String p) =>
               _readImageBytes(_repoPath(_dirOf(file.path), p)),

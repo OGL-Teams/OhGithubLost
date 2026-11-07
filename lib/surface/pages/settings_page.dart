@@ -225,14 +225,6 @@ class _SettingsPageState extends State<SettingsPage> {
         _t('motionFull'),
       ];
 
-  /// 动效档位的说明（与 [OgLSettings.motionLevelIds] 一一对应）。
-  List<String> get _motionHints => <String>[
-        _t('motionMinDesc'),
-        _t('motionCurrentDesc'),
-        _t('motionStandardDesc'),
-        _t('motionEnhancedDesc'),
-      ];
-
   Future<void> _pickCodeColor(String field, int current, String title) async {
     final int? picked = await _showOgLDialog<int>(
       builder: (BuildContext dialogContext) => SimpleDialog(
@@ -553,7 +545,6 @@ class _SettingsPageState extends State<SettingsPage> {
       children: <Widget>[
         OgLSettingsChoiceTile<OgLThemeMode>(
           title: _t('themeMode'),
-          subtitle: _t('appearanceDesc'),
           valueLabel: _modeLabel(value),
           current: value.mode,
           options: <OgLSettingsChoice<OgLThemeMode>>[
@@ -629,7 +620,6 @@ class _SettingsPageState extends State<SettingsPage> {
               OgLSettingsChoice<int>(
                 value: i,
                 label: _motionShort[i],
-                hint: _motionHints[i],
               ),
           ],
           onSelected: (int level) => unawaited(_settings.setMotionLevel(level)),
@@ -637,7 +627,6 @@ class _SettingsPageState extends State<SettingsPage> {
         const Divider(height: 1),
         OgLSettingsSwitchRow(
           title: _t('reduceMotionA11y'),
-          subtitle: _t('reduceMotionDesc'),
           value: value.reduceMotion,
           onChanged: (bool on) => unawaited(_settings.setReduceMotion(on)),
         ),
@@ -645,7 +634,6 @@ class _SettingsPageState extends State<SettingsPage> {
         OgLSettingsChoiceTile<String>(
           title: _t('language'),
           leading: const Icon(Icons.translate),
-          subtitle: _t('displayLanguage'),
           valueLabel: OgLI18n.instance.localeLabel,
           current: _settings.settings.languageCode,
           options: <OgLSettingsChoice<String>>[
@@ -691,7 +679,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           OgLSettingsSwitchRow(
             title: _t('syntaxHighlight'),
-            subtitle: _t('codeColorDesc'),
             value: value.codeHighlight,
             onChanged: (bool on) => unawaited(_settings.setCodeHighlight(on)),
           ),
@@ -769,7 +756,6 @@ class _SettingsPageState extends State<SettingsPage> {
           const Divider(height: 1),
           OgLSettingsSwitchRow(
             title: _t('codeWrap'),
-            subtitle: _t('codeWrapDesc'),
             value: value.codeWrap,
             onChanged: (bool on) => unawaited(_settings.setCodeWrap(on)),
           ),
@@ -786,7 +772,6 @@ class _SettingsPageState extends State<SettingsPage> {
           const Divider(height: 1),
           OgLSettingsSwitchRow(
             title: _t('foldersFirst'),
-            subtitle: _t('foldersFirstDesc'),
             value: value.foldersFirst,
             onChanged: (bool on) => unawaited(_settings.setFoldersFirst(on)),
           ),
@@ -808,7 +793,6 @@ class _SettingsPageState extends State<SettingsPage> {
       <Widget>[
         OgLSettingsSwitchRow(
           title: _t('customDns'),
-          subtitle: _t('dnsModeDesc'),
           value: value.dnsMode == 'custom',
           onChanged: (bool on) {
             widget.surface.setDnsMode(on ? 'custom' : 'system');
@@ -851,7 +835,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     OgLSettingsSwitchRow(
                       title: _t('doh'),
-                      subtitle: _t('dnsServerDesc'),
                       indent: OgLSettingsIndent.step,
                       value: value.dnsPreferDoh,
                       onChanged: (bool on) =>
@@ -1194,7 +1177,6 @@ class _SettingsPageState extends State<SettingsPage> {
   List<Widget> _downloadTiles(OgLSettings value) => <Widget>[
         OgLSettingsChoiceTile<int>(
           title: _t('downloadConnections'),
-          subtitle: _t('downloadConnectionsDesc'),
           leading: const Icon(Icons.download_outlined),
           valueLabel: _t('connectionsCount', <String, Object?>{
             'count': value.downloadConnections,
@@ -1235,7 +1217,6 @@ class _SettingsPageState extends State<SettingsPage> {
     final List<Widget> tiles = <Widget>[
       OgLSettingsSwitchRow(
         title: _t('accelTitle'),
-        subtitle: _t('accelDesc'),
         value: value.releaseProxyEnabled,
         onChanged: (bool on) => unawaited(_toggleAccel(on)),
       ),
@@ -1252,6 +1233,43 @@ class _SettingsPageState extends State<SettingsPage> {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
+                  // ── 风险警示：API 兼容性 + 易泄露（放在最前，先读再开）──
+                  Card(
+                    margin: const EdgeInsets.fromLTRB(
+                        OgLSpace.md, OgLSpace.sm, OgLSpace.md, OgLSpace.md),
+                    color: theme.colorScheme.errorContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(OgLSpace.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Icon(Icons.warning_amber_rounded,
+                                  size: 18,
+                                  color: theme.colorScheme.onErrorContainer),
+                              const SizedBox(width: OgLSpace.sm),
+                              Expanded(
+                                child: Text(
+                                  _t('accelCompatWarning'),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onErrorContainer,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: OgLSpace.sm),
+                          Text(
+                            _t('accelLeakWarning'),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onErrorContainer,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   // ── 适用范围：哪些资源允许走通道 ──────────────────────
                   // 前缀式代理开放的端点有限（有的能转 Release 附件却转不了仓库图片），
                   // 写死"哪些加速"必然有人用不了，所以逐项可关。
@@ -1290,7 +1308,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   OgLSettingsSwitchRow(
                     leading: const Icon(Icons.privacy_tip_outlined),
                     title: _t('accelPrivateRepo'),
-                    subtitle: _t('accelPrivateRepoDesc'),
                     value: value.accelPrivateRepoAccepted,
                     onChanged: (bool on) =>
                         unawaited(_setPrivateAccelAccepted(on)),
@@ -1533,7 +1550,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: <Widget>[
                   // 先定性：本文不产生法律效力，唯一生效的是 Apache-2.0。
                   Text(
-                    OgLI18n.instance.t('onboarding', 'legalStatementOnly'),
+                    OgLI18n.instance
+                        .t('onboarding', 'licenseAuthoritativeLine'),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.error,
                         ),
@@ -1553,7 +1571,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   const SizedBox(height: OgLSpace.sm),
                   Text(
-                    OgLI18n.instance.t('onboarding', 'licenseOfficialCopy'),
+                    OgLI18n.instance.t('onboarding', 'licenseOfficialLine'),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontStyle: FontStyle.italic,
@@ -1782,7 +1800,6 @@ class _SettingsPageState extends State<SettingsPage> {
             theme,
             icon: Icons.privacy_tip_outlined,
             title: _t('permissionsGuide'),
-            subtitle: _t('recheckPermissions'),
             onTap: _openOnboarding,
           ),
           const Divider(height: 1),
@@ -1790,7 +1807,6 @@ class _SettingsPageState extends State<SettingsPage> {
             theme,
             icon: Icons.info_outline,
             title: OgLI18n.instance.t('shell', 'about'),
-            subtitle: _t('projectInfo'),
             onTap: _openAbout,
           ),
           const Divider(height: 1),
@@ -1810,7 +1826,6 @@ class _SettingsPageState extends State<SettingsPage> {
             theme,
             icon: Icons.gavel_outlined,
             title: _t('licenses'),
-            subtitle: _t('licensesDesc'),
             onTap: () => unawaited(_showLicenses()),
           ),
           const Divider(height: 1),
@@ -1821,7 +1836,6 @@ class _SettingsPageState extends State<SettingsPage> {
             theme,
             icon: Icons.translate,
             title: _t('legalText'),
-            subtitle: _t('legalLanguages'),
             onTap: () => unawaited(
               Navigator.of(context).push<void>(
                 MaterialPageRoute<void>(
@@ -1974,7 +1988,7 @@ class _SettingsPageState extends State<SettingsPage> {
             dense: true,
             contentPadding: kOgLSettingsRowPadding,
             title: Text(
-              _t('logsDesc'),
+              _t('logs'),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

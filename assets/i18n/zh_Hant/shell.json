@@ -11,6 +11,7 @@
   "dataUntouched": "未有任何資料被修改，也無任何內容被上傳。",
   "desktopNotifDesc": "桌面版無系統層級權限門檻。",
   "desktopStorageDesc": "桌面版直接使用 App 資料目錄，無需任何權限。",
+  "discover": "發現",
   "done": "{label} 已完成",
   "empty": "空白",
   "errorAuth": "存取遭拒絕。請檢查您的登入狀態與 Token 權限。",

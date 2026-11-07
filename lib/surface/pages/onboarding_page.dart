@@ -324,17 +324,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
           ),
           const SizedBox(height: OgLSpace.sm),
           Text(
-            _t('welcomeDesc') + _t('welcomeDesc2'),
+            // 亲人版：三句以内，口语、温和、不官话。
+            _t('welcomeLine'),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium,
           ),
-          const SizedBox(height: OgLSpace.xl),
+          const SizedBox(height: OgLSpace.lg),
           Card(
             child: ListTile(
               leading: const Icon(Icons.phone_android),
               title: Text(
                   _t('currentPlatform', {'platform': _gateway.platformLabel})),
-              subtitle: Text(_t('platformNote')),
             ),
           ),
         ],
@@ -416,6 +416,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             ],
           ),
           const SizedBox(height: OgLSpace.md),
+          // 亲人版：三句以内，短、温和、不官话。
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(OgLSpace.md),
@@ -424,14 +425,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
               borderRadius: BorderRadius.circular(OgLRadius.sm),
             ),
             child: Text(
-              _t('licenseIntro'),
+              _t('licenseSimple'),
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.colorScheme.onSecondaryContainer),
             ),
           ),
           const SizedBox(height: OgLSpace.md),
-          // ── 定性说明：本文不产生法律效力，唯一生效的是 Apache-2.0 ──
-          //    放在最前，因为它是整页的性质界定，读者有权先知道这一点。
+          // 权威声明：唯一生效的是仓库 LICENSE 全文；本页只是说明。
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(OgLSpace.md),
@@ -440,53 +440,22 @@ class _OnboardingPageState extends State<OnboardingPage> {
               borderRadius: BorderRadius.circular(OgLRadius.sm),
             ),
             child: Text(
-              _t('legalStatementOnly'),
+              _t('licenseAuthoritativeLine'),
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onErrorContainer),
             ),
           ),
-          const SizedBox(height: OgLSpace.lg),
-          // ── 重点（人话版）：只放要点，不放细节 ──
-          Text(
-            _t('licenseHighlights'),
-            style: theme.textTheme.titleSmall,
-          ),
           const SizedBox(height: OgLSpace.sm),
-          SelectableText(
-            _t('onboardingLicenseHighlights'),
-            style: theme.textTheme.bodyMedium?.copyWith(height: 1.7),
+          Text(
+            _t('licenseOfficialLine'),
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: OgLSpace.lg),
-          // ── 语言效力声明：必须在正文之前，且视觉上醒目 ──
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(OgLSpace.md),
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outlineVariant),
-              borderRadius: BorderRadius.circular(OgLRadius.sm),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Icon(Icons.translate,
-                    size: 16, color: theme.colorScheme.onSurfaceVariant),
-                const SizedBox(width: OgLSpace.sm),
-                Expanded(
-                  child: Text(
-                    _t('licenseAuthoritative'),
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: OgLSpace.md),
-          // ── 完整法律文本：默认折叠，细节一条不少 ──
+          // 条款全文默认折叠；细节一条不少。
           Card(
             margin: EdgeInsets.zero,
             child: ExpansionTile(
-              // 刻意**不加** `initiallyExpanded`：默认收起。
               leading: Icon(Icons.description_outlined,
                   color: theme.colorScheme.onSurfaceVariant),
               title: Text(

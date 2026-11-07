@@ -11,6 +11,7 @@
   "dataUntouched": "Aucune donnée n'a été modifiée et rien n'a été chargé.",
   "desktopNotifDesc": "Aucun seuil de permission au niveau du système sur le bureau.",
   "desktopStorageDesc": "Le bureau utilise directement le répertoire de données de l'application ; aucune permission n'est nécessaire.",
+  "discover": "Découvrir",
   "done": "{label} terminé",
   "empty": "Vide",
   "errorAuth": "Accès refusé. Vérifiez votre connexion et les permissions de votre jeton.",

@@ -11,6 +11,7 @@
   "dataUntouched": "Keine Daten wurden geändert und nichts wurde hochgeladen.",
   "desktopNotifDesc": "Keine systemweite Berechtigungsschwelle auf dem Desktop.",
   "desktopStorageDesc": "Der Desktop verwendet direkt das App-Datenverzeichnis; keine Berechtigung erforderlich.",
+  "discover": "Entdecken",
   "done": "{label} abgeschlossen",
   "empty": "Leer",
   "errorAuth": "Zugriff verweigert. Überprüfe deine Anmeldung und Token-Berechtigungen.",

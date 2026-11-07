@@ -203,7 +203,10 @@ class PagedController<T> extends ChangeNotifier {
       }
       _page++;
       _everLoaded = true;
-      if (key != null) {
+      // ★ 空结果不进快照：一次失败/瞬时空响应不该在 6 秒 TTL 内持续把
+      //   页面显示成空（"刷新了还是空白"）。下次重建直接回源，由真实
+      //   响应决定空态；snapshot 只用于"确实拿到过数据"的秒开。
+      if (key != null && items.isNotEmpty) {
         _recentPage[key] = _CachedPage(
           DateTime.now(),
           List<Object?>.of(items),
