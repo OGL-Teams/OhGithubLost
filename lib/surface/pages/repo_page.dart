@@ -284,7 +284,7 @@ class _RepoPageState extends State<RepoPage> {
         url: candidates.first,
         fallbackUrls: candidates.skip(1).toList(),
         headers: headers,
-        fileName: '${_full.split('/').last}-${_branch}.zip',
+        fileName: '${_full.split('/').last}-$_branch.zip',
         category: IxDownloadCategory.repo,
         connections: widget.surface.settings.settings.downloadConnections,
       );
