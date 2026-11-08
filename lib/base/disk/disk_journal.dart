@@ -43,6 +43,8 @@ class JournalRecord {
     required this.createdAt,
     this.baseSha,
     this.dangerous = false,
+    this.force = false,
+    this.hadRebase = false,
     this.attempts = 0,
     this.status = JournalStatus.pending,
     this.lastError,
@@ -66,6 +68,12 @@ class JournalRecord {
   /// 是否危险操作。
   final bool dangerous;
 
+  /// 是否强制覆盖（B2-A-06：此前未持久化，重放时丢失用户确认）。
+  final bool force;
+
+  /// 原意图是否带 rebase（函数不可序列化；仅用于重放诊断留痕）。
+  final bool hadRebase;
+
   /// 已尝试次数。
   final int attempts;
 
@@ -79,12 +87,19 @@ class JournalRecord {
   final DateTime createdAt;
 
   /// 还原为写意图（重放时**重新走 D1–D7**，绝不跳过任何防线）。
+  /// 还原为写意图（B2-A-06/C-17：此前丢弃 `force`——用户确认过的
+  /// 强制覆盖重启后被降级为普通写、被 D2 abandon，排队的写入静默消失）。
+  ///
+  /// `rebase` 是函数，无法序列化：`hadRebase` 只用于重放时在诊断里
+  /// 如实标注「合并能力不可恢复」，重放按普通写走 D2，冲突交用户重新
+  /// 决策——**绝不静默放弃**。
   WriteIntent toIntent() => WriteIntent(
         key: key,
         content: content,
         message: message,
         baseSha: baseSha,
         dangerous: dangerous,
+        force: force,
       );
 
   /// 复制并覆盖部分字段。
@@ -115,6 +130,8 @@ class JournalRecord {
         'createdAt': createdAt.toIso8601String(),
         if (baseSha != null) 'baseSha': baseSha,
         'dangerous': dangerous,
+        'force': force,
+        'hadRebase': hadRebase,
         'attempts': attempts,
         'status': status.name,
         if (lastError != null) 'lastError': lastError,
@@ -135,6 +152,8 @@ class JournalRecord {
         createdAt: DateTime.parse(json['createdAt'] as String),
         baseSha: json['baseSha'] as String?,
         dangerous: json['dangerous'] as bool? ?? false,
+        force: json['force'] as bool? ?? false,
+        hadRebase: json['hadRebase'] as bool? ?? false,
         attempts: json['attempts'] as int? ?? 0,
         status: JournalStatus.values.firstWhere(
           (JournalStatus value) => value.name == json['status'],
@@ -184,6 +203,8 @@ class WriteJournal {
       createdAt: DateTime.now(),
       baseSha: intent.baseSha,
       dangerous: intent.dangerous,
+      force: intent.force,
+      hadRebase: intent.rebase != null,
     );
     await _write(record);
     _diagnostics.warn(

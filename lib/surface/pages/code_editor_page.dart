@@ -171,8 +171,14 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       _controller.text = draft.content;
       _draftBaseSha = draft.baseSha;
       _notifier.info(_t('draftRestored'));
-    } catch (_) {
-      // 草稿读取失败不影响编辑。
+    } catch (error) {
+      // 草稿读取失败不影响编辑，但**必须留痕**（B2-B-08）：
+      // 静默吞掉会让用户以为草稿还在，实际已无法恢复。
+      OgLAppLog.instance.add(
+        'editor',
+        '草稿恢复失败：$error',
+        severity: OgLNoticeSeverity.warning,
+      );
     }
   }
 
@@ -200,8 +206,14 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         branch: widget.branch,
         baseSha: _draftBaseSha ?? widget.baseSha,
       );
-    } catch (_) {
-      // 草稿落盘失败不阻断编辑。
+    } catch (error) {
+      // 草稿落盘失败不阻断编辑，但**必须留痕**（B2-B-08）：
+      // 这里是用户未提交内容的最后防线，静默失败等于数据丢失。
+      OgLAppLog.instance.add(
+        'editor',
+        '草稿落盘失败：$error',
+        severity: OgLNoticeSeverity.warning,
+      );
     }
   }
 
