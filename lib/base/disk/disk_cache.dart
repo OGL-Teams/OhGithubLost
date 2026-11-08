@@ -179,6 +179,12 @@ class RepositoryCache {
   DraftStore? _drafts;
   int _revision = 0;
 
+  /// ★ B2-C-11：`prune()` 此前在 lib/ 内零调用，512 上限/30 天 TTL
+  ///   只是"能力"，运行时缓存无界增长。按写入次数与时间间隔节流触发。
+  int _writesSincePrune = 0;
+  DateTime _lastPruneAt = DateTime.fromMillisecondsSinceEpoch(0);
+  bool _pruneInFlight = false;
+
   /// 绑定提交日志（D8：写前落盘，崩溃可恢复）。
   void attachJournal(WriteJournal journal) {
     _journal = journal;
@@ -977,6 +983,33 @@ class RepositoryCache {
     final encoded = entry.key.encode();
     await _blobs.writeText(_blobPathOf(encoded), entry.content);
     await _index.write(_metaKeyOf(encoded), jsonEncode(entry.toJson()));
+    _maybePrune();
+  }
+
+  /// 节流淘汰：每 20 次写入或距上次超过 10 分钟触发一次。
+  /// 不 await（不拖慢写路径）；失败只留痕，绝不改变"写已成功"的事实。
+  void _maybePrune() {
+    _writesSincePrune++;
+    final DateTime now = DateTime.now();
+    final bool due = _writesSincePrune >= 20 ||
+        now.difference(_lastPruneAt) > const Duration(minutes: 10);
+    if (!due || _pruneInFlight) {
+      return;
+    }
+    _pruneInFlight = true;
+    _writesSincePrune = 0;
+    _lastPruneAt = now;
+    unawaited(prune().then((int removed) {
+      _pruneInFlight = false;
+      if (removed > 0) {
+        _diagnostics.info('CACHE', '周期性淘汰完成',
+            code: 'OGL-CONS-004', data: <String, Object?>{'removed': removed});
+      }
+    }).catchError((Object error) {
+      _pruneInFlight = false;
+      _diagnostics.error('CACHE', '周期性淘汰失败（不影响写入）：$error',
+          code: 'OGL-CONS-004-ERR');
+    }));
   }
 
   Future<CacheEntry?> _loadLocal(CacheKey key) async {
