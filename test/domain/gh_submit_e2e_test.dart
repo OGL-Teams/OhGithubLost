@@ -59,7 +59,7 @@ GhClient _client(NetBridge bridge) => GhClient(
 void main() {
   group('文件提交端到端（引擎路径）', () {
     test('编辑已有文件：走引擎写入成功，且请求体真的发出', () async {
-      final _RecordingTransport transport = _RecordingTransport(<Object>[
+      final _RecordingTransport transport = _RecordingTransport(<NetResponse>[
         // ① GET contents：远端已有该文件（sha=sha-1）
         _json(<String, dynamic>{
           'path': 'README.md',
@@ -91,15 +91,7 @@ void main() {
       final NetBridge bridge =
           NetBridge(transport: transport, observer: NetObserver());
       final GhApi api = GhApi(client: _client(bridge));
-      final RepositoryCache cache = RepositoryCache(
-        remote: api,
-        scope: const CacheScope(
-          schemaVersion: 1,
-          accountId: 'acct',
-          repo: 'alice/blog',
-          branch: 'main',
-        ),
-      );
+      final RepositoryCache cache = RepositoryCache(remote: api);
       api.attachReadCache(cache, accountId: () async => 'acct');
 
       final GhWriteResult result = await api.putContentLocked(
@@ -121,22 +113,14 @@ void main() {
     });
 
     test('远端读冲突（409）不得被当作「不存在」而覆盖写入', () async {
-      final _RecordingTransport transport = _RecordingTransport(<Object>[
+      final _RecordingTransport transport = _RecordingTransport(<NetResponse>[
         // ① GET contents：409 冲突（不是 404）
         _json(<String, dynamic>{'message': 'Conflict'}, status: 409),
       ]);
       final NetBridge bridge =
           NetBridge(transport: transport, observer: NetObserver());
       final GhApi api = GhApi(client: _client(bridge));
-      final RepositoryCache cache = RepositoryCache(
-        remote: api,
-        scope: const CacheScope(
-          schemaVersion: 1,
-          accountId: 'acct',
-          repo: 'alice/blog',
-          branch: 'main',
-        ),
-      );
+      final RepositoryCache cache = RepositoryCache(remote: api);
       api.attachReadCache(cache, accountId: () async => 'acct');
 
       // 无基线 + 远端读失败 → 必须失败（可见），不得发 PUT。
