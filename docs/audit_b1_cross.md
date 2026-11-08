@@ -33,6 +33,17 @@
 | **`autoUncompress` 头与统计口径** | A-28 + B-11 | ✅ 确证（P2）：gzip 已解压却原样返回 `content-encoding`/压缩 `content-length`；bodyLength 是码元数却标 B。→ 去掉压缩相关头、统计按字节 |
 | **失败可见性 / 吞错** | A-18 + B-05/13 + C-07 | ✅ 确证：presign 的 `IxPresignResult.error` 从未被消费；安全拒绝被伪装成普通慢路径。→ `resolveDownloadUrl` 读 error 并留痕（此前已加 warning，需升级为「明确原因」） |
 
+## 二·补 · 上表 P1 的实际修复状态（2026-11-08 收口）
+
+| 组 | 状态 |
+|---|---|
+| 206 分段/截断响应 | ✅ 已修（799bae3 / 8661b00）：写回执 206 一律回读确认；GET 206 不进只读缓存 |
+| `NetRequest.timeout` 死契约 | ✅ 已修（6eb3a8b）：按 `request.timeout` 生效 |
+| `range_download_io` 静默失败族 | ✅ 已修（941c900）：probe 两级失败留痕、等所有分片结束再清理、Content-Range 强制校验（含总量）、非整除 floor 分片、非 206 drain |
+| 凭证头集合 / 重定向统一守卫 | ✅ 已修（6eb3a8b / 1a05d0e）：6 种敏感头、所有请求走手动守卫、拒绝 http 降级与私网 |
+| DoH 降级与 DNS 三项 | ✅ 已修（6eb3a8b / 0703274）：手动跟随拒绝降级、事务 ID 静态递增、改服务器即清缓存、name 编码、answer.name 校验、IPv4 逐段 0..255 且拒绝私网 |
+| 重试语义（A-05 / A-06 / A-30） | ✅ 已修（0dda900 / 1a05d0e）：先判错误类别再换跳、换跳尊重退避但不吃预算、降级 GET 剔除 body 绑定头 |
+
 ## 三、单方命中但主会话已亲自复读确证（P0，已修）
 
 | 编号 | 结论 | 状态 |

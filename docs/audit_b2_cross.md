@@ -36,11 +36,11 @@
 | 编号 | 要点 | 处置 |
 |---|---|---|
 | **B2-B-01**（B 标 P0） | 从草稿箱打开草稿的瞬间草稿被静默删除 | ⏳ 待主会话 `file_read` 复核（涉及 `drafts_page.dart` + `disk_draft.dart` 交互） |
-| **B2-A-04** | D1 新建语义 TOCTOU：两并发无基线写同路径互相覆盖 | ⏳ 待复核（服务端无 sha PUT 的并发语义需实测，原则 52） |
-| **B2-A-07** | D3 冲突重试从 `latest` 读失败产生 `expectedSha=null` → 二次 PUT 盲写 | ⏳ 待复核 |
-| **B2-A-10** | `IoDiskFileStore` 长路径把「读失败」伪装成「不存在」，KV/Journal/草稿可被静默清空 | ⏳ 待复核（P1，数据面） |
-| **B2-B-05/06** | `_saveLocal` 两步写撕裂、blob 文件名无账号分区 | ⏳ 待复核 |
-| **B2-B-19** | `replayPending` 每 30s 无条件重放，不防重/不等网络恢复 | ⏳ 待复核 |
+| **B2-A-04** | D1 新建语义 TOCTOU：两并发无基线写同路径互相覆盖 | ⏳ 保留待议：GitHub 对已存在路径的无 sha PUT 语义需真实端点实测（原则 52），离线测试无法裁决；D4 逐键互斥已挡住单进程内并发，跨设备场景需用户实测 |
+| **B2-A-07** | D3 冲突重试从 `latest` 读失败产生 `expectedSha=null` → 二次 PUT 盲写 | ✅ 已修（19a08f2）：重读失败或拿不到新 sha 一律停止重试并返回可见冲突 |
+| **B2-A-10** | `IoDiskFileStore` 长路径把「读失败」伪装成「不存在」，KV/Journal/草稿可被静默清空 | ✅ 已修（19a08f2）：仅索引无条目/包确实不在返回 null，IO/解码失败抛 StateError |
+| **B2-B-05/06** | `_saveLocal` 两步写撕裂、blob 文件名无账号分区 | ✅ 主会话亲自复读后**降级为 P2**：撕裂写由 `_loadLocal` 的长度 + SHA-256 校验挡住（坏内容不流向上层），后果仅为一次缓存未命中回源；`blobNameOf(encoded)` 的 `encoded` 已含 accountId/repo/branch/path，账号隔离实际存在。不修，记录理由 |
+| **B2-B-19** | `replayPending` 每 30s 无条件重放，不防重/不等网络恢复 | ✅ 已修（0dda900）：`replayInFlight` 防重入含异常路径复位 |
 
 ## 四、两批交叉的元结论
 
