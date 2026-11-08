@@ -784,13 +784,32 @@ class GhApi implements CacheRemote {
       // 关键：让 409/422 变成结构化的远端冲突，交给 D2/D3 处理。
       conflictsAsRemoteConflict: true,
     ));
-    final object = response.jsonObject ?? const <String, dynamic>{};
-    final contentPart = object['content'];
-    final written = GhContent.fromJson(
+    final Map<String, dynamic> object =
+        response.jsonObject ?? const <String, dynamic>{};
+    final Object? contentPart = object['content'];
+    GhContent written = GhContent.fromJson(
       contentPart is Map
           ? Map<String, dynamic>.from(contentPart)
           : const <String, dynamic>{},
     );
+    // ★ 206 / 截断 / 代理改写响应：body 里拿不到 content 与 sha。
+    //   写可能已经在远端生效——**回读远端确认**，用真实 sha 作为结果；
+    //   绝不返回空 sha（那会让 D5 回读校验与冲突判定全乱，用户看到
+    //   "提交失败 206"），也绝不盲目重试（重试会撞 422 覆盖冲突）。
+    if (written.sha.isEmpty) {
+      final GhContent? confirmed =
+          await _contentNetwork(fullName, path, branch: branch);
+      if (confirmed != null && confirmed.sha.isNotEmpty) {
+        written = confirmed;
+      } else {
+        // 回读也拿不到：如实抛出带状态码的异常，由 UI 显示明确原因。
+        throw GhAuthException(
+          '提交已发出但响应不完整（HTTP ${response.statusCode}）；'
+          '无法确认远端状态，请稍后刷新查看',
+          statusCode: response.statusCode,
+        );
+      }
+    }
     // ★ 直接写成功后同步失效底座缓存条目：引擎写路径（_writeLocked）自带
     //   D5 失效，但这条裸写路径不经过引擎——不清的话 30s TTL 内读到旧内容
     //   （"改完再看显示旧值"）。
@@ -1302,52 +1321,112 @@ class GhApi implements CacheRemote {
         .toList();
   }
 
-  /// 仓库最新 Release / Tag（合并视图）：
+  /// **官方动态聚合**：`/notifications`（GitHub 自己的通知流）。
   ///
-  /// Releases 优先（含正文与产物）；仓库没有 Release 时回退取最新的
-  /// tag（`/tags` 只有名字与 sha，如实返回精简字段）。
-  /// 返回 `null` = 该仓库从未发布过任何 Release / tag。
-  Future<({String title, String tagName, String publishedAt, String url})?>
-      latestReleaseOrTag(String fullName) async {
+  /// 一次请求拿到"你关注 / 参与 / star 的仓库里发生的新事项"
+  /// （Release、Issue、PR、Discussion…），**无需自己逐仓轮询**——这正是
+  /// 用户要求的"动态走官方 API，不用自己实现信息获取"。
+  ///
+  /// 返回原始 JSON（subject.type / reason / updated_at / repository.full_name）。
+  /// 401（游客）由调用方如实展示为空/登录提示，不假装成功。
+  Future<List<Map<String, dynamic>>> notifications({
+    bool participating = false,
+    bool all = false,
+    int perPage = 30,
+    int page = 1,
+  }) async {
+    final response = await client.send(GhRequest(
+      path: '/notifications',
+      query: <String, String>{
+        'per_page': '$perPage',
+        'page': '$page',
+        if (participating) 'participating': 'true',
+        if (all) 'all': 'true',
+      },
+      label: 'GET notifications',
+    ));
+    final List<Map<String, dynamic>> items = response.jsonAsList;
+    // 单对象响应不是通知列表（如错误体），不当作动态数据。
+    return items.length == 1 && items.first.containsKey('message')
+        ? const <Map<String, dynamic>>[]
+        : items;
+  }
+
+  /// 仓库 README 的**文本切片**（官方 `/readme` 端点，Accept: raw）。
+  ///
+  /// 用于推荐卡片的"README 切片"；失败返回空串（卡片仍可展示，不阻断）。
+  /// 去掉标题/徽章/空行，按词边界截断，避免半截 Markdown。
+  Future<String> readmeExcerpt(String fullName, {int maxChars = 260}) async {
+    try {
+      final response = await client.send(GhRequest(
+        path: '/repos/$fullName/readme',
+        headers: const <String, String>{
+          'accept': 'application/vnd.github.raw',
+        },
+        label: 'GET readme',
+      ));
+      final List<String> lines = response.body
+          .split('\n')
+          .map((String l) => l.trim())
+          .where((String l) =>
+              l.isNotEmpty &&
+              !l.startsWith('#') &&
+              !l.startsWith('![') &&
+              !l.startsWith('[![') &&
+              !l.startsWith('<') &&
+              !l.startsWith('---'))
+          .toList();
+      final String text =
+          lines.join(' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+      if (text.length <= maxChars) {
+        return text;
+      }
+      final int cut = text.lastIndexOf(' ', maxChars);
+      return '${text.substring(0, cut > 0 ? cut : maxChars).trim()}…';
+    } on Object {
+      return '';
+    }
+  }
+
+  /// 仓库最新版本号（官方 `/releases/latest`，无 Release 回退 `/tags`）。
+  ///
+  /// 返回 `null` = 从未发布过；供推荐卡片的"微粒子小字"展示。
+  Future<String?> latestVersionOf(String fullName) async {
     try {
       final response = await client.send(GhRequest(
         path: '/repos/$fullName/releases/latest',
         label: 'GET releases/latest',
       ));
-      final object = response.jsonObject;
-      if (object == null) {
-        return null;
+      final Map<String, dynamic>? decoded = _decodeObject(response.body);
+      if (decoded != null) {
+        final String tag = GhJson.str(decoded, 'tag_name');
+        if (tag.isNotEmpty) {
+          return tag;
+        }
       }
-      return (
-        title: GhJson.str(object, 'name').isEmpty
-            ? GhJson.str(object, 'tag_name')
-            : GhJson.str(object, 'name'),
-        tagName: GhJson.str(object, 'tag_name'),
-        publishedAt: GhJson.str(object, 'published_at'),
-        url: GhJson.str(object, 'html_url'),
-      );
     } on GhNotFoundException {
-      // 没有 Release：回退 tag（再没有就是 null，由调用方决定是否显示）。
+      // 没有 Release：回退 tag。
+    } on Object {
+      return null;
     }
     try {
       final response = await client.send(GhRequest(
         path: '/repos/$fullName/tags',
-        query: <String, String>{'per_page': '1'},
+        query: const <String, String>{'per_page': '1'},
         label: 'GET tags',
       ));
       final List<Map<String, dynamic>> items = response.jsonAsList;
-      if (items.isEmpty) {
-        return null;
-      }
-      final Map<String, dynamic> tag = items.first;
-      return (
-        title: GhJson.str(tag, 'name'),
-        tagName: GhJson.str(tag, 'name'),
-        publishedAt: '',
-        url:
-            'https://github.com/$fullName/releases/tag/${GhJson.str(tag, 'name')}',
-      );
-    } on GhNotFoundException {
+      return items.isEmpty ? null : GhJson.str(items.first, 'name');
+    } on Object {
+      return null;
+    }
+  }
+
+  static Map<String, dynamic>? _decodeObject(String body) {
+    try {
+      final Object? decoded = jsonDecode(body);
+      return decoded is Map ? Map<String, dynamic>.from(decoded) : null;
+    } on Object {
       return null;
     }
   }

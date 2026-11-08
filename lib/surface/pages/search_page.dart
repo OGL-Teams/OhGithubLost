@@ -1,7 +1,9 @@
 /// L3 展示级 · 发现页（微博式纵向信息流 + 三个左右滑动子标签）。
 ///
-/// - **动态**：star 仓库的 Release / Tag 发布流，卡片式上下滑动；
-/// - **推荐**：热门仓库纵向列表；
+/// - **动态**：GitHub 官方 `/notifications` 通知流（Release / Issue / PR），
+///   一次请求聚合关注仓库的新事项，卡片式上下滑动；
+/// - **推荐**：热门仓库分页信息流（滚动到底自动加载），含描述 / README 切片 /
+///   星数·语言·最新版本号微粒子小字；
 /// - **Issues**：聚合「我提出的」与「star 仓库新提出的」open issue，
 ///   新的在上，支持 全部 / 我的 / Star 三档筛选；
 /// - 搜索入口在仓库页右上角（搜索图标）与首页空态；本页不再承担搜索框。
@@ -12,11 +14,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/async.dart';
+import '../app/error_surface.dart';
 import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/gh_format.dart';
+import '../util/link_opener.dart';
+import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import 'issue_page.dart';
 import 'repo_page.dart';
@@ -59,93 +64,115 @@ class _DiscoverPageState extends State<DiscoverPage>
   /// 三个子标签：**动态 / 推荐 / Issues**（左右滑动，仿仓库页 TabBar）。
   late final TabController _tab = TabController(length: 3, vsync: this);
 
-  /// star 仓库（两个 tab 共用）。
-  AsyncController<List<GhRepo>>? _starred;
+  /// **动态**：GitHub 官方 `/notifications` 通知流（一次请求，
+  /// 不再是逐 star 仓库轮询 N 次）。
+  AsyncController<List<Map<String, dynamic>>>? _feed;
 
-  /// star 仓库的最新发布（fullName → 摘要）。
-  final Map<String, ({String title, String url})> _releases =
-      <String, ({String title, String url})>{};
-  bool _releasesLoading = false;
-  Object? _releasesError;
+  /// **推荐**：高星仓库分页列表（滚动到底自动加载更多）。
+  final List<GhRepo> _repos = <GhRepo>[];
+  final Map<String, String> _readmeOf = <String, String>{};
+  final Map<String, String?> _versionOf = <String, String?>{};
+  int _repoPage = 1;
+  bool _repoLoading = false;
+  bool _repoDone = false;
+  Object? _repoError;
+  final ScrollController _repoScroll = ScrollController();
 
-  /// 推荐（高星热门仓库）。
-  AsyncController<List<GhRepo>>? _recommended;
-
-  /// Issues 聚合。
+  /// Issues 聚合（保留原有语义）。
   AsyncController<List<Map<String, dynamic>>>? _issues;
-
-  /// 我提出的 issue 地址集合（筛选「我的」用）。
   final Set<String> _mineUrls = <String>{};
-
-  /// star 仓库 issue 地址集合（筛选「Star」用）。
   final Set<String> _starUrls = <String>{};
-
-  /// 筛选：0 全部 / 1 我提出的 / 2 Star 仓库的。
   int _issuesFilter = 0;
 
   @override
   void initState() {
     super.initState();
-    _starred = AsyncController<List<GhRepo>>(
-      label: _t('starred'),
-      isEmpty: (List<GhRepo> value) => value.isEmpty,
-      loader: () => widget.surface.domain.api.starredRepos(perPage: 20),
+    _repoScroll.addListener(_onRepoScroll);
+    _feed = AsyncController<List<Map<String, dynamic>>>(
+      label: _t('tabFeed'),
+      isEmpty: (List<Map<String, dynamic>> value) => value.isEmpty,
+      loader: () async {
+        // ★ 官方 API：GitHub 自己的通知流，覆盖关注/star/参与仓库的
+        //   Release、Issue、PR 等新事项，按 updated_at 倒序（新的在上）。
+        final List<Map<String, dynamic>> items =
+            await widget.surface.domain.api.notifications(perPage: 30);
+        return items
+          ..sort((Map<String, dynamic> a, Map<String, dynamic> b) {
+            final DateTime da = DateTime.tryParse(ghStr(a, 'updated_at')) ??
+                DateTime.fromMillisecondsSinceEpoch(0);
+            final DateTime db = DateTime.tryParse(ghStr(b, 'updated_at')) ??
+                DateTime.fromMillisecondsSinceEpoch(0);
+            return db.compareTo(da);
+          });
+      },
     );
-    _recommended = AsyncController<List<GhRepo>>(
-      label: _t('recommended'),
-      isEmpty: (List<GhRepo> value) => value.isEmpty,
-      // 不登录也能看：搜索端点对匿名开放（GitHub Web 首页同理）。
-      loader: () =>
-          widget.surface.domain.api.searchRepos('stars:>10000', perPage: 10),
-    );
-    unawaited(_starred!.load());
-    unawaited(_recommended!.load());
-    unawaited(_loadReleases());
+    unawaited(_feed!.load());
+    unawaited(_loadMoreRepos());
     unawaited(_loadIssues());
   }
 
   @override
   void dispose() {
     _tab.dispose();
-    _starred?.dispose();
-    _recommended?.dispose();
+    _repoScroll.dispose();
+    _feed?.dispose();
     _issues?.dispose();
     super.dispose();
   }
 
-  /// 逐个 star 仓库取最新发布。
+  /// 滚动到距底部 300px 时自动加载下一页（**无限下拉刷新**）。
+  void _onRepoScroll() {
+    if (_repoScroll.position.pixels >=
+        _repoScroll.position.maxScrollExtent - 300) {
+      unawaited(_loadMoreRepos());
+    }
+  }
+
+  /// 分页拉推荐仓库，并为每张卡片补 README 切片 + 最新版本号。
   ///
-  /// 没有"批量 latest release"端点，逐仓请求是刻意的；perPage=20 把
-  /// 请求次数限制在 20 次内，不做分页追赶。
-  Future<void> _loadReleases() async {
-    _releasesLoading = true;
-    _releasesError = null;
+  /// 两项补充都是**按需、限并发、失败不阻断**（小字没有也不影响卡片）。
+  Future<void> _loadMoreRepos() async {
+    if (_repoLoading || _repoDone) {
+      return;
+    }
+    _repoLoading = true;
+    _repoError = null;
     if (mounted) {
       setState(() {});
     }
     try {
-      final List<GhRepo> repos =
-          await widget.surface.domain.api.starredRepos(perPage: 20);
-      for (final GhRepo repo in repos) {
-        final ({
-          String title,
-          String tagName,
-          String publishedAt,
-          String url
-        })? record = await widget.surface.domain.api.latestReleaseOrTag(
-          repo.fullName,
-        );
-        if (record != null) {
-          _releases[repo.fullName] = (title: record.title, url: record.url);
+      final List<GhRepo> page = await widget.surface.domain.api.searchRepos(
+        'stars:>10000',
+        perPage: 10,
+        page: _repoPage,
+      );
+      if (page.isEmpty) {
+        _repoDone = true;
+      } else {
+        _repos.addAll(page);
+        _repoPage++;
+        if (page.length < 10) {
+          _repoDone = true;
+        }
+        // 每页最多 10 个，串行补充即可（避免一次打满 Search 配额）。
+        for (final GhRepo repo in page) {
+          if (!_readmeOf.containsKey(repo.fullName)) {
+            _readmeOf[repo.fullName] =
+                await widget.surface.domain.api.readmeExcerpt(repo.fullName);
+          }
+          if (!_versionOf.containsKey(repo.fullName)) {
+            _versionOf[repo.fullName] =
+                await widget.surface.domain.api.latestVersionOf(repo.fullName);
+          }
+          if (mounted) {
+            setState(() {});
+          }
         }
       }
-      _releasesLoading = false;
-      if (mounted) {
-        setState(() {});
-      }
     } on Object catch (error) {
-      _releasesLoading = false;
-      _releasesError = error;
+      _repoError = error;
+    } finally {
+      _repoLoading = false;
       if (mounted) {
         setState(() {});
       }
@@ -186,21 +213,19 @@ class _DiscoverPageState extends State<DiscoverPage>
             merged[url] = item;
           }
         }
-        final List<Map<String, dynamic>> all = merged.values.toList()
+        return merged.values.toList()
           ..sort((Map<String, dynamic> a, Map<String, dynamic> b) {
             final DateTime da = DateTime.tryParse(ghStr(a, 'created_at')) ??
                 DateTime.fromMillisecondsSinceEpoch(0);
             final DateTime db = DateTime.tryParse(ghStr(b, 'created_at')) ??
                 DateTime.fromMillisecondsSinceEpoch(0);
-            return db.compareTo(da); // 新的在上
+            return db.compareTo(da);
           });
-        return all;
       },
     );
     await _issues!.load();
   }
 
-  /// `repo:a/b repo:c/d ...`（star 仓库聚合查询；上限 20 个防查询超长）。
   Future<String?> _starredReposQuery() async {
     try {
       final List<GhRepo> repos =
@@ -214,14 +239,27 @@ class _DiscoverPageState extends State<DiscoverPage>
     }
   }
 
-  /// 从 `repository_url`（`…/repos/{o}/{r}`）还原仓库全名。
-  String _repoFullOf(Map<String, dynamic> item) {
-    final String url = ghStr(item, 'repository_url');
-    final int at = url.indexOf('/repos/');
-    if (at < 0) {
-      return '';
+  /// 通知流条目 → 仓库全名（`repository.full_name`）。
+  String _feedRepoOf(Map<String, dynamic> item) {
+    final Object? repo = item['repository'];
+    if (repo is Map<Object?, Object?>) {
+      return ghStr(Map<String, dynamic>.from(repo), 'full_name');
     }
-    return url.substring(at + '/repos/'.length);
+    return '';
+  }
+
+  /// 通知流条目 → 可读类型（微粒子小字用）。
+  String _feedTypeOf(Map<String, dynamic> item) {
+    final Object? subject = item['subject'];
+    final String type = subject is Map<Object?, Object?>
+        ? ghStr(Map<String, dynamic>.from(subject), 'type')
+        : '';
+    return switch (type) {
+      'Release' => _t('feedRelease'),
+      'Issue' => _t('feedIssue'),
+      'PullRequest' => _t('feedPull'),
+      _ => ghStr(item, 'reason').isEmpty ? type : ghStr(item, 'reason'),
+    };
   }
 
   Future<void> _openRepo(GhRepo repo) async {
@@ -239,7 +277,10 @@ class _DiscoverPageState extends State<DiscoverPage>
   }
 
   Future<void> _openIssue(Map<String, dynamic> item) async {
-    final String full = _repoFullOf(item);
+    final Object? repo = item['repository'];
+    final String full = repo is Map<Object?, Object?>
+        ? ghStr(Map<String, dynamic>.from(repo), 'full_name')
+        : _repoFullOf(item);
     if (full.isEmpty || !mounted) {
       return;
     }
@@ -252,6 +293,12 @@ class _DiscoverPageState extends State<DiscoverPage>
         ),
       ),
     );
+  }
+
+  String _repoFullOf(Map<String, dynamic> item) {
+    final String url = ghStr(item, 'repository_url');
+    final int at = url.indexOf('/repos/');
+    return at < 0 ? '' : url.substring(at + '/repos/'.length);
   }
 
   String _repoSubtitle(GhRepo repo) {
@@ -285,76 +332,237 @@ class _DiscoverPageState extends State<DiscoverPage>
     );
   }
 
-  // ── tab 1：动态（微博式纵向信息流）─────────────────────────────────
+  // ── tab 1：动态（官方通知流，微博式纵向信息流）────────────────────
 
-  /// 动态 = star 仓库的 Release / Tag 发布流。
-  ///
-  /// 每条是一张独立卡片（头像式图标 + 仓库名 + 版本标题 + 时间占位），
-  /// 上下滑动浏览；不再用横向卡片。
-  Widget _buildFeedTab() {
-    if (_releasesLoading) {
+  Widget _buildFeedTab() => _feed == null
+      ? const Center(child: CircularProgressIndicator())
+      : RefreshIndicator(
+          onRefresh: () => _feed!.load(),
+          child: AsyncView<List<Map<String, dynamic>>>(
+            controller: _feed!,
+            emptyIcon: Icons.notifications_none,
+            emptyText: _t('feedEmpty'),
+            builder: (BuildContext context, List<Map<String, dynamic>> items) =>
+                ListView.separated(
+              padding: const EdgeInsets.all(OgLSpace.lg),
+              itemCount: items.length,
+              separatorBuilder: (BuildContext context, int index) =>
+                  const SizedBox(height: OgLSpace.md),
+              itemBuilder: (BuildContext context, int index) {
+                final Map<String, dynamic> item = items[index];
+                final String repoName = _feedRepoOf(item);
+                final Object? subject = item['subject'];
+                final String title = subject is Map<Object?, Object?>
+                    ? ghStr(Map<String, dynamic>.from(subject), 'title')
+                    : '';
+                final String url = subject is Map<Object?, Object?>
+                    ? ghStr(Map<String, dynamic>.from(subject), 'url')
+                    : '';
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(OgLSpace.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            CircleAvatar(
+                              radius: 16,
+                              child: Text(
+                                repoName.isNotEmpty
+                                    ? repoName[0].toUpperCase()
+                                    : 'R',
+                                style: Theme.of(context).textTheme.labelMedium,
+                              ),
+                            ),
+                            const SizedBox(width: OgLSpace.sm),
+                            Expanded(
+                              child: Text(
+                                repoName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                            ),
+                            Text(
+                              _feedTypeOf(item),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: OgLSpace.sm),
+                        Text(
+                          title.isEmpty ? _t('feedRelease') : title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: OgLSpace.xxs),
+                        Text(
+                          ghDate(item, 'updated_at'),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                        ),
+                        if (url.isNotEmpty)
+                          Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: TextButton.icon(
+                              onPressed: () => unawaited(
+                                openLinkOrCopy(context, url, tag: 'Feed'),
+                              ),
+                              icon: const Icon(Icons.open_in_new, size: 14),
+                              label: Text(_t('openInBrowser')),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+
+  // ── tab 2：推荐（无限下拉 + 富信息卡片）────────────────────────────
+
+  Widget _buildRecommendedTab() {
+    if (_repos.isEmpty && _repoLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_releasesError != null) {
+    if (_repos.isEmpty && _repoError != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(OgLSpace.lg),
-          child: Text('$_releasesError'),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text('$_repoError', textAlign: TextAlign.center),
+              const SizedBox(height: OgLSpace.md),
+              FilledButton.tonal(
+                onPressed: () => unawaited(_loadMoreRepos()),
+                child: Text(_t('retry')),
+              ),
+            ],
+          ),
         ),
       );
     }
-    if (_releases.isEmpty) {
-      return Center(child: Text(_t('releaseNone')));
+    if (_repos.isEmpty) {
+      return Center(child: Text(_t('recommendedEmpty')));
     }
     return RefreshIndicator(
-      onRefresh: _loadReleases,
+      onRefresh: () async {
+        _repos.clear();
+        _readmeOf.clear();
+        _versionOf.clear();
+        _repoPage = 1;
+        _repoDone = false;
+        await _loadMoreRepos();
+      },
       child: ListView.separated(
+        controller: _repoScroll,
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(OgLSpace.lg),
-        itemCount: _releases.length,
+        itemCount: _repos.length + 1,
         separatorBuilder: (BuildContext context, int index) =>
             const SizedBox(height: OgLSpace.md),
         itemBuilder: (BuildContext context, int index) {
-          final MapEntry<String, ({String title, String url})> entry =
-              _releases.entries.elementAt(index);
-          final GhRepo? repo = _starred?.data
-              ?.where((GhRepo r) => r.fullName == entry.key)
-              .firstOrNull;
+          if (index == _repos.length) {
+            return _repoDone
+                ? const SizedBox.shrink()
+                : const Padding(
+                    padding: EdgeInsets.all(OgLSpace.lg),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+          }
+          final GhRepo repo = _repos[index];
+          final String excerpt = _readmeOf[repo.fullName] ?? '';
+          final String? version = _versionOf[repo.fullName];
           return Card(
             child: InkWell(
-              onTap: repo == null ? null : () => unawaited(_openRepo(repo)),
+              onTap: () => unawaited(_openRepo(repo)),
               child: Padding(
                 padding: const EdgeInsets.all(OgLSpace.md),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        const Icon(Icons.new_releases_outlined, size: 18),
-                        const SizedBox(width: OgLSpace.sm),
-                        Expanded(
-                          child: Text(
-                            entry.key,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: OgLSpace.sm),
                     Text(
-                      entry.value.title,
-                      maxLines: 2,
+                      repo.fullName,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: OgLSpace.xxs),
                     Text(
-                      _t('releaseFromStarred'),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                      _repoSubtitle(repo),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    if (excerpt.isNotEmpty) ...<Widget>[
+                      const SizedBox(height: OgLSpace.sm),
+                      // README 切片：小字、次要色，与正文层次拉开。
+                      Text(
+                        excerpt,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                              height: 1.4,
+                            ),
+                      ),
+                    ],
+                    const SizedBox(height: OgLSpace.sm),
+                    // 微粒子小字：星数 / 语言 / 最新版本号。
+                    Row(
+                      children: <Widget>[
+                        const Icon(Icons.star_border, size: 12),
+                        const SizedBox(width: OgLSpace.xxs),
+                        Text('${repo.stars}',
+                            style: Theme.of(context).textTheme.labelSmall),
+                        if (repo.language != null &&
+                            repo.language!.isNotEmpty) ...<Widget>[
+                          const SizedBox(width: OgLSpace.sm),
+                          Text(repo.language!,
+                              style: Theme.of(context).textTheme.labelSmall),
+                        ],
+                        const Spacer(),
+                        if (version != null && version.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: OgLSpace.sm,
+                                vertical: OgLSpace.xxs / 2),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .secondaryContainer,
+                              borderRadius: BorderRadius.circular(OgLRadius.xs),
+                            ),
+                            child: Text(
+                              version,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSecondaryContainer,
+                                  ),
+                            ),
                           ),
+                      ],
                     ),
                   ],
                 ),
@@ -365,40 +573,6 @@ class _DiscoverPageState extends State<DiscoverPage>
       ),
     );
   }
-
-  // ── tab 2：推荐（纵向信息流）────────────────────────────────────────
-
-  Widget _buildRecommendedTab() => AsyncView<List<GhRepo>>(
-        controller: _recommended!,
-        emptyIcon: Icons.explore_outlined,
-        emptyText: _t('recommendedEmpty'),
-        builder: (BuildContext context, List<GhRepo> repos) => RefreshIndicator(
-          onRefresh: () => _recommended!.load(),
-          child: ListView.separated(
-            padding: const EdgeInsets.all(OgLSpace.lg),
-            itemCount: repos.length,
-            separatorBuilder: (BuildContext context, int index) =>
-                const SizedBox(height: OgLSpace.sm),
-            itemBuilder: (BuildContext context, int index) {
-              final GhRepo repo = repos[index];
-              return Card(
-                child: ListTile(
-                  leading: const Icon(Icons.star_border),
-                  title: Text(repo.fullName,
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(
-                    _repoSubtitle(repo),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: Text('${repo.stars}'),
-                  onTap: () => unawaited(_openRepo(repo)),
-                ),
-              );
-            },
-          ),
-        ),
-      );
 
   // ── tab 2：Issues ────────────────────────────────────────────────────
 
