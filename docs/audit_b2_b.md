@@ -638,3 +638,59 @@ return DateTime.now().difference(entry.fetchedAt) > limit;
 
 ---
 
+## B2-B-21 · P1 · 确证 —— `putContent` 只以「`written.sha` 是否为空」判定回执完整性，206 响应若恰好带 sha 就完全不回读；未把 `statusCode == 206` 当作必须复核的信号
+
+**文件:行号**：`lib/domain/gh/gh_api.dart:765-821`（当前工作树版本；`if (written.sha.isEmpty)` 在 `:799`）、`lib/domain/gh/gh_client.dart:311`（`isSuccess` 含 206）、`:326-334`（`jsonObject`）、`:632`（**仅只读缓存**排除 206）、`:729-733`（`_throwIfFailed` 对 2xx 直接 return）
+
+**问题**：`putContent` 的回读兜底触发条件是 `written.sha.isEmpty`，**不是** `response.statusCode == 206` 或 `contentLength` 不符。206 是「部分内容」：若代理截断点在 JSON 尾部（GitHub PUT 响应体 `{"content":{...},"commit":{...}}`，`content` 对象在前），前半段的 `content.sha` 字段**完整可解析** ⇒ `written.sha` 非空 ⇒ 回读分支被跳过，直接 `return written`。此时：
+- 响应确实被截断（可能 `commit` 字段丢失、或代理改写了 `content` 对象），但代码把它当权威回执；
+- `_throwIfFailed` 对 206 放行；`gh_client.dart:632` 的 206 排除只作用于 `GhReadCache.put`（只读列表回填），**写路径没有任何 206 判断**；
+- `CacheRemote.write`（`:1997-2013`）随即 `return RemoteDocument(content: content, sha: written.sha)`，把这个 sha 交给 D5 `_verifyReadback`（`disk_cache.dart:693`）。若截断响应里的 sha 恰好是**旧 blob 的 sha**（代理返回了缓存的旧响应），D5 回读拿到远端新 sha ≠ 旧 sha ⇒ `_verifyReadback` 返回 null ⇒ 按 B2-B-03 仍判「成功」并清草稿。
+
+也就是说，**「206 必须回读」这条规则只在「解析恰好失败」时才生效**，是被解析结果反推的，不是被状态码驱动的。而回读（B2-B-02）本身又不比对内容、不强制 `ref`、不拒绝 206 —— 两道兜底都不以状态码为依据。
+
+**用户可见后果**：**伪造成功 / 静默损坏**。代理/镜像截断写响应时用户看到「已提交」，远端状态未经确认；错误 sha 进入本地索引与乐观锁基线，后续保存连锁失败或覆盖他人提交。
+
+**违反原则**：42（失败如实报错，伪造的成功响应比失败更难排查）、28、9、13、15、20（外部数据不可信）。
+
+**代码证据**：
+```dart
+// gh_api.dart:787-799（当前版本）
+final Map<String, dynamic> object = response.jsonObject ?? const <String, dynamic>{};
+final Object? contentPart = object['content'];
+GhContent written = GhContent.fromJson(contentPart is Map ? ... : const {});
+if (written.sha.isEmpty) { ... 回读 ... }   // ← 唯一触发条件；无 statusCode 判断
+// gh_client.dart:632 —— 206 排除只在只读缓存
+if (response.isSuccess && response.statusCode != 206) { if (request.method == NetMethod.get && ...) ... }
+// gh_api.dart:1997-2013
+return RemoteDocument(content: content, sha: written.sha);
+```
+
+---
+
+## B2-B-22 · P2 · 确证（部分待议） —— 二次确认用裸 `bool confirmed` 表达，不是类型强制；`replayPending(confirmed: true)` 可一次性为整批危险/强制操作放行
+
+**文件:行号**：`lib/base/disk/disk_cache.dart:251-256`（`write(..., {bool confirmed = false})`）、`:294-300`（`delete(..., {bool confirmed = false})`）、`:439`（`replayPending({bool confirmed = false})`）、`:607-614`（`(intent.dangerous || intent.force) && !confirmed`）；`lib/kernel/contract/disk_types.dart:295-310`（`WriteIntent.force`/`dangerous` 均为裸 `bool`）；`lib/domain/gh/gh_api.dart:831-840`（`putContentLocked` 透传 `confirmed`）、`:960-967`（`deleteContentLocked`）；`test/base/chaos_test.dart:183`（`replayPending(confirmed: true)`）
+
+**问题**：标准 12 要求「确认在类型上表达，不靠调用方自觉」。`WriteIntent.force` / `dangerous` / `confirmed` 全是裸 `bool`，没有 `ConfirmedToken` / `Confirmation` 值对象，也没有「确认来自用户交互」的任何来源标记。后果：
+1. 任何调用方（含后台任务、定时重放、测试、未来的自动化）只需传 `confirmed: true` 即可跳过 D7，`_writeLocked` 无法区分「用户点了对话框」与「代码自己写的 true」。
+2. `replayPending(confirmed: true)`（测试里已存在，`chaos_test.dart:183`）会把**全部** pending 里的 `dangerous`/`force` 意图一次性放行，没有逐条确认。生产侧虽默认 `false`（B2-B-19 的问题是它永远不传 true），但这正好说明**同一参数两端都被误用**：生产永远不确认（待办挂死），批量调用可整体放行（绕过确认）。
+3. `WriteIntent.toIntent()`（`disk_journal.dart:91-97`）重建意图时保留 `dangerous`，却**丢弃 `force`**（`JournalRecord` 没有 force 字段）：一个 `force=true` 的写意图入队后，重放时被还原成 `force=false` 的普通意图 ⇒ 行为与用户当初的意图不一致，且这个差异**无任何留痕**（`fromJson`/`toJson` 也不含 force）。⇒ 这一子项标**待议**（需确认是否有生产路径把 force 意图入队；`putContentLocked` 构造 `WriteIntent` 时会传 `force: force`，`gh_api.dart:911-918`，因此路径存在，但「是否实际发生」取决于 UI 是否调用 force 提交）。
+
+**用户可见后果**：**危险操作可在无用户确认下执行**（覆盖他人提交 / 删除），且审计日志无法区分「谁确认的」。force 意图重放语义漂移可能导致用户以为的「强制覆盖」变成普通写并报 staleSha。
+
+**违反原则**：12（危险操作必须经过用户显式确认；确认在类型上表达）、11、17、28（意图的全部维度必须持久化）、10。
+
+**代码证据**：
+```dart
+// disk_cache.dart:251-256 / 294-300 / 439
+Future<WriteOutcome> write(WriteIntent intent, {bool confirmed = false, ...});
+Future<WriteOutcome> delete(..., {bool confirmed = false}) async { ... }
+Future<List<WriteOutcome>> replayPending({bool confirmed = false}) async { ... }
+// disk_journal.dart:91-97 —— 丢弃 force
+WriteIntent toIntent() => WriteIntent(key: key, content: content,
+    message: message, baseSha: baseSha, dangerous: dangerous);
+```
+
+---
+

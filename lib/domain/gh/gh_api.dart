@@ -1945,11 +1945,15 @@ class GhApi implements CacheRemote {
       ));
       body = response.body;
     } on GhNotFoundException {
+      // 404 在 GitHub Contents API 的语义就是「该路径在此 ref 下不存在」；
+      // 权限不足返回 403（会经下面的 GhAuthException 原样上抛）。
       return null;
-    } on GhAuthException catch (error) {
-      if (_isAbsentStatus(error.statusCode)) {
-        return null;
-      }
+    } on GhAuthException {
+      // ★ B2-A-05 P0：409/422 属冲突态、401/403 属权限态，
+      //   **绝不能折成 null**。D1 用 `latest == null` 判"远端不存在"并
+      //   放行无基线 PUT（不带 sha），而 GitHub 对已存在路径的无 sha PUT
+      //   是覆盖更新——读不确定时放行 = 静默覆盖远端已有文件。
+      //   原样上抛，由 D6 折成可见失败结果（不吞、不误判新建）。
       rethrow;
     }
 
@@ -1960,9 +1964,15 @@ class GhApi implements CacheRemote {
       return RemoteDocument(content: body, sha: marker);
     }
 
-    final Object? decoded = jsonDecode(body);
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(body);
+    } on Object catch (error) {
+      // ★ B2-A-05：截断/非 JSON 响应体不是"远端不存在"，是读失败。
+      throw GhAuthException('目录/内容响应解析失败：$error', statusCode: 200);
+    }
     if (decoded is! Map) {
-      return null;
+      throw const GhAuthException('内容响应不是对象（可能被代理改写）', statusCode: 200);
     }
     final parsed = GhContent.fromJson(Map<String, dynamic>.from(decoded));
     var text = parsed.text;
@@ -1983,8 +1993,13 @@ class GhApi implements CacheRemote {
       if (!parsed.isDirectory && parsed.size == 0 && parsed.sha.isNotEmpty) {
         text = '';
       } else {
-        // 真拿不到：**不返回空串当成功**——空串会被写回远端，是数据事故。
-        return null;
+        // ★ B2-A-05 P0：内容读不到 ≠ 远端不存在。折成 null 会让 D1 放行
+        //   无基线 PUT 覆盖已有文件；必须抛，由 D6 折成可见失败结果。
+        throw const GhAuthException(
+          '远端文件存在但内容不可读（Blobs 回退失败或响应被截断）；'
+          '为防覆盖已阻止写入',
+          statusCode: 200,
+        );
       }
     }
     return RemoteDocument(content: text, sha: parsed.sha);

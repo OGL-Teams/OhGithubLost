@@ -57,3 +57,120 @@
 - **优先级**：P1。
 - **违反原则**：13（每次写入要么完整生效要么可恢复；重放语义必须与原意图一致）、12（确认在类型上表达）、15/17（失败必须可感知，不能静默挂着）、21（降级路径要有退出条件）。
 - **是否确证**：确证。代码证据：`disk_journal.dart:82-90` `toIntent()` 无 force/rebase；`disk_cache.dart:447-450` `write(record.toIntent(), confirmed: confirmed, recordJournal: false)`；`:455-458` needsConfirmation 时注释"必须保持 pending"但不产生任何通知；`domain_bridge.dart:215` `base.disk.cache.replayPending().then(...)`、`:242` 同，全仓 grep 无 `confirmed: true` 的生产调用。
+## B2-A-07 · D3 冲突重试可从 `latest` 读失败/读旧值产生 `expectedSha = null` → 二次 PUT 盲写覆盖（P1，确证）
+
+- **文件:行号**：`lib/base/disk/disk_cache.dart:721-746`（`on RemoteConflictException` 重试分支）、`lib/domain/gh/gh_client.dart:782-786` + `:804-808`（`RemoteConflictException.currentSha = response.jsonObject?['sha']`，409/422 错误响应通常**无 sha 字段** → null）、`lib/domain/gh/gh_api.dart:1939-1943`（`fresh = await _remote.read` 对 409/422 又返回 `null`）、`gh_api.dart:781`（不带 sha 的 PUT 覆盖）。
+- **问题描述**：D3 重试时 `content = intent.rebase!(fresh?.content ?? '', intent.content); expectedSha = error.currentSha ?? fresh?.sha;`。`error.currentSha` 取自 409/422 错误响应体的 `sha`，GitHub 的冲突错误体通常没有该字段（返回 `message`/`errors`），故为 `null`；而 `_remote.read`（`GhApi.read`）又把 409/422 折成 `null`（见 B2-A-05），`fresh?.sha` 也是 `null`。于是第二次 `expectedSha` 为 `null`，`putContent` 不带 `sha` 直接 PUT，且 `content` 是 `rebase('', 用户内容)` 的结果——相当可能以空远端为基线合并。重试上限 `maxConflictRetries = 2`（`disk_cache.dart:141`）+ `attempt > maxConflictRetries` 只限制次数，不校验 `expectedSha != null` 就继续发写。
+- **修复前 vs 修复后行为差异**：修复前：D3 冲突重试在拿不到新 sha 时降级为"无基线盲写"并成功覆盖远端，D2 乐观锁在重试路径被彻底绕过；修复后：`expectedSha` 为 null 时不得再次 PUT，应返回 `staleSha`/`server` 并保留三方差异交回用户，或重新读取直到拿到权威 sha。
+- **用户可见后果**：**他人提交被覆盖（数据丢失/写歪），且 UI 显示"冲突已重定基后重试成功"**，日志还会打 `OGL-CONS-204`，掩盖事故。
+- **优先级**：P1。
+- **违反原则**：10（冲突必须被乐观锁看见）、9（写前必读）、11（防线没有开关）、41（只重试幂等方法/非幂等重试必须安全）。
+- **是否确证**：确证。代码证据：`disk_cache.dart:741-742` `content = intent.rebase!(fresh?.content ?? '', intent.content); expectedSha = error.currentSha ?? fresh?.sha;`；循环内 `:686-690` 直接用该 `expectedSha` 发 PUT；`gh_client.dart:785` `currentSha: _currentShaOf(response)`、`:805-807` 只取响应体 `object?['sha']`；`gh_api.dart:1941` 409/422 时 `return null`。
+## B2-A-08 · D1/D2 空串归一化只贯通 `expectedSha`，`_threeWayFor`、`WriteOutcome.baseSha`、`Journal.enqueue` 仍用原始空串（P2，确证）
+
+- **文件:行号**：`lib/base/disk/disk_cache.dart:611-615`（局部 `baselineSha` 归一化）、`:630-645`（D2 失败时 `'${shortSha(intent.baseSha)}'`、`baseSha: intent.baseSha`、`threeWay: await _threeWayFor(intent, latest)`）、`:833-840`（`_threeWayFor` 用 `localBase.sha == intent.baseSha` 判定 base）、`:665-668`（`_journal.enqueue(intent)` 原样入队）、`:731-735`（D3 失败 `baseSha: intent.baseSha`）、`lib/base/disk/disk_journal.dart:187`（`baseSha: intent.baseSha` 存盘）。
+- **问题描述**：SD-01 把空串视为"无基线"，归一化变量 `baselineSha` 只用于 D1/D2′/`expectedSha`；其余四处仍比较/展示/持久化原始 `intent.baseSha`（`''`）。具体后果：① D2 的三方差异 `_threeWayFor` 用 `localBase.sha == ''` 判基线，永远为假 → `base = null`，冲突 UI 丢失"用户基于哪一版"的解释（`ConflictThreeWay.hasBase=false`、`diverged=false`）；② `WriteOutcome.baseSha` 返回 `''` 而不是 `null`，UI 把空串当"有基线但空"展示；③ Journal 记录 `baseSha: ''`，`toJson` 因 `if (baseSha != null)` 会写出 `'baseSha': ''`，重放时虽然 `_writeLocked` 再归一化能救回 D1，但所有基于 `record.baseSha` 的诊断/展示仍把"无基线"当成一个非法 sha。
+- **修复前 vs 修复后行为差异**：修复前：空串基线在一致性管线里**半归一化**，冲突信息、结果契约、队列状态与 D1 的真实决策不一致；修复后：`WriteIntent` 构造即归一化空串为 null（或全链路统一用 `baselineSha`），`_threeWayFor`、`WriteOutcome`、Journal、`_fail` 拿到同一份基线值。
+- **用户可见后果**：冲突对话框缺基线内容、"你的基线"显示为空白/异常串；重放记录的诊断信息误导排查。属**解释/可追溯性**缺陷，不直接造成覆盖（D1/D2 判定本身已用归一化值，故不是误放行）。
+- **优先级**：P2。
+- **违反原则**：9/10（状态表达一致）、17（用类型表达失败/状态，`''` 与 null 混用违反原则 52「三种不同的没有」）、16（诊断信息须如实）。
+- **是否确证**：确证。代码证据：`disk_cache.dart:611-614` 定义 `baselineSha` 后，`:635-640` 仍 `shortSha(intent.baseSha)` / `baseSha: intent.baseSha`；`:833-840` `localBase.sha == intent.baseSha`；`disk_journal.dart:113` `if (baseSha != null) 'baseSha': baseSha`（空串会被写出）。
+## B2-A-09 · `_saveLocal` 非原子：blob 与索引两步写，索引失败留下孤儿；`purgeOrphans` 生产从不调用（P2，确证）
+
+- **文件:行号**：`lib/base/disk/disk_cache.dart:946-950`（`_saveLocal`）、`:952-1000`（`_loadLocal` 校验）、`:1002-1005`（`_evictEncoded`）、`:483-525`（`purge`/`purgeOrphans`）、`lib/surface/surface_bridge.dart:170`（唯一生产调用 `cache?.purge()`）、`lib/domain/domain_bridge.dart:212-248`（无 prune 调用）。
+- **问题描述**：① 单个文件 `IoDiskFileStore.writeText` 是原子 tmp→rename（`platform_io_impl.dart:115-139`），但 `_saveLocal` 是**两次独立原子写**：先写 blob，再写索引（含 `len`/`hash`）。若第二步失败（磁盘满、进程被杀），blob 内容完整但索引仍是旧版本（旧 `hash`/`len`/`sha`），`_loadLocal` 读到「旧索引 + 新 blob」→ 完整性校验失败 → `_evictEncoded` 把两者全删，本次已成功提交的远端内容本地缓存白写；更坏的是 blob 写完后索引还没写就被 `purgeOrphans` 之外的并发读看到旧索引+新内容，缓存被丢弃（正确性上"回源自愈"可兜底，但违反"完整生效/可恢复"）。② `_evictEncoded` 先删索引再删 blob，中间崩溃同样留下无引用 blob。③ 有 TTL 与条目上限的 `prune()` **全仓只有测试调用**（`test/base/cache_consistency_test.dart:638`），`purgeOrphans()` 只在 `purge()` 内部被调，而 `purge()` 仅由用户手动"清空仓库缓存"触发；`defaultMaxEntries=512` / `defaultMaxAge=30d` 永不生效，`_scanMetas` 之外的孤儿 blob 永久占盘。
+- **修复前 vs 修复后行为差异**：修复前：索引/blob 撕裂写导致本地缓存被完整性校验整体丢弃（下次读重新回源，弱网下明显变慢/失败）；条目数与 TTL 上限形同虚设，孤儿文件只在手动 purge 时清理；修复后：`_saveLocal` 采用单一记录（或写临时索引 → 校验引用 → 提交标记）保证"要么都有、要么都无"，启动时/写后按上限执行 `prune` + `purgeOrphans`。
+- **用户可见后果**：**静默失败**（缓存被无声清掉，弱网下内容读不出来）；磁盘无界增长最终写不进"用户刚写的文件"（原则 29 警示的场景）。
+- **优先级**：P2（撕裂写有回源自愈，不是远端数据丢失；但磁盘有界承诺未兑现）。
+- **违反原则**：13（每次写入要么完整生效，要么可恢复）、29（所有资源有上限）、15（静默丢弃须留痕；`_loadLocal` 的 `catch (_)` 静默清索引）。
+- **是否确证**：确证。代码证据：`disk_cache.dart:946-950` 两次 `await` 无事务/无临时标记；`:969-980` 校验不符即 `_evictEncoded` 且仅完整性失败分支有 `error` 日志，结构异常 `catch (_)` 分支（`:993-999`）**无任何日志**；全仓 grep `.prune(` 仅 `test/base/cache_consistency_test.dart:638`；`purgeOrphans()` 仅 `disk_cache.dart:491` 被 `purge()` 调用。
+## B2-A-10 · `IoDiskFileStore` 长路径收纳链路把「读失败」伪装成「不存在」，KV 索引/Journal/草稿可被静默清空（P1，确证）
+
+- **文件:行号**：`lib/base/disk/platform_io_impl.dart:105-111`（`readText` 失败即 `_readPacked`）、`:168-186`（`_index()` / `_saveIndex` 全 catch 返回空/静默）、`:227-252`（`_readPacked` 所有异常 `catch (_)` 返回 null）、`:175-185`（`_saveIndex` 写失败静默）、`:381-398`（`IoDiskKv.read` 结构损坏 → `await _store.delete(...)` **删文件**）、`lib/base/disk/disk_journal.dart:285-295`（`records()` 解码失败 → `_store.remove(key)` 删记录）、`lib/base/disk/disk_draft.dart:140-153` / `:200-215`（草稿解码失败 → `_store.remove` 删记录）。
+- **问题描述**：Windows 长路径回退把内容收进 `TooLongRoad_*.zip`，能否读回**完全依赖 `.ogl_toolong.json` 索引**。该索引本身用普通 `writeAsString`（非原子、无 fsync、无备份），且 `_index()` 对 IO 失败/JSON 坏数据一律返回空 Map，`_saveIndex` 对写失败完全静默，`_readPacked` 对 zip 损坏/UTF-8 错误一律返回 `null`。`readText` 只要普通文件不存在就走 `_readPacked` 并返回 `null`，上层 `IoDiskKv.read` 得到 `null` 后：Journal `records()` 认为"没有这条记录"、DraftStore `_loadUnlocked` 认为"没有草稿"、缓存 `_scanMetas` 认为"没有索引"；更糟的是 `IoDiskKv.read` 的 catch 分支和 Journal/Draft 的损坏分支会**主动 delete 掉对应键**，把一次"读不出来"升级为"数据被删除"。
+- **修复前 vs 修复后行为差异**：修复前：磁盘/索引暂时不可读时，用户的**未提交草稿、待同步 Journal 记录、缓存索引被当成损坏而删除**，重启后"待同步"列表空、草稿消失；修复后：读失败必须与"键不存在"区分（抛异常或返回显式状态），任何删除只在确证结构损坏且先留痕/备份后进行，索引写失败大声上报。
+- **用户可见后果**：**未提交的用户编辑内容丢失、待同步写入被静默丢弃**（原则 8「缓存、草稿、日志都可以丢，用户写的内容不能丢」），且无告警（静默失败）。
+- **优先级**：P1（触发条件较窄：Windows 长路径/索引损坏，但一旦触发丢的是用户内容）。
+- **违反原则**：8（用户写的内容不能丢）、15/16（静默降级/不吞异常）、20（外部数据不可信，坏数据夹紧回默认并**记录**）、13（半成品状态必须留痕）。
+- **是否确证**：确证。代码证据：`platform_io_impl.dart:105-111` `if (await file.exists()) return ...; return _readPacked(path);`；`:168-174` `catch (_) { return <String,String>{}; }`；`:245-250` `catch (_) { ... } return null;`；`:175-185` `_saveIndex` catch 内空注释无日志；`disk_journal.dart:289-293` `if (record == null) { await _store.remove(key); continue; }`（注释仅称"结构损坏"，实际包含 IO 读失败）。
+## B2-A-11 · `sweepTemp().failed` 被丢弃，"失败项不静默吞掉，交由调用方诊断"的契约未兑现（P2，确证）
+
+- **文件:行号**：`lib/base/disk/platform_io_impl.dart:336-359`（`sweepTemp` 返回 `(removed, failed)`，注释明确"失败项不静默吞掉，交由调用方诊断"）、`:519-526`（`PlatformStorage.open` 三处 `await files.sweepTemp();` 均丢弃返回值）。
+- **问题描述**：启动清扫对删除失败的 `.tmp` 收集了 `failed` 列表，但 `open()` 三次调用都不读返回值、不写日志、不上报诊断；由于 `PlatformStorage.open` 无 `KernelDiagnostics` 注入点，`baseLayerModulesOnPlatform` 也只在 `open` **抛异常**时才有 `storageError`，清扫失败属于"部分失败"路径，永远不会触发 `main.dart:232` 的告警。残骸 `.tmp` 会留在目录里（虽然 `list()` 过滤 `.tmp`，不影响正确性，但磁盘无界增长且失败不可见）。
+- **修复前 vs 修复后行为差异**：修复前：清扫失败完全静默，用户/诊断日志都不知道；修复后：`open` 聚合三次 `failed` 并以返回值/异常/诊断回调上送，组合根按 `storageError` 同等大声上报。
+- **用户可见后果**：静默失败（磁盘残骸累积，最终可能占满空间导致写草稿/日志失败），且排障时无线索。
+- **优先级**：P2。
+- **违反原则**：15（静默降级最严重）、16（捕获异常必须转成结果或告警）、29（资源有界）。
+- **是否确证**：确证。代码证据：`:336` 返回类型 `({int removed, List<String> failed})`、注释 `:334`；`:523-525` `await files.sweepTemp();` 三行无赋值；`lib/base/base_bootstrap.dart:28-37` 只有 `catch (error)` 才上报。
+## B2-A-12 · `failByKey` 按"最近一条 pending"标注，多 pending 交错时标错记录导致过早 abandon（P2，确证）
+
+- **文件:行号**：`lib/base/disk/disk_journal.dart:243-258`（`failByKey`）、`:217-230`（`fail` 第 5 次转 `abandon`）、`lib/base/disk/disk_cache.dart:265-278`（`write()` 异常路径统一 `failByKey`）、`disk_cache.dart:665-668`（每次 `write` 都先 `enqueue` 一条新 pending）。
+- **问题描述**：同一 key 允许存在多条 pending（注释自认："A 崩了、B 又崩了"）。`failByKey` 用 `createdAt.isAfter(newest.createdAt)` 选"最近一条"，但 `_nextId()`（`disk_journal.dart:324`）用的是 `DateTime.now().microsecondsSinceEpoch` + 进程内序号；系统时钟回拨/同一微秒内多条记录时排序不严格。更关键的是 `write()` 的 catch **不区分异常发生在哪一步**：若 `_journal!.enqueue(intent)` 自身抛异常（磁盘满/IO 错误）或 `bindRemote` 前 `UnavailableCacheRemote` 抛 `StateError`，异常发生在**本次 pending 落盘之前**，`failByKey` 仍会给队列里**另一条历史 pending** 记一次失败；累计 5 次后该历史记录被 `abandon`（`fail` 内 `attempts >= maxAttempts`），用户排队的旧写入被静默放弃。反之若本次 enqueue 成功但异常发生在 D5 之后，也可能因时间戳并列标到别的记录。
+- **修复前 vs 修复后行为差异**：修复前：一次与某记录无关的失败会消耗另一条记录的"重试次数"，5 次后把用户待同步内容标记 abandoned；修复后：`write()` 只在确知 `journalRecord.id` 时按 ID 标注（`_fail` 已支持 `journalId` 参数），异常发生在入队前则只记诊断、不动队列。
+- **用户可见后果**：**排队中的用户写入被静默放弃**（数据丢失/静默失败）；"待同步"计数突然减少且无对应通知。
+- **优先级**：P2（需多条 pending + 5 次异常，触发链较长）。
+- **违反原则**：13（可恢复事务的记录不能被误标终态）、16（异常归属必须精确，原则 18 捕获范围精确到能处理的异常）、15（放弃必须可感知）。
+- **是否确证**：确证。代码证据：`disk_cache.dart:269-273` `await _journal?.failByKey(intent.key, ...)` 无论 `journalRecord` 是否创建；`disk_journal.dart:219-227` `fail` 内 `if (attempts >= maxAttempts) { await abandon(...); return; }`；`:243-258` 仅按 `createdAt` 选一条；`:324` `_nextId()` 无严格单调保证。
+## B2-A-13 · D5「回读失败按已提交待确认」把本地缓存写成"未经回读确认"的权威条目（P1，确证）
+
+- **文件:行号**：`lib/base/disk/disk_cache.dart:686-712`（PUT 成功后 D5）、`:758-770`（`_verifyReadback` 返回 `null`）、`:693-701`（`verified ?? RemoteDocument(content: content, sha: written.sha)` → `_entryOf` → `_saveLocal`）、`lib/domain/gh/gh_api.dart:552-590`（`content()` 读穿透优先用本地缓存，`maxAge: 30s`）。
+- **问题描述**：注释声称"回读失败 → 视为已提交（待确认），**缓存失效靠下次读取自愈**"，但代码在 `_verifyReadback` 返回 `null` 时**并未保持缓存失效**，而是立刻用 PUT 响应体 `written.sha` + 本次 `content` 造一个 `CacheEntry` 并 `_saveLocal(entry)`，写入带完整 `len`/`hash` 凭据的本地索引。于是 `_loadLocal` 的完整性校验只会验证"这段内容自洽"，**无法发现它与远端不一致**：若 PUT 实际未生效（206/代理改写响应/服务端异步可见性）、或 `written.sha` 不是远端最终版本，`content()` 在随后 30s TTL 内会优先命中这条伪造条目（`gh_api.dart:558-561`），把未经远端确认的内容当作权威数据展示给用户，并成为下一次编辑的 `baseSha`。注释与实现自相矛盾，"待确认"状态在类型上也不存在（没有 `WriteOutcome.pendingVerification`，仍是 `ok: true`）。
+- **修复前 vs 修复后行为差异**：修复前：回读失败时本地被写入"假定成功"的缓存，30 秒内用户读到可能与远端不同的内容并以其 sha 起草下一次写；修复后：回读失败时保持缓存失效（只 `_evictEncoded` + 记 WARN + 返回带"待确认"标记的结果类型），下次 `content()` 回源拿权威版本；提交结论与缓存结论分离。
+- **用户可见后果**：**写歪**（编辑器基线来自假 sha，下一次保存被 D2 拦成 `staleSha` 或以错误基线覆盖）、显示与远端不一致却无提示（静默失败）。
+- **优先级**：P1。
+- **违反原则**：22（每个异步结果都要校验是否仍然有效）、42（失败如实报错，伪造的成功响应更难排查）、15（待确认状态必须可感知）、13。
+- **是否确证**：确证。代码证据：`disk_cache.dart:693-701` `verified ?? RemoteDocument(content: content, sha: written.sha)` 后无条件 `:702` `await _saveLocal(entry)`；`:758-770` 回读不一致/异常时返回 null；`gh_api.dart:558-561` `await _cache!.read(key, refresh: refresh, maxAge: _contentMaxAge)` 命中即直接返回 `entry.sha`。
+## B2-A-14 · `replayPending` 与在线 `write` 并发重放同一条记录：重复提交 / 记录状态倒退（P1，确证）
+
+- **文件:行号**：`lib/domain/domain_bridge.dart:206-248`（启动一次 `unawaited(replayPending())` + 每 30s `Timer.periodic` 又一次）、`lib/base/disk/disk_cache.dart:439-465`（`replayPending` 先取快照再逐条 await，无"重放中"闸门）、`disk_cache.dart:178-190`（`WriteJournal.enqueue` 无去重/无上限）、`disk_cache.dart:704-708`（成功才 `complete`）。
+- **问题描述**：`replayPending` 在 `onRegister` 中同时被"立即启动一次"和 30s 定时器触发，二者之间没有互斥；每次都先 `await journal.records(status: pending)` 拿快照再逐条 `await write(...)`（内含 D1 远端读、PUT、D5 回读，可能耗时数十秒）。两次重放可以对**同一条 record.id** 各自走完整写链路：D4 逐键锁只能保证两次 PUT 串行，不能保证"只有一次成功"——后到的重放仍带着记录里的旧 `baseSha`，若远端已被第一次重放推进，D2 会拦成 `staleSha` 并把**已经 complete（删除）的记录**再 `abandon`/`fail`（`complete` 后 `_read(id)` 为 null，`abandon` 静默返回，尚不致命），但若两次都在 D1 读到旧远端版本前完成读、或第一次因网络失败尚未 complete，就会发出**两次相同 PUT**，产生重复提交。此外 `replayPending` 的 `recordJournal: false` 与"运行中每 30s 重放"叠加，队列在失败时由 `failByKey` 标注的是"最近一条"，可能把重放中的记录误标（与 B2-A-12 叠加）。
+- **修复前 vs 修复后行为差异**：修复前：同一 pending 可被并发重放、重复 PUT、重复通知；修复后：重放有进程级/记录级 lease（标记 replaying、完成后再释放），或定时器与启动重放共用一个串行队列并按 id 去重。
+- **用户可见后果**：**重复提交**（GitHub 历史里两条相同 commit，或以旧内容二次写歪）、"待同步"角标与通知计数抖动、静默失败。
+- **优先级**：P1。
+- **违反原则**：26（写要么幂等要么防重）、13（恢复事务不能重复生效）、23（互斥闸门属于同一所有者）、22（过期回调必须丢弃）。
+- **是否确证**：确证。代码证据：`domain_bridge.dart:211` `Timer.periodic(...)` 内 `base.disk.cache.replayPending()`；`:240-248` `unawaited(base.disk.cache.replayPending()...)` 在注册阶段立即启动；`disk_cache.dart:444` `for (final record in await journal.records(...))` 快照后 `:447` `await write(...)`；全仓无 `_replaying` / lease 字段。
+## B2-A-15 · 跨账号 scope：Journal 重放与草稿清理不校验当前账号，切号后旧账号 pending 被用新账号令牌提交（P1，确证）
+
+- **文件:行号**：`lib/base/disk/disk_cache.dart:439-465`（`replayPending` 遍历**全部** pending，无账号过滤）、`lib/base/disk/disk_journal.dart:285-300`（`records()` 只按 `namespace` 前缀，无 scope 过滤）、`lib/domain/domain_bridge.dart:206-248`（装配后无条件重放）、`lib/surface/surface_bridge.dart:188-210`（`forgetAccount` / `clearAllCaches` 只 purge 仓库缓存、只读缓存、`clearAllDrafts()`，**不清 Journal**）、`lib/domain/gh/gh_api.dart:2001-2007`（`CacheRemote.write` 只用 `key.scope.repo/branch/path`，令牌来自当前 `GhClient` 的激活账号）。
+- **问题描述**：`CacheKey.scope.accountId` 让本地缓存/草稿按账号隔离，但 `WriteJournal` 的记录键是 `ogl.journal.<id>`，重放时不比较 `record.key.scope.accountId` 与当前 `auth.activeAccountId()`；`GhApi.write` 也从不用 `key.scope.accountId` 选择令牌，一律用当前激活账号。于是：账号 A 排队一条写私有仓库 `A/priv/repo` 的 pending（网络断/被杀）→ 用户切到账号 B → 启动/30s 自动重放用 **B 的令牌**去写 A 的仓库：若 B 无权则得到 `forbidden`/`server`（反复重试直到 `maxAttempts=5` 转 abandoned，队列被静默清空），若 B 恰好有协作权限则**用 B 的身份把 A 的内容提交到 A 的仓库**，提交作者与用户预期不符；反之若 A 的草稿/待办在切号后仍显示（`clearAllDrafts` 清的是全部草稿，`forgetAccount` 才调它，普通切号 `switchTo` 路径未清），用户会在 B 的界面里看到 A 的待同步项。
+- **修复前 vs 修复后行为差异**：修复前：Journal 记录跨账号"漂"，自动重放使用错误身份；切号/注销不清理属于被移除账号的 pending；修复后：重放前按 scope 过滤（或记录绑定账号并在重放时显式校验/要求用户选择账号），`forgetAccount` 一并废弃该账号的 pending。
+- **用户可见后果**：**写歪**（错误身份提交）、静默失败（反复失败后记录被 abandon）、跨账号数据串味（原则 28 缓存键必须覆盖全部差异维度）。
+- **优先级**：P1。
+- **违反原则**：28（键必须覆盖产生差异的全部维度）、22（过期回调/过期意图必须丢弃）、39/40（凭证只在必要跳使用）、15（跨账号失败必须可感知）。
+- **是否确证**：确证。代码证据：`disk_cache.dart:444` `for (final record in await journal.records(status: JournalStatus.pending))` 无账号判断；`gh_api.dart:1993-2007` `write` 直接 `putContent(repo, key.path, ...)`，令牌由 `client`（`domain_bridge.dart:157-161`）按 `auth` 当前态取；`surface_bridge.dart:188-210` `clearAllCaches()` 无 `journal.clear()`（全仓 grep `journal.clear` 无生产调用）。
+## B2-A-16 · 平台存储解析失败退回内存但仍照常绑定 API 写远端，本次会话的用户写入/草稿重启即失忆（P1，确证）
+
+- **文件:行号**：`lib/base/base_bootstrap.dart:20-41`（catch 后 `baseLayerModules(net: net)`，DiskModule 缺省 `InMemoryKv`/`InMemoryFileStore`）、`lib/base/disk/disk_bridge.dart:66-80`（`DiskModule` 缺省全内存）、`lib/base/disk/platform_io_impl.dart:546-563`（真实磁盘才是 `toDiskModule()`）、`lib/main.dart:231-244`（仅日志 + 通知中心告警）、`lib/domain/domain_bridge.dart:165-170`（照常 `bindRemote(api)` / `attachReadCache`）、`:206-248`（照常自动重放）。
+- **问题描述**：链路确实"大声上报"（`OgLNoticeCenter.instance.report` critical 弹窗 + 应用日志），这一点合格；但从**数据正确性**看，降级后没有任何"拒绝写 / 只读模式"闸门：`RepositoryCache` 用 `InMemoryKv` 索引/内存 blob，`WriteJournal`、`DraftStore` 全部内存实现，`GhApi` 仍被绑定为远端并可正常 `putContentLocked`。用户在这段时间编辑、提交：远端写入可能成功，但 D8 pending（崩溃恢复依据）、D9 草稿（用户敲的字）都在内存里，App 被杀 / 重启即全部消失；若写在 PUT 前被中断，恢复记录根本不在磁盘上。告警文案说"登录与设置将无法保存到本机"，未覆盖"草稿/待同步队列同样不落盘"，用户被告知的后果小于实际后果。
+- **修复前 vs 修复后行为差异**：修复前：存储不可用时应用以"内存一致性层"继续接受用户写入，重启后未完成的提交与草稿永久丢失，且用户只看到一次弹窗；修复后：降级时把磁盘依赖的写入能力置为只读/明确拒绝（或在类型上返回"存储不可用"结果），并把告警文案覆盖草稿与待同步队列，退出条件为存储恢复后重新装配。
+- **用户可见后果**：**用户写的内容丢失**（原则 8 底线）、静默失败（弹窗关闭后无任何持续标识）。
+- **优先级**：P1（链路"大声上报"部分正确，故不是 P0；但降级无退出条件/无写入闸门）。
+- **违反原则**：8（用户写的内容不能丢）、13（写入要么完整生效要么可恢复）、21（降级路径必须有触发条件、观测、**退出条件**）、15（失败的用户可见后果必须完整）。
+- **是否确证**：确证。代码证据：`base_bootstrap.dart:36-40` `catch (error) { return (modules: baseLayerModules(net: net), storageError: error); }`；`disk_bridge.dart:70-77` `kv ?? InMemoryKv()` 等；`main.dart:236-243` 仅 report 一次；`domain_bridge.dart:167` 无条件 `base.disk.cache.bindRemote(api)`。
+## B2-A-17 · D7 force 二次确认在实现上不可达：生产调用从不传 `force: true`/`confirmed: true`，冲突对话框的"强制覆盖"没有落到写链路（P1，确证）
+
+- **文件:行号**：`lib/base/disk/disk_cache.dart:594-606`（`(intent.dangerous || intent.force) && !confirmed ⇒ needsConfirmation`）、`lib/domain/gh/gh_api.dart:841-921`（`putContentLocked` 的 `force`/`confirmed` 形参）、`lib/kernel/contract/disk_types.dart:243-258`（`resolveConflictActions` 对 `staleSha` 返回 `forceOverwrite`）、`lib/domain/ix/ix_conflict.dart:240-246`（"强制覆盖"选项）、`lib/surface/pages/code_editor_page.dart:232-238`、`lib/surface/pages/repo_page.dart:3812-3818`（两处生产调用均不传 force/confirmed）。
+- **问题描述**：契约层把 `forceOverwrite` 作为 `staleSha` 的合法处置（`resolveConflictActions`），UI 也有"强制覆盖（对方的修改会丢失）"选项，但全仓 `putContentLocked` 的两个生产调用点都只传 `content/message/baseSha/branch`，`force` 与 `confirmed` 永远为默认 `false`；`replayPending(confirmed: true)` 只在测试里出现（B2-A-06）。因此 D7 的"确认 → force → 以刚读到的远端 sha 为期望值重提交"这条正路**在生产中从未被走过**：用户点强制覆盖后（若 UI 有接线）要么什么都没发生，要么被再次 D2 拦成 `staleSha`，形成死循环。同时 `force` 分支的语义是"跳过 D2 但仍带 `latest.sha`"（`disk_cache.dart:673`），本身合理，却因无调用者而成为死代码。
+- **修复前 vs 修复后行为差异**：修复前：冲突后用户无法完成显式确认的强制覆盖，写入永久失败/重复弹冲突；修复后：冲突编排把用户决策映射为 `putContentLocked(force: true, confirmed: true)`（且确认在类型上表达，见 `IxBatchDecision`/`IxConfirmationRequired`），引擎按 `latest.sha` 提交并全程留痕。
+- **用户可见后果**：**静默失败 / 功能不可用**：用户明确选择"覆盖"后内容仍未提交，草稿可能被当成未提交内容反复出现；D7 二次确认形同虚设（另一面：若将来有人只传 `force: true` 而不传 `confirmed`，D7 会正确拦住，故风险主要是"防线不可达"而非"绕过"）。
+- **优先级**：P1。
+- **违反原则**：12（危险操作确认必须在类型上表达并可达）、17（用类型表达失败，调用方无法忽略）、55（死代码零容忍）、11（防线没有开关——不可达等价于没有）。
+- **是否确证**：确证。代码证据：全仓 grep `force: true` / `confirmed: true` 在 `lib/` 中仅 `HttpClient.close(force: true)`、测试中的 `replayPending(confirmed: true)`；`gh_api.dart:907-915` `WriteIntent(... force: force, rebase: rebase)` + `confirmed: confirmed` 是唯一入口，两个 UI 调用点实参不含该字段。
+## B2-A-18 · 同一 key 并发写时 `_KeyedMutex` 吞掉前序失败且只在 `read()` 接线诊断；`write()` 路径的失败无留痕（P2，确证）
+
+- **文件:行号**：`lib/base/disk/disk_cache.dart:98-125`（`_KeyedMutex.run`）、`:237`（`_wireMutexDiagnostics()` **只在 `read()` 内调用**）、`:539-550`（接线实现）、`:257`（`write()` 直接 `_mutex.run`，不接线）、`:286`（`invalidate` 同）、`:301`（`delete` 同）。
+- **问题描述**：`_KeyedMutex.run` 在 `await previous` 抛异常时只执行 `onPreviousFailed?.call(...)` 然后继续本任务（注释称"swallow 是有意的，但完全静默会让排查无从下手"）。然而 `onPreviousFailed` 由 `_wireMutexDiagnostics()` 惰性设置，而该方法**仅被 `read()` 调用**。若应用启动后第一次操作是 `write`/`delete`/`invalidate`（或 journal 的重放，`replayPending → write` 发生在 domain 装配阶段、任何 read 之前），`onPreviousFailed` 为 null：前序写失败（如 D6 之外的 `CacheScopeException`/`CacheKeyException` 会 rethrow 出锁）被完全吞掉，后序写照常执行，用户不知道"上一发为什么没生效"。此外 `_diagnostics` 在 `attachDiagnostics()` 之后被替换，但 `_mutexWired` 一旦置 true，回调闭包捕获的是**旧 diagnostics 实例**（闭包内用 `_diagnostics.debug` 读字段，实为动态读取当前字段，这一点不算错，但接线本身只发生一次且依赖 read 先发生）。
+- **修复前 vs 修复后行为差异**：修复前：纯写会话/启动重放中的前序失败无审计；修复后：`_wireMutexDiagnostics()` 在构造函数或所有公开入口调用，且前序失败折成 WARN 级事件码（无论首个操作是读还是写）。
+- **用户可见后果**：静默失败（后序写以过期状态继续执行，事故后日志无线索），排障困难。
+- **优先级**：P2。
+- **违反原则**：16（捕获后不重新抛出必须转成结果或告警）、15（静默降级）、27（并发假设写进注释——注释承诺"留痕"却未全路径兑现）。
+- **是否确证**：确证。代码证据：`grep _wireMutexDiagnostics` 仅 `:237`（read 内）与 `:539`（定义）；`:113-115` `catch (error) { onPreviousFailed?.call(key, error); }`；`write()` `:257` 之前无接线。
+## B2-A-19 · D4 逐键锁只保护"引擎内部"，`prune`/`purge`/`purgeOrphans` 的扫描与 `_evictIfStale` 无全局闸门，且 `prune` 从锁外调用会与自身 `_mutex.run` 冲突（待议，P2）
+
+- **文件:行号**：`lib/base/disk/disk_cache.dart:391-425`（`prune`）、`:483-500`（`purge`）、`:506-525`（`purgeOrphans`）、`:1015-1029`（`_evictIfStale` 内部 `_mutex.run(encoded, ...)`）、`:903-920`（`_scanMetas`）。
+- **问题描述（待议）**：① `prune`/`purge` 的 `_scanMetas()` 在**所有键锁之外**枚举 KV；`purgeOrphans()` 直接用 `_blobs.list('cache')` 得到的文件名集合判定孤儿，且在 `_evictEncoded` 之外**直接 `_blobs.delete`**（`:521`），对同一 blob 的并发 `_saveLocal` 无锁保护：若 A 正在 `_saveLocal` 写 blob（索引尚未写）、B 正在 `purgeOrphans`，B 会把 A 刚写的 blob 当孤儿删除，A 随后写索引成功 → 索引在、blob 丢 → `_loadLocal` 自愈清索引（缓存丢失，非远端数据）。② `_evictIfStale` 对每个 encoded 单独加锁，锁的是 `encoded` 字符串，而 `write`/`read` 锁的是 `key.encode()`——两者一致（`encoded` 来自 meta key），这部分正确；但 `prune` 若被从某个键锁内调用（例如未来在 `_readLocked` 里触发淘汰），会因 `_mutex.run` 等待自身而自锁（当前生产无此调用，故标待议）。
+- **修复前 vs 修复后行为差异**：修复前：手动清缓存/孤儿与并发读写交错时可能删掉刚写入的 blob，且 `purge()` 会删掉**所有**索引（包括正在写的事务中间态）；修复后：淘汰/清理与写入共用同一把键锁或全局 maintenance 锁，孤儿判定基于"索引集合 + 进行中写集合"。
+- **用户可见后果**：本地缓存静默丢失（弱网下内容读不出来/多一次回源），不直接丢用户写的内容（远端/JOURNAL 不受影响）。
+- **优先级**：P2。
+- **违反原则**：23（互斥闸门成对且属于同一所有者）、22（过期结果须丢弃）、29。
+- **是否确证**：**待议** —— 代码层面确证"无锁"（`purgeOrphans` 直接 `_blobs.delete`、`_scanMetas` 锁外），但是否构成用户可见事故取决于调度时序，且 `prune` 生产未接线（B2-A-09），`purge` 仅手动触发；自锁场景当前无调用者，属潜在缺陷而非现网必现。
