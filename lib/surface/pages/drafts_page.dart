@@ -16,6 +16,7 @@ import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../theme.dart';
 import '../types.dart';
 import '../util/clipboard_x.dart';
 import 'code_editor_page.dart';
@@ -168,7 +169,7 @@ class _DraftsPageState extends State<DraftsPage> {
           child: SingleChildScrollView(
             child: SelectableText(
               draft.content,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+              style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 12),
             ),
           ),
         ),

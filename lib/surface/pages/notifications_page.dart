@@ -20,6 +20,7 @@ import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
+import '../theme.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
@@ -367,7 +368,7 @@ class _NotificationTile extends StatelessWidget {
                                   child: SelectableText(
                                     entry.toDisplay(),
                                     style: const TextStyle(
-                                      fontFamily: 'monospace',
+                                      fontFamily: kOglMonoFamily,
                                       fontSize: 12,
                                     ),
                                   ),

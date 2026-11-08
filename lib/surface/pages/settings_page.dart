@@ -1892,7 +1892,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: SelectableText(
                     text,
                     style: const TextStyle(
-                      fontFamily: 'monospace',
+                      fontFamily: kOglMonoFamily,
                       fontSize: 12,
                       height: 1.5,
                     ),
@@ -2054,7 +2054,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             child: SelectableText(
                               tail.join('\n'),
                               style: const TextStyle(
-                                fontFamily: 'monospace',
+                                fontFamily: kOglMonoFamily,
                                 fontSize: 12,
                               ),
                             ),

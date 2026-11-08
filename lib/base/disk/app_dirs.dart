@@ -23,7 +23,6 @@
 library;
 
 import '../../platform/platform.dart';
-
 import 'app_dirs_fs_io.dart';
 
 /// 落盘位置分级（决定"用户能不能在文件管理器里看到"）。

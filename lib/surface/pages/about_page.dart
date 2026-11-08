@@ -19,6 +19,7 @@ import '../app/permission_selftest.dart';
 import '../app/permissions.dart';
 import '../app/project_info.dart';
 import '../i18n/og_l_i18n.dart';
+import '../theme.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_space.dart';
 
@@ -246,7 +247,8 @@ class AboutPage extends StatelessWidget {
               children: <Widget>[
                 SelectableText(
                   snapshot.moduleGraph,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                  style:
+                      const TextStyle(fontFamily: kOglMonoFamily, fontSize: 12),
                 ),
               ],
             ),
@@ -258,7 +260,7 @@ class AboutPage extends StatelessWidget {
                   SelectableText(
                     stage.toString(),
                     style: const TextStyle(
-                      fontFamily: 'monospace',
+                      fontFamily: kOglMonoFamily,
                       fontSize: 12,
                     ),
                   ),
@@ -375,7 +377,7 @@ class _KeyValueRow extends StatelessWidget {
           Expanded(
             child: SelectableText(
               value,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+              style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 12),
             ),
           ),
         ],

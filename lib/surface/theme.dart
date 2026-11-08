@@ -24,6 +24,10 @@ import './util/og_l_space.dart';
 import 'i18n/og_l_i18n.dart';
 
 /// 品牌种子色（GitHub 蓝）。
+/// 等宽字体族（自包含打包 Ubuntu Mono；Linux 无默认等宽映射，
+/// 三桌面平台观感一致）。全部代码 / 日志 / 文件名场景使用。
+const String kOglMonoFamily = 'OgLMono';
+
 const Color kOgLSeedColor = Color(0xFF0969DA);
 
 /// 启动失败兜底主题的种子色（明确的"出错了"信号色）。

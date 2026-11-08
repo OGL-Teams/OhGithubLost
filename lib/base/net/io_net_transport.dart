@@ -154,6 +154,16 @@ class IoNetTransport implements NetTransport {
     client.autoUncompress = true;
     client.maxConnectionsPerHost = 8;
 
+    // ★ Windows 10/11 兼容（自包含证书）：
+    //   dart:io 在 Windows 上默认走系统证书栈（schtest/证书存储），
+    //   **不捆绑 Mozilla 根证书**。Windows 10/11 的系统证书栈已内置全部
+    //   必需根证书且随 Windows Update 自动更新，api.github.com /
+    //   raw.githubusercontent.com 的链路直接可用——因此这里**刻意不**
+    //   自定义 SecurityContext、不旁路 badCertificateCallback（那样等于
+    //   关掉校验）。若企业环境缺根证书，错误会如实归为 tls 并展示，
+    //   不静默放行（原则 15/16/39）。
+    //   Linux：同理走系统 CA（/etc/ssl/certs），Debian/Ubuntu 系默认就绪。
+
     final DnsService? dns = _dns;
     if (dns == null || dns.policy.mode != NetDnsMode.custom) {
       // ★ 撤回：用户从「自定义 DNS」切回「系统 DNS」时，必须把上次装上的

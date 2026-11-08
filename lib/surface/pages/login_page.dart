@@ -15,6 +15,7 @@ import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../theme.dart';
 import '../types.dart';
 import '../util/og_l_space.dart';
 import 'onboarding_page.dart';
@@ -409,7 +410,7 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: OgLSpace.sm),
                           SelectableText(
                             _oauthCode!.verificationUri,
-                            style: const TextStyle(fontFamily: 'monospace'),
+                            style: const TextStyle(fontFamily: kOglMonoFamily),
                           ),
                           const SizedBox(height: OgLSpace.md),
                           Text(
@@ -424,7 +425,7 @@ class _LoginPageState extends State<LoginPage> {
                                 .textTheme
                                 .headlineSmall
                                 ?.copyWith(
-                                  fontFamily: 'monospace',
+                                  fontFamily: kOglMonoFamily,
                                   letterSpacing: 4,
                                   fontWeight: FontWeight.w700,
                                 ),

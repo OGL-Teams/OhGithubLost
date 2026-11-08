@@ -12,6 +12,7 @@ import '../app/animations.dart';
 import '../app/async.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../theme.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_radius.dart';
@@ -203,7 +204,7 @@ class _PullPageState extends State<PullPage> {
           ),
           child: SelectableText(
             patch,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+            style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 12),
           ),
         ),
       ],

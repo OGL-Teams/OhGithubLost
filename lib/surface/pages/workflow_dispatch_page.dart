@@ -17,6 +17,7 @@ import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../theme.dart';
 import '../util/gh_format.dart';
 import '../util/og_l_space.dart';
 
@@ -500,7 +501,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                       minLines: 3,
                       maxLines: 8,
                       style: const TextStyle(
-                        fontFamily: 'monospace',
+                        fontFamily: kOglMonoFamily,
                         fontSize: 13,
                       ),
                       decoration: InputDecoration(

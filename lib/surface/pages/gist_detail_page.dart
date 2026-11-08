@@ -16,6 +16,7 @@ import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../theme.dart';
 import '../types.dart';
 import '../util/accel.dart';
 import '../util/clipboard_x.dart';
@@ -183,7 +184,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
             controller: controller,
             minLines: 10,
             maxLines: 20,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+            style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 13),
             decoration: const InputDecoration(border: OutlineInputBorder()),
           ),
         ),
@@ -406,7 +407,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    fontFamily: 'monospace',
+                                    fontFamily: kOglMonoFamily,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

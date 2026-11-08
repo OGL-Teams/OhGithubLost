@@ -11,6 +11,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../theme.dart';
+
 /// 分块日志体。
 class OgLLogBody extends StatefulWidget {
   /// 创建。
@@ -70,7 +72,7 @@ class _OgLLogBodyState extends State<OgLLogBody> {
           child: Text(
             _chunks[index],
             style: const TextStyle(
-              fontFamily: 'monospace',
+              fontFamily: kOglMonoFamily,
               fontSize: 12,
               height: 1.4,
             ),

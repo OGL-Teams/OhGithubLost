@@ -272,7 +272,12 @@ jobs:
       - name: 注入 Android 平台私有文件（权限 / 编译属性 / 图标）
         if: matrix.build == 'apk' || matrix.build == 'appbundle'
         shell: bash
-        run: python3 tool/inject_platform_spec.py --target android || exit 1
+        run: |
+          python3 tool/inject_platform_spec.py --target android || exit 1
+          # ★ 兼容到 Android 5.1（API 22）：显式钉 minSdk（模板默认值随
+          #   引擎版本浮动）。运行期「自动回退」由权限网关实现
+          #   （permissions.dart 的 requestStorage()），这里只保证能装。
+          python3 tool/pin_min_sdk.py --gradle android/app/build.gradle.kts --min-sdk 21 || exit 1
 
       - name: 注入 Windows 平台私有文件（编译宏 / 图标）
         # ★ Windows runner 上 `python3` 不一定存在（通常只有 `python`），

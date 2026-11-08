@@ -117,6 +117,14 @@ flutter:
 
   # ── 唯一声明的外部资源：i18n 语言包 ────────────────────────────────────
   # 例外说明：产品要求"界面语言由 JSON 分片维护"，因此这里**只**声明
+  # ★ 自包含等宽字体（Linux 无默认等宽映射；Windows/macOS 保持一致观感）
+  fonts:
+    - family: OgLMono
+      fonts:
+        - asset: assets/fonts/UbuntuMono-Regular.ttf
+        - asset: assets/fonts/UbuntuMono-Bold.ttf
+          weight: 700
+
   # assets/i18n 下的语言 JSON；其余（图标/主题/引导清单）仍全部由框架字形与
   # 代码生成，仓库不引入其它资源文件。
   # 目录按语言分别声明：Flutter 只会把声明到的目录打进包。

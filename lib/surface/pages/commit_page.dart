@@ -118,7 +118,7 @@ class _CommitPageState extends State<CommitPage> {
                               SelectableText(
                                 commit.sha,
                                 style: const TextStyle(
-                                  fontFamily: 'monospace',
+                                  fontFamily: kOglMonoFamily,
                                   fontSize: 12,
                                 ),
                               ),
@@ -210,7 +210,7 @@ class _PatchView extends StatelessWidget {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final OgLSemanticColors sem =
         Theme.of(context).extension<OgLSemanticColors>()!;
-    const TextStyle base = TextStyle(fontFamily: 'monospace', fontSize: 12);
+    const TextStyle base = TextStyle(fontFamily: kOglMonoFamily, fontSize: 12);
     final List<TextSpan> spans = <TextSpan>[];
     for (final String line in patch.split('\n')) {
       Color color = scheme.onSurface;

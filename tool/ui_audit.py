@@ -139,7 +139,7 @@ def scan() -> list[tuple[str, str, int, str]]:
             m = RULES[3][1].search(line)
             if m:
                 ctx = '\n'.join(lines[max(0, i - 3):i + 2])
-                if 'monospace' not in ctx:
+                if 'monospace' not in ctx and 'kOglMonoFamily' not in ctx:
                     hits.append(('裸 fontSize', r, i, stripped[:110]))
 
             # 5) 字面色

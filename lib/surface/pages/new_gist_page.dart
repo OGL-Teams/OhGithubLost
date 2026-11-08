@@ -12,6 +12,7 @@ import '../app/notifier.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../theme.dart';
 import '../util/og_l_space.dart';
 
 /// 取 `new_gist_page` 分片文案。
@@ -176,7 +177,8 @@ class _NewGistPageState extends State<NewGistPage> {
                   controller: _content,
                   minLines: 8,
                   maxLines: 20,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                  style:
+                      const TextStyle(fontFamily: kOglMonoFamily, fontSize: 13),
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: _t('contentHint'),

@@ -177,7 +177,7 @@ class OgLBootFailureApp extends StatelessWidget {
                     const SizedBox(height: OgLSpace.lg),
                     SelectableText(
                       message,
-                      style: const TextStyle(fontFamily: 'monospace'),
+                      style: const TextStyle(fontFamily: kOglMonoFamily),
                     ),
                   ],
                 ),

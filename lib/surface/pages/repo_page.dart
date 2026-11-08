@@ -1452,7 +1452,7 @@ class _CodeTabState extends State<_CodeTab> {
                       minLines: 4,
                       maxLines: 8,
                       style: const TextStyle(
-                        fontFamily: 'monospace',
+                        fontFamily: kOglMonoFamily,
                         fontSize: 13,
                       ),
                       decoration: InputDecoration(
@@ -1936,7 +1936,7 @@ class _CodeTabState extends State<_CodeTab> {
             Text(label, style: theme.textTheme.labelSmall),
             SelectableText(
               value,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+              style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 12),
             ),
           ],
         ),
@@ -2230,7 +2230,7 @@ class _CodeTabState extends State<_CodeTab> {
               file.path,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+              style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 13),
             ),
           ),
           if (!file.isTooLarge && widget.canWrite)
@@ -2412,7 +2412,7 @@ class _CodeTabState extends State<_CodeTab> {
           Expanded(
             child: _buildViewer(
               file,
-              const TextStyle(fontFamily: 'monospace', fontSize: 13),
+              const TextStyle(fontFamily: kOglMonoFamily, fontSize: 13),
               OgLCodeTheme.fromScheme(theme.colorScheme),
             ),
           ),

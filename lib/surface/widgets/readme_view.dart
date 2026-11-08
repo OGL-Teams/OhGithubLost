@@ -23,6 +23,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
+import '../theme.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 
@@ -301,7 +302,7 @@ class ReadmeView extends StatelessWidget {
       maxImages: maxImages,
     );
     final TextStyle body = theme.textTheme.bodyMedium ?? const TextStyle();
-    final TextStyle mono = const TextStyle(fontFamily: 'monospace');
+    final TextStyle mono = const TextStyle(fontFamily: kOglMonoFamily);
 
     return MarkdownBody(
       data: md,

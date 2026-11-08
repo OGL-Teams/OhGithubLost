@@ -49,6 +49,7 @@ import 'package:re_highlight/languages/yaml.dart';
 import 'package:re_highlight/re_highlight.dart';
 
 import '../i18n/og_l_i18n.dart';
+import '../theme.dart';
 import '../util/og_l_space.dart';
 
 /// 取 `common` 分片文案。
@@ -597,7 +598,7 @@ class _OgLCodeFieldState extends State<OgLCodeField> {
       toolbarController: _toolbar,
       style: CodeEditorStyle(
         fontSize: widget.fontSize,
-        fontFamily: 'monospace',
+        fontFamily: kOglMonoFamily,
         fontHeight: 1.5,
         backgroundColor: palette.background,
         textColor: palette.foreground,
