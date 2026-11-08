@@ -45,6 +45,7 @@ class SurfaceBridge {
     this.cache,
     this.storageProbe,
     this.uiPrefs,
+    this.storageRoot,
   });
 
   /// 从内核桥表解析（展示层的标准取用方式）。
@@ -503,30 +504,30 @@ class SurfaceBridge {
         _themeCacheUiFont == uiFontId) {
       return cached;
     }
-    final ThemeData built = buildOgLTheme(
+    final ThemeData base = buildOgLTheme(
       brightness,
       seedColor: ogLSeedColorOf(seed),
       density: ogLDensityOf(density),
-    )
-        // ★ 外观字体（v11.4）：按 uiFontId 决定正文族。
-        //   · system：平台默认（不动 textTheme）；
-        //   · ubuntu-mono / 思源宋体 / 私有字体：覆写正文与标题族。
-        //   私有字体若尚未注册（启动早期），先回落系统字体；加载完成后
-        //   设置页会触发主题重建，字体随下一次编译生效。
-        .copyWith(
-          fontFamily: _uiFontFamilyOf(uiFontId),
-        )
-        .copyWith(
-          pageTransitionsTheme: OgLMotion.pageTransitions(motionLevel),
-          // ExpansionTile（关于页的诊断折叠组等）也接**动效档位**：
-          // 时长 / 曲线与整页动效同源（档位 0 → 零时长，即"立即展开"）。
-          expansionTileTheme: ExpansionTileThemeData(
-            expansionAnimationStyle: AnimationStyle(
-              duration: OgLOAnimQuality.of(motionLevel).medium,
-              curve: OgLOAnimQuality.of(motionLevel).curve,
-            ),
-          ),
-        );
+    );
+    // ★ 外观字体（v11.4）：按 uiFontId 决定正文族。
+    //   · system：平台默认（不动 textTheme）；
+    //   · ubuntu-mono / 思源宋体 / 私有字体：覆写正文与标题族。
+    //   私有字体若尚未注册（启动早期），先回落系统字体；加载完成后
+    //   设置页会触发主题重建，字体随下一次编译生效。
+    final ThemeData built = base.copyWith(
+      // ThemeData 无 fontFamily 命名参数，用 textTheme.apply 逐样式覆写；
+      // _uiFontFamilyOf 返回 null = 保持平台字体。
+      textTheme: base.textTheme.apply(fontFamily: _uiFontFamilyOf(uiFontId)),
+      pageTransitionsTheme: OgLMotion.pageTransitions(motionLevel),
+      // ExpansionTile（关于页的诊断折叠组等）也接**动效档位**：
+      // 时长 / 曲线与整页动效同源（档位 0 → 零时长，即"立即展开"）。
+      expansionTileTheme: ExpansionTileThemeData(
+        expansionAnimationStyle: AnimationStyle(
+          duration: OgLOAnimQuality.of(motionLevel).medium,
+          curve: OgLOAnimQuality.of(motionLevel).curve,
+        ),
+      ),
+    );
     _themeCache = built;
     _themeCacheBrightness = brightness;
     _themeCacheSeed = seed;

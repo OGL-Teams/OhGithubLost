@@ -3645,7 +3645,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       _name.text != widget.repo.name ||
       _descriptionValue != (widget.repo.description ?? '') ||
       _homepageValue != (widget.repo.htmlUrl ?? '') ||
-      _topicsValue.join(',') != _repoTopics.join(',') ||
+      _topicsValue.join(',') != _topicsOf(widget.repo).join(',') ||
       (_cnameInitial != null && _cname.text != _cnameInitial);
 
   /// 返回前的「放弃确认」（复用 `code_editor_page` 分片的既有文案，语义一致）。
@@ -3664,7 +3664,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
     _cname.addListener(_onFieldChanged);
     _descriptionValue = widget.repo.description ?? '';
     _homepageValue = widget.repo.htmlUrl ?? '';
-    _topicsValue = _repoTopics;
+    _topicsValue = _topicsOf(widget.repo);
     _pagesFuture = _loadPages();
     unawaited(_loadCname());
   }
@@ -3718,7 +3718,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
         setState(() {
           _descriptionValue = updated.description ?? '';
           _homepageValue = updated.htmlUrl ?? '';
-          _topicsValue = updated.rawTopics;
+          _topicsValue = _topicsOf(updated);
         });
         widget.onRepoChanged(updated);
         OgLNotifier.of(context).success(_t('saved'));
@@ -3734,7 +3734,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
     }
   }
 
-  /// 从更新后的仓库里取 topics（同 [_repoTopics] 的理由，不碰模型）。
+  /// 从仓库 raw 里取 topics（不扩展 GhRepo 模型）。
   static List<String> _topicsOf(GhRepo repo) {
     final Object? topics = repo.raw['topics'];
     if (topics is List<Object?>) {
@@ -4283,7 +4283,9 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
               subtitle:
                   widget.repo.isPrivate ? _t('privateHint') : _t('publicHint'),
               value: widget.repo.isPrivate,
-              onChanged: _busy ? null : (bool value) => _setVisibility(value),
+              onChanged: _busy
+                  ? (bool value) {}
+                  : (bool value) => _setVisibility(value),
             ),
             const SizedBox(height: OgLSpace.md),
             Align(

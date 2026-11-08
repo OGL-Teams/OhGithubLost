@@ -14,6 +14,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/async.dart';
+import '../app/notifier.dart';
 import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
@@ -748,7 +749,8 @@ class _DiscoverPageState extends State<DiscoverPage>
                       ? const SizedBox.shrink()
                       : const Padding(
                           padding: EdgeInsets.symmetric(vertical: OgLSpace.md),
-                          child: _SkeletonCard(),
+                          child: _SkeletonCard(
+                              key: ValueKey<String>('more-$index')),
                         );
                 }
                 final GhRepo repo = _repos[index];

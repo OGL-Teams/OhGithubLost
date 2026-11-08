@@ -61,7 +61,7 @@ class _IssuePageState extends State<IssuePage> {
   AsyncController<List<Map<String, dynamic>>>? _comments;
   late String _state = ghStr(widget.issue, 'state');
   bool _busy = false;
-  bool _locked = ghBool(widget.issue, 'locked');
+  bool _locked = false;
 
   /// 评论输入。
   final TextEditingController _comment = TextEditingController();
@@ -84,6 +84,7 @@ class _IssuePageState extends State<IssuePage> {
   @override
   void initState() {
     super.initState();
+    _locked = widget.issue['locked'] == true;
     _commentsC().loadIfNeeded();
     _resolveCanWrite();
     _resolveViewerLogin();
@@ -228,6 +229,7 @@ class _IssuePageState extends State<IssuePage> {
       return;
     }
     final bool ok = await _runWrite(
+      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
       '议题',
       _t('issueEdited'),
       '#$_number',
@@ -274,6 +276,7 @@ class _IssuePageState extends State<IssuePage> {
     }
     final List<String> target = selected.toList();
     final bool ok = await _runWrite(
+      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
       '议题',
       _t('labelsUpdated'),
       '#$_number',
@@ -309,6 +312,7 @@ class _IssuePageState extends State<IssuePage> {
         .where((String token) => token.isNotEmpty)
         .toList();
     final bool ok = await _runWrite(
+      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
       '议题',
       _t('assigneesUpdated'),
       '#$_number',
@@ -349,6 +353,7 @@ class _IssuePageState extends State<IssuePage> {
       return;
     }
     final bool ok = await _runWrite(
+      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
       '议题',
       locking ? _t('locked') : _t('unlocked'),
       '#$_number',
@@ -432,6 +437,7 @@ class _IssuePageState extends State<IssuePage> {
       return;
     }
     final bool ok = await _runWrite(
+      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
       '议题',
       _t('commentEdited'),
       '#$_number',
@@ -467,6 +473,7 @@ class _IssuePageState extends State<IssuePage> {
       return;
     }
     final bool ok = await _runWrite(
+      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
       '议题',
       _t('commentDeleted'),
       '#$_number',
@@ -510,6 +517,7 @@ class _IssuePageState extends State<IssuePage> {
     }
     final bool closingState = closing;
     final bool ok = await _runWrite(
+      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
       '议题',
       closingState ? _t('closed') : _t('reopened'),
       '#$_number',
@@ -550,6 +558,7 @@ class _IssuePageState extends State<IssuePage> {
         _number,
         body: body,
       );
+      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
       OgLAppLog.instance.result('议题', _t('commentPosted'), '#$_number');
       if (!mounted) {
         return;
@@ -561,6 +570,7 @@ class _IssuePageState extends State<IssuePage> {
       }
     } catch (error) {
       OgLAppLog.instance.add(
+        // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
         '议题',
         _t('commentPostFailed', {'error': error}),
         severity: OgLNoticeSeverity.critical,
@@ -739,6 +749,7 @@ class _IssuePageState extends State<IssuePage> {
                             child: ReadmeView(
                               markdown: body,
                               onOpenLink: (Uri uri) {
+                                // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
                                 unawaited(openExternalLink(uri, tag: '议题'));
                               },
                             ),

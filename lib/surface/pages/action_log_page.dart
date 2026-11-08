@@ -19,13 +19,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../kernel/log/og_l_log_file.dart';
 import '../app/async.dart';
+import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
 import '../util/clipboard_x.dart';
+import '../util/gh_format.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/log_body.dart';
@@ -375,8 +378,11 @@ class _ActionLogPageState extends State<ActionLogPage> {
                 }
                 // 结论表：jobs 数据可用则对齐运行详情页；不可用则全按"未知"。
                 final Map<String, String> conclusions = <String, String>{};
-                for (final Map<String, dynamic> job in _jobsC().data) {
-                  conclusions[ghStr(job, 'name')] = ghStr(job, 'conclusion');
+                final List<Map<String, dynamic>>? jobs = _jobsC().data;
+                if (jobs != null) {
+                  for (final Map<String, dynamic> job in jobs) {
+                    conclusions[ghStr(job, 'name')] = ghStr(job, 'conclusion');
+                  }
                 }
                 return _JobGroupList(
                   logs: logs,

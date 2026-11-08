@@ -112,7 +112,7 @@ class IxActionLogs {
       _post('/repos/$fullName/actions/runs/$runId/cancel');
 
   /// 把一次运行的日志拼成单份文本（`=== job ===` 分段），供下载 / 复制。
-  static String joinLogs(Map<String, String> logs) => logs.entries
+  String joinLogs(Map<String, String> logs) => logs.entries
       .map((MapEntry<String, String> e) => '=== ${e.key} ===\n${e.value}')
       .join('\n\n');
 

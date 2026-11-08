@@ -804,7 +804,7 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 从本地字体文件添加（.ttf / .otf）：读字节 → 落盘到应用字体目录 → 注册。
   Future<void> _addFontFromLocal() async {
     try {
-      final Uint8List bytes = await OgLFontPickers.pickFontBytes(this);
+      final Uint8List? bytes = await OgLFontPickers.pickFontBytes(this);
       if (bytes == null || bytes.isEmpty) {
         return;
       }
@@ -862,8 +862,9 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 注册：落盘 → 设置清单 → FontLoader 加载 → 提示。
   Future<void> _registerPickedFont(Uint8List bytes,
       {required String source}) async {
-    final String id = sha1.convert(utf8.encode(source)).substring(0, 16);
-    final Directory dir = await OgLFontLoader.instance.privateFontsDir();
+    final String id =
+        sha1.convert(utf8.encode(source)).toString().substring(0, 16);
+    final Directory dir = await OgLFontLoader.instance.privateFontsDirectory();
     final String ext = source.toLowerCase().endsWith('.otf') ? '.otf' : '.ttf';
     final File file = File('${dir.path}${Platform.pathSeparator}$id$ext');
     await file.writeAsBytes(bytes, flush: true);

@@ -17,6 +17,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 
 import '../../kernel/log/og_l_log_file.dart';
+import '../i18n/og_l_i18n.dart';
 import '../settings.dart';
 
 /// 内置字体 id（与外观设置的选择行枚举一致）。
@@ -109,7 +110,7 @@ class OgLFontLoader {
     }
     const OgLCustomFont font = OgLCustomFont(
       id: OgLBuiltinFonts.notoSerifSc,
-      name: '思源宋体',
+      name: OgLI18n.instance.t('settings', 'uiFontNotoSerif'),
       source: OgLBuiltinFonts.notoSerifScUrl,
     );
     final Uint8List bytes = await bytesOf(font);
@@ -127,6 +128,9 @@ class OgLFontLoader {
   }
 
   /// 私有字体落盘目录（应用支持目录下 `fonts/`）。
+  /// 供设置页写入私有字体（[ensureLoaded] 与此处共用同一目录规则）。
+  Future<Directory> privateFontsDirectory() => _privateFontsDir();
+
   Future<Directory> _privateFontsDir() async {
     // 复用 app_dirs 已有的支持目录解析；这里只做「存在则用」的轻量探测，
     // 避免引入 base 层依赖（surface 不得直接 import base/disk）。
