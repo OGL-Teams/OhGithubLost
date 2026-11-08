@@ -25,6 +25,7 @@ import '../domain/domain_bridge.dart';
 import '../domain/gh/repo_file_service.dart';
 import '../kernel/bridge_registry.dart';
 import '../kernel/contract/module.dart';
+import '../kernel/log/og_l_log_file.dart';
 import 'app/error_surface.dart';
 import 'app/font_loader.dart';
 import 'app/motion.dart';

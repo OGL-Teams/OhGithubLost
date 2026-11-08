@@ -227,10 +227,12 @@ class GhAuthService extends ChangeNotifier {
         //   使其不再被枚举为账号，但数据保留可人工排查。
         await _store.write('$key.corrupt', raw);
         await _store.remove(key);
-        OgLAppLog.instance.add(
-          '账户',
-          '账号元数据损坏，已隔离：$key（$error）',
-          severity: OgLNoticeSeverity.error,
+        // domain 层不 import surface：用内核日志门面（B5-A-14 修复的分层
+        // 更正——OgLAppLog 属 surface，此前误用会编译失败）。
+        OgLLogFile.line(
+          'AUTH',
+          '账号元数据损坏，已隔离（令牌保留可排查）：$key（$error）',
+          level: 'ERR',
         );
       }
     }
