@@ -57,32 +57,30 @@
       "use strict";
 
       var boot = document.getElementById("ogl-boot");
-      // 两个桶的目录布局相同，靠自身路径判断该预取哪一份主包。
-      var isWasm = location.pathname.indexOf("/wasm/") !== -1;
+      var removed = false;
 
-      // ★ 字体预载：FontManifest.json + 常用字体文件同源预取，
-      //   让 CanvasKit 首帧前字形已就绪（消除"刚进网页中文乱码"）。
-      //   资源不存在时浏览器只是 404，不影响启动（try/catch 兜住）。
-      try {
-        var fonts = document.createElement("link");
-        fonts.rel = "preload";
-        fonts.as = "fetch";
-        fonts.href = "assets/FontManifest.json";
-        fonts.crossOrigin = "anonymous";
-        document.head.appendChild(fonts);
-      } catch (e) {}
+      // 引擎首帧后立刻撤掉遮罩：Flutter Web 会派发 "flutter-first-frame"。
+      // 不撤的话这层 div 会一直盖在 flt-glass-pane 上（旧版只靠 Flutter
+      // 自己覆盖，弱网上会出现两层遮罩叠加 / 白屏更久）。
+      function removeBoot() {
+        if (removed || !boot) return;
+        removed = true;
+        boot.remove();
+      }
+      window.addEventListener("flutter-first-frame", removeBoot);
+      // 兼容旧引擎：DOM 里出现 flt-glass-pane 也算已接管。
+      var observer = new MutationObserver(function () {
+        if (document.querySelector("flt-glass-pane")) {
+          removeBoot();
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
 
-      // 预取主包：与 flutter_bootstrap.js 并行，省一次串行往返。
-      // 属性必须与运行时实际的取法一致，否则浏览器会当作两次请求
-      // （旧版就因此把同一份 wasm 下过两遍）。wasm 走 fetch，故加 crossorigin。
-      try {
-        var preload = document.createElement("link");
-        preload.rel = "preload";
-        preload.as = isWasm ? "fetch" : "script";
-        preload.href = isWasm ? "main.dart.wasm" : "main.dart.js";
-        if (isWasm) preload.crossOrigin = "anonymous";
-        document.head.appendChild(preload);
-      } catch (e) {}
+      // ★ 字体清单由外层入口页并发预取（app/index.html 的 prefetch 清单），
+      //   本页只保留 <link rel=preload> 让浏览器复用缓存、不再重复发请求。
+      //   中文界面等引擎字体就绪后再渲染（遮罩只有 ASCII 圆点），
+      //   避免刚进网页时系统字体渲染不出中文（豆腐块/乱码）。
 
       function fail(message) {
         if (!boot) return;
@@ -98,12 +96,10 @@
       });
       document.body.appendChild(script);
 
-      // 兜底提示：引擎若在 30 秒内仍未接管页面，说明环境无法运行。
+      // 兜底：60 秒仍未接管（与外层超时一致）给明确指引。
       setTimeout(function () {
-        if (boot && boot.querySelector(".dots")) {
-          fail("Startup timed out. Please refresh.");
-        }
-      }, 30000);
+        if (!removed) fail("Startup timed out. Please refresh.");
+      }, 60000);
     })();
   </script>
 </body>

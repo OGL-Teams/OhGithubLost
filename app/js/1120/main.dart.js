@@ -35450,7 +35450,7 @@ k=a7.c.a
 if((k.a&4)!==0)$.tS().Bi("\u68c0\u6d4b\u5230\u7cfb\u7edf\u5df2\u5173\u95ed\u52a8\u753b\uff08\u5e38\u89c1\u4e8e\u300c\u5f00\u53d1\u8005\u9009\u9879 \u2192 \u52a8\u753b\u7a0b\u5e8f\u65f6\u957f\u7f29\u653e\u300d\u6216\u300c\u65e0\u969c\u788d \u2192 \u79fb\u9664\u52a8\u753b\u300d\uff09\u3002\u5e94\u7528\u5185\u7684\u9875\u9762\u5207\u6362\u4e0e\u63a7\u4ef6\u53cd\u9988\u52a8\u753b\u5c06\u4e0d\u53ef\u89c1\uff0c\u4f46\u529f\u80fd\u4e0d\u53d7\u5f71\u54cd\u3002\u5982\u9700\u52a8\u753b\uff0c\u8bf7\u5728\u7cfb\u7edf\u8bbe\u7f6e\u4e2d\u91cd\u65b0\u5f00\u542f\u3002",B.aB,"\u7cfb\u7edf\u5df2\u5173\u95ed\u52a8\u753b")}catch(c3){j=A.R(c3)
 a6=$.b8()
 a6.d6(0,"\u542f\u52a8","\u8bfb\u53d6\u7cfb\u7edf\u65e0\u969c\u788d\u8bbe\u7f6e\u5931\u8d25\uff08\u65e0\u6cd5\u5224\u65ad\u52a8\u753b\u662f\u5426\u88ab\u5173\u95ed\uff09\uff1a"+A.p(j),B.aB)}b6=A.bOx()
-b6.a.m(0,A.aDo("boot/manifest.json"),B.aM.bZ('{"schema":1,"appVersion":"web","buildId":"dc9160e13b2eba861f67846f7c5300ab3e60d77d","generatedAt":"2026-11-08T02:52:37Z","modules":[],"coreDigest":"89099a489c8bb37d49ea26e4a3f224d9d864895d149e486adf18a8b87c511fbd","signature":"Qb1dXl0AoWI8oHXInc7JUEPYtDMUPcdzrppG807l0jUFWzsqpx6pe5Kj1pumKGDkpJ3fI9v80c8PPbt4307/Dg=="}'))
+b6.a.m(0,A.aDo("boot/manifest.json"),B.aM.bZ('{"schema":1,"appVersion":"web","buildId":"d66c5848039bd835b004e7a596d0d040d88e080e","generatedAt":"2026-11-08T03:28:55Z","modules":[],"coreDigest":"89099a489c8bb37d49ea26e4a3f224d9d864895d149e486adf18a8b87c511fbd","signature":"3e8OSqGsgqD6646PbBrP7zg/j8TCnWe7q168SQFRnwA0Yx2gDyJmMn2wOJAeLQ8RHquIx9/ENcsJVOaM555QDA=="}'))
 a7=$.buJ().a_I()
 a5=A.fA(B.aff,a5)
 b4=t.Tk
