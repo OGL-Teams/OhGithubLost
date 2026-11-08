@@ -197,6 +197,12 @@ class GhAuthService extends ChangeNotifier {
   }
 
   void _setState(GhAuthState next, {String? reason}) {
+    // ★ B7-A-01：同值短路——refreshState 被 shell 的 auth 监听间接调用，
+    //   无短路的 notify 会形成 refreshState → _onAuthChanged → _check →
+    //   refreshState 的自激循环（每次 2 次 KV 读 + 1 次密钥库读）。
+    if (_state == next && _stateReason == reason) {
+      return;
+    }
     _state = next;
     _stateReason = reason;
     notifyListeners();

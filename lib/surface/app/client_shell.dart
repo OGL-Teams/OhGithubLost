@@ -102,7 +102,12 @@ class _OgLClientShellState extends State<OgLClientShell> {
     }
   }
 
+  int _checkGeneration = 0;
+
   Future<void> _check() async {
+    // ★ B7-A-01：世代号防重入——新触发的 _check 使旧 _check 的回写作废，
+    //   避免 refreshState → notify → _check 的连环触发堆积并发读盘。
+    final int generation = ++_checkGeneration;
     String? accountId;
     try {
       // ★ B5-A-02/C-14：接线 refreshState——启动态探测不再用 activeAccount
@@ -121,7 +126,7 @@ class _OgLClientShellState extends State<OgLClientShell> {
       );
       accountId = null;
     }
-    if (!mounted) {
+    if (!mounted || generation != _checkGeneration) {
       return;
     }
     setState(() {

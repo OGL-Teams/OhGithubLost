@@ -149,6 +149,7 @@ ThemeData buildOgLTheme(
   Brightness brightness, {
   Color seedColor = kOgLSeedColor,
   VisualDensity density = VisualDensity.standard,
+  String? uiFontFamily,
 }) {
   final ColorScheme scheme = ColorScheme.fromSeed(
     seedColor: seedColor,
@@ -219,12 +220,14 @@ ThemeData buildOgLTheme(
         vertical: OgLSpace.xl,
       ),
       titleTextStyle: TextStyle(
+        fontFamily: uiFontFamily,
         color: scheme.onSurface,
         fontSize: 20,
         fontWeight: FontWeight.w600,
         height: 1.3,
       ),
       contentTextStyle: TextStyle(
+        fontFamily: uiFontFamily,
         color: scheme.onSurfaceVariant,
         fontSize: 14,
         height: 1.5,
@@ -251,6 +254,7 @@ ThemeData buildOgLTheme(
           ? scheme.surfaceContainerHighest
           : scheme.inverseSurface,
       contentTextStyle: TextStyle(
+        fontFamily: uiFontFamily,
         color: brightness == Brightness.dark
             ? scheme.onSurface
             : scheme.onInverseSurface,
@@ -274,6 +278,7 @@ ThemeData buildOgLTheme(
       backgroundColor: scheme.surface,
       surfaceTintColor: Colors.transparent,
       titleTextStyle: TextStyle(
+        fontFamily: uiFontFamily,
         color: scheme.onSurface,
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -299,6 +304,7 @@ ThemeData buildOgLTheme(
       labelTextStyle:
           WidgetStateProperty.resolveWith((Set<WidgetState> states) {
         return TextStyle(
+          fontFamily: uiFontFamily,
           fontSize: 12,
           fontWeight: states.contains(WidgetState.selected)
               ? FontWeight.w600
@@ -345,6 +351,7 @@ ThemeData buildOgLTheme(
         vertical: OgLSpace.xxs,
       ),
       labelStyle: TextStyle(
+        fontFamily: uiFontFamily,
         color: scheme.onSurfaceVariant,
         fontSize: 12,
         fontWeight: FontWeight.w500,
@@ -389,7 +396,8 @@ ThemeData buildOgLTheme(
         shape: shapePill,
         minimumSize: minButton,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
-        textStyle: const TextStyle(
+        textStyle: TextStyle(
+          fontFamily: uiFontFamily,
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
@@ -400,7 +408,8 @@ ThemeData buildOgLTheme(
         shape: shapePill,
         minimumSize: minTouch,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.md),
-        textStyle: const TextStyle(
+        textStyle: TextStyle(
+          fontFamily: uiFontFamily,
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -412,7 +421,8 @@ ThemeData buildOgLTheme(
         minimumSize: minButton,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
         side: BorderSide(color: scheme.outline),
-        textStyle: const TextStyle(
+        textStyle: TextStyle(
+          fontFamily: uiFontFamily,
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),

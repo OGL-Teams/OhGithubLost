@@ -61,6 +61,16 @@ class OgLFontLoader {
       return File(font.filePath).readAsBytes();
     }
     if (font.source.startsWith('http')) {
+      // ★ B7-A-03/04：下载前先查私有字体目录的落盘缓存——思源宋体 ~30MB，
+      //   此前每次冷启动都整只重新下载，落盘文件只写不读。
+      final File cached = File(
+        '${(await privateFontsDirectory()).path}'
+        '${Platform.pathSeparator}'
+        '${font.id}${_extOf(font.source)}',
+      );
+      if (cached.existsSync()) {
+        return cached.readAsBytes();
+      }
       final HttpClient client = HttpClient()
         ..connectionTimeout = const Duration(seconds: 20);
       try {
@@ -74,7 +84,15 @@ class OgLFontLoader {
         await for (final List<int> chunk in response) {
           builder.add(chunk);
         }
-        return builder.takeBytes();
+        final Uint8List bytes = builder.takeBytes();
+        // ★ B7-A-03：下载成功即落盘缓存，冷启动不再整只重新下载。
+        try {
+          await cached.writeAsBytes(bytes, flush: true);
+        } on Object catch (error) {
+          // 落盘失败不阻断注册（内存 FontLoader 已拿到字节），只留痕。
+          OgLLogFile.line('UI', '字体缓存落盘失败：$error', level: 'ERR');
+        }
+        return bytes;
       } finally {
         client.close(force: true);
       }
@@ -125,6 +143,15 @@ class OgLFontLoader {
     await loader.load();
     _loaded.add(font.id);
     return family;
+  }
+
+  /// 从 URL 推断字体扩展名（缺省 .ttf；.otf/.ttf 之外如实取尾段）。
+  static String _extOf(String source) {
+    final String path = source.split('?').first;
+    if (path.toLowerCase().endsWith('.otf')) {
+      return '.otf';
+    }
+    return '.ttf';
   }
 
   /// 私有字体落盘目录（应用支持目录下 `fonts/`）。

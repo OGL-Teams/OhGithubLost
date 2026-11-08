@@ -550,7 +550,11 @@ class SurfaceBridge {
     if (uiFontId == OgLBuiltinFonts.ubuntuMono) {
       return kOglMonoFamily;
     }
-    return ogLCustomFontFamily(uiFontId);
+    // ★ B7-A-04：私有/思源宋体未注册（启动早期或下载失败）时回落系统
+    //   字体——回落必须留痕，否则用户"选了字体却没变化"无从排查。
+    final String family = ogLCustomFontFamily(uiFontId);
+    OgLLogFile.line('UI', '字体未注册，回落系统字体：$uiFontId', level: 'ERR');
+    return family;
   }
 
   @override
