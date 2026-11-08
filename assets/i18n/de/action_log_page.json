@@ -1,7 +1,9 @@
 {
+  "copyAll": "Alle kopieren",
   "linesCount": "{count} Zeilen",
   "noLogs": "Keine Protokolle (noch unvollständig oder Token hat keine Actions-Berechtigung)",
   "noMatchingJob": "Kein passendes Job",
+  "nothingToCopy": "Keine Logs zum Kopieren",
   "reload": "Neu laden",
   "searchJobHint": "Job-Name suchen",
   "title": "Laufprotokoll"

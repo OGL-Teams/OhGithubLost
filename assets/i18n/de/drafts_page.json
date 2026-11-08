@@ -2,9 +2,11 @@
   "copyContent": "Inhalt kopieren",
   "delete": "Löschen",
   "deleteDraft": "Entwurf löschen",
+  "deleteDraftDesc": "Dieser Entwurf wird von diesem Gerät gelöscht. Dies kann nicht rückgängig gemacht werden.",
   "deleted": "Entwurf gelöscht",
   "draft": "Entwurf",
+  "draftGone": "Dieser Entwurf existiert nicht mehr",
   "empty": "Keine nicht eingereichten Entwürfe",
-  "title": "Entwürfe",
-  "deleteDraftDesc": "Dieser Entwurf wird von diesem Gerät gelöscht. Dies kann nicht rückgängig gemacht werden."
+  "openInEditor": "In Editor öffnen",
+  "title": "Entwürfe"
 }

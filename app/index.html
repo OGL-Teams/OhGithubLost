@@ -90,8 +90,8 @@
 <div id="boot" data-state="loading" role="status" aria-live="polite">
   <div class="brand">OhGithubLost</div>
   <div class="bar" aria-hidden="true"></div>
-  <div class="hint" id="hint">正在加载…</div>
-  <button class="retry" type="button" onclick="location.reload()">重新加载</button>
+  <div class="hint" id="hint">Loading…</div>
+  <button class="retry" type="button" onclick="location.reload()">Retry</button>
 </div>
 
 <script>
@@ -155,20 +155,20 @@
 
   var variant = supportsWasmGC() ? "wasm" : "js";
   var src = "./" + variant + "/" + DIR + "/?v=" + encodeURIComponent(STAMP);
-  hint.textContent = "正在加载 " + VERSION + "…";
+  hint.textContent = "Loading " + VERSION + "…";
 
   frame.addEventListener("load", function () {
     if (frame.getAttribute("src") === "about:blank") return;
     finish();
   });
   frame.addEventListener("error", function () {
-    fail("资源加载失败，请检查网络后重试。");
+    fail("Load failed. Check your connection and retry.");
   });
 
   // 兜底：30 秒仍未就绪则给出明确指引，而不是让进度条一直转。
   setTimeout(function () {
     if (boot.getAttribute("data-state") === "loading") {
-      fail("加载时间超出预期。可尝试刷新页面，或改用最新版浏览器。");
+      fail("Startup timed out. Refresh or use a modern browser.");
     }
   }, 30000);
 

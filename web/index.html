@@ -42,10 +42,15 @@
       font: 13px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
     #ogl-boot.error { color: #E6EDF3; }
+    #ogl-boot .dots { letter-spacing: .5em; animation: ogl-pulse 1.2s ease-in-out infinite; }
+    @keyframes ogl-pulse { 0%,100% { opacity: .35 } 50% { opacity: 1 } }
   </style>
 </head>
 <body>
-  <div id="ogl-boot">正在启动…</div>
+  <!-- ★ 首帧字体（UI 细化）：引擎字体（CanvasKit 的 FontManifest + 字体文件）
+       还没加载完之前，浏览器系统字体可能渲染不出中文（豆腐块/乱码）。
+       启动遮罩只放 ASCII 进度点，中文界面全部交给 Flutter 首帧之后。 -->
+  <div id="ogl-boot" aria-label="Loading"><span class="dots">•••</span></div>
 
   <script>
     (function () {
@@ -54,6 +59,18 @@
       var boot = document.getElementById("ogl-boot");
       // 两个桶的目录布局相同，靠自身路径判断该预取哪一份主包。
       var isWasm = location.pathname.indexOf("/wasm/") !== -1;
+
+      // ★ 字体预载：FontManifest.json + 常用字体文件同源预取，
+      //   让 CanvasKit 首帧前字形已就绪（消除"刚进网页中文乱码"）。
+      //   资源不存在时浏览器只是 404，不影响启动（try/catch 兜住）。
+      try {
+        var fonts = document.createElement("link");
+        fonts.rel = "preload";
+        fonts.as = "fetch";
+        fonts.href = "assets/FontManifest.json";
+        fonts.crossOrigin = "anonymous";
+        document.head.appendChild(fonts);
+      } catch (e) {}
 
       // 预取主包：与 flutter_bootstrap.js 并行，省一次串行往返。
       // 属性必须与运行时实际的取法一致，否则浏览器会当作两次请求
@@ -77,14 +94,14 @@
       script.src = "flutter_bootstrap.js";
       script.async = true;
       script.addEventListener("error", function () {
-        fail("启动资源加载失败，请刷新重试。");
+        fail("Load failed. Please refresh.");
       });
       document.body.appendChild(script);
 
       // 兜底提示：引擎若在 30 秒内仍未接管页面，说明环境无法运行。
       setTimeout(function () {
-        if (boot && boot.textContent === "正在启动…") {
-          fail("启动超时。请确认浏览器版本，或刷新后重试。");
+        if (boot && boot.querySelector(".dots")) {
+          fail("Startup timed out. Please refresh.");
         }
       }, 30000);
     })();

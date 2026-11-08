@@ -1,7 +1,9 @@
 {
+  "copyAll": "Копировать всё",
   "linesCount": "строк: {count}",
   "noLogs": "Нет журналов (возможно, не завершено или Token не имеет прав на Actions)",
   "noMatchingJob": "Нет совпадающих job",
+  "nothingToCopy": "Нет логов для копирования",
   "reload": "Обновить",
   "searchJobHint": "Поиск по имени job",
   "title": "Журнал выполнения"

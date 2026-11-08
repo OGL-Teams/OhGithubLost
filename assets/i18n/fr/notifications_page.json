@@ -3,8 +3,10 @@
   "copiedEvent": "Événement copié",
   "copy": "Copier",
   "empty": "Aucun événement correspondant",
+  "emptyUnread": "Aucune notification non lue",
   "filterAll": "Tous",
   "filterError": "Erreurs",
+  "filterUnread": "Non lu",
   "filterWarning": "Avertissements",
   "markAllRead": "Tout marquer lu",
   "markRead": "Marquer lu",
@@ -12,6 +14,6 @@
   "resetDesc": "Videra tous les événements en mémoire (les journaux sur disque restent).",
   "resetTitle": "Réinitialiser le centre de notifications",
   "title": "Centre de notifications",
-  "unread": "Non lu",
-  "toggleNotification": "Activer/désactiver la notification"
+  "toggleNotification": "Activer/désactiver la notification",
+  "unread": "Non lu"
 }

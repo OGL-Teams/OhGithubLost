@@ -30,6 +30,7 @@ import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../i18n/og_l_i18n.dart';
+import 'browser_notify.dart';
 import 'error_surface.dart';
 
 /// 取 `shell` 分片文案。
@@ -125,6 +126,12 @@ OgLPermissionGateway ogLPermissionGateway({
   Future<bool> Function()? storageProbe,
   Future<String> Function()? storageLocation,
 }) {
+  // ★ Web 分支（本分支为纯 Web 构建）：浏览器权限不走 permission_handler，
+  //   必须在用户手势里直接调 Notification / Storage 的浏览器 API。
+  //   TargetPlatform 枚举没有 web 值，判据用 kIsWeb。
+  if (kIsWeb) {
+    return _WebPermissionGateway(storageProbe: storageProbe);
+  }
   switch (defaultTargetPlatform) {
     case TargetPlatform.android:
       return _AndroidPermissionGateway(
@@ -417,4 +424,80 @@ class _DesktopPermissionGateway implements OgLPermissionGateway {
   @override
   Future<OgLPermissionStatus> request(OgLPermission permission) async =>
       OgLPermissionStatus.notRequired;
+}
+
+/// 浏览器权限网关（Web 分支专用）。
+///
+/// ## 两条硬规则
+/// - **通知**：`request()` 里直接调 `Notification.requestPermission()`（浏览器
+///   API），且只在用户点击按钮时触发（浏览器拒绝启动期自动申请）。此前
+///   `ogLBrowserNotifyRequest()` 存在但没有任何调用点 —— 用户点"通知"永远
+///   不会弹授权条，这就是"通知权限没解决好"的根因。
+/// - **存储**：大对象走 IndexedDB（blob_store_web.dart）+ 启动时
+///   `navigator.storage.persist()`（base_bootstrap.dart），本网关如实报告
+///   当前授权状态；浏览器没有"跳系统设置"这条路，canOpenSettings=false。
+class _WebPermissionGateway implements OgLPermissionGateway {
+  const _WebPermissionGateway({this.storageProbe});
+
+  final Future<bool> Function()? storageProbe;
+
+  @override
+  String get platformLabel => 'Web';
+
+  @override
+  bool get canOpenSettings => false;
+
+  @override
+  Future<List<OgLPermissionInfo>> describe() async {
+    final String permission = await ogLBrowserNotifyPermissionAsync();
+    final OgLPermissionStatus notify = switch (permission) {
+      'granted' => OgLPermissionStatus.granted,
+      'unsupported' => OgLPermissionStatus.unsupported,
+      _ => OgLPermissionStatus.needsUserAction,
+    };
+    bool storageOk = true;
+    try {
+      storageOk = await storageProbe?.call() ?? true;
+    } catch (_) {
+      storageOk = false;
+    }
+    return <OgLPermissionInfo>[
+      OgLPermissionInfo(
+        permission: OgLPermission.storage,
+        title: _t('storageAccess'),
+        rationale: _t('webStorageDesc'),
+        status: storageOk
+            ? OgLPermissionStatus.granted
+            : OgLPermissionStatus.needsUserAction,
+      ),
+      OgLPermissionInfo(
+        permission: OgLPermission.notifications,
+        title: _t('notification'),
+        rationale: _t('webNotifDesc'),
+        status: notify,
+      ),
+    ];
+  }
+
+  @override
+  Future<OgLPermissionStatus> request(OgLPermission permission) async {
+    if (permission == OgLPermission.notifications) {
+      // ★ 只在用户手势里调用：浏览器授权条此刻才允许弹出。
+      final String result = await ogLBrowserNotifyRequest();
+      return switch (result) {
+        'granted' => OgLPermissionStatus.granted,
+        'unsupported' => OgLPermissionStatus.unsupported,
+        _ => OgLPermissionStatus.needsUserAction,
+      };
+    }
+    // 存储：浏览器没有运行时授权弹窗；持久化授权已在启动时经
+    // navigator.storage.persist() 请求，这里只复核可写性。
+    try {
+      return (await storageProbe?.call() ?? true)
+          ? OgLPermissionStatus.granted
+          : OgLPermissionStatus.needsUserAction;
+    } catch (_) {
+      return OgLPermissionStatus.needsUserAction;
+    }
+  }
 }
