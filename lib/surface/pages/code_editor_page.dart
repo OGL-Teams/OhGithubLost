@@ -39,6 +39,7 @@ class CodeEditorPage extends StatefulWidget {
     required this.path,
     required this.initialText,
     required this.baseSha,
+    this.initialTextIsRemote = true,
     this.branch,
     super.key,
   });
@@ -54,6 +55,14 @@ class CodeEditorPage extends StatefulWidget {
 
   /// 初始内容。
   final String initialText;
+
+  /// **初始内容是否来自远端**（B2-B-01 P0）。
+  ///
+  /// `true`（默认，仓库页入口）：文本等于 [initialText] 表示「与远端一致」，
+  /// 可以清草稿。`false`（草稿箱入口）：[initialText] 本身就是**未提交的
+  /// 草稿正文**，相等绝不能触发清草稿——否则用户点「接着改」再直接返回，
+  /// 未提交的代码会被静默删除。
+  final bool initialTextIsRemote;
 
   /// 编辑基线（乐观锁）。
   final String baseSha;
@@ -90,7 +99,10 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   bool _wrap = false;
   double _fontSize = 13;
 
-  bool get _dirty => _controller.text != widget.initialText;
+  // B2-B-01：草稿箱入口的 initialText 是草稿正文，此时「未改动」也仍是
+  // 有待提交内容；但 dirty 只用于退出确认，草稿箱入口不该弹「放弃修改」。
+  bool get _dirty =>
+      _controller.text != widget.initialText && widget.initialTextIsRemote;
 
   @override
   void initState() {
@@ -141,7 +153,9 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       if (!mounted || draft == null) {
         return;
       }
-      if (draft.content == widget.initialText) {
+      // B2-B-01：只有「initialText 来自远端」时，文本相等才代表
+      // 「与远端一致、可清草稿」；草稿箱入口传的是草稿正文，恒等不能清。
+      if (widget.initialTextIsRemote && draft.content == widget.initialText) {
         await widget.surface.domain.api.discardDraft(
           widget.fullName,
           widget.path,
@@ -170,7 +184,8 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       return;
     }
     try {
-      if (_controller.text == widget.initialText) {
+      if (widget.initialTextIsRemote &&
+          _controller.text == widget.initialText) {
         await widget.surface.domain.api.discardDraft(
           widget.fullName,
           widget.path,

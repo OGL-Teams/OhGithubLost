@@ -149,6 +149,9 @@ class _DraftsPageState extends State<DraftsPage> {
           path: draft.path,
           branch: draft.branch.isEmpty ? null : draft.branch,
           initialText: record.content,
+          // B2-B-01：这份 initialText 是草稿正文而非远端内容，
+          // 禁止编辑器按「与 initialText 相等」清掉草稿。
+          initialTextIsRemote: false,
           baseSha: record.baseSha ?? '',
         ),
       ),
