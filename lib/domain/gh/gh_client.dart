@@ -625,7 +625,11 @@ class GhClient {
             '${netResponse.fromMirrorId == null ? '' : ' / 镜像 ${netResponse.fromMirrorId}'}）',
       );
       // ── 只读缓存回填 / 失效（R4）──────────────────────────────────────
-      if (response.isSuccess) {
+      // ★ 交叉审计 B1-B-01/C-08：206 Partial Content 的 body 是**片段**，
+      //   中间代理截断时 jsonObject 解析成 null 被上层当空结果；把残缺实体
+      //   写进只读缓存会污染 30–60s 内的所有读取（空列表 / 假失败）。
+      //   写侧已由 putContent 回读远端兜底，这里只拒收 GET 的 206。
+      if (response.isSuccess && response.statusCode != 206) {
         if (request.method == NetMethod.get && cacheTtl != null) {
           await _readCache?.put(
             request.path,
@@ -794,11 +798,8 @@ class GhClient {
     }
   }
 
-  static Duration? _retryAfterOf(GhResponse response) {
-    final raw = response.headers['retry-after'];
-    final seconds = int.tryParse(raw ?? '');
-    return seconds == null ? null : Duration(seconds: seconds);
-  }
+  static Duration? _retryAfterOf(GhResponse response) =>
+      parseRetryAfterHeader(response.headers['retry-after']);
 
   static String? _currentShaOf(GhResponse response) {
     final object = response.jsonObject;

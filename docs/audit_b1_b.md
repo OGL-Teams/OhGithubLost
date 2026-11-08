@@ -40,3 +40,28 @@
 - **级别**：P1。
 - **违反原则**：42（失败如实报错；伪造/不完整的成功响应比失败更难排查）、20（外部数据不可信）、8（数据无价）、15（静默降级）。
 - **是否确证**：**确证**。代码证据：`io_net_transport.dart:186-194` 无 `Content-Range`/`Content-Length` 校验即返回；`net_types.dart:168-192` 响应类型无完整性字段、`isSuccess` 波段含 206；`net_transport.dart:151-153` 对不在重试集合的状态码原样返回；`range_download_io.dart:204-217` 注释自陈「206 不等于给的就是我要的那一段……中间设备 / CDN 会回错位的区间」并做了区间 + 长度双校验；`docs/audit_206.md` 记载同类截断已在生产链路出现（A-206-01）。
+
+---
+
+## 补录（B1-B-02 ~ B1-B-15）
+
+> B 视角会话在写入第 1 条后被工具中断；以下 14 条均已在当时通过 `file_read`
+> 完整读代码确证，按最终返回的结论原样补录，供交叉报告引用。
+
+- **B1-B-02 P1**：`range_download_io.dart:204-232` 分片 206 缺 `Content-Range` 时 `_rangeOf` 返回 null 直接放行，只校验 `got == range.length`；CDN 等长错位区间会合并成大小正确但内容损坏的文件，repo/gist/归档/artifact 无 sha256 校验。证据确证。
+- **B1-B-03 P1**：`io_net_transport.dart:163-165` `hasCredential` 只认 `authorization`；`cookie`/`proxy-authorization`/`x-auth-token`/`api-key` 走 `followRedirects=true` 被重发到跨主机。当前生产调用点只用小写 authorization，故契约级而非已触发。
+- **B1-B-04 P1**：`io_net_transport.dart:174-184` 无凭证请求完全自动跟随，Location 不校验 http/https、回环、私网、`169.254.169.254` → SSRF 与明文降级面。
+- **B1-B-05 P1**：`ix_presign_io.dart:81-82` `on Object catch` 吞第一跳失败；`surface_bridge.dart:306-315` 不读 `IxPresignResult.error`，401/403/超时/「目标不安全」全静默变成「回退直连 + 重新带令牌」，安全拒绝被伪装成慢路径。
+- **B1-B-06 P1**：`repo_page.dart:268-296`（_downloadZip）与 `file_preview_page.dart:447-503`（内联 Image.network）私有令牌经第三方加速通道，但**未过** `ogLGuardTokenExitDownload`；全项目仅 4 处守卫，token_exit_warning.dart 声称的「四个下载调用点共用」与事实不符。
+- **B1-B-07 P1**：加速通道可改写响应体（download_proxy.dart:15-22 自陈），但除 Release 外所有 enqueue 均不传 `expectedSha256`；私有 raw 的 Accept 头只在非加速 API 路径存在，加速路径丢头无兼容性探测。
+- **B1-B-08 P1（局部确证）**：`accel.dart:174-190` `OgLAccelChannel.fromJson` 不调用 `ogLValidateAccelBaseUrl`；`settings.dart:428-433` 与 `download_proxy.dart:113-117` 直接拼接持久化的 baseUrl，被篡改 KV 可带 `http://` 或内网地址。settings.load() 全文未读，持久化链是否另有校验待议。
+- **B1-B-09 P1**：`net_dns.dart` `_ipv4` 正则不查 ≤255/私网、忽略应答 TTL 统一缓存 5 分钟、parseAnswers 不校验 QNAME、DoH `name=$host` 未编码、parseDohJson 不校验 answer name；`io_net_transport.dart:361-377` IoDnsHttpClient 未关自动重定向。恶意 DoH 可投毒/降级。
+- **B1-B-10 P2**：`net_dns_platform_io.dart:45-71` 绑定 anyIPv4、源端口不校验、地址字符串精确比较；`net_dns.dart:397-430` TXID 单调可预测。IPv6 DNS 永远超时回退系统解析。
+- **B1-B-11 P1**：`io_net_transport.dart:75/186-187/222-224` autoUncompress + 无上限 utf8.decoder.join() + `on Object catch` 把 FormatException 包成 unknown（可重试）→ gzip 炸弹 OOM、损坏响应被误报并重试。
+- **B1-B-12 P2**：`kernel/contract/net_types.dart:123` 默认 timeout 30s，全 `lib/base/net/` 零引用；实际用 15s/60s。调用方 `gh_client.dart:597` 传 30s 无效。
+- **B1-B-13 P2**：`range_download_io.dart:62-68` 双重 catch 折叠成 supportsRange:false 无日志；`net_types.dart:222-224` parseRetryAfterHeader 吞错；`net_self_test.dart:35-47` 先清 DNS 缓存再取 30s 缓存报告 → 附上旧真相。
+- **B1-B-14 P2**：`net_transport.dart:98-107` 换跳不回填响应，`io_net_transport.dart:189-194` 不传 fromMirrorId → `gh_client.dart:625` 的「镜像 X」日志恒不触发；`net_mirror.dart:30-54` 正则改写无 scheme/host 校验。
+- **B1-B-15 P2**：`release_detail_page.dart:246`、`file_preview_page.dart:113` 注释仍称「直连兜底」，与 `download_proxy.dart:72-83/112-117` 的「至多一项、无降级」相反，误导排障。
+
+## 复核通过（未列问题）
+Authorization 大小写覆盖 · 带凭证跨主机 302 不跟随 · ix_presign 第一跳 followRedirects=false + 令牌只在第一跳 · TLS 无 badCertificateCallback 旁路 · 重试耗尽显式抛 NetException · DoH 初始端点只认 https · 无预置代理。

@@ -36,6 +36,58 @@ class _UnsetMarker {
 /// 哨兵实例：`_writeBody` 的 `bodyOverride` 用它区分「未指定」与「显式 null」。
 const Object _kUnset = _UnsetMarker();
 
+/// 重定向目标安全判定（base 层自足，不向上依赖 domain 的 IxPresign）。
+///
+/// 交叉审计 B1-A-23/B1-B-04：此前无凭证请求由 dart:io 自动跟随任意
+/// Location，可被导向 `http://`（降级）、回环 / 私网 / 云元数据
+/// `169.254.169.254`（SSRF）。这里只做**字面量**判定——域名形式的目标
+/// 由 TLS 证书校验兜底，不在此处做额外 DNS 解析（避免双解析开销）。
+bool _ogLIsSafeRedirectTarget(Uri target) {
+  if (target.scheme != 'https' && target.scheme != 'http') {
+    return false;
+  }
+  // https → http 降级一律拒绝（明文传输凭证/内容）。
+  if (target.scheme == 'http') {
+    return false;
+  }
+  final String host = target.host.toLowerCase();
+  if (host.isEmpty || host == 'localhost' || host.endsWith('.localhost')) {
+    return false;
+  }
+  final RegExpMatch? ipv4 =
+      RegExp(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$').firstMatch(host);
+  if (ipv4 != null) {
+    final List<int> parts = <int>[
+      for (int i = 1; i <= 4; i++) int.tryParse(ipv4.group(i)!) ?? 256,
+    ];
+    if (parts.any((int p) => p > 255)) {
+      return false;
+    }
+    final int a = parts[0], b = parts[1];
+    if (a == 10 ||
+        a == 127 ||
+        a == 0 ||
+        (a == 172 && b >= 16 && b <= 31) ||
+        (a == 192 && b == 168) ||
+        (a == 169 && b == 254) ||
+        (a == 100 && b >= 64 && b <= 127)) {
+      return false;
+    }
+  }
+  // IPv6 字面量：回环 / 未指定 / 链路本地 / 唯一本地一律拒绝。
+  if (host.startsWith('[') || host.contains(':')) {
+    final String lower = host.replaceAll('[', '').replaceAll(']', '');
+    if (lower == '::1' ||
+        lower == '::' ||
+        lower.startsWith('fe80') ||
+        lower.startsWith('fc') ||
+        lower.startsWith('fd')) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /// 基于 `dart:io HttpClient` 的传输实现（Android / Windows / Linux 共用）。
 class IoNetTransport implements NetTransport {
   /// 创建传输。
@@ -156,35 +208,22 @@ class IoNetTransport implements NetTransport {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
       final Uri uri = Uri.parse(request.url);
-      // 原则 40（令牌只在必要的跳使用一次）：dart:io 的自动重定向会原样重发
-      // 全部请求头（含 Authorization）到任意目标主机 —— 跨主机重定向等于把
-      // 凭证送给第三方。带凭证头时改为**手动跟随**：同源重定向才带凭证重发，
-      // 跨主机重定向直接把 3xx 响应交给上层（如实失败，绝不偷渡凭证）。
-      final bool hasCredential = request.headers.keys.any(
-        (String key) => key.toLowerCase() == 'authorization',
+      // ★ 交叉审计 B1-A-17/A-23/B-03/B-04：**所有**请求统一走手动守卫，
+      //   不再留「无凭证就自动跟随 5 跳」的旁路（恶意 Location 可打内网/
+      //   云元数据 169.254.169.254 或把 https 降级为 http）。
+      //   凭证头集合不只 authorization：cookie / x-auth-token / api-key 等
+      //   同样不能随跨主机跳转外泄。
+      final HttpClientResponse response = await _sendWithGuardedRedirect(
+        request.method.verb,
+        uri,
+        request,
+        redirectsLeft: 5,
+        receiveTimeout: request.timeout,
       );
-      final HttpClientResponse response;
-      if (hasCredential) {
-        response = await _sendWithGuardedRedirect(
-          request.method.verb,
-          uri,
-          request,
-          redirectsLeft: 5,
-        );
-      } else {
-        final HttpClientRequest req = await _client
-            .openUrl(request.method.verb, uri)
-            .timeout(connectTimeout);
-        req.followRedirects = true;
-        req.maxRedirects = 5;
-        request.headers.forEach((String key, String value) {
-          req.headers.set(key, value);
-        });
-        _writeBody(req, request);
-        response = await req.close().timeout(receiveTimeout);
-      }
-      final String text =
-          await response.transform(utf8.decoder).join().timeout(receiveTimeout);
+      final String text = await response
+          .transform(utf8.decoder)
+          .join()
+          .timeout(request.timeout);
       stopwatch.stop();
       return NetResponse(
         statusCode: response.statusCode,
@@ -219,6 +258,12 @@ class IoNetTransport implements NetTransport {
         '连接被对端关闭：$error｜自检: $report',
         cause: error,
       );
+    } on NetException {
+      // ★ B1-A-18/B1-B-11：内层已翻译过的类型化异常原样上送，
+      //   绝不二次包成 unknown（否则明确的 DNS/TLS 失败被误报「未知网络错误」
+      //   且因 unknown.isRetryable 被反复重试）。
+      stopwatch.stop();
+      rethrow;
     } on Object catch (error) {
       stopwatch.stop();
       throw NetException(NetErrorKind.unknown, '未知网络错误（$error）', cause: error);
@@ -235,6 +280,7 @@ class IoNetTransport implements NetTransport {
     NetRequest request, {
     required int redirectsLeft,
     Object? bodyOverride = _kUnset,
+    Duration? receiveTimeout,
   }) async {
     final HttpClientRequest req =
         await _client.openUrl(verb, uri).timeout(connectTimeout);
@@ -244,7 +290,7 @@ class IoNetTransport implements NetTransport {
     });
     _writeBody(req, request, bodyOverride: bodyOverride);
     final HttpClientResponse response = await req.close().timeout(
-          receiveTimeout,
+          receiveTimeout ?? this.receiveTimeout,
         );
     final int status = response.statusCode;
     final bool isRedirect = status >= 300 && status < 400;
@@ -253,6 +299,11 @@ class IoNetTransport implements NetTransport {
       return response;
     }
     final Uri next = uri.resolve(location);
+    // ★ B1-A-23/B1-B-04：跟随前校验目标，拒绝协议降级 / 回环 / 私网 /
+    //   云元数据地址，防止被改写的 Location 触发 SSRF 或明文传输。
+    if (!_ogLIsSafeRedirectTarget(next)) {
+      return response;
+    }
     final bool sameOrigin = next.scheme == uri.scheme &&
         next.host == uri.host &&
         next.port == uri.port;
@@ -277,6 +328,7 @@ class IoNetTransport implements NetTransport {
       request,
       redirectsLeft: redirectsLeft - 1,
       bodyOverride: nextBody,
+      receiveTimeout: receiveTimeout,
     );
   }
 

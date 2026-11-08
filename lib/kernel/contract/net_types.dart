@@ -207,21 +207,90 @@ class NetResponse {
 ///
 /// **唯一实现处**：传输层（异常路径）与韧性层（响应路径）共用同一份逻辑，
 /// 不允许各自复制一份再慢慢漂移。
+/// 解析 `Retry-After`：支持 delta-seconds 与 HTTP-date（RFC 7231 §7.1.3）。
+///
+/// ★ 交叉审计 B1-A-03/B1-C-09 三方命中：此前用 `DateTime.parse` 解析
+///   `Wed, 21 Oct 2015 07:28:00 GMT` **必然抛 FormatException**（HTTP-date
+///   不是 ISO-8601），于是 Retry-After 分支完全失效、只等 300ms 连续撞限流。
+///   契约层不引 dart:io（平台无关），手工把三种 HTTP-date 格式归一成 ISO。
 Duration? parseRetryAfterHeader(String? raw) {
   if (raw == null || raw.isEmpty) {
     return null;
   }
-  final seconds = int.tryParse(raw.trim());
+  final String value = raw.trim();
+  final int? seconds = int.tryParse(value);
   if (seconds != null) {
     return Duration(seconds: seconds);
   }
   try {
-    final target = DateTime.parse(raw);
-    final delta = target.difference(DateTime.now());
-    return delta.isNegative ? null : delta;
-  } catch (_) {
+    final DateTime? target = _parseHttpDate(value);
+    if (target == null) {
+      return null;
+    }
+    final Duration delta = target.difference(DateTime.now().toUtc());
+    return delta.isNegative ? Duration.zero : delta;
+  } on Object {
     return null;
   }
+}
+
+/// HTTP-date（IMF-fixdate / RFC 850 / asctime）→ UTC DateTime。
+DateTime? _parseHttpDate(String raw) {
+  const List<String> months = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  // IMF-fixdate: "Wed, 21 Oct 2015 07:28:00 GMT"
+  final RegExp imf = RegExp(
+    r'^\w{3}, (\d{1,2}) (\w{3}) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$',
+  );
+  RegExpMatch? m = imf.firstMatch(raw);
+  if (m != null) {
+    final int month = months.indexOf(m.group(2)!);
+    if (month < 0) {
+      return null;
+    }
+    return DateTime.utc(
+      int.parse(m.group(3)!),
+      month + 1,
+      int.parse(m.group(1)!),
+      int.parse(m.group(4)!),
+      int.parse(m.group(5)!),
+      int.parse(m.group(6)!),
+    );
+  }
+  // RFC 850: "Wednesday, 21-Oct-15 07:28:00 GMT"（两位年份按 RFC 2616
+  // 约定：>50 视为 19xx，否则 20xx）。asctime 在此不常见，统一走 ISO 兜底。
+  final RegExp rfc850 = RegExp(
+    r'^\w+, (\d{2})-(\w{3})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) GMT$',
+  );
+  m = rfc850.firstMatch(raw);
+  if (m != null) {
+    final int month = months.indexOf(m.group(2)!);
+    final int twoDigit = int.parse(m.group(3)!);
+    if (month < 0) {
+      return null;
+    }
+    return DateTime.utc(
+      twoDigit > 50 ? 1900 + twoDigit : 2000 + twoDigit,
+      month + 1,
+      int.parse(m.group(1)!),
+      int.parse(m.group(4)!),
+      int.parse(m.group(5)!),
+      int.parse(m.group(6)!),
+    );
+  }
+  return null;
 }
 
 /// 网络观测快照（诊断报告 / 状态页数据源）。
