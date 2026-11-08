@@ -2,15 +2,15 @@
 <!--
   OGL Web 入口页（由 tool/web_publish.py 生成，请勿手改）。
 
-  职责只有三件：
+  职责三件：
     1. 判断浏览器能否运行 dart2wasm（需要 Wasm GC 提案），选定版本桶；
-    2. 把应用装进 iframe —— 地址栏长期不变，换版本只改 iframe 的 src；
-    3. 首次进入时清理历史 Service Worker 与缓存，避免旧页面被缓存锁死。
+    2. **并发预取**主包与引擎资源，逐字节上报真实进度（不再是假动画）；
+    3. 把应用装进 iframe —— 地址栏长期不变，换版本只改 iframe 的 src。
 
-  ★ 资源一律同源、相对路径，`<base>` 不做任何跨源改写。
-    跨源改写会让 Flutter 的路由把跨源地址写进 history，浏览器随即抛出
-    SecurityError（"A history state object with URL 'https://cdn...' cannot
-    be created in a document with origin ..."），整站路由失效。
+  ★ 预取走同源相对路径 + 浏览器 HTTP cache：iframe 随后加载会直接命中
+    缓存，不会被迫重复下载；任意一路预取失败都只降级、不阻断启动。
+  ★ 资源一律同源，不做跨源 <base> 改写（否则 Flutter 路由写 history 会
+    抛 SecurityError，整站失效）。
 -->
 <html lang="zh">
 <head>
@@ -19,65 +19,70 @@
 <title>OhGithubLost</title>
 <meta name="theme-color" content="#171A21">
 <meta name="description" content="OGL · OhGithubLost — GitHub 仓库管理器（Web 版）">
-<!-- 构建标记：排查线上问题时先看这里，确认浏览器拿到的是哪一次发布 -->
 <meta name="ogl-build" content="20261108025442">
-<link rel="icon" type="image/png" href="js/1120/favicon.png">
+<link rel="icon" type="image/png" href="wasm/1120/favicon.png">
 <style>
   :root {
-    --bg: #171A21;
-    --ink: #E6EDF3;
-    --muted: #8D96A8;
-    --line: #2A2F3B;
-    --accent: #4C8DFF;
+    --bg: #171A21; --ink: #E6EDF3; --muted: #8D96A8;
+    --line: #2A2F3B; --accent: #4C8DFF; --track: #222733;
   }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; height: 100%;
     background: var(--bg); color: var(--ink);
     font: 14px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-    overscroll-behavior: none;
-    -webkit-text-size-adjust: 100%;
+    overscroll-behavior: none; -webkit-text-size-adjust: 100%;
   }
   #app {
-    position: fixed; inset: 0;
-    width: 100%; height: 100%; height: 100dvh;
+    position: fixed; inset: 0; width: 100%; height: 100%; height: 100dvh;
     border: 0; display: block; background: var(--bg);
   }
   #boot {
     position: fixed; inset: 0; z-index: 9;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 14px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px;
     padding: calc(env(safe-area-inset-top, 0px) + 24px) 24px
              calc(env(safe-area-inset-bottom, 0px) + 24px);
     background: var(--bg);
     transition: opacity .35s ease;
   }
   #boot[data-state="done"] { opacity: 0; pointer-events: none; }
-  #boot .brand { font-size: 20px; font-weight: 600; letter-spacing: .5px; }
+  #boot .brand {
+    font-size: 20px; font-weight: 600; letter-spacing: .5px;
+  }
+  #boot .meta {
+    font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums;
+    letter-spacing: .02em;
+  }
   #boot .bar {
-    width: min(220px, 60vw); height: 3px; border-radius: 2px;
-    background: var(--line); overflow: hidden;
+    width: min(300px, 72vw); height: 6px; border-radius: 3px;
+    background: var(--track); overflow: hidden; position: relative;
   }
-  #boot .bar::after {
-    content: ""; display: block; width: 40%; height: 100%;
-    background: var(--accent); border-radius: 2px;
-    animation: slide 1.2s ease-in-out infinite;
+  #boot .fill {
+    height: 100%; width: 0%; border-radius: 3px;
+    background: linear-gradient(90deg, #3B6FD9, var(--accent));
+    transition: width .18s ease-out;
   }
-  @keyframes slide {
-    0%   { transform: translateX(-100%); }
-    100% { transform: translateX(250%); }
+  /* 无 Content-Length 时的不确定态：只在拿不到总量时启用 */
+  #boot[data-indeterminate="true"] .fill {
+    width: 38% !important;
+    animation: ogl-slide 1.2s ease-in-out infinite;
+  }
+  @keyframes ogl-slide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
   }
   @media (prefers-reduced-motion: reduce) {
-    #boot .bar::after { animation: none; width: 100%; opacity: .5; }
+    #boot .fill { transition: none; }
+    #boot[data-indeterminate="true"] .fill {
+      animation: none; width: 100% !important; opacity: .5;
+    }
   }
-  #boot .hint { color: var(--muted); font-size: 13px; text-align: center; max-width: 30em; }
+  #boot .hint { color: var(--muted); font-size: 13px; text-align: center; max-width: 32em; }
   #boot .retry {
-    display: none;
-    margin-top: 4px; padding: 8px 18px;
+    display: none; margin-top: 4px; padding: 8px 18px;
     border: 1px solid var(--line); border-radius: 8px;
-    background: transparent; color: var(--ink);
-    font: inherit; cursor: pointer;
+    background: transparent; color: var(--ink); font: inherit; cursor: pointer;
   }
   #boot[data-state="error"] .retry { display: inline-block; }
   #boot[data-state="error"] .bar { display: none; }
@@ -89,8 +94,12 @@
 
 <div id="boot" data-state="loading" role="status" aria-live="polite">
   <div class="brand">OhGithubLost</div>
-  <div class="bar" aria-hidden="true"></div>
-  <div class="hint" id="hint">Loading…</div>
+  <div class="bar" role="progressbar" aria-label="Loading"
+       aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar">
+    <div class="fill" id="fill"></div>
+  </div>
+  <div class="meta" id="meta">0% · 0 B</div>
+  <div class="hint" id="hint">Preparing…</div>
   <button class="retry" type="button" onclick="location.reload()">Retry</button>
 </div>
 
@@ -100,14 +109,16 @@
 
   var VERSION = "11.2.0";
   var DIR = "1120";
-  // 每次发布都会变：用于让 iframe 绕过上一版 index.html 的强缓存
   var STAMP = "20261108025442";
 
   var frame = document.getElementById("app");
-  var boot = document.getElementById("boot");
-  var hint = document.getElementById("hint");
+  var boot  = document.getElementById("boot");
+  var bar   = document.getElementById("bar");
+  var fill  = document.getElementById("fill");
+  var meta  = document.getElementById("meta");
+  var hint  = document.getElementById("hint");
 
-  // dart2wasm 需要 Wasm GC。字节序列取自 Flutter 引擎的 supportsWasmGC()。
+  // dart2wasm 需要 Wasm GC（字节序列取自 Flutter 引擎 supportsWasmGC()）。
   function supportsWasmGC() {
     try {
       return typeof WebAssembly === "object"
@@ -116,13 +127,10 @@
           0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
           0x01, 0x05, 0x01, 0x5f, 0x01, 0x78, 0x00
         ]));
-    } catch (e) {
-      return false;
-    }
+    } catch (e) { return false; }
   }
 
-  // 清理历史遗留：旧版注册过 Service Worker，会把入口页锁在旧内容上。
-  // 只在发布戳变化时执行一次，不影响正常缓存。
+  // 清理历史 Service Worker / CacheStorage：旧版会把入口页锁死在旧内容。
   function purgeOnce() {
     try {
       var key = "ogl.boot.stamp";
@@ -141,7 +149,84 @@
     } catch (e) {}
   }
 
+  function human(n) {
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(0) + " KB";
+    return (n / 1024 / 1024).toFixed(1) + " MB";
+  }
+
+  // ── 真实进度条（按已读字节 / 总字节）────────────────────────────────
+  var loaded = 0, total = 0, shown = -1, haveTotal = false;
+  function render(stage) {
+    var pct;
+    if (haveTotal && total > 0) {
+      pct = Math.min(99, Math.floor(loaded * 100 / total));
+    } else {
+      // 没有 Content-Length：用对数逼近的估计值，永不倒退、永不假装 100%。
+      pct = Math.min(90, Math.floor(100 * (1 - Math.exp(-loaded / (3 * 1024 * 1024)))));
+      boot.setAttribute("data-indeterminate", "true");
+    }
+    if (pct < shown) pct = shown;
+    shown = pct;
+    fill.style.width = pct + "%";
+    bar.setAttribute("aria-valuenow", String(pct));
+    meta.textContent = pct + "% · " + human(loaded) +
+      (haveTotal && total > 0 ? " / " + human(total) : "");
+    if (stage) hint.textContent = stage;
+  }
+
+  function addBytes(n) {
+    if (n > 0) { loaded += n; render(); }
+  }
+
+  // ① 并发 HEAD 探测各资源大小（HTTP/2 多路复用，几乎不额外耗时）。
+  //    失败 / 服务器不给 Content-Length → 保留不确定态，照样加载。
+  function probe(url) {
+    return fetch(url, { method: "HEAD", cache: "force-cache" })
+      .then(function (r) {
+        var len = parseInt(r.headers.get("content-length") || "0", 10);
+        return len > 0 ? len : 0;
+      })
+      .catch(function () { return 0; });
+  }
+
+  // ② 逐块读取响应体并累计字节；结果留在浏览器 HTTP cache 里，
+  //    iframe 随后加载同一 URL 会直接命中，不会重复下载。
+  function prefetch(url) {
+    return fetch(url, { cache: "force-cache" })
+      .then(function (r) {
+        if (!r.ok || !r.body || !r.body.getReader) {
+          // 不支持流式读取：只等完成，按 HEAD 探测值记一次。
+          return probe(url).then(function (n) { addBytes(n); });
+        }
+        var reader = r.body.getReader();
+        function pump() {
+          return reader.read().then(function (chunk) {
+            if (chunk.done) return;
+            addBytes(chunk.value ? chunk.value.byteLength : 0);
+            return pump();
+          });
+        }
+        return pump();
+      })
+      .catch(function () { /* 预取失败只降级，不阻断启动 */ });
+  }
+
+  function finishPrefetch() {
+    if (haveTotal && total > 0) {
+      // 预取完成，把进度补到 99%（100% 留给 iframe 首帧）。
+      loaded = total; render("Starting " + VERSION + "…");
+      fill.style.width = "99%";
+    }
+    if (boot.getAttribute("data-state") === "loading") {
+      hint.textContent = "Starting " + VERSION + "…";
+    }
+  }
+
   function finish() {
+    fill.style.width = "100%";
+    bar.setAttribute("aria-valuenow", "100");
+    meta.textContent = "100% · " + human(loaded || total);
     boot.setAttribute("data-state", "done");
     setTimeout(function () { boot.style.display = "none"; }, 400);
   }
@@ -154,8 +239,43 @@
   purgeOnce();
 
   var variant = supportsWasmGC() ? "wasm" : "js";
-  var src = "./" + variant + "/" + DIR + "/?v=" + encodeURIComponent(STAMP);
+  var base = "./" + variant + "/" + DIR + "/";
+  var src = base + "?v=" + encodeURIComponent(STAMP);
+
+  // 四路并发预取：主包 / CanvasKit 引擎 / 字体与资源清单 / 启动脚本。
+  // 权重按实际产物量级排序；小文件失败无感，大文件进度可见。
+  var mainAsset = variant === "wasm" ? "main.dart.wasm" : "main.dart.js";
+  var resources = [
+    base + mainAsset,
+    base + "canvaskit/canvaskit.wasm",
+    base + "assets/FontManifest.json",
+    base + "flutter_bootstrap.js"
+  ];
+  // canvaskit.js / main.dart.mjs / AssetManifest 也一起并发（HTTP/2 下
+  // 多路复用不额外占连接；少量 404 静默忽略，不影响进度总量）。
+  var extras = [
+    base + "canvaskit/canvaskit.js",
+    base + "assets/AssetManifest.bin.json",
+    base + "main.dart.mjs"
+  ];
+
   hint.textContent = "Loading " + VERSION + "…";
+  render();
+
+  // 先并发探测总量，再并发预取：进度条从第一字节起就是真实比例。
+  var all = resources.concat(extras);
+  Promise.all(all.map(probe)).then(function (sizes) {
+    var sum = 0, known = 0;
+    sizes.forEach(function (n) { if (n > 0) { sum += n; known++; } });
+    if (known > 0 && sum > 0) {
+      total = sum;
+      haveTotal = true;
+      boot.setAttribute("data-indeterminate", "false");
+      render();
+    }
+    // 四路主资源并发读取（其余三路也同时发起，总并发浏览器自行调度）。
+    return Promise.all(all.map(prefetch));
+  }).then(finishPrefetch).catch(function () { finishPrefetch(); });
 
   frame.addEventListener("load", function () {
     if (frame.getAttribute("src") === "about:blank") return;
@@ -165,12 +285,12 @@
     fail("Load failed. Check your connection and retry.");
   });
 
-  // 兜底：30 秒仍未就绪则给出明确指引，而不是让进度条一直转。
+  // 兜底：60 秒仍未就绪（弱网下预取可能慢）给明确指引，而不是一直转。
   setTimeout(function () {
     if (boot.getAttribute("data-state") === "loading") {
       fail("Startup timed out. Refresh or use a modern browser.");
     }
-  }, 30000);
+  }, 60000);
 
   frame.src = src;
 })();
