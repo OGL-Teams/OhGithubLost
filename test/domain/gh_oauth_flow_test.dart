@@ -7,7 +7,6 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ohgithublost/domain/gh/gh_oauth.dart';
-import 'package:ohgithublost/domain/gh/gh_oauth_types.dart';
 
 void main() {
   group('Device Flow 契约', () {
