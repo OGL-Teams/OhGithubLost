@@ -5536,5 +5536,127 @@
   "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v11.3.0",
   "prerelease": false,
   "published_at": "2026-11-08T15:10:11Z"
+ },
+ "v11.4.0": {
+  "assets": [
+   {
+    "name": "OGL-v11.4.0-Android.AAB.7z",
+    "size": 59309789,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Android.AAB.7z"
+   },
+   {
+    "name": "OGL-v11.4.0-Android.AAB.zip",
+    "size": 61461142,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Android.AAB.zip"
+   },
+   {
+    "name": "OGL-v11.4.0-Android.arm64-v8a.7z",
+    "size": 7965819,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Android.arm64-v8a.7z"
+   },
+   {
+    "name": "OGL-v11.4.0-Android.arm64-v8a.zip",
+    "size": 10534223,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Android.arm64-v8a.zip"
+   },
+   {
+    "name": "OGL-v11.4.0-Android.armeabi-v7a.7z",
+    "size": 7937787,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Android.armeabi-v7a.7z"
+   },
+   {
+    "name": "OGL-v11.4.0-Android.armeabi-v7a.zip",
+    "size": 10202435,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Android.armeabi-v7a.zip"
+   },
+   {
+    "name": "OGL-v11.4.0-Android.universal-APK.7z",
+    "size": 19452274,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Android.universal-APK.7z"
+   },
+   {
+    "name": "OGL-v11.4.0-Android.universal-APK.zip",
+    "size": 28676552,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Android.universal-APK.zip"
+   },
+   {
+    "name": "OGL-v11.4.0-Android.x86_64.7z",
+    "size": 8465810,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Android.x86_64.7z"
+   },
+   {
+    "name": "OGL-v11.4.0-Android.x86_64.zip",
+    "size": 10694068,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Android.x86_64.zip"
+   },
+   {
+    "name": "OGL-v11.4.0-boot-manifest.7z",
+    "size": 564,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-boot-manifest.7z"
+   },
+   {
+    "name": "OGL-v11.4.0-boot-manifest.zip",
+    "size": 922,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-boot-manifest.zip"
+   },
+   {
+    "name": "OGL-v11.4.0-Linux.arm64.7z",
+    "size": 7806382,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Linux.arm64.7z"
+   },
+   {
+    "name": "OGL-v11.4.0-Linux.arm64.zip",
+    "size": 12238770,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Linux.arm64.zip"
+   },
+   {
+    "name": "OGL-v11.4.0-Linux.x64.7z",
+    "size": 8588112,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Linux.x64.7z"
+   },
+   {
+    "name": "OGL-v11.4.0-Linux.x64.zip",
+    "size": 12675608,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Linux.x64.zip"
+   },
+   {
+    "name": "OGL-v11.4.0-Windows.arm64.7z",
+    "size": 8211419,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Windows.arm64.7z"
+   },
+   {
+    "name": "OGL-v11.4.0-Windows.arm64.zip",
+    "size": 13015270,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Windows.arm64.zip"
+   },
+   {
+    "name": "OGL-v11.4.0-Windows.x64.7z",
+    "size": 9413056,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Windows.x64.7z"
+   },
+   {
+    "name": "OGL-v11.4.0-Windows.x64.zip",
+    "size": 13948461,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/OGL-v11.4.0-Windows.x64.zip"
+   },
+   {
+    "name": "ohgithublost-11.4.0-1.x86_64.rpm",
+    "size": 9344725,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/ohgithublost-11.4.0-1.x86_64.rpm"
+   },
+   {
+    "name": "ohgithublost_11.4.0_amd64.deb",
+    "size": 9381256,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/ohgithublost_11.4.0_amd64.deb"
+   },
+   {
+    "name": "ohgithublost_11.4.0_arm64.deb",
+    "size": 8548828,
+    "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v11.4.0/ohgithublost_11.4.0_arm64.deb"
+   }
+  ],
+  "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v11.4.0",
+  "prerelease": false,
+  "published_at": "2026-11-08T16:52:25Z"
  }
 }
