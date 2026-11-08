@@ -36,6 +36,30 @@ class _UnsetMarker {
 /// 哨兵实例：`_writeBody` 的 `bodyOverride` 用它区分「未指定」与「显式 null」。
 const Object _kUnset = _UnsetMarker();
 
+/// ★ B1-A-17/B1-B-03：跨主机跳转时**不得外泄**的凭证头集合。
+///   此前守卫只认 `authorization`——`cookie` / `proxy-authorization` /
+///   `x-auth-token` / `api-key` 等会随 dart:io 自动跟随发往第三方。
+///   生产调用点当前只用 `authorization`，但契约层必须一次堵住。
+/// 与请求体绑定的头：302/303 降级 GET 丢 body 时必须一并剔除
+/// （B1-A-30），否则第二跳 `Content-Length: N` 无 body 会挂起 / 400。
+const Set<String> _kBodyBoundHeaders = <String>{
+  'content-length',
+  'content-type',
+  'content-md5',
+  'transfer-encoding',
+  'if-match',
+  'if-none-match',
+};
+
+const Set<String> _kSensitiveHeaders = <String>{
+  'authorization',
+  'proxy-authorization',
+  'cookie',
+  'x-auth-token',
+  'api-key',
+  'x-api-key',
+};
+
 /// 重定向目标安全判定（base 层自足，不向上依赖 domain 的 IxPresign）。
 ///
 /// 交叉审计 B1-A-23/B1-B-04：此前无凭证请求由 dart:io 自动跟随任意
@@ -417,19 +441,45 @@ class IoDnsHttpClient implements DnsHttpClient {
     String url, {
     Map<String, String> headers = const <String, String>{},
   }) async {
-    final Uri uri = Uri.parse(url);
-    final HttpClientRequest req = await _client.getUrl(uri).timeout(_timeout);
-    headers.forEach((String key, String value) {
-      req.headers.set(key, value);
-    });
-    req.persistentConnection = false;
-    final HttpClientResponse response = await req.close().timeout(_timeout);
-    final String text =
-        await response.transform(utf8.decoder).join().timeout(_timeout);
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw HttpException('HTTP ${response.statusCode}（$url）', uri: uri);
+    var uri = Uri.parse(url);
+    // ★ B1-A-22/B1-B-09：手动跟随 + 拒绝降级——https DoH 端点被 302 到
+    //   http 时，加密查询会变成明文（中间人可篡改 DNS 应答指向任意 IP）。
+    //   此前用 `getUrl` 自动跟随 5 跳，降级与跨主机都静默放行。
+    for (var hop = 0; hop < 3; hop++) {
+      final HttpClientRequest req =
+          await _client.openUrl('GET', uri).timeout(_timeout);
+      headers.forEach((String key, String value) {
+        req.headers.set(key, value);
+      });
+      req.persistentConnection = false;
+      final HttpClientResponse response = await req.close().timeout(_timeout);
+      final int status = response.statusCode;
+      if (status >= 300 && status < 400) {
+        final String? location =
+            response.headers.value(HttpHeaders.locationHeader);
+        if (location == null) {
+          throw HttpException('重定向缺少 Location（$url）', uri: uri);
+        }
+        final Uri next = uri.resolve(location);
+        if (next.scheme != 'https') {
+          await response.drain<void>();
+          throw HttpException(
+            '重定向降级（${uri.scheme} → ${next.scheme}），已拒绝',
+            uri: uri,
+          );
+        }
+        await response.drain<void>();
+        uri = next;
+        continue;
+      }
+      final String text =
+          await response.transform(utf8.decoder).join().timeout(_timeout);
+      if (status < 200 || status >= 300) {
+        throw HttpException('HTTP $status（$uri）', uri: uri);
+      }
+      return text;
     }
-    return text;
+    throw HttpException('重定向次数超限（$url）', uri: uri);
   }
 }
 

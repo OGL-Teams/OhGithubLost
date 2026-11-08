@@ -127,7 +127,26 @@ class ResilientTransport implements NetTransport {
         if (!mayRetry) {
           rethrow;
         }
+        // ★ B1-A-05：先判错误类别再决定换跳。TLS / 客户端错误 / 取消类
+        //   不可重试错误换镜像重发没有意义（TLS 原因会被最后一次镜像的
+        //   错误掩盖；取消后不该继续发请求；凭证会随换跳发往镜像）。
+        if (!error.kind.isRetryable) {
+          rethrow;
+        }
         if (advanceHop()) {
+          // ★ B1-A-06：换跳也要尊重服务端节奏与退避——此前直接 continue
+          //   跳过了 delayFor / onRetry / attempt++，几毫秒内连发多处。
+          final Duration? wait = _policy.delayFor(
+            attempt,
+            statusCode: error.statusCode,
+            kind: error.kind,
+            retryAfter: error.retryAfter,
+          );
+          if (wait != null) {
+            _observer.onRetry(current, attempt, error.kind.name);
+            await Future<void>.delayed(wait);
+          }
+          attempt++;
           continue;
         }
 
@@ -154,6 +173,17 @@ class ResilientTransport implements NetTransport {
 
       // 5xx / 429 同样先换跳（镜像也可能只是"半死"），再退避重试。
       if (mayRetry && advanceHop()) {
+        // ★ B1-A-06：换跳同样尊重退避（与异常路径对齐），不裸 continue。
+        final Duration? wait = _policy.delayFor(
+          attempt,
+          statusCode: response.statusCode,
+          retryAfter: parseRetryAfterHeader(response.headers['retry-after']),
+        );
+        if (wait != null) {
+          _observer.onRetry(current, attempt, 'HTTP ${response.statusCode}');
+          await Future<void>.delayed(wait);
+        }
+        attempt++;
         continue;
       }
 
