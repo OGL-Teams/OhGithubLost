@@ -234,7 +234,7 @@ class IoNetTransport implements NetTransport {
     Uri uri,
     NetRequest request, {
     required int redirectsLeft,
-    Object? bodyOverride,
+    Object? bodyOverride = _kUnset,
   }) async {
     final HttpClientRequest req =
         await _client.openUrl(verb, uri).timeout(connectTimeout);
@@ -260,10 +260,13 @@ class IoNetTransport implements NetTransport {
       // 跨主机重定向：不跟随。3xx 会被 ResilientTransport 归为语义性响应交上层。
       return response;
     }
-    // 同源跟随：302/303 把方法降级为 GET 且不带 body；其余保持原方法+body。
-    // 凭证头保持原样——同源跳转仍指向同一台已持凭证的服务端。
-    final bool switchToGet =
-        status == HttpStatus.movedTemporarily || status == HttpStatus.seeOther;
+    // 同源跟随：RFC 7231 §6.4.3 / §6.4.4 —— 302/303 只对 **POST** 降级为
+    // GET 且丢 body；PUT/DELETE/PATCH 必须保持原方法与 body（否则一次保存
+    // 会被静默变成空 GET，用户看到"提交成功"其实什么都没写）。
+    // 307/308 一律保持原方法与 body（RFC 7231 §6.4.7）。
+    final bool switchToGet = (status == HttpStatus.movedTemporarily ||
+            status == HttpStatus.seeOther) &&
+        request.method == NetMethod.post;
     final Object? nextBody = switchToGet
         ? null
         : (identical(bodyOverride, _kUnset) ? request.body : bodyOverride);
