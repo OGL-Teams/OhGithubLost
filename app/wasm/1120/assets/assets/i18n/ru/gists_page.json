@@ -1,0 +1,13 @@
+{
+  "created": "Gist создан",
+  "empty": "Пока нет фрагментов Gist",
+  "fileCount": "{count} файл(ы) · ",
+  "missingId": "У этого Gist отсутствует id, открыть невозможно",
+  "new": "Создать",
+  "noDescription": "(нет описания)",
+  "noOpenLink": "У этого Gist нет ссылки для открытия",
+  "openInBrowser": "Открыть в браузере",
+  "private": "Приватный",
+  "public": "Публичный",
+  "title": "Фрагменты Gist"
+}

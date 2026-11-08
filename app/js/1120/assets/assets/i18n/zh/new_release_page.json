@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "说明（可选，支持 Markdown）",
+  "createFailed": "创建失败：{error}",
+  "created": "已创建",
+  "draft": "草稿",
+  "draftDesc": "保存为草稿，暂不发布",
+  "prerelease": "预发布",
+  "prereleaseDesc": "标记为 pre-release",
+  "publish": "创建发布",
+  "publishing": "发布中…",
+  "tagLabel": "标签（tag）",
+  "tagRequired": "请先填写标签（如 v1.0.0）",
+  "title": "新建发布",
+  "titleLabel": "标题（可选）"
+}

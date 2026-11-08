@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--
+  OGL Web · 版本桶入口（由 flutter build web 模板生成，随产物发布）。
+
+  ★ 只做一件事：加载 Flutter 引擎并启动应用。
+    资源一律**同源相对路径**，不改写 <base>、不拼接外部域名。
+    跨源改写会让 Flutter 把跨源地址写进 history，浏览器抛 SecurityError
+    （"A history state object with URL 'https://cdn...' cannot be created in
+    a document with origin ..."），路由随之整站失效 —— 这是旧版踩过的坑。
+
+  ★ 版本桶目录名不随内容变化，因此本文件的缓存策略在发布根 `_headers`
+    里单独设为 must-revalidate；只有带版本号的资源才用一年强缓存。
+-->
+<html lang="zh">
+<head>
+  <base href="./">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>OhGithubLost</title>
+  <meta name="description" content="OGL · OhGithubLost — GitHub 仓库管理器（Web 版）">
+  <meta name="theme-color" content="#171A21">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OGL">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <style>
+    html, body { margin: 0; height: 100%; background: #171A21; }
+    #ogl-boot {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; text-align: center;
+      color: #8D96A8;
+      font: 13px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    #ogl-boot.error { color: #E6EDF3; }
+    #ogl-boot .dots { letter-spacing: .5em; animation: ogl-pulse 1.2s ease-in-out infinite; }
+    @keyframes ogl-pulse { 0%,100% { opacity: .35 } 50% { opacity: 1 } }
+  </style>
+</head>
+<body>
+  <!-- ★ 首帧字体（UI 细化）：引擎字体（CanvasKit 的 FontManifest + 字体文件）
+       还没加载完之前，浏览器系统字体可能渲染不出中文（豆腐块/乱码）。
+       启动遮罩只放 ASCII 进度点，中文界面全部交给 Flutter 首帧之后。 -->
+  <div id="ogl-boot" aria-label="Loading"><span class="dots">•••</span></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var boot = document.getElementById("ogl-boot");
+      // 两个桶的目录布局相同，靠自身路径判断该预取哪一份主包。
+      var isWasm = location.pathname.indexOf("/wasm/") !== -1;
+
+      // ★ 字体预载：FontManifest.json + 常用字体文件同源预取，
+      //   让 CanvasKit 首帧前字形已就绪（消除"刚进网页中文乱码"）。
+      //   资源不存在时浏览器只是 404，不影响启动（try/catch 兜住）。
+      try {
+        var fonts = document.createElement("link");
+        fonts.rel = "preload";
+        fonts.as = "fetch";
+        fonts.href = "assets/FontManifest.json";
+        fonts.crossOrigin = "anonymous";
+        document.head.appendChild(fonts);
+      } catch (e) {}
+
+      // 预取主包：与 flutter_bootstrap.js 并行，省一次串行往返。
+      // 属性必须与运行时实际的取法一致，否则浏览器会当作两次请求
+      // （旧版就因此把同一份 wasm 下过两遍）。wasm 走 fetch，故加 crossorigin。
+      try {
+        var preload = document.createElement("link");
+        preload.rel = "preload";
+        preload.as = isWasm ? "fetch" : "script";
+        preload.href = isWasm ? "main.dart.wasm" : "main.dart.js";
+        if (isWasm) preload.crossOrigin = "anonymous";
+        document.head.appendChild(preload);
+      } catch (e) {}
+
+      function fail(message) {
+        if (!boot) return;
+        boot.className = "error";
+        boot.textContent = message;
+      }
+
+      var script = document.createElement("script");
+      script.src = "flutter_bootstrap.js";
+      script.async = true;
+      script.addEventListener("error", function () {
+        fail("Load failed. Please refresh.");
+      });
+      document.body.appendChild(script);
+
+      // 兜底提示：引擎若在 30 秒内仍未接管页面，说明环境无法运行。
+      setTimeout(function () {
+        if (boot && boot.querySelector(".dots")) {
+          fail("Startup timed out. Please refresh.");
+        }
+      }, 30000);
+    })();
+  </script>
+</body>
+</html>

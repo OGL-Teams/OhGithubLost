@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Notiz (optional, Markdown wird unterstützt)",
+  "createFailed": "Erstellen fehlgeschlagen: {error}",
+  "created": "Erstellt",
+  "draft": "Entwurf",
+  "draftDesc": "Als Entwurf speichern, nicht sofort veröffentlichen",
+  "prerelease": "Pre-Release",
+  "prereleaseDesc": "Als pre-release markieren",
+  "publish": "Release erstellen",
+  "publishing": "Wird veröffentlicht…",
+  "tagLabel": "Tag (etiquette)",
+  "tagRequired": "Bitte zuerst Tag angeben (z. B. v1.0.0)",
+  "title": "Neues Release",
+  "titleLabel": "Titel (optional)"
+}

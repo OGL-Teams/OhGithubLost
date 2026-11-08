@@ -1,0 +1,13 @@
+{
+  "created": "Gist created",
+  "empty": "No Gists yet",
+  "fileCount": "{count} files · ",
+  "missingId": "This Gist is missing an id and cannot be opened",
+  "new": "New",
+  "noDescription": "(No description)",
+  "noOpenLink": "This Gist has no openable link",
+  "openInBrowser": "Open in browser",
+  "private": "Private",
+  "public": "Public",
+  "title": "Gists"
+}
