@@ -191,6 +191,12 @@ class _DiscoverPageState extends State<DiscoverPage>
       label: _t('tabFeed'),
       isEmpty: (List<Map<String, dynamic>> value) => value.isEmpty,
       loader: () async {
+        // ★ B3-A-04：游客未登录时 /notifications 必然 401，且 401 会触发
+        //   全局令牌失效出口把游客踢回登录门。未登录直接返回空（如实
+        //   显示"暂无动态"），不发这个注定失败的请求。
+        if (!widget.surface.domain.auth.isSignedIn) {
+          return <Map<String, dynamic>>[];
+        }
         // ★ 官方 API：GitHub 自己的通知流，覆盖关注/star/参与仓库的
         //   Release、Issue、PR 等新事项，按 updated_at 倒序（新的在上）。
         final List<Map<String, dynamic>> items =

@@ -3950,9 +3950,9 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
         _full,
       );
       if (mounted) {
+        // 202 = 待对方接受，仓库此刻仍在本账号名下；不退出详情页，
+        // 不谎称已换址（B3-A-05）。
         OgLNotifier.of(context).success(_t('transferred', {'owner': target}));
-        // 仓库已换址：旧 fullName 不再可用，退出详情页让列表刷新。
-        Navigator.of(context).pop(true);
       }
     } catch (error) {
       if (mounted) {

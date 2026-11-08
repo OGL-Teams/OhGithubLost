@@ -204,16 +204,14 @@ class GhModule extends OgLModule {
     // 只依赖磁盘上的提交日志，失败不阻断启动（记录后照常进入界面）。
     // 运行中每 30s 再查一次队列：此前只在启动时重放，运行中失败的任务
     // 会一直挂在"待同步"里（用户看到的就是"提交入队后迟迟不成功"）。
-    // 队列连续空转 3 次后自停：常驻定时器只在有待办时有意义。
+    // ★ B3-A-11：定时器**不得自停**——自停后运行中新入队的失败写入
+    //   再无触发点，直到重启才补做。每 30s 只是读一次 KV 队列，开销极小；
+    //   空转计数只用于诊断日志节流，不再取消定时器。
     var idleTicks = 0;
     bool replayInFlight = false;
     Timer.periodic(const Duration(seconds: 30), (Timer timer) {
-      if (idleTicks >= 3) {
-        timer.cancel();
-        return;
-      }
       // ★ B2-B-19：防重入——上一次重放（30s 周期但可能耗时超过周期）还在
-      //   跑时不再叠加；空转自停计数只在「无 pending 且无在途」时递增。
+      //   跑时不再叠加；空转计数只在「无 pending 且无在途」时递增。
       if (replayInFlight) {
         return;
       }
@@ -222,7 +220,7 @@ class GhModule extends OgLModule {
         base.disk.cache.replayPending().then((List<WriteOutcome> outcomes) {
           replayInFlight = false;
           if (outcomes.isEmpty) {
-            idleTicks++;
+            idleTicks++; // 仅节流诊断，不取消定时器
             return;
           }
           idleTicks = 0;
@@ -237,14 +235,9 @@ class GhModule extends OgLModule {
             },
           );
         }).catchError((Object error) {
-          context.diagnostics.warn(
-            'CONS',
-            '待同步重放失败',
-            code: 'OGL-CONS-REPLAY-ERR',
-            data: <String, Object?>{'error': '$error'},
-          );
-        }).catchError((Object error) {
-          // B2-B-19：异常路径同样复位防重入标志，否则一次失败后重放永久停摆。
+          // ★ B3-A-11：异常路径必须在**同一个** handler 里复位标志。
+          //   此前复位放在第二个 catchError（前一个已正常返回，永不执行），
+          //   一次失败后重放永久停摆。
           replayInFlight = false;
           context.diagnostics.warn(
             'CONS',
@@ -257,7 +250,6 @@ class GhModule extends OgLModule {
     });
     unawaited(
       base.disk.cache.replayPending().then((outcomes) {
-        replayInFlight = false;
         final int ok = outcomes.where((o) => o.ok).length;
         context.diagnostics.info(
           'CONS',

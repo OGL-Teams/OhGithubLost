@@ -332,32 +332,56 @@ class GhResponse {
     }
   }
 
-  /// 解析为对象列表（失败返回空列表）。
+  /// 解析为对象列表（**严格**：非数组或解析失败一律抛，绝不静默变空）。
+  ///
+  /// ★ B3-A-06/C？三方命中：此前 `decoded is! List` 与 `catch (_)` 都返回
+  /// 空列表，中间设备回 2xx 单对象或截断 JSON 时用户看到"暂无数据"且无
+  /// 错误面板——正是「API 有结果却被非法抛弃」的入口。改为抛
+  /// [FormatException]，由上层折成可见错误（原则 15/16/20/42）。
   List<Map<String, dynamic>> get jsonList {
+    final Object? decoded;
     try {
-      final Object? decoded = _decode();
-      if (decoded is! List) {
-        return const <Map<String, dynamic>>[];
-      }
-      return decoded
-          .whereType<Map<Object?, Object?>>()
-          .map(Map<String, dynamic>.from)
-          .toList();
-    } catch (_) {
-      return const <Map<String, dynamic>>[];
+      decoded = _decode();
+    } on Object catch (error) {
+      OgLLogFile.line('GH', '列表响应不是合法 JSON：$error', level: 'ERR');
+      throw FormatException('列表响应不是合法 JSON：$error');
     }
+    if (decoded is! List) {
+      OgLLogFile.line('GH', '列表响应形状异常：期望数组', level: 'ERR');
+      throw const FormatException('列表响应形状异常：期望数组');
+    }
+    final List<Map<String, dynamic>> out = <Map<String, dynamic>>[];
+    for (final Object? item in decoded) {
+      if (item is Map<Object?, Object?>) {
+        out.add(Map<String, dynamic>.from(item));
+      }
+    }
+    if (out.length != decoded.length) {
+      OgLLogFile.line('GH', '列表响应含非对象条目，已拒绝', level: 'ERR');
+      throw const FormatException('列表响应含非对象条目');
+    }
+    return out;
   }
 
   /// 解析列表或单个对象（GitHub 部分端点两种都可能返回）。
+  ///
+  /// 单个对象仍是合法形态（如 404 消息体），但调用方需自行过滤；
+  /// 解析失败不再伪装成空列表。
   List<Map<String, dynamic>> get jsonAsList {
-    final asList = jsonList;
-    if (asList.isNotEmpty) {
-      return asList;
+    try {
+      final Object? decoded = _decode();
+      if (decoded is List) {
+        return jsonList;
+      }
+      if (decoded is Map) {
+        return <Map<String, dynamic>>[Map<String, dynamic>.from(decoded)];
+      }
+    } on Object catch (error) {
+      OgLLogFile.line('GH', '响应解析失败：$error', level: 'ERR');
+      throw FormatException('响应解析失败：$error');
     }
-    final asObject = jsonObject;
-    return asObject == null
-        ? const <Map<String, dynamic>>[]
-        : <Map<String, dynamic>>[asObject];
+    OgLLogFile.line('GH', '响应形状异常：既非数组亦非对象', level: 'ERR');
+    throw const FormatException('响应形状异常：既非数组亦非对象');
   }
 
   @override

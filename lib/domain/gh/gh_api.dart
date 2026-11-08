@@ -294,8 +294,10 @@ class GhApi implements CacheRemote {
   /// 转移仓库到其他账号（**危险操作**，调用方必须先二次确认）。
   ///
   /// `POST /repos/{owner}/{repo}/transfer`，body `new_owner`；
-  /// 成功返回 202，仓库 `full_name` 随之改变 —— 调用方应按"仓库已离开
-  /// 当前地址"处理（刷新列表 / 退出详情页），不得继续用旧名读写。
+  /// ★ B3-A-05：官方 202 只表示**转移请求已发出、待新所有者接受**，
+  ///   响应体仍是原 owner，`full_name` 此刻**未变**。调用方不得声称
+  ///   「已转移 / 仓库已换址」，也不得据此丢弃当前页面；应提示用户
+  ///   等待对方接受，由列表刷新自行反映最终归属。
   Future<void> transferRepo(
     String fullName, {
     required String newOwner,
@@ -1397,8 +1399,11 @@ class GhApi implements CacheRemote {
 
   /// 仓库 README 的**文本切片**（官方 `/readme` 端点，Accept: raw）。
   ///
-  /// 用于推荐卡片的"README 切片"；失败返回空串（卡片仍可展示，不阻断）。
-  /// 去掉标题/徽章/空行，按词边界截断，避免半截 Markdown。
+  /// 用于推荐卡片的"README 切片"；失败留痕并返回空串（卡片仍可展示）。
+  ///
+  /// ★ B3-A-02：raw 文本与仓库页的 JSON README 走同一 `/readme` 路径，
+  ///   而只读缓存键不含请求头——必须 bypass，否则 60s 内会把 JSON 当正文
+  ///   渲染（或反向让仓库页 README 空白）。
   Future<String> readmeExcerpt(String fullName, {int maxChars = 260}) async {
     try {
       final response = await client.send(GhRequest(
@@ -1406,6 +1411,7 @@ class GhApi implements CacheRemote {
         headers: const <String, String>{
           'accept': 'application/vnd.github.raw',
         },
+        cacheBypass: true,
         label: 'GET readme',
       ));
       final List<String> lines = response.body
@@ -1426,7 +1432,9 @@ class GhApi implements CacheRemote {
       }
       final int cut = text.lastIndexOf(' ', maxChars);
       return '${text.substring(0, cut > 0 ? cut : maxChars).trim()}…';
-    } on Object {
+    } on Object catch (error) {
+      // ★ B3-A-07 / B3-C-18：失败不得静默"没有 README"。
+      OgLLogFile.line('GH', 'README 切片读取失败：$error', level: 'ERR');
       return '';
     }
   }
@@ -1448,8 +1456,10 @@ class GhApi implements CacheRemote {
         }
       }
     } on GhNotFoundException {
-      // 没有 Release：回退 tag。
-    } on Object {
+      // 没有 Release：回退 tag（合法的"没有"）。
+    } on Object catch (error) {
+      // ★ B3-A-07 / B3-C-18：限流/截断/认证失败不是"没有 Release"。
+      OgLLogFile.line('GH', '最新 Release 读取失败：$error', level: 'ERR');
       return null;
     }
     try {
@@ -1460,7 +1470,8 @@ class GhApi implements CacheRemote {
       ));
       final List<Map<String, dynamic>> items = response.jsonAsList;
       return items.isEmpty ? null : GhJson.str(items.first, 'name');
-    } on Object {
+    } on Object catch (error) {
+      OgLLogFile.line('GH', 'Tag 回退读取失败：$error', level: 'ERR');
       return null;
     }
   }
@@ -1694,8 +1705,7 @@ class GhApi implements CacheRemote {
         label: 'DELETE issues/comments/$commentId',
       ));
 
-  /// 锁定讨论（[lockReason] 可选：`off-topic` / `too heated` / `resolved` /
-  /// `spam`；GitHub 会校验枚举值，传非法值会 422）。
+  /// 锁定讨论（GitHub 官方端点为 **PUT** `issues/lock`；用 PATCH 会 404）。
   Future<void> lockIssue(
     String fullName,
     int number, {
@@ -1704,12 +1714,12 @@ class GhApi implements CacheRemote {
       client
           .send(GhRequest(
             path: '/repos/$fullName/issues/$number/lock',
-            method: NetMethod.patch,
+            method: NetMethod.put,
             body: <String, Object?>{
               if (lockReason != null && lockReason.isNotEmpty)
                 'lock_reason': lockReason,
             },
-            label: 'PATCH issues/$number/lock',
+            label: 'PUT issues/$number/lock',
           ))
           .then((_) {});
 
@@ -2168,12 +2178,12 @@ class GhApi implements CacheRemote {
 
   // ───────────────────────── 内部辅助 ─────────────────────────
 
-  /// 404 / 409 / 422 在**读**场景里都表示"这里没有东西"
-  /// （不存在 / 仓库为空 / 功能未启用）。
+  /// 读场景只把 **404** 折成"这里没有东西"（不存在 / 空仓库）。
   ///
-  /// 写场景不走这条：写冲突必须是冲突，不许被当成"没有"。
-  static bool _isAbsentStatus(int? statusCode) =>
-      statusCode == 404 || statusCode == 409 || statusCode == 422;
+  /// ★ B3-B-03 / B3-C-10 / B2-A-05：409/422 是冲突态或校验失败，
+  ///   绝不折成 null/空列表——`CacheRemote.read` 已明确「读不确定时
+  ///   放行 = 静默覆盖」。写场景更不走这条。
+  static bool _isAbsentStatus(int? statusCode) => statusCode == 404;
 
   /// 读取仓库的默认分支（带**进程内记忆**）。
   ///
