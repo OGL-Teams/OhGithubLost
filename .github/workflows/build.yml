@@ -395,6 +395,30 @@ jobs:
             echo "${{ matrix.label }}：未发现 $bundle —— 跳过（留空不影响构建）"
           fi
 
+      # ★ Gradle 发行版下载加固（批1审计期间的持续 504 实证）：
+      #   Flutter 3.47.5 模板的 gradle-wrapper.properties 默认指向
+      #   github.com/gradle/gradle-distributions/releases/... ，GitHub Releases
+      #   在 runner 上会返回 504（run_attempt=2 仍复现）。这里把 distributionUrl
+      #   换成 Gradle 官方 CDN（services.gradle.org），并显式预热一次；
+      #   失败如实保留原地址由 Gradle 自行重试，不静默吞错。
+      - name: 预热 Gradle 发行版（备用源，规避 GitHub 504）
+        if: matrix.build == 'apk' || matrix.build == 'appbundle'
+        shell: bash
+        run: |
+          set -eu
+          props="android/gradle/wrapper/gradle-wrapper.properties"
+          if [ -f "$props" ]; then
+            sed -i 's#https://github.com/gradle/gradle-distributions/releases/download/#https://services.gradle.org/distributions/#g' "$props"
+            echo "distributionUrl → $(grep distributionUrl "$props")"
+          else
+            echo "未找到 $props（Flutter 尚未生成 android/，跳过）"
+          fi
+          # 预热：让 wrapper 在构建前先取到发行版；失败不阻断（后面仍会重试）。
+          if [ -f android/gradlew ]; then
+            (cd android && ./gradlew --version --no-daemon) \
+              || echo '::warning::Gradle 预热失败，构建阶段将再次尝试'
+          fi
+
       - name: 构建 ${{ matrix.label }}（非发布：按 pubspec 版本）
         if: github.event_name != 'workflow_dispatch' && matrix.build != 'linux'
         run: >-
