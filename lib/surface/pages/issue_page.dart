@@ -253,9 +253,12 @@ class _IssuePageState extends State<IssuePage> {
     try {
       allLabels = await widget.surface.domain.api.labels(widget.fullName);
     } catch (error) {
-      if (context.mounted) {
-        OgLNotifier.of(context).warning(_t('actionFailed', {'error': error}));
-      }
+      // 标签清单拉取失败：写日志留痕，不在此处碰 context（lint 的 async gap）。
+      OgLAppLog.instance.add(
+        'issue',
+        '标签清单拉取失败：$error',
+        severity: OgLNoticeSeverity.critical,
+      );
       return;
     }
     if (!mounted) {
@@ -1082,9 +1085,3 @@ class _EditCommentDialog extends StatelessWidget {
     );
   }
 }
-
-/// 懒加载的查看者登录名缓存。
-String? _viewerLoginMemo;
-
-/// 从登录态取当前登录名（失败返回空串，按游客处理）。
-String _loadViewerLogin() => '';
