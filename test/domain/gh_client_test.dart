@@ -427,7 +427,11 @@ void main() {
       expect(holding.received.last.url, contains('/git/blobs/shaBig'));
     });
 
-    test('read：内容拿不到时返回 null，绝不返回空串', () async {
+    test('read：内容拿不到时抛异常，绝不返回 null/空串（B2-A-05）', () async {
+      // ★ 旧契约是 `return null`，但 D1 把 `latest == null` 当作
+      //   「远端不存在」→ 放行不带 sha 的 PUT 覆盖已有文件（P0）。
+      //   现在读不到内容一律抛 GhAuthException，由 D6 折成可见失败，
+      //   既不返回空串（数据事故），也不伪装成"不存在"（覆盖事故）。
       final api = GhApi(
         client: _client(_bridge(<NetResponse>[
           _json(<String, dynamic>{
@@ -442,10 +446,9 @@ void main() {
           _json(null, status: 404),
         ])),
       );
-      expect(
-        await api.read(_key),
-        isNull,
-        reason: '空串被写回远端就是数据事故',
+      await expectLater(
+        api.read(_key),
+        throwsA(isA<GhAuthException>()),
       );
     });
 
