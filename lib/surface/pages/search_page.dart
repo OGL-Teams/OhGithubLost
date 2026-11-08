@@ -160,6 +160,11 @@ class _DiscoverPageState extends State<DiscoverPage>
   final Map<String, String> _readmeOf = <String, String>{};
   final Map<String, String?> _versionOf = <String, String?>{};
   int _repoPage = 1;
+
+  /// ★ B6-A-01：推荐 tab 的世代计数——分类切换 / 下拉刷新时自增，
+  ///   在途 `_loadMoreRepos()` 回写前校验，防止旧分类数据混入新列表
+  ///   （四线新增 UI 此前绕过了项目已成体系的 generation 防线）。
+  int _repoGeneration = 0;
   bool _repoLoading = false;
   bool _repoDone = false;
   Object? _repoError;
@@ -242,6 +247,7 @@ class _DiscoverPageState extends State<DiscoverPage>
     }
     _repoLoading = true;
     _repoError = null;
+    final int myGeneration = _repoGeneration;
     if (mounted) {
       setState(() {});
     }
@@ -251,6 +257,11 @@ class _DiscoverPageState extends State<DiscoverPage>
         perPage: 10,
         page: _repoPage,
       );
+      // ★ B6-A-01：请求期间分类可能已切换 / 刷新可能已重置——旧世代
+      //   的一切回写（列表、页码、README/版本缓存）全部丢弃。
+      if (myGeneration != _repoGeneration) {
+        return;
+      }
       if (page.isEmpty) {
         _repoDone = true;
       } else {
@@ -261,6 +272,9 @@ class _DiscoverPageState extends State<DiscoverPage>
         }
         // 每页最多 10 个，串行补充即可（避免一次打满 Search 配额）。
         for (final GhRepo repo in page) {
+          if (myGeneration != _repoGeneration) {
+            return;
+          }
           if (!_readmeOf.containsKey(repo.fullName)) {
             _readmeOf[repo.fullName] =
                 await widget.surface.domain.api.readmeExcerpt(repo.fullName);
@@ -294,12 +308,20 @@ class _DiscoverPageState extends State<DiscoverPage>
         final String? starredQuery = await _starredReposQuery();
         final List<Map<String, dynamic>> mine = await widget.surface.domain.api
             .searchIssues('is:issue is:open author:@me', sort: 'created');
-        final List<Map<String, dynamic>> starred = starredQuery == null
-            ? const <Map<String, dynamic>>[]
-            : await widget.surface.domain.api.searchIssues(
-                'is:issue is:open $starredQuery',
-                sort: 'created',
-              );
+        List<Map<String, dynamic>> starred = const <Map<String, dynamic>>[];
+        try {
+          starred = starredQuery == null
+              ? const <Map<String, dynamic>>[]
+              : await widget.surface.domain.api.searchIssues(
+                  'is:issue is:open $starredQuery',
+                  sort: 'created',
+                );
+        } on Object catch (error) {
+          // ★ B6-A-05：starred 请求失败时**保留 mine 的筛选集**——此前
+          //   `_mineUrls` 已被覆盖成空，筛选行与数据版本不一致。
+          OgLLogFile.line('GH', 'starred 议题聚合失败（仅保留 mine）：$error',
+              level: 'ERR');
+        }
         _mineUrls
           ..clear()
           ..addAll(mine.map((Map<String, dynamic> e) => ghStr(e, 'html_url')));
@@ -717,6 +739,7 @@ class _DiscoverPageState extends State<DiscoverPage>
                 if (selection.isNotEmpty && selection.first != _repoCategory) {
                   setState(() {
                     _repoCategory = selection.first;
+                    _repoGeneration++; // ★ B6-A-01：作废在途旧分类请求
                     _repos.clear();
                     _readmeOf.clear();
                     _versionOf.clear();
@@ -733,6 +756,7 @@ class _DiscoverPageState extends State<DiscoverPage>
         Expanded(
           child: RefreshIndicator(
             onRefresh: () async {
+              _repoGeneration++; // ★ B6-A-01：作废在途旧页请求
               _repos.clear();
               _readmeOf.clear();
               _versionOf.clear();
