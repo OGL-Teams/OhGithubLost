@@ -39,7 +39,7 @@
   "tokenLabel": "個人存取 Token",
   "tokenRequired": "請先貼上 Token",
   "tokenShapeInvalid": "Token 格式不對（應以 ghp_、gho_、ghu_、ghs_、ghr_ 或 github_pat_ 開頭）",
-  "vaultNote": "Token 只儲存在本機安全保險庫（Android Keystore / iOS Keychain / 桌面金鑰服務）；請求只發往 api.github.com。",
+  "vaultNote": "權杖只保存在本瀏覽器的本機儲存中，請僅在可信設備上使用；請求只發往 api.github.com。",
   "vaultReadBackFailed": "無法將 token 儲存至安全儲存位置。登入未完成。請再試一次。",
   "verifyFailed": "驗證失敗：{error}",
   "verifying": "正在驗證…",
