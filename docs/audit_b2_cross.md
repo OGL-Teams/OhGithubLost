@@ -65,7 +65,7 @@
 1. `deleteContentLocked` 裸写分支补 `confirmed` 检查（A-03/B-04/C-07 三方）
 2. `JournalRecord` 扩展 force/rebase + 删除表达能力（A-06/B-07/C-17 三方）
 3. `putContent` 对 `statusCode == 206` 一律回读确认（B-21/C-08）
-4. `_evictIfStale` 的 `isAfter` 边界改为 `!isBefore`（B-12）
+4. ~~`_evictIfStale` 的 `isAfter` 边界改为 `!isBefore`（B-12）~~ → **经 CI 测试否决并回退**：`prune 按条目上限淘汰最旧者` / `purge` 两条断言证明 `!isBefore` 会让"恰好等于扫描时刻"的条目被误判为刚刷新、破坏正常淘汰。B-12 的"同毫秒热数据"担忧在真实时钟下风险远小于它对淘汰语义的破坏，维持原 `isAfter`。详见 `3e5b160` CI 日志。
 5. 失败可见性：discardDraft、`_loadLocal` 解析失败、`_wireMutexDiagnostics` 补留痕（B-08/11、C-16）
 6. 补离线测试：206 回读、删除确认、空串基线、`prune` 淘汰（C-08/14）
 
