@@ -792,11 +792,11 @@ class GhApi implements CacheRemote {
           ? Map<String, dynamic>.from(contentPart)
           : const <String, dynamic>{},
     );
-    // ★ 206 / 截断 / 代理改写响应：body 里拿不到 content 与 sha。
-    //   写可能已经在远端生效——**回读远端确认**，用真实 sha 作为结果；
-    //   绝不返回空 sha（那会让 D5 回读校验与冲突判定全乱，用户看到
-    //   "提交失败 206"），也绝不盲目重试（重试会撞 422 覆盖冲突）。
-    if (written.sha.isEmpty) {
+    // ★ 206 是成功状态但**不是完整实体**（B2-B-21/C-08）：中间代理截断
+    //   写回执时，body 可能恰好还带一个 sha——只看 `sha.isEmpty` 会漏掉。
+    //   只要状态码是 206，就一律回读远端确认；同时「sha 为空」也照旧回读。
+    final bool receiptIncomplete = response.statusCode == 206;
+    if (receiptIncomplete || written.sha.isEmpty) {
       final GhContent? confirmed =
           await _contentNetwork(fullName, path, branch: branch);
       if (confirmed != null && confirmed.sha.isNotEmpty) {
@@ -968,13 +968,34 @@ class GhApi implements CacheRemote {
     final RepositoryCache? cache = _cache;
     final CacheKey? key = await _cacheKeyFor(fullName, path, branch);
     if (cache == null || key == null) {
-      await deleteContent(
-        fullName,
-        path,
-        message: message,
-        baseSha: baseSha,
-        branch: branch,
-      );
+      // ★ B2-A-03/B2-B-04/C-07 三方命中：删除是危险操作，退化裸写路径
+      //   也必须走 D7 二次确认（此前 confirmed 声明了却从不读取，
+      //   未确认即发 DELETE）；且失败不能外抛，要按 GhWriteResult 返回。
+      if (!confirmed) {
+        return GhWriteResult(
+          ok: false,
+          conflict: GhWriteConflict.needsConfirmation,
+          detail: '删除需二次确认（D7）：裸写路径同样适用',
+          baseSha: baseSha,
+        );
+      }
+      try {
+        await deleteContent(
+          fullName,
+          path,
+          message: message,
+          baseSha: baseSha,
+          branch: branch,
+        );
+      } on RemoteConflictException catch (error) {
+        return GhWriteResult(
+          ok: false,
+          conflict: GhWriteConflict.staleSha,
+          sha: error.currentSha,
+          baseSha: baseSha,
+          detail: '远端版本已变化（HTTP ${error.statusCode}）',
+        );
+      }
       return GhWriteResult(
         ok: true,
         conflict: GhWriteConflict.none,

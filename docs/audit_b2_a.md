@@ -174,3 +174,39 @@
 - **优先级**：P2。
 - **违反原则**：23（互斥闸门成对且属于同一所有者）、22（过期结果须丢弃）、29。
 - **是否确证**：**待议** —— 代码层面确证"无锁"（`purgeOrphans` 直接 `_blobs.delete`、`_scanMetas` 锁外），但是否构成用户可见事故取决于调度时序，且 `prune` 生产未接线（B2-A-09），`purge` 仅手动触发；自锁场景当前无调用者，属潜在缺陷而非现网必现。
+## B2-A-20 · 生产写路径存在三处「绕过一致性引擎」的裸 `putContent`/`deleteContent`，D1–D9 全被跳过（P1，确证）
+
+- **文件:行号**：`lib/domain/gh/gh_api.dart:765-830`（`putContent` 裸写，注释自称供 CacheRemote.write 使用）、`lib/domain/gh/repo_file_service.dart:671-677`（create 直接 `api.putContent`，无 `baseSha` 参数）、`repo_file_service.dart:756-761`（delete 直接 `api.deleteContent`，只带 `expectedFileSha`）、`lib/surface/pages/repo_page.dart:3803-3808`（CNAME 新建直接 `putContent`，无 baseSha）、`lib/domain/gh/gh_api.dart:1530-1534`（`writeCname` 裸写）、`gh_api.dart:841-850`（`putContentLocked` 才是 D1–D9 入口）。
+- **问题描述**：AGENTS.md §5 声称"缓存一致性七道防线……**无绕过开关**"，但这些公开 API 让 UI/服务层完全绕过 `RepositoryCache.write/delete`：没有 D1 写前必读（create 用一次 `probe` 探测后不带 sha PUT，探测与写入之间仍可被别人创建）、没有 D2 乐观锁（不带 sha 的 PUT 对已存在路径是覆盖）、没有 D3/D4 串行、没有 D5 回读、没有 D7 二次确认（删除无 confirmed）、没有 D8 Journal（崩溃即丢）、没有 D9 草稿收尾（提交成功后不清同 key 草稿）。尤其 `repo_page.dart:3803` 的 CNAME 新建分支与 `writeCname` 都是"无基线创建"，与 D1 刚改的"远端不存在+无基线=合法新建"叠加，正是 B2-A-04/05 所描述的并发覆盖入口。
+- **修复前 vs 修复后行为差异**：修复前：创建/删除/CNAME 写入跳过全部防线，失败以异常外抛，崩溃后无法恢复，草稿残留；修复后：所有写统一经 `putContentLocked`/`deleteContentLocked`（或引擎直接暴露 write/delete），裸网络写降为 private 且只由 `CacheRemote.write/delete` 调用。
+- **用户可见后果**：**并发写歪/覆盖（数据丢失）**、危险删除无确认、提交后旧草稿复活、崩溃时提交静默丢失。
+- **优先级**：P1。
+- **违反原则**：11（防线没有开关，无绕过捷径）、9/10（先读后写、乐观锁）、12（危险操作二次确认）、13/14（写前落盘意图、成功后清除记录）。
+- **是否确证**：确证。代码证据：`repo_file_service.dart:671` `await api.putContent(... content: content, message: ..., branch: ref)` 实参无 `baseSha`；`repo_file_service.dart:756` `await api.deleteContent(...)` 无 `confirmed`；`repo_page.dart:3803-3808` `await ...api.putContent(_full, 'CNAME', ...)` 无 baseSha；`gh_api.dart:841` 的 `putContentLocked` 是唯一经 `cache.write` 的路径。
+## B2-A-21 · D9 草稿 `save()` 的 `baseSha` 缺省沿用旧值：远端已推进/新建→已有后，草稿仍持过期或空基线（P1，确证）
+
+- **文件:行号**：`lib/base/disk/disk_draft.dart:162-178`（`save`：`baseSha: baseSha ?? existing?.baseSha`）、`lib/domain/gh/gh_api.dart:376-390`（`saveDraft` 直接透传）、`lib/surface/pages/code_editor_page.dart:168-189`（`_persistDraft` 传 `_draftBaseSha ?? widget.baseSha`）、`code_editor_page.dart:197-211`（`_save` 用同一 `_draftBaseSha` 作为提交基线）、`lib/base/disk/disk_cache.dart:704`（写成功后 `_drafts?.discard`）。
+- **问题描述**：草稿的 `baseSha` 语义应是"起草时基于的远端版本"，但 `DraftStore.save` 在 `baseSha == null` 时**沿用已有草稿的旧基线**。新建文件场景：用户第一次以 `baseSha=''` 编辑并保存草稿，随后文件被他人（或本应用另一入口）创建；用户回来继续编辑，`_restoreDraft` 读到 `draft.baseSha == ''`，`_persistDraft`/`_save` 继续用 `''` 作为无基线提交 → 触发 D1「远端已存在+无基线拒绝」或更糟（若远端读被折成 null，见 B2-A-05）覆盖刚创建的文件。已有文件场景：草稿跨多次会话保留，而远端已被别人推进；编辑器打开时 `widget.baseSha` 是**新的**远端 sha，但 `_restoreDraft` 把 `_draftBaseSha` 覆盖成草稿里的**旧** sha，`_save` 于是用旧基线提交，D2 拦成 `staleSha`（可恢复，但用户被迫手工处理，且三方差异的 base 因 B2-A-08 丢上下文）。此外 `save()` 的 `copyWith` 无法显式把 baseSha 清成 `null`（`baseSha ?? existing` 使 null 表示"沿用"而不是"无基线"）。
+- **修复前 vs 修复后行为差异**：修复前：草稿基线可能永久停留在起草那一刻，用户恢复草稿后以过期/空基线提交；修复后：恢复草稿时以当前远端版本为准重新绑定基线（或明确保留旧基线并给出冲突差异/要求用户重新拉取），`save` 区分"未提供"与"显式清空"。
+- **用户可见后果**：**写歪/覆盖**（新建→已有）、反复 `staleSha` 提交失败（静默失败感），用户恢复的草稿内容与基线不匹配。
+- **优先级**：P1。
+- **违反原则**：9（写前必读、基线必须对应当前状态）、10（乐观锁必须看见并发）、22（过期结果必须丢弃）、8（用户写的内容不能因基线错误而丢）。
+- **是否确证**：确证。代码证据：`disk_draft.dart:170-175` `baseSha: baseSha ?? existing?.baseSha`；`code_editor_page.dart:145-150` `_draftBaseSha = draft.baseSha;`；`:206` `final String baseSha = _draftBaseSha ?? widget.baseSha;` 与 `:232-238` 传入 `baseSha`。
+## B2-A-22 · D8 `abandoned` 是静默终态：无任何 UI/通知消费 Journal，`pendingCount` 生产无调用者（P1，确证）
+
+- **文件:行号**：`lib/base/disk/disk_journal.dart:260-275`（`abandon` 只写 `status: abandoned` + diagnostics.warn）、`:285-300`（`records()` 默认返回全部，UI 可查）、`lib/base/disk/disk_cache.dart:459-462`（`replayPending` 把语义冲突 `abandon`）、`:806-822`（`_fail` 对非 retryable 一律 `journal.abandon`）、`lib/domain/domain_bridge.dart:206-248`（只自动重放 pending，只把结果写 diagnostics.info）、`lib/surface/` 全目录（grep `pendingCount|journal|待同步` 无 UI 消费点）。
+- **问题描述**：D8 状态机有 `pending / abandoned`，`complete` 是删除记录。语义性冲突（`staleSha`/`forbidden`/`notFound`/`requiresRead`）发生时，`_fail` 把记录标为 `abandoned` 并**移出 pending 集合**；此后 `replayPending` 只看 pending，30s 定时器不再触碰它；全仓没有任何界面读取 `records(status: abandoned)` 或 `pendingCount()`（后者只在 `disk_bridge.dart:154` 装配日志里出现一次）。诊断中枢有一条 WARN，但 `OgLDiagnosticsNoticeSink` 只在 warn/error 时转通知中心——`abandon` 用的是 `_diagnostics.warn(...)`，理论上能弹横幅，但内容只有"提交已放弃（需用户重新决策）"，**没有提供重新决策的入口**，且用户在编辑器里点保存后已 `Navigator.pop`（`code_editor_page.dart:212`），后台结果只走通知/应用日志（`_submitInBackground`）。结果：用户排队的写入内容仍留在 Journal 记录里，但既不再提交、也不再出现在"待同步"、更没有恢复入口，等于静默丢弃。
+- **修复前 vs 修复后行为差异**：修复前：冲突/权限失败后记录进入不可见终态，用户以为"稍后会自动重试"；修复后：abandoned 记录必须有 UI 列表 + 恢复/放弃操作（附带三方差异），或 `abandon` 时把内容转存为草稿并发出可操作通知。
+- **用户可见后果**：**用户写的内容静默丢失**（原则 8 底线）；提交失败提示短暂，之后无任何可找回路径。
+- **优先级**：P1。
+- **违反原则**：13（半成品状态必须留痕并**能被重启发现/用户处理**）、15（失败必须用户可感知）、17（用类型表达失败，让调用方无法忽略）、14（删除前落盘意图、成功后清除记录）。
+- **是否确证**：确证。代码证据：全仓 grep `pendingCount` 仅 `disk_journal.dart:303`（定义）、`disk_journal.dart:193`（enqueue 日志）、`disk_bridge.dart:154`（启动日志）、`test/`；`abandon` 后 `records(status: pending)` 不再返回该记录；`disk_cache.dart:459-462` `await journal.abandon(record.id, reason)` 无后续通知。
+## B2-A-23 · D6「永不外抛」被 `write()` 的两类异常显式 rethrow 破坏；`delete()` 也不保护 `_remote.read` 的非冲突异常（P2，确证）
+
+- **文件:行号**：`lib/base/disk/disk_cache.dart:248-278`（`write` 文档承诺"永不外抛（除非法键）"，但 `:264-268` `on CacheScopeException/CacheKeyException { rethrow; }`）、`:301-360`（`delete` 的 `try` 只 `on RemoteConflictException` + 通用 `catch`，没有 D8/诊断接线）、`:365-372`（delete 通用 catch 直接 `_fail` 但无 `_diagnostics`？`_fail` 有记录，故仅记录级别问题）。
+- **问题描述**：① `write()` 的注释把"非法键"列为唯一外抛例外，但 `_ensureKey`（`:875-888`）在**锁外**同步抛异常本就属于编程错误（可接受）；真正的问题是 `_writeLocked` 内部 `CacheRemote.read/write` 的实现（`GhApi.read` 在 403/401 抛 `GhAuthException`，不是 `CacheScopeException`）会落进通用 catch → 转 server，符合 D6；但若未来任何远端/存储实现抛 `CacheKeyException`（例如 `IoDiskFileStore.abs()` 的 `ArgumentError` 之外构造的非法键异常），会被 `rethrow` 出引擎，UI 收到未结构化异常，`putContentLocked` 的 `GhWriteResult` 契约破裂。更直接的是 `write()` 的 `await _journal?.failByKey(...)` 若自身抛异常（磁盘故障），**在 catch 块内没有二次保护**，异常直接外抛且 `_fail` 不执行 → 违反 D6。② `delete()` 的 `_remote.read` 抛普通异常时落到通用 `catch` 返回 server，但**不写 Journal**（delete 有意不入 journal）、不记 `lastError`、也不接诊断（仅 `_fail` 的 error 日志），相对写路径少一层留痕。
+- **修复前 vs 修复后行为差异**：修复前：Journal 自身故障/特定异常类型时写操作抛异常而非返回 `WriteOutcome`，调用方（`putContentLocked`）不 catch → 异常冒泡到 UI；修复后：所有 catch 分支内的清理动作也包 try/catch 并转成结果，rethrow 只保留真正的编程错误（且文档与实现一致）。
+- **用户可见后果**：静默失败/未处理异常（保存流程崩溃、无结果通知），排障困难。
+- **优先级**：P2（触发需要 Journal 存储故障或特定异常类型）。
+- **违反原则**：17（用类型表达失败，让调用方无法忽略）、16（捕获范围精确）、18（"兜底一切"的 catch 是 bug 藏身处——此处 catch 内又有可抛操作）、AGENTS.md §3「一致性引擎返回 WriteOutcome 不外抛」。
+- **是否确证**：确证。代码证据：`disk_cache.dart:272` `await _journal?.failByKey(...)` 位于 `catch` 内且无保护；`:264-268` 两个 `rethrow`；`:273-277` `_fail(...)` 在该 await 之后；`gh_api.dart:841-850` 文档声称"永不抛"但调用 `cache.write` 时未包 try/catch。

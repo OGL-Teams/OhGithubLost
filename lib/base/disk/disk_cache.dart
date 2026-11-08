@@ -1018,8 +1018,11 @@ class RepositoryCache {
       final decoded = CacheKey.decode(encoded);
       if (decoded != null) {
         final fresh = await _loadLocal(decoded);
-        if (fresh != null && fresh.fetchedAt.isAfter(scannedAt)) {
-          return; // 已被并发写刷新 —— 不淘汰。
+        // ★ B2-B-12：用 `!isBefore` 而非严格 `isAfter`。同毫秒写入
+        //   （或测试/内存实现的固定时钟）`fetchedAt == scannedAt` 时，
+        //   严格比较会把刚写回来的热数据当成陈旧项删掉。
+        if (fresh != null && !fresh.fetchedAt.isBefore(scannedAt)) {
+          return; // 已被并发写刷新（含同一时刻）—— 不淘汰。
         }
       }
       await _evictEncoded(encoded);
