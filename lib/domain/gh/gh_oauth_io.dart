@@ -1,4 +1,4 @@
-/// `dart:io` 平台：GitHub OAuth Device Flow 的真实实现。
+/// L2 中枢级 · GitHub OAuth Device Flow 的真实实现（dart:io 平台）。
 library;
 
 import 'dart:async';

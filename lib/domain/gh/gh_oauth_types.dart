@@ -1,4 +1,4 @@
-/// OAuth Device Flow 的数据类型（与平台实现分文件，避免循环导入）。
+/// L2 中枢级 · OAuth Device Flow 的数据类型（与平台实现分文件）。
 library;
 
 /// OAuth Device Flow 结果。

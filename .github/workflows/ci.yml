@@ -52,6 +52,14 @@ jobs:
           python3 tool/layer_audit.py --fatal || echo "FAIL: layer_audit" >> /tmp/strict_failures.txt
         if: always()
 
+      # ★ 批次 1/2 C 视角共同点名：三支旧门禁只扫 lib/surface、不解析
+      #   export、不查文件头与平台门面。补一支覆盖 lib/base / lib/domain
+      #   的结构契约审计，同类滞后以后自动暴露。
+      - name: 结构契约审计（export / 层级头 / 平台门面 / 文档引用）
+        run: >-
+          python3 tool/contract_audit.py --fatal || echo "FAIL: contract_audit" >> /tmp/strict_failures.txt
+        if: always()
+
       # 版本一致性：`lib/main.dart` 的 kOgLAppVersion 必须与 pubspec 一致。
       # 历史上它长期停留在 7.4.0 而 pubspec 已到 9.x ——「关于」页与诊断日志
       # 谎报版本，构建与发布流程却浑然不知。这条门禁杜绝复发。

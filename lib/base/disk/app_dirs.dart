@@ -22,7 +22,7 @@
 /// `app_dirs_fs_io.dart`，本文件本身不依赖 `dart:io`。
 library;
 
-import 'package:flutter/foundation.dart';
+import '../../platform/platform.dart';
 
 import 'app_dirs_fs_io.dart';
 
@@ -83,10 +83,11 @@ abstract final class OgLAppDirs {
       // 其它挂载点（可移动存储等）：不经应用私有目录，视为可见。
       return OgLStorageTier.public;
     }
-    // 桌面平台用 `defaultTargetPlatform` 判定（不引入 dart:io 的 Platform）。
-    if (defaultTargetPlatform == TargetPlatform.windows ||
-        defaultTargetPlatform == TargetPlatform.linux ||
-        defaultTargetPlatform == TargetPlatform.macOS) {
+    // 平台识别统一经 lib/platform 门面（不直接判定 TargetPlatform）。
+    final OgLTargetPlatform platform = ogLDetectPlatform();
+    if (platform == OgLTargetPlatform.windows ||
+        platform == OgLTargetPlatform.linux ||
+        platform == OgLTargetPlatform.macos) {
       return OgLStorageTier.desktop;
     }
     return OgLStorageTier.unknown;

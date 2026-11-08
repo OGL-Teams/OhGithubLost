@@ -13,15 +13,20 @@
 
 | 目的地 | 何时 | 是否带令牌 | 代码位置 |
 |---|---|---|---|
-| `api.github.com` | 仓库元数据、文件内容、Action 日志 | 是（Bearer） | [`lib/domain/gh/gh_client.dart`](../lib/domain/gh/gh_client.dart) |
+| `api.github.com` | 仓库元数据、文件内容、Action 日志、议题搜索、仓库搜索、推荐仓库、官方通知流 `/notifications` | 是（Bearer） | [`lib/domain/gh/gh_client.dart`](../lib/domain/gh/gh_client.dart) · [`gh_api.dart`](../lib/domain/gh/gh_api.dart) |
 | `raw.githubusercontent.com` | raw 族 / 仓库内图片直链 | 私有时必须带 | [`SurfaceBridge.planRepoFileDownload`](../lib/surface/surface_bridge.dart) |
+| `github.com/{o}/{r}/archive/...` | 仓库归档 ZIP（可能重定向到 codeload） | 私有时必须带 | [`repo_page.dart`](../lib/surface/pages/repo_page.dart) |
+| `gist.githubusercontent.com` | Gist 原始文件 | 由 raw 地址决定 | [`gist_detail_page.dart`](../lib/surface/pages/gist_detail_page.dart) |
+| 用户自建加速通道 | 仅当用户开通对应类别 | 私有 raw 类可能带令牌（有不可关闭警告） | [`download_proxy.dart`](../lib/surface/util/download_proxy.dart) |
 | `github.com` | 令牌校验、OAuth Device Flow | OAuth client_id | [`lib/domain/gh/gh_client.dart`](../lib/domain/gh/gh_client.dart) |
 | `objects.githubusercontent.com` / `release-assets.githubusercontent.com` | Release 附件 / Action 产物 | 否（仅用签名） | [`lib/domain/ix/ix_presign.dart`](../lib/domain/ix/ix_presign.dart) |
 | DoH 解析器 | DNS 被污染时的加密解析 | 否 | [`DnsService`](../lib/base/net/net_dns.dart) |
 | **用户自备的加速通道** | **仅当用户自行添加通道、开启加速、且该类资源在适用范围内** | 见 §四 | [`ogLAccelCandidates`](../lib/surface/util/download_proxy.dart) |
 
 **传输层**：[`NetTransport`](../lib/base/net/net_transport.dart)（抽象）
-→ [`ResilientTransport`](../lib/base/net/net_transport.dart)（重试 / 主机冷却 / DoH 回落）
+→ [`ResilientTransport`](../lib/base/net/net_transport.dart)（重试 / 换通道）。
+> 说明：早期文档曾写「主机冷却 / DoH 回落」属传输层能力，实际代码中**并不存在**
+> 主机冷却机制；DoH 回落是 DNS 层（`DnsService`）的能力，与传输层无关。此处以代码为准。
 → [`IoNetTransport`](../lib/base/net/io_net_transport.dart)（真实 HTTP）。
 分片下载由 [`OgLRangeDownloader`](../lib/base/net/range_download.dart) 实现。
 
@@ -41,11 +46,17 @@
 | `actionArtifact` | Action 构建产物 | [`action_run_page.dart`](../lib/surface/pages/action_run_page.dart) | signed |
 | `repoFile` | 仓库文件（下载与预览） | [`surface_bridge.dart`](../lib/surface/surface_bridge.dart) · [`file_preview_page.dart`](../lib/surface/pages/file_preview_page.dart) | raw |
 | `readmeImage` | README 仓库内图片 | [`repo_page.dart`](../lib/surface/pages/repo_page.dart) | raw |
+| `gistFile` | Gist 原始文件 | [`gist_detail_page.dart`](../lib/surface/pages/gist_detail_page.dart) | raw |
+| `repoArchive` | 仓库归档 ZIP / tarball | [`repo_page.dart`](../lib/surface/pages/repo_page.dart) | raw |
+| `readmeExternalImage` | README 外链图片（第三方图床） | [`readme_view.dart`](../lib/surface/widgets/readme_view.dart) | raw |
+| `actionLog` | Actions 运行日志（预留，未接入取数链路） | — | — |
+| `avatarImage` | 用户 / 组织头像（预留，未接入取数链路） | — | — |
 
-- 枚举定义：[`OgLAccelScope`](../lib/surface/util/accel.dart)（**只有这 4 类**）。
-- 默认**全开**（与历史行为一致），可逐项关闭；全关也合法（等于不加速）。
-- **Action 运行日志不走加速**（[`ix_action_logs.dart`](../lib/domain/ix/ix_action_logs.dart)
-  直接请求 `api.github.com`），因此没有对应开关 —— 上述清单以代码为准。
+- 枚举定义：[`OgLAccelScope`](../lib/surface/util/accel.dart)（**共 9 类**，v10.4.0 起扩展）。
+- 默认仅开启既有 4 类；**新增 5 类默认关闭**，需用户逐项启用（老配置升级不会
+  悄悄打开会经过第三方的区域）。全关也合法（等于不加速）。
+- `actionLog` / `avatarImage` 目前只是开关位，**未接入**取数链路；日志仍由
+  [`ix_action_logs.dart`](../lib/domain/ix/ix_action_logs.dart) 直连 `api.github.com`。
 - 各调用点仅声明「我是哪一类」，是否加速统一由
   [`OgLSettings.accelPrefixesFor`](../lib/surface/settings.dart) 判定，
   保证同一资源不会出现两处不同结论。
@@ -102,8 +113,7 @@ Release 附件 / Action 构建产物结构相同：先拿 API 地址，**在设�
 | `api.github.com` 预检 | 204，allow-headers 含 `Authorization` | 带令牌可 fetch |
 | `raw.githubusercontent.com` GET | `ACAO=*` | 公开仓库可 fetch |
 | `raw` 预检 | **403** | 不能带 `Authorization`，私有 raw 不可取 |
-| 加速通道 GET | `ACAO=*` | 可 fetch |
-| 加速通道预检 | **308，无 CORS 头** | 带自定义头时通道不可用 |
+| 加速通道 GET / 预检 | 视用户配置而异 | 自 v6.4.3 起**不预置通道**，此行仅为用户自建通道的历史实测记录，不代表当前内置行为 |
 | Release **签名地址** | **无 ACAO** | 签名地址无法 fetch（导航可用） |
 | 通道 + Release 直链 | `ACAO=*` | 可 fetch |
 
