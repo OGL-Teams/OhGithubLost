@@ -1,10 +1,18 @@
 {
+  "copyAll": "Copy all",
+  "downloadFailed": "Log download failed: {error}",
+  "downloadLog": "Download logs",
+  "downloadUnavailable": "Storage is not writable; cannot save logs",
+  "downloaded": "Logs saved",
+  "downloadedAt": "Logs saved to {path}",
   "linesCount": "{count} lines",
+  "noLogMatch": "No matching log content",
   "noLogs": "No logs (job may be incomplete, or Token lacks Actions permissions)",
   "noMatchingJob": "No matching job found",
+  "nothingToCopy": "No logs to copy",
   "reload": "Refresh",
   "searchJobHint": "Search job name",
+  "searchLogHint": "Search in logs (case-insensitive)",
   "title": "Run Logs",
-  "copyAll": "Copy all",
-  "nothingToCopy": "No logs to copy"
+  "toggleSearch": "Search in logs"
 }

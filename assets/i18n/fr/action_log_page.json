@@ -1,10 +1,18 @@
 {
   "copyAll": "Tout copier",
+  "downloadFailed": "Échec du téléchargement du log : {error}",
+  "downloadLog": "Télécharger les logs",
+  "downloadUnavailable": "Stockage non inscriptible ; impossible d’enregistrer les logs",
+  "downloaded": "Logs enregistrés",
+  "downloadedAt": "Logs enregistrés dans {path}",
   "linesCount": "{count} lignes",
+  "noLogMatch": "Aucun contenu de log correspondant",
   "noLogs": "Aucun journal (le travail est peut-être incomplet, ou le Token n’a pas les autorisations Actions)",
   "noMatchingJob": "Aucun travail correspondant trouvé",
   "nothingToCopy": "Aucun journal à copier",
   "reload": "Actualiser",
   "searchJobHint": "Rechercher le nom du travail",
-  "title": "Journaux d’exécution"
+  "searchLogHint": "Rechercher dans les logs (insensible à la casse)",
+  "title": "Journaux d’exécution",
+  "toggleSearch": "Rechercher dans les logs"
 }

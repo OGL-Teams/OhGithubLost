@@ -75,6 +75,9 @@ class _ActionRunPageState extends State<ActionRunPage> {
   AsyncController<_RunDetail>? _detail;
   bool _busy = false;
 
+  /// 日志下载进行中（与详情刷新互不阻塞，但同一动作防重）。
+  bool _busyLogs = false;
+
   @override
   void initState() {
     super.initState();
@@ -211,6 +214,129 @@ class _ActionRunPageState extends State<ActionRunPage> {
   /// [OgLNotifier.warning] 失败与"被拦下"（权限不足、目标不存在、写回失败…）。
   OgLNotifier get _notifier => OgLNotifier(ScaffoldMessenger.of(context));
 
+  /// 重新运行**失败的 job**（写操作，需确认）。
+  ///
+  /// 端点：`POST .../runs/{id}/rerun-failed-jobs`。与整跑重跑分开：
+  /// 大多数时候用户只想重跑挂掉的那个 job，全量重跑既贵又慢。
+  /// 403（无 `actions: write`）等失败如实提示，不降级猜测。
+  Future<void> _rerunFailed() async {
+    if (_busy) {
+      return;
+    }
+    final bool? confirmed = await ogLShowDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: Text(_t('rerunFailedJobs')),
+        content: Text(_t('rerunFailedJobsDesc')),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(_t('back')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(_t('rerunFailedJobs')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await widget.surface.domain.actionLogs.rerunFailedJobs(
+        widget.fullName,
+        widget.runId,
+      );
+      OgLAppLog.instance.result(
+        'Actions',
+        _t('rerunFailedTriggered'),
+        '#${widget.runId}',
+      );
+      if (mounted) {
+        OgLNotifier.of(context).info(_t('rerunFailedTriggered'));
+      }
+      await _detailC().load();
+    } catch (error) {
+      OgLAppLog.instance.add(
+        'Actions',
+        _t('rerunFailedJobError', {'error': error}),
+        severity: OgLNoticeSeverity.critical,
+      );
+      if (mounted) {
+        OgLNotifier.of(context)
+            .warning(_t('rerunFailedJobError', {'error': error}));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  /// 下载整份运行日志到本地（经 [IxActionLogs.saveToDisk]，落盘 `actions/`）。
+  ///
+  /// 日志文本在 [ActionLogPage] 里加载；这里直接**取一份新的**（运行可能
+  /// 已更新，旧文本不一定是现场），落盘成功提示路径，失败如实报错。
+  Future<void> _downloadLogs() async {
+    if (_busyLogs) {
+      return;
+    }
+    setState(() => _busyLogs = true);
+    try {
+      final Map<String, String> logs = await widget.surface.domain.actionLogs
+          .fetch(widget.fullName, widget.runId);
+      if (logs.isEmpty) {
+        if (mounted) {
+          OgLNotifier.of(context).info(_t('logEmpty'));
+        }
+        return;
+      }
+      final Future<String?> Function()? probe = widget.surface.storageRoot;
+      if (probe == null) {
+        if (mounted) {
+          OgLNotifier.of(context).warning(_t('logDownloadUnavailable'));
+        }
+        return;
+      }
+      final String? root = await probe();
+      if (root == null || root.isEmpty) {
+        if (mounted) {
+          OgLNotifier.of(context).warning(_t('logDownloadUnavailable'));
+        }
+        return;
+      }
+      // 文件名净化：`<owner>-<repo>-run<id>.log`（全名中的 `/` 等一律替换）。
+      final String safeRepo =
+          widget.fullName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '-');
+      final String path = await widget.surface.domain.actionLogs.saveToDisk(
+        root: root,
+        fileName: '$safeRepo-run${widget.runId}.log',
+        text: widget.surface.domain.actionLogs.joinLogs(logs),
+      );
+      OgLAppLog.instance.result('Actions', _t('logDownloaded'), path);
+      if (mounted) {
+        OgLNotifier.of(context)
+            .success(_t('logDownloadedAt', <String, Object?>{'path': path}));
+      }
+    } catch (error) {
+      OgLAppLog.instance.add(
+        'Actions',
+        _t('logDownloadFailed', {'error': error}),
+        severity: OgLNoticeSeverity.critical,
+      );
+      if (mounted) {
+        OgLNotifier.of(context)
+            .warning(_t('logDownloadFailed', {'error': error}));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busyLogs = false);
+      }
+    }
+  }
+
   /// 单个构建产物条目：名称 / 大小 / 有效期 + 下载按钮。
   Widget _artifactTile(ThemeData theme, Map<String, dynamic> artifact) {
     final String name = ghStr(artifact, 'name');
@@ -319,6 +445,24 @@ class _ActionRunPageState extends State<ActionRunPage> {
     }
   }
 
+  /// 是否存在失败的 job（`failure` / `timed_out`）。
+  static bool _hasFailedJobs(_RunDetail detail) => detail.jobs.any(
+        (Map<String, dynamic> job) =>
+            ghStr(job, 'conclusion') == 'failure' ||
+            ghStr(job, 'conclusion') == 'timed_out',
+      );
+
+  /// 作业排序：失败的排最前（失败的现场最需要被看见），其余保持接口顺序。
+  List<Map<String, dynamic>> _orderedJobs(List<Map<String, dynamic>> jobs) {
+    bool failed(Map<String, dynamic> job) =>
+        ghStr(job, 'conclusion') == 'failure' ||
+        ghStr(job, 'conclusion') == 'timed_out';
+    return <Map<String, dynamic>>[
+      ...jobs.where(failed),
+      ...jobs.where((Map<String, dynamic> j) => !failed(j)),
+    ];
+  }
+
   IconData _statusIcon(String status, String conclusion) {
     if (status != 'completed') {
       return Icons.sync;
@@ -384,6 +528,19 @@ class _ActionRunPageState extends State<ActionRunPage> {
           overflow: TextOverflow.ellipsis,
         ),
         actions: <Widget>[
+          // 下载日志到本地（actions/<repo>-run<id>.log）：与「查看日志」并存，
+          // 详情页就能落盘，不必先开日志页。
+          IconButton(
+            icon: _busyLogs
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.download_outlined),
+            tooltip: _t('downloadLog'),
+            onPressed: _busyLogs ? null : () => unawaited(_downloadLogs()),
+          ),
           IconButton(
             icon: const Icon(Icons.receipt_long),
             tooltip: _t('viewLogs'),
@@ -457,12 +614,22 @@ class _ActionRunPageState extends State<ActionRunPage> {
                           spacing: 8,
                           runSpacing: 8,
                           children: <Widget>[
-                            if (!running)
+                            if (!running) ...<Widget>[
                               FilledButton.tonalIcon(
                                 onPressed: _busy ? null : _rerun,
                                 icon: const Icon(Icons.refresh),
                                 label: Text(_t('rerun')),
                               ),
+                              // 只重跑失败的 job：有失败 job 才显示（有权限判定
+                              // 见下——无 `actions: write` 时 GitHub 会 403，
+                              // 与整跑重跑同一暴露面，不本地猜权限）。
+                              if (_hasFailedJobs(detail))
+                                FilledButton.tonalIcon(
+                                  onPressed: _busy ? null : _rerunFailed,
+                                  icon: const Icon(Icons.restart_alt),
+                                  label: Text(_t('rerunFailedJobs')),
+                                ),
+                            ],
                             if (running)
                               OutlinedButton.icon(
                                 onPressed: _busy ? null : _cancel,
@@ -513,86 +680,95 @@ class _ActionRunPageState extends State<ActionRunPage> {
                     ),
                   ),
                 ),
-                // 作业：按需构建（作业/步骤可以很多）。
+                // 作业：按需构建（作业/步骤可以很多）。失败 job 置顶
+                //（排序只做一次，不放在 itemBuilder 里反复算）。
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
-                  sliver: SliverList.builder(
-                    itemCount: detail.jobs.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final Map<String, dynamic> job = detail.jobs[index];
-                      return Card(
-                        child: ExpansionTile(
-                          leading: Icon(
-                            _statusIcon(
-                              ghStr(job, 'status'),
-                              ghStr(job, 'conclusion'),
-                            ),
-                            color: _statusColor(
-                              theme,
-                              ghStr(job, 'status'),
-                              ghStr(job, 'conclusion'),
-                            ),
-                          ),
-                          title: Text(
-                            ghStr(job, 'name'),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Text(
-                            '${ghStr(job, 'status')} · '
-                            '${ghStr(job, 'conclusion').isEmpty ? '—' : ghStr(job, 'conclusion')}',
-                          ),
-                          childrenPadding: const EdgeInsets.fromLTRB(
-                            OgLSpace.lg,
-                            0,
-                            OgLSpace.lg,
-                            OgLSpace.md,
-                          ),
-                          children: <Widget>[
-                            for (final Object? rawStep in (job['steps'] is List
-                                ? job['steps'] as List<Object?>
-                                : const <Object?>[]))
-                              if (rawStep is Map<Object?, Object?>)
-                                Builder(
-                                  builder: (BuildContext context) {
-                                    final Map<String, dynamic> step =
-                                        Map<String, dynamic>.from(rawStep);
-                                    return ListTile(
-                                      dense: true,
-                                      leading: Icon(
-                                        _statusIcon(
-                                          ghStr(step, 'status'),
-                                          ghStr(step, 'conclusion'),
-                                        ),
-                                        size: 18,
-                                        color: _statusColor(
-                                          theme,
-                                          ghStr(step, 'status'),
-                                          ghStr(step, 'conclusion'),
-                                        ),
-                                      ),
-                                      title: Text(
-                                        '${ghInt(step, 'number')}. ${ghStr(step, 'name')}',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      subtitle: Text(
-                                        <String>[
-                                          ghStr(step, 'status'),
-                                          if (ghStr(
-                                            step,
-                                            'conclusion',
-                                          ).isNotEmpty)
-                                            ghStr(step, 'conclusion'),
-                                          if (_durationText(step).isNotEmpty)
-                                            _durationText(step),
-                                        ].join(' · '),
-                                      ),
-                                    );
-                                  },
+                  sliver: Builder(
+                    builder: (BuildContext context) {
+                      final List<Map<String, dynamic>> ordered =
+                          _orderedJobs(detail.jobs);
+                      return SliverList.builder(
+                        itemCount: ordered.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final Map<String, dynamic> job = ordered[index];
+                          return Card(
+                            child: ExpansionTile(
+                              leading: Icon(
+                                _statusIcon(
+                                  ghStr(job, 'status'),
+                                  ghStr(job, 'conclusion'),
                                 ),
-                          ],
-                        ),
+                                color: _statusColor(
+                                  theme,
+                                  ghStr(job, 'status'),
+                                  ghStr(job, 'conclusion'),
+                                ),
+                              ),
+                              title: Text(
+                                ghStr(job, 'name'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text(
+                                '${ghStr(job, 'status')} · '
+                                '${ghStr(job, 'conclusion').isEmpty ? '—' : ghStr(job, 'conclusion')}',
+                              ),
+                              childrenPadding: const EdgeInsets.fromLTRB(
+                                OgLSpace.lg,
+                                0,
+                                OgLSpace.lg,
+                                OgLSpace.md,
+                              ),
+                              children: <Widget>[
+                                for (final Object? rawStep
+                                    in (job['steps'] is List
+                                        ? job['steps'] as List<Object?>
+                                        : const <Object?>[]))
+                                  if (rawStep is Map<Object?, Object?>)
+                                    Builder(
+                                      builder: (BuildContext context) {
+                                        final Map<String, dynamic> step =
+                                            Map<String, dynamic>.from(rawStep);
+                                        return ListTile(
+                                          dense: true,
+                                          leading: Icon(
+                                            _statusIcon(
+                                              ghStr(step, 'status'),
+                                              ghStr(step, 'conclusion'),
+                                            ),
+                                            size: 18,
+                                            color: _statusColor(
+                                              theme,
+                                              ghStr(step, 'status'),
+                                              ghStr(step, 'conclusion'),
+                                            ),
+                                          ),
+                                          title: Text(
+                                            '${ghInt(step, 'number')}. ${ghStr(step, 'name')}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          subtitle: Text(
+                                            <String>[
+                                              ghStr(step, 'status'),
+                                              if (ghStr(
+                                                step,
+                                                'conclusion',
+                                              ).isNotEmpty)
+                                                ghStr(step, 'conclusion'),
+                                              if (_durationText(step)
+                                                  .isNotEmpty)
+                                                _durationText(step),
+                                            ].join(' · '),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                              ],
+                            ),
+                          );
+                        },
                       );
                     },
                   ),

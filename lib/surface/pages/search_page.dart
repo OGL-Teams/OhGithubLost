@@ -27,7 +27,7 @@ import '../util/og_l_space.dart';
 import 'issue_page.dart';
 import 'repo_page.dart';
 
-  /// 取 `search_page` 分片文案。
+/// 取 `search_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
     'search_page', key,
     args:
@@ -375,34 +375,33 @@ class _DiscoverPageState extends State<DiscoverPage>
     Map<String, dynamic> item,
   ) {
     final ThemeData theme = Theme.of(context);
-    final OgLSemanticColors sem =
-        theme.extension<OgLSemanticColors>()!;
+    final OgLSemanticColors sem = theme.extension<OgLSemanticColors>()!;
     return switch (_feedSubjectTypeOf(item)) {
       'Release' => (
-        icon: Icons.tag,
-        color: sem.success,
-        tinted: true,
-      ),
+          icon: Icons.tag,
+          color: sem.success,
+          tinted: true,
+        ),
       'Issue' => (
-        icon: Icons.error_outline,
-        color: theme.colorScheme.error,
-        tinted: true,
-      ),
+          icon: Icons.error_outline,
+          color: theme.colorScheme.error,
+          tinted: true,
+        ),
       'PullRequest' => (
-        icon: Icons.merge,
-        color: theme.colorScheme.tertiary,
-        tinted: true,
-      ),
+          icon: Icons.merge,
+          color: theme.colorScheme.tertiary,
+          tinted: true,
+        ),
       'Discussion' => (
-        icon: Icons.forum,
-        color: sem.info,
-        tinted: true,
-      ),
+          icon: Icons.forum,
+          color: sem.info,
+          tinted: true,
+        ),
       _ => (
-        icon: Icons.notifications_none,
-        color: theme.colorScheme.onSurfaceVariant,
-        tinted: false,
-      ),
+          icon: Icons.notifications_none,
+          color: theme.colorScheme.onSurfaceVariant,
+          tinted: false,
+        ),
     };
   }
 
@@ -594,8 +593,7 @@ class _DiscoverPageState extends State<DiscoverPage>
                                   repoName,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style:
-                                      Theme.of(context).textTheme.labelLarge,
+                                  style: Theme.of(context).textTheme.labelLarge,
                                 ),
                               ),
                               // 类型徽章：图标 + 着色小字。
@@ -615,9 +613,8 @@ class _DiscoverPageState extends State<DiscoverPage>
                                   width: 8,
                                   height: 8,
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -634,12 +631,14 @@ class _DiscoverPageState extends State<DiscoverPage>
                           const SizedBox(height: OgLSpace.xxs),
                           Text(
                             ghDate(item, 'updated_at'),
-                            style:
-                                Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
-                                    ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
                           ),
                           if (url.isNotEmpty)
                             Align(
@@ -741,106 +740,113 @@ class _DiscoverPageState extends State<DiscoverPage>
               padding: const EdgeInsets.fromLTRB(
                   OgLSpace.lg, OgLSpace.xxs, OgLSpace.lg, OgLSpace.lg),
               itemCount: _repos.length + 1,
-        separatorBuilder: (BuildContext context, int index) =>
-            const SizedBox(height: OgLSpace.md),
-        itemBuilder: (BuildContext context, int index) {
-          if (index == _repos.length) {
-            return _repoDone
-                ? const SizedBox.shrink()
-                : const Padding(
-                    padding: EdgeInsets.symmetric(vertical: OgLSpace.md),
-                    child: _SkeletonCard(),
-                  );
-          }
-          final GhRepo repo = _repos[index];
-          final String excerpt = _readmeOf[repo.fullName] ?? '';
-          final String? version = _versionOf[repo.fullName];
-          return Card(
-            key: ValueKey<String>('repo-${repo.fullName}'),
-            child: InkWell(
-              onTap: () => unawaited(_openRepo(repo)),
-              onLongPress: () => _showRepoActions(context, repo),
-              borderRadius: BorderRadius.circular(OgLRadius.md),
-              child: Padding(
-                padding: const EdgeInsets.all(OgLSpace.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      repo.fullName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: OgLSpace.xxs),
-                    Text(
-                      _repoSubtitle(repo),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    if (excerpt.isNotEmpty) ...<Widget>[
-                      const SizedBox(height: OgLSpace.sm),
-                      // README 切片：小字、次要色，与正文层次拉开。
-                      Text(
-                        excerpt,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                              height: 1.4,
-                            ),
-                      ),
-                    ],
-                    const SizedBox(height: OgLSpace.sm),
-                    // 微粒子小字：星数 / 语言 / 最新版本号。
-                    Row(
-                      children: <Widget>[
-                        const Icon(Icons.star_border, size: 12),
-                        const SizedBox(width: OgLSpace.xxs),
-                        Text('${repo.stars}',
-                            style: Theme.of(context).textTheme.labelSmall),
-                        if (repo.language != null &&
-                            repo.language!.isNotEmpty) ...<Widget>[
-                          const SizedBox(width: OgLSpace.sm),
-                          Text(repo.language!,
-                              style: Theme.of(context).textTheme.labelSmall),
-                        ],
-                        const Spacer(),
-                        if (version != null && version.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: OgLSpace.sm,
-                                vertical: OgLSpace.xxs / 2),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .secondaryContainer,
-                              borderRadius: BorderRadius.circular(OgLRadius.xs),
-                            ),
-                            child: Text(
-                              version,
+              separatorBuilder: (BuildContext context, int index) =>
+                  const SizedBox(height: OgLSpace.md),
+              itemBuilder: (BuildContext context, int index) {
+                if (index == _repos.length) {
+                  return _repoDone
+                      ? const SizedBox.shrink()
+                      : const Padding(
+                          padding: EdgeInsets.symmetric(vertical: OgLSpace.md),
+                          child: _SkeletonCard(),
+                        );
+                }
+                final GhRepo repo = _repos[index];
+                final String excerpt = _readmeOf[repo.fullName] ?? '';
+                final String? version = _versionOf[repo.fullName];
+                return Card(
+                  key: ValueKey<String>('repo-${repo.fullName}'),
+                  child: InkWell(
+                    onTap: () => unawaited(_openRepo(repo)),
+                    onLongPress: () => _showRepoActions(context, repo),
+                    borderRadius: BorderRadius.circular(OgLRadius.md),
+                    child: Padding(
+                      padding: const EdgeInsets.all(OgLSpace.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            repo.fullName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: OgLSpace.xxs),
+                          Text(
+                            _repoSubtitle(repo),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          if (excerpt.isNotEmpty) ...<Widget>[
+                            const SizedBox(height: OgLSpace.sm),
+                            // README 切片：小字、次要色，与正文层次拉开。
+                            Text(
+                              excerpt,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
                               style: Theme.of(context)
                                   .textTheme
                                   .labelSmall
                                   ?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onSecondaryContainer,
+                                        .onSurfaceVariant,
+                                    height: 1.4,
                                   ),
                             ),
+                          ],
+                          const SizedBox(height: OgLSpace.sm),
+                          // 微粒子小字：星数 / 语言 / 最新版本号。
+                          Row(
+                            children: <Widget>[
+                              const Icon(Icons.star_border, size: 12),
+                              const SizedBox(width: OgLSpace.xxs),
+                              Text('${repo.stars}',
+                                  style:
+                                      Theme.of(context).textTheme.labelSmall),
+                              if (repo.language != null &&
+                                  repo.language!.isNotEmpty) ...<Widget>[
+                                const SizedBox(width: OgLSpace.sm),
+                                Text(repo.language!,
+                                    style:
+                                        Theme.of(context).textTheme.labelSmall),
+                              ],
+                              const Spacer(),
+                              if (version != null && version.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: OgLSpace.sm,
+                                      vertical: OgLSpace.xxs / 2),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondaryContainer,
+                                    borderRadius:
+                                        BorderRadius.circular(OgLRadius.xs),
+                                  ),
+                                  child: Text(
+                                    version,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSecondaryContainer,
+                                        ),
+                                  ),
+                                ),
+                            ],
                           ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
+          ),
         ),
       ],
     );
@@ -925,7 +931,8 @@ class _DiscoverPageState extends State<DiscoverPage>
           ),
           Expanded(
             child: _issues == null
-                ? _SkeletonList(key: const ValueKey<String>('issues-skeleton'), dense: true)
+                ? _SkeletonList(
+                    key: const ValueKey<String>('issues-skeleton'), dense: true)
                 : AsyncView<List<Map<String, dynamic>>>(
                     controller: _issues!,
                     emptyIcon: Icons.inbox_outlined,
@@ -975,17 +982,18 @@ class _DiscoverPageState extends State<DiscoverPage>
                                 'count': ghInt(item, 'comments'),
                               }),
                               child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                const Icon(Icons.chat_bubble_outline, size: 14),
-                                const SizedBox(width: OgLSpace.xxs),
-                                Text('${ghInt(item, 'comments')}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall),
-                                const SizedBox(width: OgLSpace.sm),
-                                const Icon(Icons.chevron_right, size: 18),
-                              ],
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  const Icon(Icons.chat_bubble_outline,
+                                      size: 14),
+                                  const SizedBox(width: OgLSpace.xxs),
+                                  Text('${ghInt(item, 'comments')}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall),
+                                  const SizedBox(width: OgLSpace.sm),
+                                  const Icon(Icons.chevron_right, size: 18),
+                                ],
                               ),
                             ),
                             onTap: () => unawaited(_openIssue(item)),

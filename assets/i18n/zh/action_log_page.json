@@ -1,10 +1,18 @@
 {
+  "copyAll": "复制全部",
+  "downloadFailed": "日志下载失败：{error}",
+  "downloadLog": "下载日志到本地",
+  "downloadUnavailable": "当前存储方案不可写，无法保存日志",
+  "downloaded": "日志已保存",
+  "downloadedAt": "日志已保存到 {path}",
   "linesCount": "共 {count} 行",
+  "noLogMatch": "没有命中的日志内容",
   "noLogs": "没有日志（可能尚未完成，或令牌缺少 Actions 权限）",
   "noMatchingJob": "没有匹配的 job",
+  "nothingToCopy": "暂无可复制的日志",
   "reload": "重新拉取",
   "searchJobHint": "搜索 job 名",
+  "searchLogHint": "在日志中查找（大小写不敏感）",
   "title": "运行日志",
-  "copyAll": "复制全部",
-  "nothingToCopy": "暂无可复制的日志"
+  "toggleSearch": "查找日志内容"
 }

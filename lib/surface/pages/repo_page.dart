@@ -3794,8 +3794,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             child: Text(_t('cancel')),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(controller.text),
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
             child: Text(_t('confirm')),
           ),
         ],
@@ -3944,23 +3943,20 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
     }
     setState(() => _busy = true);
     try {
-      await widget.surface.domain.api
-          .transferRepo(_full, newOwner: target);
+      await widget.surface.domain.api.transferRepo(_full, newOwner: target);
       OgLAppLog.instance.result(
         '仓库',
         _t('transferred', {'owner': target}),
         _full,
       );
       if (mounted) {
-        OgLNotifier.of(context)
-            .success(_t('transferred', {'owner': target}));
+        OgLNotifier.of(context).success(_t('transferred', {'owner': target}));
         // 仓库已换址：旧 fullName 不再可用，退出详情页让列表刷新。
         Navigator.of(context).pop(true);
       }
     } catch (error) {
       if (mounted) {
-        OgLNotifier.of(context)
-            .warning(_t('transferFailed', {'error': error}));
+        OgLNotifier.of(context).warning(_t('transferFailed', {'error': error}));
       }
     } finally {
       if (mounted) {
@@ -4484,10 +4480,8 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
 // [OgLAsyncEmptyPane]、失败用 [OgLAsyncErrorPane]（自带重试），与 AsyncView /
 // OgLAsyncSliver 同一套视觉与文案；原私有 `_MessagePane` 与
 // [OgLAsyncEmptyPane] 的实现逐字相同，属重复代码，已删除。
-�──────────────────────────
 
 // 消息面板：Phase 5 后半已收敛到 `surface/app/async.dart` —— 空态用
 // [OgLAsyncEmptyPane]、失败用 [OgLAsyncErrorPane]（自带重试），与 AsyncView /
 // OgLAsyncSliver 同一套视觉与文案；原私有 `_MessagePane` 与
 // [OgLAsyncEmptyPane] 的实现逐字相同，属重复代码，已删除。
-�删除。

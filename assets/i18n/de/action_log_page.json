@@ -1,10 +1,18 @@
 {
   "copyAll": "Alles kopieren",
+  "downloadFailed": "Log-Download fehlgeschlagen: {error}",
+  "downloadLog": "Logs herunterladen",
+  "downloadUnavailable": "Speicher nicht beschreibbar; Logs können nicht gespeichert werden",
+  "downloaded": "Logs gespeichert",
+  "downloadedAt": "Logs gespeichert unter {path}",
   "linesCount": "{count} Zeilen",
+  "noLogMatch": "Keine Treffer im Log",
   "noLogs": "Keine Protokolle (Job möglicherweise unvollständig oder Token hat keine Berechtigungen für Actions)",
   "noMatchingJob": "Kein passender Job gefunden",
   "nothingToCopy": "Keine Protokolle zum Kopieren",
   "reload": "Aktualisieren",
   "searchJobHint": "Jobname suchen",
-  "title": "Ausführungsprotokolle"
+  "searchLogHint": "In Logs suchen (Groß-/Kleinschreibung egal)",
+  "title": "Ausführungsprotokolle",
+  "toggleSearch": "In Logs suchen"
 }

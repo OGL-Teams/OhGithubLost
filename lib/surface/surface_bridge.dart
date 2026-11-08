@@ -68,6 +68,12 @@ class SurfaceBridge {
   /// 展示层不直接依赖底座，因此以函数形式注入。
   final Future<bool> Function()? storageProbe;
 
+  /// 落盘根目录（由装配层注入：`OgLStorage.plan().root`）。
+  ///
+  /// 为什么注入而不是页面直接取：surface 不得 import base/disk（分层门禁），
+  /// 与 [storageProbe] 同一手法。
+  final Future<String> Function()? storageRoot;
+
   /// 界面偏好 KV（**纯展示层状态**：分组展开状态等）。
   ///
   /// 为什么不塞进 [settings]：`OgLSettings` 是"用户设置"，
@@ -621,6 +627,7 @@ class SurfaceLayerModule extends OgLModule {
       net: base.net,
       cache: base.disk.cache,
       storageProbe: _probeStorage,
+      storageRoot: _storageRoot,
       // 界面偏好（分组展开状态）走同一套 KV：与设置数据分开存，
       // 但共用"底座可替换"的唯一入口。
       uiPrefs: base.disk.kv,
@@ -667,6 +674,15 @@ List<OgLModule> surfaceLayerModules() => <OgLModule>[
 /// ## 平台差异在哪
 /// 实现细节按平台收敛在底座（`base/disk/app_dirs_fs_io.dart`），
 /// 展示层里**一个 `dart:io` 都不需要**。
+/// 落盘根（`OgLStorage.plan().root`）；探不到时返回 `null`，由调用方如实报错。
+Future<String?> _storageRoot() async {
+  try {
+    return (await OgLStorage.plan()).root;
+  } catch (_) {
+    return null;
+  }
+}
+
 Future<bool> _probeStorage() async {
   OgLAppDirs.invalidate();
   try {
