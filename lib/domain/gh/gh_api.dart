@@ -810,22 +810,12 @@ class GhApi implements CacheRemote {
         );
       }
     }
-    // ★ 直接写成功后同步失效底座缓存条目：引擎写路径（_writeLocked）自带
-    //   D5 失效，但这条裸写路径不经过引擎——不清的话 30s TTL 内读到旧内容
-    //   （"改完再看显示旧值"）。
-    final CacheKey? key = await _cacheKeyFor(fullName, path, branch);
-    if (key != null) {
-      try {
-        await _cache!.invalidate(key);
-      } catch (error) {
-        // 失效是 best-effort：失败只留痕，不改变"写已成功"的事实。
-        OgLLogFile.line(
-          'GH',
-          '写后缓存失效失败（$fullName/$path）：$error',
-          level: 'WARN',
-        );
-      }
-    }
+    // ★ 直接写成功后**不在此处**失效底座缓存（B2-A-01 P0）：
+    //   本方法是 CacheRemote.write 的实现，被调用时正处于
+    //   RepositoryCache._writeLocked 的逐键互斥锁内；再调 cache.invalidate(key)
+    //   会再获取同一把锁 → 自锁死锁，写操作永远卡住。
+    //   · 引擎路径：D5 自带写后失效，无需重复；
+    //   · 裸写路径（未绑定缓存）：由 putContentLocked 的回退分支负责失效。
     return written;
   }
 
@@ -886,6 +876,20 @@ class GhApi implements CacheRemote {
           baseSha: expected,
           branch: branch,
         );
+        // B2-A-01：裸写路径不经过引擎 D5，此处（锁外）补一次写后失效；
+        // 失效失败只留痕，不改变"写已成功"的事实。
+        final CacheKey? writtenKey = await _cacheKeyFor(fullName, path, branch);
+        if (writtenKey != null && _cache != null) {
+          try {
+            await _cache!.invalidate(writtenKey);
+          } catch (error) {
+            OgLLogFile.line(
+              'GH',
+              '裸写后缓存失效失败（$fullName/$path）：$error',
+              level: 'WARN',
+            );
+          }
+        }
         return GhWriteResult(
           ok: true,
           conflict: GhWriteConflict.none,

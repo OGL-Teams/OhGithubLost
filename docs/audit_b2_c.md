@@ -5,6 +5,7 @@
 > 纪律：只审不改；**未修改**任何 `lib/`、`test/`、`docs/ARCHITECTURE.md`；本文件是唯一写入目标。
 > 阅读方式：`file_read` 完整读 12 个 `lib/base/disk/*.dart` + 2 个 `lib/kernel/contract/disk_*.dart` + `test/base/` 全部 12 个测试文件 + `docs/ARCHITECTURE.md` + `docs/QUALITY_STANDARD.md` + `AGENTS.md` + `tool/{layer,motion,perf}_audit.py`；辅助阅读 `lib/kernel/diagnostics.dart`、`lib/base/base_bootstrap.dart`、`lib/domain/domain_bridge.dart` 片段、`docs/audit_206.md`、`docs/AUDIT_PLAN.md`、`docs/5layer-audit-todo.md`、`git log`。
 > 编号 `B2-C-xx`；每条含文件:行号 / 文档章节、问题描述、**违反的原则编号与文档原话**、P0/P1/P2、是否确证（附证据）。不确定者标「待议」。
+> 编号按**发现顺序**追加（B2-C-16…18、23 为复核阶段补录，已归档到对应清单）；确证 01–18、待议 19–23。
 
 ## 阅读基线（覆盖文件清单见文末）
 
@@ -93,7 +94,7 @@
   - `layer_audit.py` 是唯一覆盖该层的门禁，但有 3 个盲区：① `export` 指令不进正则（7 行转发导出 `disk_store.dart:7` / `disk_types.dart:7` / `platform_io.dart:12` 的分层方向完全未被校验）；② `ALLOW` 中的 `surface/surface_bridge.dart` **整文件跳过**，该文件 `:20-21` 直接 import `base/disk/disk_cache.dart` 与 `disk_store.dart` 不受审查；③ `KNOWN` 白名单（`:44-49`）把 `gh_api.dart → disk_cache.dart` 计为「已知待收敛」而非违规，且无归零检查（原则 3）。
   - 语义层（D1–D9 注释/实现一致、失败留痕、并发上限、序列化往返）**没有任何脚本守**；`docs/5layer-audit-todo.md` 自认「仅验证语法 / 导入 / 分层规范，尚未验证语义设计的严密性」，`QUALITY_STANDARD.md` 原则 53 也把语义交给「人读」——但本次审计正是人读才发现 B2-C-01/04/06/07。
 - **违反的原则编号/文档原话**：原则 **53**「审计脚本只守语法与结构；语义严密性靠人读，读的时候禁止只看 diff」（承认现状，但本条指出现有脚本连结构都没守全）、**3**「例外必须显式登记、可枚举、可归零；没有清单的例外就是漏洞」、**6**「命名即结构：文件名必须能让审计脚本识别其层级角色」；`AGENTS.md §2`「layer_audit.py --fatal：分层 import 检查（见上）…**扫描 lib/ 全部相对 import**」——`export` 与 `ALLOW` 跳过使该描述不完全成立。
-- **证据**：实跑三个脚本输出（见阅读基线）；`grep -n "^export " lib` 得 8 处转发导出；`layer_audit.py:38` 正则字面量 `^\s*import\s+'([^']+)'`。
+- **证据**：实跑三个脚本输出（见阅读基线）；`grep -rn "^export " lib` 得 19 处 export 指令（其中 `base/disk/` 3 处转发导出）；`layer_audit.py:38` 正则字面量 `^\s*import\s+'([^']+)'`。
 - **是否确证**：确证。
 
 ### B2-C-10 · `CacheKey` / `CacheScope` / `WriteIntent` / `WriteOutcome` 无 `toJson`/`fromJson`，「往返稳定性」契约不完整（P1，确证）
@@ -141,7 +142,7 @@
   3. `DraftStore` 的 `ChangeNotifier` 可观察性、`_ordered` 串行化（防止旧写覆盖新内容）、`clear()` 并发安全零测试（原则 22/23/24 的生命周期对称未验证）。
   4. `platform_io_test.dart:4-6` 自述 `PlatformStorage.open` / `SecureDiskVault`「在 CI 上无法实例化，属于真机验收清单」——但 `base_bootstrap_test.dart:20-27` 实际用 `rootOverride` 调用了 `PlatformStorage.open` 并断言 `SecureDiskVault`，两处文件头对「离线可跑」的陈述互相矛盾；`SecureDiskVault` 的读写仍无断言。
   5. 原子写「先写 tmp 并 `flush` 再 `rename`」只有「不留 .tmp」的**结果断言**（`platform_io_test.dart:69-77`），没有注入 `rename` 失败 / 写入中断的 chaos 用例；`_packTooLong` 长路径收纳回退与 `_saveIndex` 索引损坏静默吞（`:163-170`）零测试。
-  6. `test/base/net_contract_test.dart` 头注明「避开老文件格式器假阳性」而另起文件——说明 `test/base` 存在格式器层面的门禁盲区（与本视角 C 的「CI 盲区」呼应）。
+  6. 提交 `d9c1487` 的说明写「批1交叉补充离线回归测试（**独立文件，避开老文件格式器假阳性**）」并新建 `test/base/net_contract_test.dart`（81 行），同时把追加内容从 `net_test.dart` 移出——说明 `test/base` 存在格式器层面的门禁盲区，维护者宁可另起文件也不改老文件（与本视角 C 的「CI 盲区」呼应）。
 - **违反的原则编号/文档原话**：原则 **49/50/51**（正向已满足）、**22**「每个异步结果都要校验它是否仍然有效；过期的回调必须被丢弃」、**23**「互斥闸门成对出现且属于同一所有者」、**24**「资源的开启与关闭在生命周期上对称」、**52**「端点语义必须实测：空、无、未启用是三种不同的"没有"」；`AGENTS.md §7`「重点测试：`chaos_test.dart`（破坏性混沌注入）、`durability_test.dart`、`cache_consistency_test.dart`」；`docs/QUALITY_STANDARD.md` 第九章三条。
 - **证据**：逐文件 `file_read` 全文 + `grep -rn "delete(\|maxAttempts\|failByKey\|addListener\|rename" test/base` 命中清单；`wc -l` 行数如上。
 - **是否确证**：确证（含对「旧 D1 测试」这一问的否定答复）。
@@ -154,44 +155,75 @@
 - **证据**：`grep -rn "OGL-CONS" lib/base/disk` 的 19 处清单（见正文统计）；`docs/audit_206.md:36-40`。
 - **是否确证**：确证（影响可观测性，非功能故障）。
 
+### B2-C-16 · `_KeyedMutex` 的「前序任务失败留痕」只在 `read()` 惰性接线，写/删/失效路径零留痕（P1，确证）
+
+- **文件:行号**：`lib/base/disk/disk_cache.dart:100-121`（`_KeyedMutex.onPreviousFailed` + `run` 的 `catch (error) { onPreviousFailed?.call(...) }`）、`:236-238`（`read()` 里唯一一次 `_wireMutexDiagnostics()`）、`:257`（`write()` 直接 `_mutex.run`，**不接线**）、`:286`（`invalidate()`）、`:301`（`delete()`）、`:1017`（`_evictIfStale()`）、`:536-552`（`_wireMutexDiagnostics` 实现，`debug` 级）。
+- **问题描述**：注释自称「swallow 前序失败是**有意的**（保证本任务仍执行），但完全静默会让『为什么这次写没生效』无从排查」（`:101-103`），并设计了 `onPreviousFailed` 回调补留痕。但接线只在 `read()` 里做：若某个 `RepositoryCache` 实例从未调用过 `read()`（例如 `DiskModule` 装配后用户直接提交、或 `replayPending()` 在启动时重放、`prune()` 在后台淘汰），`_mutex.onPreviousFailed` 恒为 `null`，前序任务失败被**完全静默吞掉**。且即便接了线，落的是 `debug` 级、`KernelDiagnostics.verbose` 默认 `false`（`lib/kernel/diagnostics.dart:157-162` 直接 `return`），生产环境一条日志都不会产生。这是「失败必留痕」在并发闸门上的确证缺口。
+- **违反的原则编号/文档原话**：原则 **15**「**静默降级是最严重的缺陷；失败必须以用户可感知的方式留痕**」、**16**「不吞异常。捕获后若不重新抛出，必须转化为明确的结果或告警」、**23**「互斥闸门成对出现且属于同一所有者」、**27**「并发假设写进注释；没写出来的假设等于没有假设」；`lib/base/disk/disk_cache.dart:101-103` 原话「**完全静默**会让『为什么这次写没生效』无从排查」；`AGENTS.md §3`「**失败必留痕（日志/诊断/通知中心），不静默降级**」。
+- **证据**：`grep -n "_wireMutexDiagnostics\|_mutex.run" lib/base/disk/disk_cache.dart` 得 5 处 `_mutex.run`（`:238` / `:257` / `:286` / `:301` / `:1017`）而 `_wireMutexDiagnostics()` 只在 `:237` 调用一次；`KernelDiagnostics.log`（`diagnostics.dart:156-162`）对 `debug` 级别在 `verbose == false` 时直接返回；`test/base/` 无任何断言 `OGL-CONS-MUTEX-PREV` 出现或对前序失败做留痕检查（`grep -rn "MUTEX-PREV" test` 零命中）。
+- **是否确证**：确证。
+
+> **自我勘误**（原则 58）：本条初稿曾写作「`delete()` 失败分支不记诊断」——**该判断错误**，已删除。`delete()` 的四个失败分支（`:311` / `:322` / `:330` / `:362` / `:371`）全部走 `_fail(...)`，而 `_fail`（`:801-810`）第一行就是 `_diagnostics.error(...)`，删除失败**有**留痕。真正的问题是本条所述的互斥闸门留痕未接线。`delete()` 的 `confirmed` 裸 bool 与「不入提交日志」已分别记在 B2-C-06 / B2-C-07。
+
+### B2-C-17 · `JournalRecord.toIntent()` 重放丢失 `force` / `rebase`，与「绝不跳过任何防线」的注释相反（P1，确证）
+
+- **文件:行号**：`lib/base/disk/disk_journal.dart:78-91`（`toIntent()` 注释「还原为写意图（重放时**重新走 D1–D7，绝不跳过任何防线**）」+ 只传 5 个字段）、`lib/kernel/contract/disk_types.dart:342-375`（`WriteIntent` 共 7 个字段：`key/content/message/baseSha/force/dangerous/rebase`）、`disk_journal.dart:41-83`（`JournalRecord` 只有 `dangerous`，无 `force` / `rebase` 字段）、`toJson/fromJson`（`:108-147`）；`lib/base/disk/disk_cache.dart:439-465`（`replayPending`）。
+- **问题描述**：D8 的可恢复事务契约要求「重放 = 再走一次完整的 `RepositoryCache.write()`——D1/D2/D7 一条不少」（`disk_journal.dart:14-16`），但 `toIntent()` 只还原 `key/content/message/baseSha/dangerous`，**`force` 与 `rebase` 两个字段根本没有落盘**（`JournalRecord.toJson()` 没有它们）。后果有两面：① 用户已确认的 `force` 覆盖意图崩溃后重放会退化成普通写，被 D1/D2 拦成 `requiresRead`/`staleSha`，「已确认的操作」被静默改判；② 提供 `rebase` 的自动合并意图重放后失去 D3 重定基能力，冲突直接失败。`rebase` 是函数字段（`:375`）本质上不可序列化，说明 D8 的记录类型**在契约层就缺一类表达能力**，与 B2-C-07（删除无表达）同源。`replayPending({bool confirmed = false})` 的裸 bool 又只传 `confirmed`，无法补偿 `force`。`test/base/durability_test.dart:334-351` 的「日志记录可序列化往返」只断言了 5 个基础字段，没有覆盖 `force`/`rebase` 丢失。
+- **违反的原则编号/文档原话**：原则 **13**「每次写入要么完整生效，要么可恢复；半成品状态必须留有痕迹并能被重启发现」、**17**「用类型表达失败；让调用方无法忽略错误」、**57**「文档引用的符号必须真实存在；改名时文档一并改，否则文档在撒谎」（注释承诺与实现不符）；`disk_journal.dart:14-16` 原话「重放**不是**把旧内容硬灌回去，而是把记录还原成 [WriteIntent] 再走一次完整的 `RepositoryCache.write()`——D1/D2/D7 一条不少」。
+- **证据**：`JournalRecord.toJson()` 字段清单（`:108-121`）与 `WriteIntent` 构造参数清单逐项对比；`git grep "force:" lib/base/disk/` 在 `disk_journal.dart` 零命中；`chaos_test.dart:167-187` 的 kill-9 重放用例只用普通 intent（无 `force`/`rebase`），故未暴露。
+- **是否确证**：确证。
+
+### B2-C-18 · `AGENTS.md:62` 的「1,016 行」与「D1 写前必读」在 D1 修复后未同步（P2，确证）
+
+> 注：本条由原「待议 B2-C-20」复核后升级为确证。
+
+- **文件:行号**：`AGENTS.md:62`；`lib/base/disk/disk_cache.dart`（1030 行）、`docs/QUALITY_STANDARD.md:4`、`docs/audit_submit_download.md`（SD-01，明确写 `disk_cache.dart:870-905` 的旧行号）。
+- **问题描述**：`AGENTS.md:62` 把「`disk_cache.dart`，**1,016 行**」写进「关键设计（改动前必读）」，`eaadd65` 的净 +14 行后实际为 **1030 行**；同条目「D1 写前必读」未记录新语义（已在 B2-C-01 展开）。`docs/audit_submit_download.md` 的 SD-01 引用 `disk_cache.dart:870-905`（旧版行号，现 D1/D2/D2′ 在 `:606-661`），且写「`_writeLocked` 内把判定收紧为『空串 = 无基线』…引擎对空基线 + 远端不存在的组合按『新建』放行」——修复说明本身正确，但行号与当前源码不符。`QUALITY_STANDARD.md:4` 明说「引用具体文件名或数字的标准不属于本文，**见 AGENTS.md 与 docs/ARCHITECTURE.md**」，即把数字真相托付给这两份文档，而二者都失准。这不再只是「待议的注释漂移」：`AGENTS.md §1` 自己把「lib/ 197 个 Dart 文件 ≈ 49,300 行」「测试 44 文件 ≈ 10,300 行」「当前基线违规 0」「`KNOWN` 白名单恰 2 项」等数字当作门禁基线，数字不实会直接影响评审判断，故确证。
+- **违反的原则编号/文档原话**：原则 **57**「**文档引用的符号必须真实存在；改名时文档一并改，否则文档在撒谎**」、**45**「版本号只有一个真相；任何两处不一致都是谎报，由脚本强制而非靠自觉」（数字真相同类）；`docs/QUALITY_STANDARD.md:4` 原话「引用具体文件名或数字的标准不属于本文，见 AGENTS.md 与 docs/ARCHITECTURE.md」；`AGENTS.md §2`「layer_audit.py --fatal…**当前基线违规 0**」。
+- **证据**：`wc -l lib/base/disk/disk_cache.dart` = 1030；`git show eaadd65^:lib/base/disk/disk_cache.dart | wc -l` = 1016；`git show --numstat eaadd65 -- lib/base/disk/disk_cache.dart` = `19 5`（净 +14）；`git show --stat eaadd65` 的 4 个改动文件不含 `AGENTS.md`；`docs/audit_submit_download.md` 的 `:870-905` 与实际 `:606-661` 对照。
+- **是否确证**：确证。
+
+---
+
 ---
 
 ## 待议清单
 
-### B2-C-16 · 文件头「无绕过开关」与 `force` 是否属于「用户显式确认的合法例外」（P1，待议）
+### B2-C-19 · 文件头「无绕过开关」与 `force` 是否属于「用户显式确认的合法例外」（P1，待议）
 
 - **文件:行号**：`lib/base/disk/disk_cache.dart:5-6` / `:245-252` / `:596-604`、`lib/kernel/contract/disk_types.dart:366`、`AGENTS.md:62`、`QUALITY_STANDARD.md` 原则 11/12。
 - **问题描述**：`force` + `confirmed: true` 的语义在产品上可能是「用户在冲突对话框点『强制覆盖』」，属于原则 12 允许的显式确认，而非原则 11 禁止的「绕过校验捷径」。但 `confirmed` 是裸 `bool` 且 `WriteIntent.force` 的注释写「跳过 D2；**必须**搭配 `dangerous` 与二次确认」，实现（`:596`）却是 `dangerous || force` 任一即可，二者不一致；`AGENTS.md §5` 里 `IxBatchDecision` 的「类型上强制确认」范式没有在磁盘层复用。**是否判定为违反原则 11/12，取决于产品对 `force` 的定位**，故不并入 B2-C-06 的确证部分，标待议。
 - **违反的原则编号/文档原话**：原则 **11**「防线没有开关」、**12**「确认在类型上表达，不靠调用方自觉」；`disk_types.dart:366` 原话「**必须**搭配 `dangerous` 与二次确认」。
 - **证据**：`disk_cache.dart:596` 的 `||` 条件；`disk_types.dart:366-370` 字段注释；`test/base/cache_consistency_test.dart:484-505` 只测 `force` 未确认被拒与已确认放行，未测「`force` 不带 `dangerous`」这一组合。
 
-### B2-C-17 · `DiskModule` 缺省内存实现是否构成「静默降级」（P1，待议）
+### B2-C-20 · `DiskModule` 缺省内存实现是否构成「静默降级」（P1，待议）
 
 - **文件:行号**：`lib/base/disk/disk_bridge.dart:70-82`（`kv ?? InMemoryKv()` 等 7 项缺省）、`lib/base/base_bootstrap.dart:22-39`（失败退回内存并回传 `storageError`）、`test/base/base_bootstrap_test.dart:29-43`。
 - **问题描述**：`base_bootstrap.dart` 的降级路径「退回内存实现 + 错误原样回传」有触发条件、有观测（`storageError`）、有测试，符合原则 21 与 15；但 `DiskModule` 构造函数**本身**默认全内存（`disk_bridge.dart:73-79`），任何绕过 `baseLayerModulesOnPlatform` 的装配（例如测试或未来的组合根）都会静默丢掉全部持久化能力且无任何告警。`DiskModule.onRegister`（`:120-159`）不检查 `kv.runtimeType`，诊断里只记 `runtimeType` 字符串（`data` 字段），不构成「告警」。是否把它判为「防线可关」/「静默降级」取决于「组合根是唯一装配入口」这一前提能否由门禁保证——目前 `layer_audit.py` 不保证，故标待议。
 - **违反的原则编号/文档原话**：原则 **21**「降级路径必须有触发条件、有观测、有退出条件」、**15**「静默降级是最严重的缺陷」；`AGENTS.md §5`「**平台存储失败退回内存但大声上报**（不允许静默丢失登录态）」。
 - **证据**：`disk_bridge.dart:73-79` 默认值；`base_bootstrap_test.dart` 两条路径断言；`grep -rn "new DiskModule\|DiskModule(" lib` 只有 `platform_io_impl.dart:545` 与装配根。
 
-### B2-C-18 · 「并发上限」在磁盘层是「串行化」还是「无界排队」（P1，待议）
+### B2-C-21 · 「并发上限」在磁盘层是「串行化」还是「无界排队」（P1，待议）
 
 - **文件:行号**：`lib/base/disk/disk_cache.dart:95-125`（`_KeyedMutex`）、`disk_draft.dart:110-135`（`_ordered`）、`test/base/chaos_test.dart:309-334`（500 路并发）。
 - **问题描述**：两处互斥都是「每键一条 Future 链、无队列长度上限、无超时、无取消」，`chaos_test.dart` 用 500 路并发证明「不串味」但没有断言排队有界或过期回调丢弃。原则 29 要求「并发数」有上限，原则 22 要求「过期的回调必须被丢弃」；串行化把并发压成 1，是否即视为满足「并发上限」、以及排队中的旧请求是否应被丢弃（例如用户在编辑框连打 500 次），语义上需要产品定义。故标待议，不并入 B2-C-11。
 - **违反的原则编号/文档原话**：原则 **29**「所有资源有上限：内存、磁盘、**并发数**、重试次数」、**22**「每个异步结果都要校验它是否仍然有效；**过期的回调必须被丢弃**」、**27**「并发假设写进注释；没写出来的假设等于没有假设」（`_KeyedMutex` 注释只写了「为什么读也要进来」，未写队列上界与取消假设）。
 - **证据**：`_KeyedMutex._tails` 与 `_ordered._operations` 均为无上限 `Map`；`chaos_test.dart:319` 直接 `Future.wait` 500 个写。
 
-### B2-C-19 · 「D10」编号越界：`WriteOutcome.threeWay` 注释称 D10，但规范只定义 D1–D9（P2，待议）
+### B2-C-22 · 「D10」编号越界：`WriteOutcome.threeWay` 注释称 D10，但规范只定义 D1–D9（P2，待议）
 
 - **文件:行号**：`lib/kernel/contract/disk_types.dart:455`（`/// 冲突三方内容（D10：冲突必须可解释）`）、`lib/base/disk/disk_cache.dart:847`（`/// D10：组装冲突三方信息`）、`test/base/durability_test.dart:2`（标题「D8 / D9 / D10 三方信息」）；对照 `AGENTS.md:62`（只列 D1–D9）、`docs/ARCHITECTURE.md:123`（「D1–D7」）、`disk_cache.dart:1`（「七道防线 D1–D7」）。
 - **问题描述**：D10 在源码与测试里被当作既有防线编号使用，但 `AGENTS.md` / `ARCHITECTURE.md` 的防线清单止于 D9；文件头表格止于 D7，D8/D9 在别的文件，D10 无表格、无规范条目。若「七道防线」是契约，D8–D10 属于「附加能力」还是「防线」需要统一编号口径；也可能只是文档滞后（同 B2-C-01）。因不确证是遗漏还是有意扩展，标待议。
 - **违反的原则编号/文档原话**：原则 **57**「文档引用的符号必须真实存在；改名时文档一并改」、**54**「注释解释为什么」；`AGENTS.md:62`「**缓存一致性七道防线**…D8 = Write Journal；D9 = 草稿先落盘」。
 - **证据**：`grep -rn "D10" lib test docs` 命中清单；三份文档均无 D10 定义。
 
-### B2-C-20 · `AGENTS.md:62` 的「disk_cache.dart，1,016 行」与实际 1,030 行不符（P2，待议）
+### B2-C-23 · `test/base/net_transport_reconnect_test.dart` 起本地 socket，是否违反「测试离线可跑」（P1，待议）
 
-- **文件:行号**：`AGENTS.md:62`；`lib/base/disk/disk_cache.dart`（`wc -l` = 1030）、`docs/ARCHITECTURE.md:4`（「引用具体文件名或数字的标准不属于本文，见 AGENTS.md」）。
-- **问题描述**：`AGENTS.md` 把行数写进「关键设计」条目，作为定位锚点；D1 修复（+14 行）后未同步。`QUALITY_STANDARD.md:4` 明说「引用具体文件名或数字的标准**不属于本文**，见 AGENTS.md 与 docs/ARCHITECTURE.md」，`AGENTS.md` 因此承担数字真相职责却失准。是否按原则 45「版本号只有一个真相」类推为违规、还是仅视为无关紧要的注释漂移，待议（金额/行数不是版本，故不确证）。
-- **违反的原则编号/文档原话**：原则 **57**「文档引用的符号必须真实存在；改名时文档一并改，否则文档在撒谎」、**45**「版本号只有一个真相；任何两处不一致都是谎报」（类推，待议）；`QUALITY_STANDARD.md:4` 原话。
-- **证据**：`wc -l lib/base/disk/disk_cache.dart` = 1030；`git show eaadd65 -- lib/base/disk/disk_cache.dart` 增 24 删 10（净 +14，1016 → 1030），`AGENTS.md` 未随提交改动。
+- **文件:行号**：`test/base/net_transport_reconnect_test.dart:10-17`（自述「本测试用一个…极简服务器复现」）、`:30-33`（`ServerSocket.bind(InternetAddress.loopbackIPv4, 0)`）、`:116-143`（两个端到端用例）；对照 `AGENTS.md §7`「**全部离线运行**（接口 + 内存实现两步走，CI 不依赖网络/真机）」、`QUALITY_STANDARD.md` 原则 49/50。
+- **问题描述**：`test/base/` 的其余磁盘/网络测试都用内存 fake（`ScriptedTransport` / `_FakeUdpChannel` / `FakeCacheRemote`），唯独该文件绑定 `127.0.0.1` 真实 socket 并起 `ServerSocket`，还带 `50ms`/`100ms` 的时序等待（注释承认「避免…flaky」）。回环 socket 不依赖外网，但依赖宿主网络栈与 CI 沙箱的 loopback 权限、且有时序竞态，与「接口 + 内存实现」的纪律不完全一致。是否算「离线」取决于对「不依赖网络」的解释（回环算不算网络），故标待议；本视角按「`test/base` 磁盘相关测试全部离线」的结论不受影响（该文件非磁盘相关）。
+- **违反的原则编号/文档原话**：原则 **49**「**测试离线可跑；依赖网络或真机的测试不属于门禁**，只属于现场」、**50**「用接口 + 内存实现替代真实依赖；测试测的是契约，不是巧合」；`AGENTS.md §7`「按四层分目录…**全部离线运行**（接口 + 内存实现两步走，CI 不依赖网络/真机）」。
+
+---
 
 ---
 
@@ -221,13 +253,22 @@
 | 契约上提 | **形式彻底、实质未完** | 两个 7 行转发导出无残留符号、无重复定义，domain 已普遍改走 `kernel/contract/disk_*.dart`；但一致性引擎本身未上提，且转发文件与上提后契约的文件头层级标签错乱（B2-C-03）。 |
 | 文件头 / 命名 | **部分合规** | 12/12 有 `library;`，10/12 有 `/// L1 底座级 · …`；`OgL*` 前缀大体遵守（`AppDirsFs`/`IoDiskKv`/`RepositoryCache`/`CacheKey` 等例外未加 `OgL`，但属既有命名体系，未见门禁强制）；`*_io.dart`/`*_web.dart` 配对约定在磁盘层实际不成立且文档自相矛盾（B2-C-13）。 |
 | 「数据无价」「防线没有开关」 | **不达标（P0）** | `recordJournal: false`、`force`+裸 `confirmed`、未绑定日志静默跳过、删除不入日志、裸写旁路（B2-C-06/07）——与 `AGENTS.md`「**无绕过开关**」正面冲突；确认未在类型上表达，原则 11/12/13/14 均有确证缺口。 |
-| 「不静默降级」「失败必留痕」 | **主体达标、边角失守** | `WriteOutcome` 类型化失败、`_fail` 先记账再返回、`UnavailableCacheRemote` 抛而非静默成功、`base_bootstrap` 回传 `storageError`，设计正确；但坏数据 `fromJson` 静默删除不记诊断、`_saveIndex`/SAF 失败仅 `debugPrint`、`debug` 级前序失败默认不输出（B2-C-10/17）。 |
-| 「用类型表达失败」「过期回调丢弃」「并发上限」 | **类型达标、生命周期未验** | `WriteOutcome` / `WriteConflict` / `ConflictAction` 是完整契约；但 `verificationFailed` 成永不产生的死枚举（B2-C-04），互斥队列无上界/无取消、无过期回调断言（B2-C-11/18）。 |
-| D1–D9 注释-实现一致 | **不合格** | D1 新语义只落在内联注释与测试，文件头表格/AGENTS/ARCHITECTURE 未同步（B2-C-01）；D5 表格与契约枚举仍描述旧回读失败语义（B2-C-04）；`docs/CONSISTENCY.md` 根本不存在（B2-C-05）；D10 编号越界（B2-C-19）。**「注释与实现逐条一致」这一审计项答案是：否。** |
+| 「不静默降级」「失败必留痕」 | **主体达标、边角失守** | `WriteOutcome` 类型化失败、`_fail` 先记账再返回、`UnavailableCacheRemote` 抛而非静默成功、`base_bootstrap` 回传 `storageError`，设计正确；但坏数据 `fromJson` 静默删除不记诊断、`_saveIndex`/SAF 失败仅 `debugPrint`、互斥前序失败留痕未接线且默认 `debug` 级不输出（B2-C-10/16）。 |
+| 「用类型表达失败」「过期回调丢弃」「并发上限」 | **类型达标、生命周期未验** | `WriteOutcome` / `WriteConflict` / `ConflictAction` 是完整契约；但 `verificationFailed` 成永不产生的死枚举（B2-C-04），互斥队列无上界/无取消、无过期回调断言（B2-C-11/16/21）。 |
+| D1–D9 注释-实现一致 | **不合格** | D1 新语义只落在内联注释与测试，文件头表格/AGENTS/ARCHITECTURE 未同步（B2-C-01）；D5 表格与契约枚举仍描述旧回读失败语义（B2-C-04）；`docs/CONSISTENCY.md` 根本不存在（B2-C-05）；D10 编号越界（B2-C-22）。**「注释与实现逐条一致」这一审计项答案是：否。** |
 | 测试覆盖 | **中上，但关键新语义缺测** | 七道防线、D8、D9、D10、原子写、chaos 注入均有**离线**断言（原则 49/50/51 满足），且**没有测试仍断言旧 D1 行为**、新增 D1 语义有测试；但空串基线归一化、D2′、删除路径、`maxAttempts`、`toIntent` 字段丢失、JSON 往返、206 回读确认修复**零测试**（B2-C-08/10/14）。 |
-| CI 门禁 | **有明显盲区** | `motion_audit` / `perf_audit` 只扫 `lib/surface/`，对该层零覆盖；`layer_audit` 不查 `export`、`ALLOW` 整文件跳过、`KNOWN` 白名单免检且无归零；语义一致性全靠人读（B2-C-09），与本次 15 条确证互相印证。 |
+| CI 门禁 | **有明显盲区** | `motion_audit` / `perf_audit` 只扫 `lib/surface/`，对该层零覆盖；`layer_audit` 不查 `export`、`ALLOW` 整文件跳过、`KNOWN` 白名单免检且无归零；语义一致性全靠人读（B2-C-09），与本次 18 条确证互相印证。 |
 | `CacheKey`/`CacheScope`/`WriteIntent`/`WriteOutcome` | **不可变性成立，序列化契约缺失** | 全 `const` + `final`，`encode/decode` 往返有 fuzzy 测试（300 轮）且含 `|` 路径无损；但四类**均无 `toJson`/`fromJson`**、无 `@immutable`、`CacheEntry` 只有 `toJson` 没有 `fromJson`、`WriteIntent.rebase` 不可序列化导致 journal 重放丢 `force`/`rebase`（B2-C-10）。 |
 
-**优先修复建议（按本视角）**：P0 先收 B2-C-06（把 `recordJournal` / `confirmed` 收进类型化凭证、未绑定日志即拒绝写入），随后 P1 同步 D1/D5 文档与死枚举（B2-C-01/04/05）、补 206 与删除/空串基线的离线测试（B2-C-08/14）、给 `WriteIntent`/`WriteOutcome` 补齐（或显式声明「不序列化」的）契约与 `toIntent` 字段对齐（B2-C-10），再处理上提收口与门禁盲区（B2-C-02/09）。
+**优先修复建议（按本视角）**：P0 先收 B2-C-06（把 `recordJournal` / `confirmed` 收进类型化凭证、未绑定日志即拒绝写入），随后 P1 同步 D1/D5 文档与死枚举（B2-C-01/04/05）、补 206 与删除/空串基线的离线测试（B2-C-08/14）、给 `WriteIntent`/`WriteOutcome` 补齐（或显式声明「不序列化」的）契约与 `toIntent` 字段对齐（B2-C-10/17），再处理上提收口与门禁盲区（B2-C-02/09）。
 
-**统计**：确证 15 条（P0 1 / P1 10 / P2 4）、待议 5 条（P1 3 / P2 2）。全程未修改 `lib/`、`test/`、`docs/ARCHITECTURE.md`。
+**统计**：确证 18 条（P0 1 / P1 13 / P2 4）、待议 5 条（P1 4 / P2 1）。全程未修改 `lib/`、`test/`、`docs/ARCHITECTURE.md`。
+
+---
+
+## 覆盖文件清单修订（复核阶段补记）
+
+`test/base/` 12 个测试文件**全部完整 `file_read`**：`net_contract_test.dart`(81) · `net_dns_test.dart`(486) · `net_test.dart`(421) · `net_transport_reconnect_test.dart`(145) 等 4 个非磁盘测试在复核阶段补读全文；此前文首「覆盖文件清单」未标行数者，行数即在此给出。另完整读了 `docs/audit_submit_download.md`(54) 与 `docs/5layer-audit-todo.md`(50)。`docs/audit_b1_*.md` / `audit_b2_a.md` / `audit_b2_b.md` 仅作交叉参照，**未计入「完整读」清单**。
+
+**最终统计**：确证 **18** 条（B2-C-01…18；P0 1 / P1 13 / P2 4）、待议 **5** 条（B2-C-19…23；P1 4 / P2 1）。整体规范符合度评价不变（约 6.5/10：结构纪律优秀，契约一致性中等偏低）。
+
