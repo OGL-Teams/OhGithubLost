@@ -134,8 +134,9 @@ class ResilientTransport implements NetTransport {
           rethrow;
         }
         if (advanceHop()) {
-          // ★ B1-A-06：换跳也要尊重服务端节奏与退避——此前直接 continue
-          //   跳过了 delayFor / onRetry / attempt++，几毫秒内连发多处。
+          // ★ B1-A-06：换跳也要尊重服务端节奏（Retry-After 等），
+          //   但**不消耗重试预算**（attempt 不递增）——换通道是"换一条路"，
+          //   不是"同一条路多试一次"（本文件的核心设计，测试 307 行锚定）。
           final Duration? wait = _policy.delayFor(
             attempt,
             statusCode: error.statusCode,
@@ -146,7 +147,6 @@ class ResilientTransport implements NetTransport {
             _observer.onRetry(current, attempt, error.kind.name);
             await Future<void>.delayed(wait);
           }
-          attempt++;
           continue;
         }
 
@@ -173,7 +173,7 @@ class ResilientTransport implements NetTransport {
 
       // 5xx / 429 同样先换跳（镜像也可能只是"半死"），再退避重试。
       if (mayRetry && advanceHop()) {
-        // ★ B1-A-06：换跳同样尊重退避（与异常路径对齐），不裸 continue。
+        // ★ B1-A-06：换跳尊重退避但**不消耗预算**（attempt 不递增）。
         final Duration? wait = _policy.delayFor(
           attempt,
           statusCode: response.statusCode,
@@ -181,9 +181,8 @@ class ResilientTransport implements NetTransport {
         );
         if (wait != null) {
           _observer.onRetry(current, attempt, 'HTTP ${response.statusCode}');
-          await Future<void>.delayed(wait);
+          await _sleep(wait);
         }
-        attempt++;
         continue;
       }
 
