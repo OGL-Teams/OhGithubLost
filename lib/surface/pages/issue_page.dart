@@ -634,12 +634,16 @@ class _IssuePageState extends State<IssuePage> {
     switch (action) {
       case 'edit':
         await _editIssue();
+        break;
       case 'labels':
         await _manageLabels();
+        break;
       case 'assignees':
         await _manageAssignees();
+        break;
       case 'lock':
         await _toggleLock();
+        break;
     }
   }
 

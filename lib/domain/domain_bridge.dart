@@ -428,6 +428,8 @@ class IxModule extends OgLModule {
     );
     actionLogs = IxActionLogs(
       tokenProvider: () async => (await auth.activeToken())?.value,
+      // 写操作端点（rerun-failed-jobs / cancel）与 GhApi 同根（企业实例同源）。
+      apiBase: baseUrl,
     );
     presign = IxPresign(
       tokenProvider: () async => (await auth.activeToken())?.value,

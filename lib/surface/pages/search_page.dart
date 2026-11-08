@@ -24,7 +24,6 @@ import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
-import '../util/link_opener.dart';
 import 'issue_page.dart';
 import 'repo_page.dart';
 

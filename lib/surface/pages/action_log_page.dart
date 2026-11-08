@@ -1,8 +1,20 @@
-/// L3 展示级 · Actions 运行日志（按 job 展示，可搜索）。
+/// L3 展示级 · Actions 运行日志（按 job 分组折叠 + 日志内查找 + 下载到本地）。
 ///
 /// 数据来自中枢层 `IxActionLogs`（带令牌下载日志 zip 并解压），
-/// 页面只负责呈现与检索。
+/// 页面只负责呈现、检索与落盘。
+///
+/// ## 分组语义（与运行详情页对齐）
+/// - job 名对齐 `action_run_page` 的作业列表（日志 zip 的 `job/步骤.txt` 目录名）；
+/// - **失败 job 置顶 + 默认展开**，全部成功则默认折叠（失败的现场不该被收起来）；
+/// - 状态色点取自运行详情页同源数据（本页直接按结论着色，规则一致）。
+///
+/// ## 性能边界
+/// 日志可能几百 KB：正文渲染继续交给 `OgLLogBody` 分块虚拟化；
+/// 查找命中只做**计数与首处定位**（滚动到该块），不在全文上铺高亮——
+/// 全文高亮会让"输入一个字符"变成一次全量排版。
 library;
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 
@@ -10,10 +22,12 @@ import '../app/async.dart';
 import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../theme.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/log_body.dart';
+import '../widgets/log_search.dart';
 
 /// 取 `action_log_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -48,6 +62,12 @@ class _ActionLogPageState extends State<ActionLogPage> {
   AsyncController<Map<String, String>>? _logs;
   final TextEditingController _query = TextEditingController();
   String _filter = '';
+  /// 查找关键词（防抖后生效）。
+  String _search = '';
+  Timer? _debounce;
+  /// 每个 job 的查找结果（job 名 → 命中偏移列表）。
+  Map<String, List<int>> _matches = const <String, List<int>>{};
+  int _matchTotal = 0;
 
   @override
   void initState() {
@@ -57,6 +77,7 @@ class _ActionLogPageState extends State<ActionLogPage> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _logs?.dispose();
     _query.dispose();
     super.dispose();
@@ -69,13 +90,88 @@ class _ActionLogPageState extends State<ActionLogPage> {
       OgLNotifier.of(context).info(_t('nothingToCopy'));
       return;
     }
-    final String text = data.entries
-        .map((MapEntry<String, String> e) => '=== ${e.key} ===\n${e.value}')
-        .join('\n\n');
-    await ogLCopyText(text, tag: _t('title'));
+    await ogLCopyText(
+      IxJoin.join(data),
+      tag: _t('title'),
+    );
     if (mounted) {
       OgLNotifier.of(context).info(_t('copied', {'label': _t('title')}));
     }
+  }
+
+  /// 下载整份日志到本地可见目录（`actions/<repo>-run<id>.log`）。
+  Future<void> _download() async {
+    final Map<String, String>? data = _logs?.data;
+    if (data == null || data.isEmpty) {
+      OgLNotifier.of(context).info(_t('nothingToCopy'));
+      return;
+    }
+    try {
+      final String root = (await OgLStoragePlanProbe.planRoot());
+      final String safeRepo = widget.fullName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '-');
+      final String path = await widget.surface.domain.actionLogs.saveToDisk(
+        root: root,
+        fileName: '$safeRepo-run${widget.runId}.log',
+        text: IxJoin.join(data),
+      );
+      OgLAppLog.instance.result('Actions', _t('downloaded'), path);
+      if (mounted) {
+        OgLNotifier.of(context).success(
+              _t('downloadedAt', {'path': path}),
+            );
+      }
+    } catch (error) {
+      OgLAppLog.instance.add(
+        'Actions',
+        _t('downloadFailed', {'error': error}),
+        severity: OgLNoticeSeverity.critical,
+      );
+      if (mounted) {
+        OgLNotifier.of(context).warning(_t('downloadFailed', {'error': error}));
+      }
+    }
+  }
+
+  /// 关键词变化：防抖 300ms 后全量扫描计数（只扫内存字符串，成本可接受）。
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _search = value;
+        _matches = _scanAll();
+        _matchTotal = _matches.values.fold(0, (int a, List<int> b) => a + b.length);
+      });
+    });
+  }
+
+  /// 扫描全部 job（大小写不敏感）；返回 job 名 → 命中偏移列表。
+  Map<String, List<int>> _scanAll() {
+    final Map<String, String>? data = _logs?.data;
+    if (data == null || _search.trim().isEmpty) {
+      return const <String, List<int>>{};
+    }
+    final String needle = _search.toLowerCase();
+    final Map<String, List<int>> out = <String, List<int>>{};
+    data.forEach((String job, String text) {
+      final String hay = text.toLowerCase();
+      final List<int> hits = <int>[];
+      var cursor = 0;
+      while (cursor <= hay.length - needle.length) {
+        final int hit = hay.indexOf(needle, cursor);
+        if (hit < 0) {
+          break;
+        }
+        hits.add(hit);
+        cursor = hit + needle.length;
+      }
+      if (hits.isNotEmpty) {
+        out[job] = hits;
+      }
+    });
+    return out;
   }
 
   AsyncController<Map<String, String>> _logsC() {
@@ -105,6 +201,12 @@ class _ActionLogPageState extends State<ActionLogPage> {
             icon: const Icon(Icons.copy_all_outlined),
             tooltip: _t('copyAll'),
             onPressed: _copyAll,
+          ),
+          // 下载到本地：整份日志落盘 actions/ 目录（Web 无文件系统则如实报错）。
+          IconButton(
+            icon: const Icon(Icons.download_outlined),
+            tooltip: _t('downloadLog'),
+            onPressed: () => unawaited(_download()),
           ),
           IconButton(
             icon: const Icon(Icons.refresh),

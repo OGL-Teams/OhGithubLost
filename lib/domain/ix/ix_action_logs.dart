@@ -42,18 +42,21 @@ class IxActionLogsException implements Exception {
   String toString() => 'IxActionLogsException(${statusCode ?? '-'})：$message';
 }
 
+/// GitHub API 根（默认官方）。
+const String kOgLApiBase = 'https://api.github.com';
+
 /// Actions 日志服务。
 class IxActionLogs {
   /// 创建服务。
   ///
   /// [tokenProvider] 返回当前令牌明文（未登录返回 `null`）。
-  IxActionLogs({required this.tokenProvider});
+  IxActionLogs({required this.tokenProvider, this.apiBase = kOgLApiBase});
 
   /// 令牌提供者。
   final Future<String?> Function() tokenProvider;
 
   /// GitHub API 根（默认官方；装配层可覆盖以支持企业实例）。
-  String apiBase = 'https://api.github.com';
+  final String apiBase;
 
   /// 带令牌发一个 **POST 写操作**（rerun / cancel），非 2xx 抛
   /// [IxActionLogsException]。
@@ -117,7 +120,7 @@ class IxActionLogs {
   Future<Map<String, String>> fetch(String fullName, int runId) async {
     final String? token = await tokenProvider();
     final Uri uri = Uri.parse(
-      'https://api.github.com/repos/$fullName/actions/runs/$runId/logs',
+      '$apiBase/repos/$fullName/actions/runs/$runId/logs',
     );
     final Map<String, String> headers = <String, String>{
       'accept': 'application/vnd.github+json',
