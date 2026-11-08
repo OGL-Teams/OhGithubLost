@@ -115,6 +115,13 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
     // 预览页取的是「仓库文件」这一类；范围没开就等于没加速。
     final List<String> prefixes = widget.surface.settings.settings
         .accelPrefixesFor(OgLAccelScope.repoFile);
+    // ★ B7-B-01（P0）：私有仓库的图片预览**绝不经第三方代理**——
+    //   `Image.network` 无法做逐次确认与留痕，带令牌经通道 = 零交互外泄。
+    //   改为直连官方 raw 域（带令牌，目标始终是 githubusercontent.com），
+    //   代理只对公开仓库生效。
+    if (widget.repoPrivate) {
+      return <String>[_rawUrl];
+    }
     return ogLAccelCandidates(
       url: _rawUrl,
       prefixes: prefixes,

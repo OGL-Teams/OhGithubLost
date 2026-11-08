@@ -13,6 +13,10 @@
 | **B7-A-04 = B7-C-04** | A+C 两方 | 思源宋体每次冷启动整只重新下载（~30MB），落盘文件只写不读；未注册回落系统字体无任何日志 | **P1** 复读坐实 | ✅ 已修：cache-first 读取 + 下载后落盘（失败留痕不阻断）+ `_uiFontFamilyOf` 回落日志 |
 | **B7-A-05** | A 单方 | （与 B7-A-01 一并修的 `_check` 世代号） | 并入 B7-A-01 | ✅ 已修 |
 
+## 一·补 · B 视角补入的 P0（已修）
+
+| **B7-B-01** | B 单方（亲自复读坐实） | **图片渲染/预览路径整条绕过 TOKEN-EXIT-01**：私有仓库 + `readmeImage` 加速开启时，README 图片（readme_view.dart:344→563）与文件预览图（file_preview_page.dart:463→474）用 `Image.network(headers: downloadAuthHeaders())` 直发第三方通道——每张图带 PAT，零确认零留痕（留痕只在下载弹窗路径） | **P0** | ✅ 已修（最终方案）：私有仓库图片**绝不经第三方代理**——`_readmeImagePlan` 私有时返回空代理（改走 API 取字节，目标始终 api.github.com）；`file_preview_page._rawCandidates` 私有时直连官方 raw 域 + 令牌。宁可图片经 API 慢一点，也不零交互外泄 PAT |
+
 ## 二、记录未修（P1/P2，附理由）
 
 | 编号 | 问题 | 理由 |

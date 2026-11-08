@@ -2135,13 +2135,27 @@ class _CodeTabState extends State<_CodeTab> {
     final String base = 'https://raw.githubusercontent.com/${widget.fullName}/'
         '${Uri.encodeComponent(widget.branch)}/'
         '${encodedDir.isEmpty ? '' : '$encodedDir/'}';
+    // ★ B7-B-01（P0）：私有仓库的图片**绝不经第三方代理**——每张图都会把
+    //   PAT 发给通道运营者，且 Image.network 无法做逐次确认与留痕。宁可
+    //   图片显示不出来，也不零交互外泄令牌：加速命中时改走「API 取字节」
+    //   （带令牌、目标始终是 api.github.com），代理前缀置空。
+    if (widget.repoPrivate) {
+      return (
+        base: null,
+        proxy: null,
+        extProxy: widget.surface.settings.settings
+            .accelPrefixesFor(OgLAccelScope.readmeExternalImage)
+            .firstOrNull,
+        headers: null,
+      );
+    }
     return (
       base: Uri.parse(base),
       proxy: prefixes.first,
       extProxy: widget.surface.settings.settings
           .accelPrefixesFor(OgLAccelScope.readmeExternalImage)
           .firstOrNull,
-      headers: widget.repoPrivate ? widget.surface.downloadAuthHeaders() : null,
+      headers: null,
     );
   }
 
