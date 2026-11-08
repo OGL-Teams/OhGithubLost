@@ -58,6 +58,51 @@ enum OgLThemeMode {
   }
 }
 
+/// 用户私有字体（本地文件或链接下载）。
+@immutable
+class OgLCustomFont {
+  /// 创建。
+  const OgLCustomFont({
+    required this.id,
+    required this.name,
+    required this.source,
+    this.filePath = '',
+  });
+
+  /// 稳定 ID（来源 URL/路径的散列）。
+  final String id;
+
+  /// 显示名。
+  final String name;
+
+  /// 来源描述（链接或文件路径，用于诊断与重载）。
+  final String source;
+
+  /// 本机字体文件路径（链接下载后落盘；本地导入即原路径复制）。
+  final String filePath;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'name': name,
+        'source': source,
+        'filePath': filePath,
+      };
+
+  static OgLCustomFont? fromJson(Map<String, dynamic> json) {
+    final String id = json['id'] as String? ?? '';
+    final String filePath = json['filePath'] as String? ?? '';
+    if (id.isEmpty || filePath.isEmpty) {
+      return null;
+    }
+    return OgLCustomFont(
+      id: id,
+      name: json['name'] as String? ?? id,
+      source: json['source'] as String? ?? '',
+      filePath: filePath,
+    );
+  }
+}
+
 /// 用户设置（不可变；容错反序列化）。
 ///
 /// 新增字段一律给**保守默认值**（等于旧行为），保证老配置文件升级后
@@ -98,6 +143,8 @@ class OgLSettings {
     this.codeColorNumber = 0xFFB5CEA8,
     this.onboardingDone = false,
     this.motionLevel = 1,
+    this.uiFontId = 'system',
+    this.customFonts = const <OgLCustomFont>[],
     this.languageCode = 'zh',
   });
 
@@ -186,6 +233,11 @@ class OgLSettings {
       onboardingDone: _asBool(raw['onboardingDone'], fallback: false),
       motionLevel: _motionLevelOf(raw),
       languageCode: _asLocale(raw['languageCode']),
+      uiFontId:
+          raw['uiFontId'] is String && (raw['uiFontId'] as String).isNotEmpty
+              ? raw['uiFontId'] as String
+              : 'system',
+      customFonts: _customFontsOf(raw['customFonts']),
     );
   }
 
@@ -478,6 +530,13 @@ class OgLSettings {
   /// 动效档位：0 最小、1 当前、2 标准、3 增强（详见 `app/motion.dart`）。
   final int motionLevel;
 
+  /// 界面字体（`system` = 平台默认；内置：ubuntu-mono / 思源宋体；
+  /// 其余为用户私有字体的 id）。B2 后新增：外观字体管理。
+  final String uiFontId;
+
+  /// 用户添加的私有字体清单。
+  final List<OgLCustomFont> customFonts;
+
   /// 复制并覆盖部分字段。
   OgLSettings copyWith({
     OgLThemeMode? mode,
@@ -513,6 +572,8 @@ class OgLSettings {
     bool? onboardingDone,
     String? languageCode,
     int? motionLevel,
+    String? uiFontId,
+    List<OgLCustomFont>? customFonts,
   }) =>
       OgLSettings(
         mode: mode ?? this.mode,
@@ -552,6 +613,8 @@ class OgLSettings {
         onboardingDone: onboardingDone ?? this.onboardingDone,
         languageCode: languageCode ?? this.languageCode,
         motionLevel: motionLevel ?? this.motionLevel,
+        uiFontId: uiFontId ?? this.uiFontId,
+        customFonts: customFonts ?? this.customFonts,
       );
 
   /// 序列化。
@@ -593,6 +656,10 @@ class OgLSettings {
         'onboardingDone': onboardingDone,
         'motionLevel': motionLevel,
         'languageCode': languageCode,
+        'uiFontId': uiFontId,
+        'customFonts': <Object?>[
+          for (final OgLCustomFont font in customFonts) font.toJson(),
+        ],
       };
 
   /// 编码为 JSON 文本。
@@ -944,4 +1011,22 @@ class OgLSettingsController extends ChangeNotifier {
           args: <String, String>{'error': '$error'});
     }
   }
+}
+
+/// 解析用户私有字体清单；坏条目丢弃（永不抛）。
+List<OgLCustomFont> _customFontsOf(Object? raw) {
+  if (raw is! List) {
+    return const <OgLCustomFont>[];
+  }
+  final List<OgLCustomFont> out = <OgLCustomFont>[];
+  for (final Object? item in raw) {
+    if (item is Map) {
+      final OgLCustomFont? font =
+          OgLCustomFont.fromJson(Map<String, dynamic>.from(item));
+      if (font != null) {
+        out.add(font);
+      }
+    }
+  }
+  return out;
 }

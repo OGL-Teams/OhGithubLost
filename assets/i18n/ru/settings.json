@@ -177,6 +177,18 @@
   "tokenNumber": "Число",
   "tokenString": "Строка",
   "tokenType": "Тип",
+  "uiFont": "Шрифт",
+  "uiFontAddLocal": "Добавить из локального файла (.ttf/.otf)",
+  "uiFontAddUrl": "Добавить по ссылке",
+  "uiFontDone": "Шрифт включён",
+  "uiFontDownload": "Скачать и включить Noto Serif SC",
+  "uiFontFailed": "Ошибка операции со шрифтом: {error}",
+  "uiFontLoading": "Загрузка шрифта…",
+  "uiFontManage": "Управление своими шрифтами",
+  "uiFontNotoSerif": "Noto Serif SC",
+  "uiFontPickTitle": "Путь к файлу шрифта",
+  "uiFontRemoved": "Шрифт удалён",
+  "uiFontSystem": "Системный",
   "unknown": "Неизвестно",
   "viewAccelAgreement": "Просмотреть заявление об ускорении"
 }

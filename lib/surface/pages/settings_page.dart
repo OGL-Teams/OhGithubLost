@@ -20,7 +20,10 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -29,6 +32,8 @@ import '../../kernel/kernel.dart';
 import '../../kernel/log/og_l_log_file.dart';
 import '../app/animations.dart';
 import '../app/error_surface.dart';
+import '../app/font_loader.dart';
+import '../app/font_pick.dart';
 import '../app/notifier.dart';
 import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
@@ -643,8 +648,236 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
           onSelected: (String code) => unawaited(_setLanguage(code)),
         ),
+        const Divider(height: 1),
+        OgLSettingsChoiceTile<String>(
+          title: _t('uiFont'),
+          valueLabel: _uiFontLabel(value),
+          current: value.uiFontId,
+          options: <OgLSettingsChoice<String>>[
+            OgLSettingsChoice<String>(
+              value: OgLBuiltinFonts.system,
+              label: _t('uiFontSystem'),
+            ),
+            const OgLSettingsChoice<String>(
+              value: OgLBuiltinFonts.ubuntuMono,
+              label: 'Ubuntu Mono',
+            ),
+            OgLSettingsChoice<String>(
+              value: OgLBuiltinFonts.notoSerifSc,
+              label: _t('uiFontNotoSerif'),
+            ),
+            for (final OgLCustomFont font in value.customFonts)
+              OgLSettingsChoice<String>(value: font.id, label: font.name),
+          ],
+          onSelected: (String id) => unawaited(_applyUiFont(id, value)),
+        ),
+        // ★ 字体管理子项：仅当字体为思源宋体（需下载）或已添加私有字体时
+        //   展开——层级跟随父项（OgLSettingsIndent.step），归属一眼可见。
+        if (value.uiFontId == OgLBuiltinFonts.notoSerifSc)
+          OgLSettingsActionRow(
+            indent: OgLSettingsIndent.step,
+            title: _t('uiFontDownload'),
+            icon: Icons.download,
+            onTap: () => unawaited(_downloadNotoSerif(theme)),
+          ),
+        if (value.customFonts.isNotEmpty) ...<Widget>[
+          const Divider(height: 1),
+          OgLSettingsActionRow(
+            indent: OgLSettingsIndent.step,
+            title: _t('uiFontManage'),
+            icon: Icons.folder_special_outlined,
+            onTap: () => _manageCustomFonts(theme, value),
+          ),
+        ],
       ],
     );
+  }
+
+  /// 字体选择行的当前值文案。
+  String _uiFontLabel(OgLSettings value) {
+    switch (value.uiFontId) {
+      case OgLBuiltinFonts.system:
+        return _t('uiFontSystem');
+      case OgLBuiltinFonts.ubuntuMono:
+        return 'Ubuntu Mono';
+      case OgLBuiltinFonts.notoSerifSc:
+        return _t('uiFontNotoSerif');
+    }
+    for (final OgLCustomFont font in value.customFonts) {
+      if (font.id == value.uiFontId) {
+        return font.name;
+      }
+    }
+    return value.uiFontId;
+  }
+
+  /// 应用界面字体：思源宋体需先下载注册；私有字体需已在清单中注册。
+  Future<void> _applyUiFont(String id, OgLSettings value) async {
+    try {
+      if (id == OgLBuiltinFonts.notoSerifSc) {
+        _notifier.info(_t('uiFontLoading'));
+        await OgLFontLoader.instance.ensureNotoSerifSc();
+      } else {
+        for (final OgLCustomFont font in value.customFonts) {
+          if (font.id == id) {
+            _notifier.info(_t('uiFontLoading'));
+            await OgLFontLoader.instance.ensureLoaded(font);
+            break;
+          }
+        }
+      }
+      await _settings.setUiFont(id);
+    } catch (error) {
+      _notifier.warning(_t('uiFontFailed', {'error': '$error'}));
+    }
+  }
+
+  /// 下载并注册思源宋体（设置页入口；正文随主题重建生效）。
+  Future<void> _downloadNotoSerif(ThemeData theme) async {
+    try {
+      _notifier.info(_t('uiFontLoading'));
+      await OgLFontLoader.instance.ensureNotoSerifSc();
+      await _settings.setUiFont(OgLBuiltinFonts.notoSerifSc);
+      _notifier.success(_t('uiFontDone'));
+    } catch (error) {
+      _notifier.warning(_t('uiFontFailed', {'error': '$error'}));
+    }
+  }
+
+  /// 私有字体管理：添加（本地文件 / 链接）与删除。
+  Future<void> _manageCustomFonts(ThemeData theme, OgLSettings value) async {
+    final String? action = await showDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) => SimpleDialog(
+        title: Text(_t('uiFontManage')),
+        children: <Widget>[
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(dialogContext).pop('file'),
+            child: ListTile(
+              leading: const Icon(Icons.file_open_outlined),
+              title: Text(_t('uiFontAddLocal')),
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(dialogContext).pop('url'),
+            child: ListTile(
+              leading: const Icon(Icons.link),
+              title: Text(_t('uiFontAddUrl')),
+            ),
+          ),
+          for (final OgLCustomFont font in value.customFonts)
+            SimpleDialogOption(
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop('del:${font.id}'),
+              child: ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: Text(font.name),
+                subtitle: Text(
+                  font.source,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+    if (action == null || !mounted) {
+      return;
+    }
+    if (action == 'file') {
+      await _addFontFromLocal();
+    } else if (action == 'url') {
+      await _addFontFromUrl();
+    } else if (action.startsWith('del:')) {
+      final String id = action.substring(4);
+      try {
+        await _settings.removeCustomFont(id);
+        _notifier.success(_t('uiFontRemoved'));
+      } catch (error) {
+        _notifier.warning(_t('uiFontFailed', {'error': '$error'}));
+      }
+    }
+  }
+
+  /// 从本地字体文件添加（.ttf / .otf）：读字节 → 落盘到应用字体目录 → 注册。
+  Future<void> _addFontFromLocal() async {
+    try {
+      final Uint8List bytes = await OgLFontPickers.pickFontBytes(this);
+      if (bytes == null || bytes.isEmpty) {
+        return;
+      }
+      await _registerPickedFont(bytes, source: 'local');
+    } catch (error) {
+      _notifier.warning(_t('uiFontFailed', {'error': '$error'}));
+    }
+  }
+
+  /// 从链接添加：下载字节 → 落盘 → 注册。
+  Future<void> _addFontFromUrl() async {
+    final TextEditingController controller = TextEditingController();
+    final String? url = await showDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: Text(_t('uiFontAddUrl')),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.url,
+          decoration: InputDecoration(hintText: 'https://…'),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(_t('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop('ok'),
+            child: Text(_t('ok')),
+          ),
+        ],
+      ),
+    );
+    if (url != 'ok' || !mounted) {
+      return;
+    }
+    final String link = controller.text.trim();
+    if (link.isEmpty) {
+      return;
+    }
+    try {
+      _notifier.info(_t('uiFontLoading'));
+      final OgLCustomFont probe = OgLCustomFont(
+        id: 'pending',
+        name: link,
+        source: link,
+      );
+      final Uint8List bytes = await OgLFontLoader.instance.bytesOf(probe);
+      await _registerPickedFont(bytes, source: link);
+    } catch (error) {
+      _notifier.warning(_t('uiFontFailed', {'error': '$error'}));
+    }
+  }
+
+  /// 注册：落盘 → 设置清单 → FontLoader 加载 → 提示。
+  Future<void> _registerPickedFont(Uint8List bytes,
+      {required String source}) async {
+    final String id = sha1.convert(utf8.encode(source)).substring(0, 16);
+    final Directory dir = await OgLFontLoader.instance.privateFontsDir();
+    final String ext = source.toLowerCase().endsWith('.otf') ? '.otf' : '.ttf';
+    final File file = File('${dir.path}${Platform.pathSeparator}$id$ext');
+    await file.writeAsBytes(bytes, flush: true);
+    final String name =
+        source.split(Platform.pathSeparator).last.split('/').last;
+    final OgLCustomFont font = OgLCustomFont(
+      id: id,
+      name: name.isEmpty ? id : name,
+      source: source,
+      filePath: file.path,
+    );
+    await OgLFontLoader.instance.ensureLoaded(font);
+    await _settings.upsertCustomFont(font);
+    _notifier.success(_t('uiFontDone'));
   }
 
   /// **代码与文件**分组：高亮 / 高亮主题 / （自定义配色）/ 换行 / 代码字号 / 排序。

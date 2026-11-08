@@ -177,6 +177,18 @@
   "tokenNumber": "数字",
   "tokenString": "字符串",
   "tokenType": "类型",
+  "uiFont": "字体",
+  "uiFontAddLocal": "从本地文件添加（.ttf/.otf）",
+  "uiFontAddUrl": "从链接添加",
+  "uiFontDone": "字体已启用",
+  "uiFontDownload": "下载并启用思源宋体",
+  "uiFontFailed": "字体操作失败：{error}",
+  "uiFontLoading": "正在加载字体…",
+  "uiFontManage": "管理私有字体",
+  "uiFontNotoSerif": "思源宋体",
+  "uiFontPickTitle": "字体文件路径",
+  "uiFontRemoved": "字体已删除",
+  "uiFontSystem": "系统默认",
   "unknown": "未知",
   "viewAccelAgreement": "查看加速通道说明"
 }

@@ -177,6 +177,18 @@
   "tokenNumber": "Number",
   "tokenString": "String",
   "tokenType": "Type",
+  "uiFont": "Font",
+  "uiFontAddLocal": "Add from local file (.ttf/.otf)",
+  "uiFontAddUrl": "Add from URL",
+  "uiFontDone": "Font enabled",
+  "uiFontDownload": "Download & enable Noto Serif SC",
+  "uiFontFailed": "Font operation failed: {error}",
+  "uiFontLoading": "Loading font…",
+  "uiFontManage": "Manage custom fonts",
+  "uiFontNotoSerif": "Noto Serif SC",
+  "uiFontPickTitle": "Font file path",
+  "uiFontRemoved": "Font removed",
+  "uiFontSystem": "System default",
   "unknown": "Unknown",
   "viewAccelAgreement": "View acceleration statement"
 }

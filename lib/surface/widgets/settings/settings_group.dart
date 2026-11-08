@@ -357,6 +357,51 @@ class OgLSettingsChoiceTile<T> extends StatelessWidget {
 }
 
 /// 开关行（与选择行同内边距、同缩进语义）。
+/// 可点击的动作行（带缩进层级）：字体管理入口等"点一下做一件事"的行。
+@immutable
+class OgLSettingsActionRow extends StatelessWidget {
+  /// 创建。
+  const OgLSettingsActionRow({
+    required this.title,
+    required this.onTap,
+    this.icon,
+    this.indent = 0,
+    this.dense = false,
+    super.key,
+  });
+
+  /// 标题。
+  final String title;
+
+  /// 点击回调。
+  final VoidCallback onTap;
+
+  /// 前置图标（可空）。
+  final IconData? icon;
+
+  /// 左侧缩进（层级）。
+  final double indent;
+
+  /// 紧凑模式。
+  final bool dense;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Padding(
+      padding: EdgeInsets.only(left: indent),
+      child: ListTile(
+        dense: dense,
+        contentPadding: EdgeInsets.only(left: indent > 0 ? 0 : 16, right: 16),
+        leading: icon == null ? null : Icon(icon),
+        title: Text(title, style: theme.textTheme.bodyLarge),
+        trailing: const Icon(Icons.chevron_right, size: 20),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
 class OgLSettingsSwitchRow extends StatelessWidget {
   /// 创建。
   const OgLSettingsSwitchRow({

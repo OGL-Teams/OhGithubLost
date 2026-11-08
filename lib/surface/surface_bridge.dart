@@ -26,6 +26,7 @@ import '../domain/gh/repo_file_service.dart';
 import '../kernel/bridge_registry.dart';
 import '../kernel/contract/module.dart';
 import 'app/error_surface.dart';
+import 'app/font_loader.dart';
 import 'app/motion.dart';
 import 'i18n/og_l_i18n.dart';
 import 'settings.dart';
@@ -485,35 +486,63 @@ class SurfaceBridge {
     final Brightness brightness = brightnessFor(systemBrightness);
     final String seed = current.seedColorId;
     final String density = current.density;
+    final String uiFontId = current.uiFontId;
     final ThemeData? cached = _themeCache;
     if (cached != null &&
         _themeCacheBrightness == brightness &&
         _themeCacheSeed == seed &&
         _themeCacheDensity == density &&
-        _themeCacheMotion == motionLevel) {
+        _themeCacheMotion == motionLevel &&
+        _themeCacheUiFont == uiFontId) {
       return cached;
     }
     final ThemeData built = buildOgLTheme(
       brightness,
       seedColor: ogLSeedColorOf(seed),
       density: ogLDensityOf(density),
-    ).copyWith(
-      pageTransitionsTheme: OgLMotion.pageTransitions(motionLevel),
-      // ExpansionTile（关于页的诊断折叠组等）也接**动效档位**：
-      // 时长 / 曲线与整页动效同源（档位 0 → 零时长，即"立即展开"）。
-      expansionTileTheme: ExpansionTileThemeData(
-        expansionAnimationStyle: AnimationStyle(
-          duration: OgLOAnimQuality.of(motionLevel).medium,
-          curve: OgLOAnimQuality.of(motionLevel).curve,
-        ),
-      ),
-    );
+    )
+        // ★ 外观字体（v11.4）：按 uiFontId 决定正文族。
+        //   · system：平台默认（不动 textTheme）；
+        //   · ubuntu-mono / 思源宋体 / 私有字体：覆写正文与标题族。
+        //   私有字体若尚未注册（启动早期），先回落系统字体；加载完成后
+        //   设置页会触发主题重建，字体随下一次编译生效。
+        .copyWith(
+          fontFamily: _uiFontFamilyOf(uiFontId),
+        )
+        .copyWith(
+          pageTransitionsTheme: OgLMotion.pageTransitions(motionLevel),
+          // ExpansionTile（关于页的诊断折叠组等）也接**动效档位**：
+          // 时长 / 曲线与整页动效同源（档位 0 → 零时长，即"立即展开"）。
+          expansionTileTheme: ExpansionTileThemeData(
+            expansionAnimationStyle: AnimationStyle(
+              duration: OgLOAnimQuality.of(motionLevel).medium,
+              curve: OgLOAnimQuality.of(motionLevel).curve,
+            ),
+          ),
+        );
     _themeCache = built;
     _themeCacheBrightness = brightness;
     _themeCacheSeed = seed;
     _themeCacheDensity = density;
     _themeCacheMotion = motionLevel;
+    _themeCacheUiFont = uiFontId;
     return built;
+  }
+
+  /// 界面字体 → 引擎 family 名（B2 后外观字体管理）。
+  ///
+  /// · system → 返回 `null`（保留 Material 默认，不动 textTheme）；
+  /// · ubuntu-mono → 打包字体；
+  /// · 私有字体 → `custom:<id>`（未加载时回落 null）；
+  /// · 思源宋体 → 首次选择由设置页触发下载注册，此后按 family 生效。
+  String? _uiFontFamilyOf(String uiFontId) {
+    if (uiFontId == OgLBuiltinFonts.system || uiFontId.isEmpty) {
+      return null;
+    }
+    if (uiFontId == OgLBuiltinFonts.ubuntuMono) {
+      return kOglMonoFamily;
+    }
+    return ogLCustomFontFamily(uiFontId);
   }
 
   @override

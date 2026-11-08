@@ -177,6 +177,18 @@
   "tokenNumber": "Nombre",
   "tokenString": "Chaîne",
   "tokenType": "Type",
+  "uiFont": "Police",
+  "uiFontAddLocal": "Ajouter depuis un fichier local (.ttf/.otf)",
+  "uiFontAddUrl": "Ajouter depuis une URL",
+  "uiFontDone": "Police activée",
+  "uiFontDownload": "Télécharger et activer Noto Serif SC",
+  "uiFontFailed": "Échec de l'opération de police : {error}",
+  "uiFontLoading": "Chargement de la police…",
+  "uiFontManage": "Gérer les polices personnalisées",
+  "uiFontNotoSerif": "Noto Serif SC",
+  "uiFontPickTitle": "Chemin du fichier de police",
+  "uiFontRemoved": "Police supprimée",
+  "uiFontSystem": "Défaut du système",
   "unknown": "Inconnu",
   "viewAccelAgreement": "Consulter la déclaration sur l'accélération"
 }

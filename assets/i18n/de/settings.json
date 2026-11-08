@@ -177,6 +177,18 @@
   "tokenNumber": "Zahl",
   "tokenString": "Zeichenkette",
   "tokenType": "Typ",
+  "uiFont": "Schrift",
+  "uiFontAddLocal": "Aus lokaler Datei hinzufügen (.ttf/.otf)",
+  "uiFontAddUrl": "Von URL hinzufügen",
+  "uiFontDone": "Schrift aktiviert",
+  "uiFontDownload": "Noto Serif SC laden & aktivieren",
+  "uiFontFailed": "Schriftoperation fehlgeschlagen: {error}",
+  "uiFontLoading": "Schrift wird geladen…",
+  "uiFontManage": "Eigene Schriften verwalten",
+  "uiFontNotoSerif": "Noto Serif SC",
+  "uiFontPickTitle": "Schriftdatei-Pfad",
+  "uiFontRemoved": "Schrift entfernt",
+  "uiFontSystem": "Systemstandard",
   "unknown": "Unbekannt",
   "viewAccelAgreement": "Beschleunigungserklärung anzeigen"
 }
