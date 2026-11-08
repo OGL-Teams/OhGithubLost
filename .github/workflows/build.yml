@@ -99,12 +99,30 @@ jobs:
       - name: 生成并注入 .dart_define.json
         env:
           VERSION_INPUT: ${{ inputs.version_name }}
+          # ★ 组织名下的 OAuth App Client ID（公开标识，非密钥）。
+          #   未配置时登录页自动隐藏授权按钮，不影响令牌登录。
+          OGL_GITHUB_CLIENT_ID: ${{ secrets.OGL_GITHUB_CLIENT_ID }}
         run: |
           python3 tool/boot_manifest.py \
             --version "$VERSION_INPUT" \
             --build-id "$GITHUB_SHA" \
             --key "$RUNNER_TEMP/ogl-boot-ed25519.key" \
             --out dart_define.json
+          # 把 Client ID 追加进同一份注入件（boot_manifest 的签名 payload
+          # 独立计算，不覆盖此键）；缺失时如实警告，绝不静默伪装成已启用。
+          python3 - <<'PY'
+          import json, os
+          p = 'dart_define.json'
+          with open(p, encoding='utf-8') as fh:
+              data = json.load(fh)
+          cid = os.environ.get('OGL_GITHUB_CLIENT_ID', '').strip()
+          if cid:
+              data['OGL_GITHUB_CLIENT_ID'] = cid
+          else:
+              print('::warning::未配置 OGL_GITHUB_CLIENT_ID，OAuth 登录按钮将隐藏')
+          with open(p, 'w', encoding='utf-8') as fh:
+              json.dump(data, fh, ensure_ascii=False, sort_keys=True)
+          PY
 
       - name: 上传注入件
         uses: actions/upload-artifact@v4
