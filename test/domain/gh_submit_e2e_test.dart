@@ -16,7 +16,6 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ohgithublost/base/disk/disk_cache.dart';
 import 'package:ohgithublost/base/disk/disk_store.dart';
-import 'package:ohgithublost/base/disk/disk_types.dart';
 import 'package:ohgithublost/base/net/net_bridge.dart';
 import 'package:ohgithublost/base/net/net_transport.dart';
 import 'package:ohgithublost/base/net/net_types.dart';
@@ -26,7 +25,7 @@ import 'package:ohgithublost/domain/gh/gh_client.dart';
 
 /// 记录收到的请求（断言 body 是否真的发出）。
 class _RecordingTransport implements NetTransport {
-  _RecordingTransport(List<NetResponse> responses) : responses = responses;
+  _RecordingTransport(this.responses);
 
   final List<NetResponse> responses;
   final List<NetRequest> received = <NetRequest>[];
@@ -100,6 +99,7 @@ void main() {
         content: 'new',
         message: 'docs: update',
         baseSha: 'sha-1',
+        branch: 'main',
       );
 
       expect(result.ok, isTrue, reason: '编辑已有文件必须能提交：${result.detail}');
@@ -130,6 +130,7 @@ void main() {
         content: 'new',
         message: 'docs: update',
         baseSha: '',
+        branch: 'main',
       );
       expect(result.ok, isFalse);
       expect(
