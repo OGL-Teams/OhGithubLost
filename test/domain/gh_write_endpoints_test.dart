@@ -50,7 +50,7 @@ void main() {
     expect(net.received, hasLength(1));
     final NetRequest request = net.received.single;
     expect(request.method, NetMethod.put);
-    expect(request.path, '/repos/alice/blog/issues/7/lock');
+    expect(request.url, endsWith('/repos/alice/blog/issues/7/lock'));
     final Map<String, dynamic> body =
         jsonDecode(request.body as String) as Map<String, dynamic>;
     expect(body['lock_reason'], 'resolved');

@@ -206,12 +206,11 @@ class GhModule extends OgLModule {
     // 会一直挂在"待同步"里（用户看到的就是"提交入队后迟迟不成功"）。
     // ★ B3-A-11：定时器**不得自停**——自停后运行中新入队的失败写入
     //   再无触发点，直到重启才补做。每 30s 只是读一次 KV 队列，开销极小；
-    //   空转计数只用于诊断日志节流，不再取消定时器。
-    var idleTicks = 0;
+    //   不自停、不计数。
     bool replayInFlight = false;
     Timer.periodic(const Duration(seconds: 30), (Timer timer) {
       // ★ B2-B-19：防重入——上一次重放（30s 周期但可能耗时超过周期）还在
-      //   跑时不再叠加；空转计数只在「无 pending 且无在途」时递增。
+      //   跑时不再叠加。
       if (replayInFlight) {
         return;
       }
@@ -220,10 +219,8 @@ class GhModule extends OgLModule {
         base.disk.cache.replayPending().then((List<WriteOutcome> outcomes) {
           replayInFlight = false;
           if (outcomes.isEmpty) {
-            idleTicks++; // 仅节流诊断，不取消定时器
             return;
           }
-          idleTicks = 0;
           final int ok = outcomes.where((WriteOutcome o) => o.ok).length;
           context.diagnostics.info(
             'CONS',

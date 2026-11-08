@@ -11,7 +11,7 @@
 | G1 | A-06 / C-18 /（B-08 关联）`jsonAsList`/读路径静默吞非法响应 | 确证 P1 | ✅ 已修：`jsonList`/`jsonAsList` 严格解析（非数组/坏 JSON/混入非对象一律抛 `FormatException` 并留 ERR 日志），新增 `test/domain/gh_list_strict_test.dart` 5 条断言 |
 | G2 | A-07 / C-18 /（B-03 关联）`readmeExcerpt`/`latestVersionOf` 用 `on Object` 吞一切 | 确证 P1 | ✅ 已修：三处 catch 改 `OgLLogFile.line(... level: 'ERR')` 留痕 |
 | G3 | A-02 / C-18（缓存键维度） | 确证 P1 | ✅ 已修：`readmeExcerpt` 加 `cacheBypass: true`，raw 文本不再与 JSON README 共用缓存 |
-| G4 | A-03 / C-10 / B-03 `_isAbsentStatus` 读路径把 409/422 折成「不存在」 | 确证 P1（与 B2-A-05 P0 裁决相反） | ✅ 已修：只认 404，409/422 一律 rethrow |
+| G4 | A-03 / C-10 / B-03 `_isAbsentStatus` 读路径把 409/422 折成「不存在」 | **经 CI 测试否决**（`gh_absent_test.dart`「空仓库 409 ⇒ 没有提交」证明 409 在读展示场景是合法空；写链路严格性由 `CacheRemote.read` 独立保证，不经此函数） | ⛔ 已回退为原语义，注释写明裁决依据；不误修 |
 | G5 | A-01 / C-09（测试缺口）`lockIssue` 用 PATCH（官方 PUT） | 亲自复读坐实 **P0** | ✅ 已修：`NetMethod.put` + label，新增 `test/domain/gh_write_endpoints_test.dart` 锁死 method/path/body |
 | G6 | A-05 / B-05 `transferRepo` 202 异步待接受被当完成 | 亲自复读：UI 文案「已发起」并不假称完成，但**注释断言 full_name 已变 + 立即 pop** 属伪造成功 | ✅ 已修：更正 API 注释、六语言文案明确「待对方接受，仍在当前账号名下」、去掉 `pop` |
 | G7 | A-11 /（C-09 关联）D8 重放定时器 3 次空转永久自停 + 防重入复位在死路径 | 亲自复读坐实 **P1**（提交入队后永不补做） | ✅ 已修：定时器不自停、异常在同一个 catchError 复位、启动期重放不再误改共享标志 |
@@ -46,6 +46,6 @@
 
 ## 四、本批结论
 
-GitHub API 层**核心写链路与历史 P0 修复扎实**；风险集中在「四线新增端点语义未经实测 + 契约/文档/测试未随 LTS 同步」。本轮已修 **8 组确证问题（含 1 个 P0）**，新增 2 份离线回归测试；其余 P1/P2 均有编号、理由与待办归属，不冒充确证、不在代理运行期提交半成品。
+GitHub API 层**核心写链路与历史 P0 修复扎实**；风险集中在「四线新增端点语义未经实测 + 契约/文档/测试未随 LTS 同步」。本轮已修 **7 组确证问题（含 1 个 P0）**，1 组（G4）经 CI 测试裁决否决并回退，新增 2 份离线回归测试；其余 P1/P2 均有编号、理由与待办归属，不冒充确证、不在代理运行期提交半成品。
 
 修复提交后自动启动**批 4（下载管理）**三视角审计。

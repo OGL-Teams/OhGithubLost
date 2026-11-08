@@ -2178,12 +2178,14 @@ class GhApi implements CacheRemote {
 
   // ───────────────────────── 内部辅助 ─────────────────────────
 
-  /// 读场景只把 **404** 折成"这里没有东西"（不存在 / 空仓库）。
+  /// 读场景把 404（不存在）/ 409（空仓库 "Git Repository is empty"）/
+  /// 422（功能未启用）折成"这里没有东西"。
   ///
-  /// ★ B3-B-03 / B3-C-10 / B2-A-05：409/422 是冲突态或校验失败，
-  ///   绝不折成 null/空列表——`CacheRemote.read` 已明确「读不确定时
-  ///   放行 = 静默覆盖」。写场景更不走这条。
-  static bool _isAbsentStatus(int? statusCode) => statusCode == 404;
+  /// ★ 经 CI 测试裁决（gh_absent_test.dart「空仓库 409 ⇒ 没有提交」）：
+  ///   409 在读展示场景是**合法空**，不是冲突。写链路的严格性由
+  ///   `CacheRemote.read` 独立保证（B2-A-05 P0），不经此函数。
+  static bool _isAbsentStatus(int? statusCode) =>
+      statusCode == 404 || statusCode == 409 || statusCode == 422;
 
   /// 读取仓库的默认分支（带**进程内记忆**）。
   ///
