@@ -36,7 +36,12 @@ jobs:
         run: flutter --version
 
       - name: 获取依赖
-        run: flutter pub get
+        # ★ 严格模式：pub get 失败（pub.dev 网络瞬态等）也算一项失败，
+        #   写入汇总文件让终审如实列出；否则前置步骤红了、后续 always()
+        #   审计用旧依赖缓存照跑全绿，终审却报「全部审计通过」——自相矛盾。
+        run: >-
+          flutter pub get || echo "FAIL: flutter pub get（依赖解析失败，多为 pub.dev 网络瞬态；重跑即可）" >> /tmp/strict_failures.txt
+        if: always()
 
       # ── 审计段：每步失败只记录（|| echo），不中断后续；终审统一 fail ──
 
