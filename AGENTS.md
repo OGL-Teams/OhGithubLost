@@ -1,13 +1,13 @@
 # AGENTS.md — OhGithubLost 工程规范与代码地图
 
-> 面向 AI 助手与贡献者的项目导读。项目：Flutter 多平台 GitHub 客户端（v10.2.1，Apache-2.0），
+> 面向 AI 助手与贡献者的项目导读。项目：Flutter 多平台 GitHub 客户端（v11.3.0，Apache-2.0），
 > Android / Windows / Linux / Web，lib/ 197 个 Dart 文件 ≈ 49,300 行，测试 44 文件 ≈ 10,300 行。
 > 工程底线：**数据可靠性 + 失败如实可见** —— 不静默降级、不预置加速通道、不掩盖版本冲突。
 
 ## 1. 五层架构与依赖门禁
 
 依赖方向**只能向下**：`surface(L3) → domain(L2) → base(L1) → kernel(L0)`；`platform/` 仅依赖 kernel。
-CI 由 `tool/layer_audit.py --fatal` 强制（扫描 lib/ 全部相对 import，违规退出 1，当前基线违规 0）。
+CI 由 `tool/layer_audit.py --fatal` + `tool/contract_audit.py --fatal` 强制（前者扫分层 import，后者查 export 指向 / 文件头层级 / 平台门面 / 文档契约引用；违规退出 1，当前基线违规 0）。
 
 | 层 | 目录 | 职责 | 关键符号 |
 |---|---|---|---|
@@ -26,6 +26,7 @@ CI 由 `tool/layer_audit.py --fatal` 强制（扫描 lib/ 全部相对 import，
 ## 2. CI 门禁清单（全部量化标准）
 
 1. **layer_audit.py --fatal**：分层 import 检查（见上）。
+1a. **contract_audit.py --fatal**：结构契约检查（export/import 真实指向、L0–L3 文件头层级前缀、平台判定必须经 `lib/platform` 门面、docs 引用的契约文档必须存在；组合根与平台适配分派文件已登记白名单）。
 2. **perf_audit.py --fatal**（扫 lib/surface/）：fatal 硬规则 —— `shrinkWrap: true`、宽依赖 `MediaQuery.of(context)`（须用 `sizeOf`/`paddingOf`/`textScalerOf`）、四类 saveLayer 着色器源：`BackdropFilter(`、`ImageFilter.blur|BlurStyle`、`ColorFiltered(`、`ShaderMask(`（着色器不受整文件 ALLOW 豁免，SHADER_ALLOW 必须保持为空）。只报告不拦截：ListView(children:[...for]) 急加载长列表、非动画 `Opacity(`。白名单：ALLOW 7 文件 + REVIEWED_BOUNDED 7 文件。
 3. **motion_audit.py --fatal**（扫 lib/surface/**）：禁止硬编码动画时长 `Duration(milliseconds: n)`、`ScaleTransition(`/`AnimatedScale(`、`BackdropFilter(`/`ImageFilter.blur(`、`Curves.linear`（一律走 ease-out 阶梯）。白名单仅 `app/motion.dart`、`app/animations.dart`。
 4. **i18n_scan.py --check**：① lib/ 中文界面文案 0 处未本地化（log 豁免、`// i18n-allow:` 豁免）；② 所有语言分片 key 集合与 zh 完全一致；③ 三处语言清单一致（`OgLI18n.locales` × assets/i18n 目录 × pubspec assets）。
@@ -59,8 +60,10 @@ BootLoader 五阶段：清单自检 → Ed25519 验签（公钥内嵌，私钥�
 
 ## 5. 关键设计（改动前必读）
 
-- **缓存一致性七道防线（disk_cache.dart，1,016 行）**：D1 写前必读、D2 SHA 乐观锁、D3 409/422 冲突重试、D4 逐键串行互斥、D5 写后回读校验、D6 失败返回结果不外抛、D7 危险操作二次确认。**无绕过开关**。D8 = Write Journal（可恢复事务）；D9 = 草稿先落盘（带 baseSha）。
-- **网络**：`NetBridge → ResilientTransport → IoNetTransport`；**只重试幂等方法**（默认仅 GET/HEAD，PUT/DELETE 刻意移除）；Retry-After 优先 + jitter；镜像通道全部失败回落直连；DoH 只认 https；分片下载每片 ≥1MB。
+- **缓存一致性七道防线（disk_cache.dart，约 1030 行；权威描述见 `docs/CONSISTENCY.md`）**：D1 写前必读（**远端已存在且无基线才拒绝；远端不存在且无基线为合法新建**；空串基线归一化为「无基线」）、D2 SHA 乐观锁、D3 409/422 冲突重试、D4 逐键串行互斥、D5 写后回读校验（回读不一致按「已提交待确认」收尾）、D6 失败返回结果不外抛、D7 危险操作二次确认。合法例外（重放不重复入队、force 需用户确认、裸写旁路仍带服务端乐观锁、官方新建）已在 CONSISTENCY.md 界定，不算「防线开关」。D8 = Write Journal（可恢复事务，持久化 force/hadRebase）；D9 = 草稿先落盘（带 baseSha）。
+- **提交链路回归守卫**：`test/domain/gh_submit_e2e_test.dart` 锁死「编辑已有文件必须提交成功且 PUT 带 body」「远端 409 不得被当作不存在而发无基线 PUT」。改动 `gh_api.dart` / `io_net_transport.dart` / `disk_cache.dart` 写路径后必跑。历史 P0：守卫首跳丢 body、302/303 错降级 GET、缓存锁内自锁死锁、D1 误判静默覆盖、草稿箱打开即删草稿。
+- **网络**：`NetBridge → ResilientTransport → IoNetTransport`；**只重试幂等方法**（默认仅 GET/HEAD，PUT/DELETE 刻意移除）；Retry-After 优先 + jitter（支持 HTTP-date）；换通道不吃重试预算但尊重退避；**所有请求统一走手动重定向守卫**（跨主机一律不跟随、拒绝 http 降级/私网/云元数据，敏感头集合 6 种）；DoH 客户端拒绝 https→http 降级；分片下载每片 ≥1MB。
+- **结构契约门禁**：`tool/contract_audit.py --fatal` 解析 export/import 指向、文件头层级前缀、平台门面、文档契约引用；与 layer/ui/motion/perf/i18n 一起在 ci.yml 严格模式汇总，任一失败统一 fail。
 - **令牌安全**：令牌只进系统密钥库，toString 脱敏；OAuth Device Flow；预签名第一跳本地完成、**令牌不出设备**；SSRF 防护（拒绝回环/私网/169.254.169.254）。
 - **批量操作**：>200 分批且 expectedHeadSha 链式推进；`IxTaskRunner` 在类型上强制 `IxBatchDecision`（用户确认）否则抛 `IxConfirmationRequired`。
 - **动效四档**（0 静默 → 3 拉满）：降档=降质量不是丢功能，全部参数进 `OgLOAnimQuality` 数据表，页面禁止硬编码。
@@ -71,7 +74,7 @@ BootLoader 五阶段：清单自检 → Ed25519 验签（公钥内嵌，私钥�
 - 分片 `assets/i18n/<locale>/<page>.json`（一语言一目录一页面一分片），2 空格缩进 + 键排序 + 末尾换行。
 - 取文案 `_t(page, key)` / `t(page, key, {args})`；兜底：当前语言 → 英文基线 → 键名，绝不返回空串。
 - 新增文案：zh 分片加键 → 代码 `_t('键')`（去掉所在行 const）→ 翻译 en（GitHub/Release/Actions/PR/Token/Commit 等术语**不译**）→ `i18n_scan.py --check` 0 失败。
-- 新增页面：文案全走 `_t` → `og_l_i18n.dart` pages 列表注册 → 建 zh/en 分片 → pubspec 加目录 → 跑 i18n_test.dart。
+- 新增页面：文案全走 `_t` → `og_l_i18n.dart` pages 列表注册 → 建 **六语言**分片（zh / zh_Hant / en / de / fr / ru；Web 分支为 zh_TW）→ pubspec 加目录 → `i18n_scan.py --check` 三处清单一致 → 跑 i18n_test.dart。
 
 ## 7. 测试规范
 
@@ -83,6 +86,7 @@ BootLoader 五阶段：清单自检 → Ed25519 验签（公钥内嵌，私钥�
 
 - CHANGELOG.md 新版本在前，条目分"修复/新增/改进"。
 - release_notes/v<版本>.md 中英对照，固定小节：新增/变更/修复/已知限制/产物；未发布的版本不建文件。
+- `changed/_content/v<版本>.md` 面向使用者的日志（书面语、不写内部实现、350–700 字；规范见 `changed/_content/_STYLE.md`），发布后由 `changed/generate_posts.py` 生成站点文章；`changed/releases.json` 需同步已发布版本的产物。
 - 版本一致性门禁：pubspec `version` = `kOgLAppVersion`（version_sync.py）；boot_manifest 的 appVersion 读自 pubspec，buildId = git sha。
 - docs/ 只收"持续有效"的手册；文档引用的符号必须真实存在。
 
