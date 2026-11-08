@@ -66,6 +66,26 @@ void main() {
       expect(plan.length, 3, reason: '3 MB / 1 MB = 3 片，不该开 8 个小分片');
     });
 
+    test('非整除时每片仍不小于 minChunkBytes（B1-A-14 回归）', () {
+      // 旧实现用 ceil：2MB+1 切成 3 片各 699051B，违反「每片 ≥1MB」。
+      // 现用 floor：只切 2 片（1MB + 1MB+1），余数进最后一片。
+      final List<OgLByteRange> plan = OgLChunkPlan.of(
+        total: 2 * 1024 * 1024 + 1,
+        connections: 8,
+        minChunkBytes: 1 << 20,
+      );
+      expect(plan.length, 2);
+      for (final OgLByteRange r in plan) {
+        expect(r.length, greaterThanOrEqualTo(1 << 20));
+      }
+      expect(plan.last.end, 2 * 1024 * 1024);
+      expect(
+          plan
+              .map((OgLByteRange r) => r.length)
+              .reduce((int a, int b) => a + b),
+          2 * 1024 * 1024 + 1);
+    });
+
     test('并发越大片越多（但不超过并发数）', () {
       const int total = 100 * 1024 * 1024;
       for (final int connections in <int>[1, 2, 4, 8]) {

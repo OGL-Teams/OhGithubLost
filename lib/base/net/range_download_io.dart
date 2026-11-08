@@ -9,6 +9,7 @@ library;
 import 'dart:io';
 
 import '../../kernel/contract/download_engine.dart';
+import '../../kernel/log/og_l_log_file.dart';
 import 'range_download.dart';
 
 /// 多连接分片下载器。
@@ -60,10 +61,21 @@ class OgLRangeDownloader implements DownloadEngine {
       // 有些服务端只在带 Range 的 GET 上才表态，复核一次。
       return await _probeByRange(url, headers: headers, timeout: timeout);
     } catch (error) {
-      // HEAD 被禁（405 等）时同样用 Range 复核；仍失败则视为不支持。
+      // ★ B1-C-07 / B1-A-15 三方命中：HEAD 失败原因必须留痕，不能
+      //   折叠成「服务端不支持 Range」这种与事实相反的结论。
+      OgLLogFile.line(
+        'DL',
+        '分片探测 HEAD 失败（$url）：$error；改用 Range 复核',
+        level: 'WARN',
+      );
       try {
         return await _probeByRange(url, headers: headers, timeout: timeout);
       } catch (inner) {
+        OgLLogFile.line(
+          'DL',
+          '分片探测 Range 复核亦失败（$url）：$inner；按不支持分片回退单连接',
+          level: 'WARN',
+        );
         return const DownloadProbe(supportsRange: false);
       }
     }
@@ -120,21 +132,36 @@ class OgLRangeDownloader implements DownloadEngine {
     int received = 0;
 
     bool merged = false;
+    Object? firstFailure;
     try {
-      await Future.wait<void>(<Future<void>>[
-        for (int i = 0; i < plan.length; i++)
-          _fetchPart(
-            url: request.url,
-            part: parts[i],
-            range: plan[i],
-            headers: request.headers,
-            cancel: cancel,
-            onBytes: (int delta) {
-              received += delta;
-              onProgress?.call(received, request.total);
-            },
-          ),
-      ]);
+      // ★ B1-A-15：Future.wait 首错即返回会让 finally **在其它分片仍在写
+      //   同一批 .partN 时**删除文件，残留半截分片甚至被后续重试拼进成品。
+      //   改为等所有分片都结束（各自把异常收敛成值），再统一判定成败。
+      final List<Object?> outcomes = await Future.wait<Object?>(
+        <Future<Object?>>[
+          for (int i = 0; i < plan.length; i++)
+            _fetchPart(
+              url: request.url,
+              part: parts[i],
+              range: plan[i],
+              headers: request.headers,
+              cancel: cancel,
+              onBytes: (int delta) {
+                received += delta;
+                onProgress?.call(received, request.total);
+              },
+            ).then<Object?>((_) => null).catchError((Object e) => e),
+        ],
+      );
+      for (final Object? outcome in outcomes) {
+        if (outcome != null) {
+          firstFailure = outcome;
+          break;
+        }
+      }
+      if (firstFailure != null) {
+        throw firstFailure;
+      }
       // 合并：顺序拼接，写盘一次成型。
       //
       // ★ 合并阶段失败必须把半成品删掉：契约要求「失败不留半成品」（见
@@ -196,22 +223,38 @@ class OgLRangeDownloader implements DownloadEngine {
         .set(HttpHeaders.rangeHeader, 'bytes=${range.start}-${range.end}');
     final HttpClientResponse response = await request.close();
     if (response.statusCode != HttpStatus.partialContent) {
+      await response.drain<void>();
       throw DownloadHttpException(
         '分片 $range 返回 ${response.statusCode}',
         statusCode: response.statusCode,
       );
     }
     // ★ 206 不等于"给的就是我要的那一段"：中间设备 / CDN 会回**错位**的区间。
-    //   必须把 `Content-Range` 与请求区间对齐（RFC 7233：两端都是**含**的），
-    //   否则各片会按错误顺序拼成一个"长度恰好正确"的坏文件 —— 长度校验
-    //   拦不住它（每片各自长度都对）。头部缺失时不猜，交给长度校验兜底。
+    //   Content-Range 必须存在、格式合法、且与请求区间逐字节对齐
+    //   （RFC 7233：两端都是**含**的）。头部缺失/改写时**一律拒绝**——
+    //   此前返回 null 就跳过校验，等长但错位的区间会拼成"长度恰好正确"
+    //   的坏文件，而长度校验拦不住它（B1-A-16 / B1-B-02）。
     final OgLByteRange? actual = _rangeOf(
       response.headers.value(HttpHeaders.contentRangeHeader),
     );
-    if (actual != null &&
-        (actual.start != range.start || actual.end != range.end)) {
+    if (actual == null ||
+        actual.start != range.start ||
+        actual.end != range.end) {
+      await response.drain<void>();
       throw DownloadHttpException(
-        '分片 $range 的 Content-Range 不符：${actual.start}-${actual.end}',
+        '分片 $range 缺少或不符的 Content-Range'
+        '${actual == null ? '' : '：${actual.start}-${actual.end}'}',
+        statusCode: response.statusCode,
+      );
+    }
+    // 总量也要一致：CDN 可能回一个合法区间却属于另一份资源。
+    final int? total = _totalFromContentRange(
+      response.headers.value(HttpHeaders.contentRangeHeader),
+    );
+    if (total != null && total != request.total) {
+      await response.drain<void>();
+      throw DownloadHttpException(
+        '分片 $range 的 Content-Range 总量不符：$total != ${request.total}',
         statusCode: response.statusCode,
       );
     }

@@ -51,8 +51,13 @@ abstract final class OgLChunkPlan {
   ///
   /// 规则：
   /// - 每片不小于 [minChunkBytes]（小文件不为它开一堆连接）；
-  /// - 分片数 = `min(connections, ceil(total / minChunkBytes))`；
+  /// - 分片数 = `min(connections, floor(total / minChunkBytes))`（至少 1）；
   /// - 余数补给**最后一片**，保证并集正好覆盖 `0..total-1`（不重不漏）。
+  ///
+  /// ★ B1-A-14：此前用 `ceil`，非整除时 `total ~/ count` 会小于
+  ///   [minChunkBytes]（如 2MB+1 切成 3 片各 699051B），与"每片 ≥1MB"
+  ///   的约定相悖。改用 `floor`，前 `count-1` 片严格为 `base` 字节
+  ///   （`base >= minChunk` 恒成立），最后一片承接余数。
   static List<OgLByteRange> of({
     required int total,
     required int connections,
@@ -63,7 +68,7 @@ abstract final class OgLChunkPlan {
     }
     final int maxConnections = connections < 1 ? 1 : connections;
     final int minChunk = minChunkBytes < 1 ? 1 : minChunkBytes;
-    final int byMin = (total + minChunk - 1) ~/ minChunk;
+    final int byMin = total ~/ minChunk;
     final int count =
         maxConnections < byMin ? maxConnections : (byMin < 1 ? 1 : byMin);
     final int base = total ~/ count;
