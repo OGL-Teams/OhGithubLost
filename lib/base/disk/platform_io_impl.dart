@@ -225,16 +225,17 @@ class IoDiskFileStore implements DiskFileStore {
 
   /// 从收纳包里还原内容（没有收纳记录时返回 `null`）。
   Future<String?> _readPacked(String relative) async {
+    String zipAbs = '';
     try {
       final Map<String, String> index = await _index();
       final String norm = InMemoryFileStore.normalize(relative);
-      final String? zipAbs = index[norm];
-      if (zipAbs == null) {
+      zipAbs = index[norm] ?? '';
+      if (zipAbs.isEmpty) {
         return null;
       }
       final File file = File(winLong(zipAbs));
       if (!await file.exists()) {
-        return null;
+        return null; // 收纳包确实不在：这是「没有」，不是「读失败」。
       }
       final Archive archive =
           ZipDecoder().decodeBytes(await file.readAsBytes());
@@ -246,10 +247,16 @@ class IoDiskFileStore implements DiskFileStore {
           }
         }
       }
-    } catch (_) {
-      // 收纳包损坏：当作不存在（调用方按"没有"处理，不编造内容）。
+      // 包在、条目却找不到：内容可能已损坏，不能当「不存在」静默清空。
+      throw StateError('收纳包缺少条目：$norm');
+    } on StateError {
+      rethrow;
+    } on Object catch (error) {
+      // ★ B2-A-10：IO 失败 / 包损坏 ≠ 文件不存在。伪装成 null 会让
+      //   KV / Journal / 草稿被当作「没有」而静默清空（数据事故）。
+      //   原样抛出，由上层折成可见失败结果。
+      throw StateError('收纳内容读取或解码失败（$zipAbs）：$error');
     }
-    return null;
   }
 
   /// 删除收纳条目（连同它的包；包为空即删）。

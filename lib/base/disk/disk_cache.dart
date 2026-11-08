@@ -737,9 +737,39 @@ class RepositoryCache {
           );
         }
 
-        final fresh = await _remote.read(intent.key);
+        final RemoteDocument? fresh;
+        try {
+          fresh = await _remote.read(intent.key);
+        } on Object catch (error) {
+          // ★ B2-A-07：冲突后重读失败 = 远端状态不确定，绝不带着
+          //   `expectedSha = null` 进入下一轮 PUT（那会变成无基线盲写，
+          //   覆盖他人提交且日志谎报「已重定基后重试成功」）。
+          return _fail(
+            intent,
+            WriteConflict.staleSha,
+            '冲突后无法重读远端（$error）；已停止重试以免覆盖他人提交（D3）',
+            baseSha: intent.baseSha,
+            code: 'OGL-CONS-203',
+            attempts: attempt,
+            journalId: journalRecord?.id,
+          );
+        }
+        final String? nextBase = error.currentSha ?? fresh?.sha;
+        if (nextBase == null || nextBase.isEmpty) {
+          // 冲突响应里没有新 sha、重读也拿不到：同样停止，不猜。
+          return _fail(
+            intent,
+            WriteConflict.staleSha,
+            '冲突后拿不到新的远端基线；已停止重试以免盲写覆盖（D3）',
+            sha: error.currentSha,
+            baseSha: intent.baseSha,
+            code: 'OGL-CONS-203',
+            attempts: attempt,
+            journalId: journalRecord?.id,
+          );
+        }
         content = intent.rebase!(fresh?.content ?? '', intent.content);
-        expectedSha = error.currentSha ?? fresh?.sha;
+        expectedSha = nextBase;
         _diagnostics.warn(
           'CACHE',
           '检测到冲突，已重定基后重试',
