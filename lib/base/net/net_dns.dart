@@ -44,6 +44,29 @@ enum NetDnsMode {
 /// 用户以为换上了可信解析器，实际是被更彻底地劫持。所以这里只认 `https`：
 /// `http://…`、空串、相对地址、没有协议的裸地址（`1.1.1.1`）一律判为**不可用**，
 /// 由调用方回退到明文 UDP 或系统解析（**不谎称已启用 DoH**）。
+final RegExp _ipv4Shape = RegExp(r'^\d{1,3}(\.\d{1,3}){3}$');
+
+/// ★ B1-B-09：IPv4 地址须逐段 0..255，且不接受回环 / 私网 /
+///   链路本地（云元数据 169.254.169.254）作为可信解析结果或 DoH 端点。
+bool ogLIsSafeIpv4(String value) {
+  if (!_ipv4Shape.hasMatch(value)) {
+    return false;
+  }
+  final List<int> parts =
+      value.split('.').map((String p) => int.tryParse(p) ?? 256).toList();
+  if (parts.any((int p) => p > 255)) {
+    return false;
+  }
+  final int a = parts[0], b = parts[1];
+  return !(a == 10 ||
+      a == 127 ||
+      a == 0 ||
+      (a == 172 && b >= 16 && b <= 31) ||
+      (a == 192 && b == 168) ||
+      (a == 169 && b == 254) ||
+      (a == 100 && b >= 64 && b <= 127));
+}
+
 bool ogLIsUsableDohEndpoint(String? url) {
   if (url == null) {
     return false;
@@ -59,7 +82,14 @@ bool ogLIsUsableDohEndpoint(String? url) {
   if (parsed.scheme.toLowerCase() != 'https') {
     return false;
   }
-  return parsed.host.isNotEmpty;
+  final String host = parsed.host.toLowerCase();
+  if (host.isEmpty || host == 'localhost' || host.endsWith('.localhost')) {
+    return false;
+  }
+  if (_ipv4Shape.hasMatch(host) && !ogLIsSafeIpv4(host)) {
+    return false;
+  }
+  return host.isNotEmpty;
 }
 
 /// 把"用户填写的 DNS 地址"规格化成**明文 UDP 用的裸 IP 字面量**。
@@ -400,17 +430,16 @@ class UdpDnsResolver implements DnsResolver {
   /// 超时。
   final Duration timeout;
 
-  /// 事务 ID 随机源（随机起点 + 逐查询递增：既避免与陈旧响应串包，
-  /// 也避免"从 1 开始"这种可被离线猜测的序列）。
+  /// 事务 ID 随机源（B1-A-10：此前是实例字段，而 UdpDnsResolver 每次解析
+  /// 都新建实例，随机起点每次从同一静态种子重新取值 → 事务 ID 实际恒定、
+  /// 可被离线猜测，伪造应答容易串包）。改为静态计数器，跨实例单调递增。
   static final Random _idRandom = Random();
+  static int _nextQueryId = _idRandom.nextInt(0x10000);
 
-  int _queryId = _idRandom.nextInt(0x10000);
+  int nextQueryId() => _nextQueryId = (_nextQueryId + 1) & 0xFFFF;
 
   @override
   String get id => server.id;
-
-  /// 下一个事务 ID（从随机起点单调递增，回绕到 16 位）。
-  int nextQueryId() => (++_queryId) & 0xFFFF;
 
   @override
   Future<List<String>> resolve(String host) async {
@@ -472,16 +501,16 @@ class DohDnsResolver implements DnsResolver {
     final endpoint = server.dohUrl!;
     final separator = endpoint.contains('?') ? '&' : '?';
     final body = await client.get(
-      '$endpoint${separator}name=$host&type=A',
+      '$endpoint${separator}name=${Uri.encodeQueryComponent(host)}&type=A',
       headers: const <String, String>{'accept': 'application/dns-json'},
     ).timeout(timeout);
-    return parseDohJson(body);
+    return parseDohJson(body, host: host);
   }
 
   /// 解析 DoH 的 JSON 响应（抽出 A 记录）。
   ///
   /// 刻意做成静态纯函数：便于离线断言，也便于复用到 DoT/TLS 场景。
-  static List<String> parseDohJson(String body) {
+  static List<String> parseDohJson(String body, {String host = ''}) {
     Object? decoded;
     try {
       decoded = jsonDecode(body);
@@ -507,15 +536,29 @@ class DohDnsResolver implements DnsResolver {
       if (answer['type'] != DnsWireCodec.typeA) {
         continue;
       }
+      // ★ B1-A-13：不校验 answer.name 会接受「别的域名」的应答
+      //   （投毒/错配）。DoH JSON 的 name 通常带尾点，统一去掉后比对。
+      final Object? answerName = answer['name'];
+      if (answerName is String) {
+        final String normalized = answerName.toLowerCase().replaceAll(
+              RegExp(r'\.$'),
+              '',
+            );
+        if (normalized.isNotEmpty && normalized != host.toLowerCase()) {
+          continue;
+        }
+      }
       final data = answer['data'];
-      if (data is String && _ipv4.hasMatch(data)) {
+      if (data is String && isSafeIpv4(data)) {
         result.add(data);
       }
     }
     return result;
   }
 
-  static final RegExp _ipv4 = RegExp(r'^\d{1,3}(\.\d{1,3}){3}$');
+  /// ★ B1-B-09：正则只看形状，`999.999.999.999` 也能过。逐段校验
+  ///   0..255 并拒绝回环 / 私网 / 链路本地（云元数据 169.254.169.254）。
+  static bool isSafeIpv4(String value) => ogLIsSafeIpv4(value);
 }
 
 /// 解析结果（含缓存标记）。
@@ -777,7 +820,12 @@ class DnsService {
       return false;
     }
     for (int i = 0; i < a.length; i++) {
-      if (a[i].id != b[i].id) {
+      // ★ B1-A-12：只比 id 会让"改了自定义 IP / DoH 端点"仍命中旧缓存
+      //   （最多 5 分钟连着被污染的 IP）。逐字段比较后才判「策略未变」。
+      if (a[i].id != b[i].id ||
+          a[i].ip != b[i].ip ||
+          a[i].dohUrl != b[i].dohUrl ||
+          a[i].label != b[i].label) {
         return false;
       }
     }
@@ -1006,8 +1054,6 @@ class DnsService {
     }
     return completer.future;
   }
-
-  static final RegExp _ipv4 = RegExp(r'^\d{1,3}(\.\d{1,3}){3}$');
 }
 
 /// DNS 环境自检项（注册到内核的 [KernelProbeRegistry]）。
