@@ -36,7 +36,7 @@ class DiskBridge {
   /// 路径规划。
   final DiskPaths paths;
 
-  /// 一致性缓存（**致命区**，见 `docs/CONSISTENCY.md（该文件未落地，以源码为准）`）。
+  /// 一致性缓存（**致命区**，见 `docs/CONSISTENCY.md`）。
   final RepositoryCache cache;
 
   /// 提交日志（D8：写前落盘，崩溃可恢复）。
