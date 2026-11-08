@@ -123,6 +123,10 @@ def check_doc_refs() -> list[str]:
     for name in sorted(os.listdir(DOCS)):
         if not name.endswith(('.md',)):
             continue
+        # 审计快照（audit_*.md）是历史记录而非活契约：里面叙述性提及的
+        # 文档名（含「未落地」标注）不构成契约引用，不在扫描范围。
+        if name.startswith('audit_'):
+            continue
         with open(os.path.join(DOCS, name), encoding='utf-8') as handle:
             text = handle.read()
         for ref in set(DOC_REF_RE.findall(text)):

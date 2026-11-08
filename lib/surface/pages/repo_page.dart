@@ -282,6 +282,26 @@ class _RepoPageState extends State<RepoPage> {
     final Map<String, String> headers = _repo.isPrivate
         ? await widget.surface.downloadAuthHeaders()
         : const <String, String>{};
+    // TOKEN-EXIT-01: 加速时令牌经第三方通道，与其它下载入口同一道门禁
+    // （B4-A-02/B4-B-02：此前本入口是唯一漏网处）。直连 github.com 域
+    // （无加速或不带令牌）不会触发弹窗。
+    if (!mounted) {
+      return;
+    }
+    final bool allowed = await ogLGuardTokenExitDownload(
+      context,
+      url: candidates.first,
+      headers: headers,
+      targetSummary: '${_full.split('/').last}-$_branch.zip',
+    );
+    if (!allowed) {
+      if (mounted) {
+        _notifier.warning(_t('tokenExitCancelled', <String, Object?>{
+          'host': Uri.tryParse(candidates.first)?.host ?? candidates.first,
+        }));
+      }
+      return;
+    }
     try {
       await widget.surface.domain.downloads.enqueue(
         url: candidates.first,

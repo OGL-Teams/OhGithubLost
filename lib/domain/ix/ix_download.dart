@@ -1,4 +1,4 @@
-/// L2 中枢级 · 内建下载器（**按平台选下载后端**）。
+/// L2 中枢级 · 内建下载器（**仅原生平台**；Web 无下载后端）。
 ///
 /// ## 公开契约保持不变
 /// [IxDownloadManager] / [IxDownloadTask] / [IxDownloadCategory] /
@@ -164,7 +164,7 @@ class IxDownloadEvent {
   final String? error;
 }
 
-/// 平台下载后端（原生 = `background_downloader`；Web = 浏览器下载）。
+/// 平台下载后端（原生 = `background_downloader`；Web 暂不支持下载，见 NETWORK.md）。
 abstract class IxDownloadBackend {
   /// 后端事件流（状态 + 进度）。
   Stream<IxDownloadEvent> get events;
@@ -302,7 +302,7 @@ String ogLAssertDownloadUrl(String url) {
 
 /// 把**分片引擎**抛出的错误归入分类。
 ///
-/// 引擎只暴露契约层异常类型 —— 本层**不 import `dart:io`**（Web 才可编译），
+/// 引擎只暴露契约层异常类型 —— 实现链使用 `dart:io`（仅原生平台；Web 版限制见 NETWORK.md），
 /// 因此 `SocketException` / `FileSystemException` 之类只能按文本特征粗判。
 IxDownloadErrorKind _kindOfFailure(Object error) {
   if (error is DownloadUnsupported) {
@@ -842,9 +842,9 @@ class IxDownloadManager extends ChangeNotifier {
         ),
         cancel: token,
         onProgress: (int received, int total) =>
-            _applyRangeProgress(id, received, total),
+            _applyRangeProgress(id, received, total, round: myRound),
       );
-      _applyRangeProgress(id, probe.total!, probe.total!);
+      _applyRangeProgress(id, probe.total!, probe.total!, round: myRound);
       // 先校验完整性再宣告完成（校验不过则判失败，且不导出到 SAF）。
       await _finishTask(id);
     } on DownloadCanceled {
@@ -999,7 +999,17 @@ class IxDownloadManager extends ChangeNotifier {
   }
 
   /// 分片进度 → 快照（含速率估算；节流通知与库路径一致）。
-  void _applyRangeProgress(String id, int received, int total) {
+  void _applyRangeProgress(
+    String id,
+    int received,
+    int total, {
+    required int round,
+  }) {
+    // ★ B4-A-03：进度回调同样受回合制守卫——此前只有四条终态分支校验，
+    //   旧轮回调可把新一轮 paused/canceled 打回 running（原则 22）。
+    if (_roundOf[id] != round) {
+      return;
+    }
     final IxDownloadTask? snap = _snapshots[id];
     if (snap == null) {
       return;
@@ -1104,6 +1114,12 @@ class IxDownloadManager extends ChangeNotifier {
   Future<void> retry(String id) async {
     final IxDownloadSpec? spec = _specs[id];
     if (spec == null) {
+      // ★ B4-A-05：静默 return 会让页面「撤销移除」点击毫无反馈。
+      _diagnostics?.warn(
+        'DL',
+        '重试请求落在已不存在的任务上（spec 已清）：$id',
+        code: 'OGL-DL-409',
+      );
       return;
     }
     final IxDownloadTask? snap = _snapshots[id];
@@ -1231,6 +1247,13 @@ class IxDownloadManager extends ChangeNotifier {
       //   只按 id 查库表会读到 `null` → 好好的文件被判"校验不匹配"。
       final String? actual = await _backend.fileSha256(id, path: snap.savePath);
       if (actual == null) {
+        // ★ B4-C-03：读不到成品 ≠ 校验不匹配。区分留痕，避免上层用
+        //   「坏文件已删除」的错误文案误导用户（文件根本不在）。
+        _diagnostics?.error(
+          'DL',
+          '成品文件读不到，无法校验完整性：${snap.fileName}',
+          code: 'OGL-DL-408',
+        );
         return false;
       }
       final bool ok = actual == expected;
