@@ -18,7 +18,7 @@
 | `github.com/{o}/{r}/archive/...` | 仓库归档 ZIP（可能重定向到 codeload） | 私有时必须带 | [`repo_page.dart`](../lib/surface/pages/repo_page.dart) |
 | `gist.githubusercontent.com` | Gist 原始文件 | 由 raw 地址决定 | [`gist_detail_page.dart`](../lib/surface/pages/gist_detail_page.dart) |
 | 用户自建加速通道 | 仅当用户开通对应类别 | 私有 raw 类可能带令牌（有不可关闭警告） | [`download_proxy.dart`](../lib/surface/util/download_proxy.dart) |
-| `github.com` | 令牌校验、OAuth Device Flow | OAuth client_id | [`lib/domain/gh/gh_client.dart`](../lib/domain/gh/gh_client.dart) |
+| `github.com/login/*` | OAuth Device Flow（申请 device_code / 轮询换令牌） | OAuth client_id | [`lib/domain/gh/gh_oauth_io.dart`](../lib/domain/gh/gh_oauth_io.dart) |
 | `objects.githubusercontent.com` / `release-assets.githubusercontent.com` | Release 附件 / Action 产物 | 否（仅用签名） | [`lib/domain/ix/ix_presign.dart`](../lib/domain/ix/ix_presign.dart) |
 | DoH 解析器 | DNS 被污染时的加密解析 | 否 | [`DnsService`](../lib/base/net/net_dns.dart) |
 | **用户自备的加速通道** | **仅当用户自行添加通道、开启加速、且该类资源在适用范围内** | 见 §四 | [`ogLAccelCandidates`](../lib/surface/util/download_proxy.dart) |

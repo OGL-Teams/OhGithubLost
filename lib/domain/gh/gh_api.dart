@@ -844,7 +844,7 @@ class GhApi implements CacheRemote {
   /// 与 [putContent] 的区别：
   /// - [putContent] 是**裸网络写**（供 [CacheRemote.write] 使用，不做本地锁）；
   /// - 本方法把写交给 [RepositoryCache]：缺基线拒绝（D1）、基线过期拒绝并
-  ///   给出**三方差异**（D2/D10）、危险/强制需二次确认（D7）、写后回读校验
+  ///   给出**三方差异**（D2 的子步骤，非独立防线）、危险/强制需二次确认（D7）、写后回读校验
   ///   （D5）、失败进入待同步队列（D8）。
   ///
   /// **永不抛**：失败以 [WriteOutcome.conflict] 返回，供 UI 呈现并可重试。

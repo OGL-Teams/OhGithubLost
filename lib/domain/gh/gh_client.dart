@@ -600,6 +600,9 @@ class GhClient {
     await _semaphore.acquire();
     try {
       final token = await _auth.activeToken();
+      // ★ B5-A-09：游客（无令牌）请求的 401 是「未登录」，不是「令牌失效」
+      //   ——markExpired 只应发生在确实带过令牌的请求上。
+      final bool carriedToken = token != null;
       final headers = <String, String>{
         'accept': 'application/vnd.github+json',
         'x-github-api-version': '2022-11-28',
@@ -668,7 +671,7 @@ class GhClient {
         await _readCache?.clear();
       }
       try {
-        _throwIfFailed(response, request);
+        _throwIfFailed(response, request, carriedToken: carriedToken);
         return response;
       } catch (error) {
         // 失败要**看得见**：状态码 + 映射后的异常类型 + 服务端原话。
@@ -750,7 +753,11 @@ class GhClient {
     );
   }
 
-  void _throwIfFailed(GhResponse response, GhRequest request) {
+  void _throwIfFailed(
+    GhResponse response,
+    GhRequest request, {
+    required bool carriedToken,
+  }) {
     final status = response.statusCode;
     if (status >= 200 && status < 300) {
       return;
@@ -758,7 +765,10 @@ class GhClient {
     switch (status) {
       case 401:
         // ★ 认证失效的**全局唯一出口**：标记状态，外壳据此自动回登录门。
-        _auth.markExpired('令牌无效或已过期，请重新授权');
+        //   无令牌请求的 401 是「未登录」，不能谎报「令牌失效」（B5-A-09）。
+        if (carriedToken) {
+          _auth.markExpired('令牌无效或已过期，请重新授权');
+        }
         throw const GhAuthException(
           '令牌无效或已过期，请重新授权',
           statusCode: 401,

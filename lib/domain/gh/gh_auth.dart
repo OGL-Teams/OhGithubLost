@@ -23,6 +23,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../kernel/contract/disk_store.dart';
 import '../../kernel/diagnostics.dart';
+import '../../kernel/log/og_l_log_file.dart';
 
 /// 认证状态（**全局单一真相**）。
 enum GhAuthState {
@@ -214,9 +215,17 @@ class GhAuthService extends ChangeNotifier {
       }
       try {
         result.add(GhAccount.fromJson(jsonDecode(raw) as Map<String, dynamic>));
-      } catch (_) {
-        // 结构损坏：清掉，避免每次启动都报错。
+      } catch (error) {
+        // ★ B5-A-14：结构损坏不再**静默删除**（与「失败必留痕」铁律冲突，
+        //   且删除后该账号令牌成孤儿）。改为**隔离 + 告警**：加损坏前缀
+        //   使其不再被枚举为账号，但数据保留可人工排查。
+        await _store.write('$key.corrupt', raw);
         await _store.remove(key);
+        OgLAppLog.instance.add(
+          '账户',
+          '账号元数据损坏，已隔离：$key（$error）',
+          severity: OgLNoticeSeverity.error,
+        );
       }
     }
     result.sort((GhAccount a, GhAccount b) {

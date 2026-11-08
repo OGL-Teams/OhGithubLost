@@ -105,6 +105,10 @@ class _OgLClientShellState extends State<OgLClientShell> {
   Future<void> _check() async {
     String? accountId;
     try {
+      // ★ B5-A-02/C-14：接线 refreshState——启动态探测不再用 activeAccount
+      //   近似代替「令牌存在」，令牌被系统清空的账号在此被登录门拦下，
+      //   而不是先假登录再被 401 拉回（OGL-AUTH-101 告警也由此触发）。
+      await widget.surface.domain.auth.refreshState();
       final account = await widget.surface.domain.auth.activeAccount();
       accountId = account?.id;
     } catch (error) {
