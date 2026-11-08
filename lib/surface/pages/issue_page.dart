@@ -149,8 +149,6 @@ class _IssuePageState extends State<IssuePage> {
   }
 
   /// 异步回调后的 mounted 校验统一收口。
-  bool get _alive => mounted;
-
   static List<String> _labelNamesOf(Map<String, dynamic> issue) =>
       _loginsOf(issue, 'labels');
 
@@ -219,13 +217,15 @@ class _IssuePageState extends State<IssuePage> {
     );
     titleController.dispose();
     bodyController.dispose();
-    if (saved != true || !_alive) {
+    if (saved != true || !mounted || !context.mounted) {
       return;
     }
     final String newTitle = titleController.text.trim();
     final String newBody = bodyController.text.trim();
     if (newTitle.isEmpty) {
-      OgLNotifier.of(context).info(_t('titleRequired'));
+      if (context.mounted) {
+        OgLNotifier.of(context).info(_t('titleRequired'));
+      }
       return;
     }
     final bool ok = await _runWrite(
@@ -240,7 +240,7 @@ class _IssuePageState extends State<IssuePage> {
         body: newBody,
       ),
     );
-    if (ok && _alive) {
+    if (ok && mounted && context.mounted) {
       setState(() => _title = newTitle);
       OgLNotifier.of(context).info(_t('issueEdited'));
     }
@@ -253,10 +253,12 @@ class _IssuePageState extends State<IssuePage> {
     try {
       allLabels = await widget.surface.domain.api.labels(widget.fullName);
     } catch (error) {
-      OgLNotifier.of(context).warning(_t('actionFailed', {'error': error}));
+      if (context.mounted) {
+        OgLNotifier.of(context).warning(_t('actionFailed', {'error': error}));
+      }
       return;
     }
-    if (!_alive) {
+    if (!mounted) {
       return;
     }
     final List<String> allNames = <String>[
@@ -271,7 +273,7 @@ class _IssuePageState extends State<IssuePage> {
         selected: selected,
       ),
     );
-    if (saved != true || !_alive) {
+    if (saved != true || !mounted || !context.mounted) {
       return;
     }
     final List<String> target = selected.toList();
@@ -286,7 +288,7 @@ class _IssuePageState extends State<IssuePage> {
         labels: target,
       ),
     );
-    if (ok && _alive) {
+    if (ok && mounted && context.mounted) {
       setState(() => _labels = target);
       OgLNotifier.of(context).info(_t('labelsUpdated'));
     }
@@ -303,7 +305,7 @@ class _IssuePageState extends State<IssuePage> {
       ),
     );
     controller.dispose();
-    if (saved != true || !_alive) {
+    if (saved != true || !mounted || !context.mounted) {
       return;
     }
     final List<String> target = controller.text
@@ -322,7 +324,7 @@ class _IssuePageState extends State<IssuePage> {
         assignees: target,
       ),
     );
-    if (ok && _alive) {
+    if (ok && mounted && context.mounted) {
       setState(() => _assignees = target);
       OgLNotifier.of(context).info(_t('assigneesUpdated'));
     }
@@ -349,7 +351,7 @@ class _IssuePageState extends State<IssuePage> {
         ],
       ),
     );
-    if (confirmed != true || !_alive) {
+    if (confirmed != true || !mounted) {
       return;
     }
     final bool ok = await _runWrite(
@@ -361,7 +363,7 @@ class _IssuePageState extends State<IssuePage> {
           ? widget.surface.domain.api.lockIssue(widget.fullName, _number)
           : widget.surface.domain.api.unlockIssue(widget.fullName, _number),
     );
-    if (ok && _alive) {
+    if (ok && mounted && context.mounted) {
       setState(() => _locked = locking);
       OgLNotifier.of(context).info(locking ? _t('locked') : _t('unlocked'));
     }
@@ -402,7 +404,7 @@ class _IssuePageState extends State<IssuePage> {
           ),
         ) ??
         '';
-    if (!_alive || action.isEmpty) {
+    if (!mounted || action.isEmpty) {
       return;
     }
     if (action == 'edit') {
@@ -422,15 +424,20 @@ class _IssuePageState extends State<IssuePage> {
       ),
     );
     controller.dispose();
-    if (saved != true || !_alive) {
+    if (saved != true || !mounted || !context.mounted) {
       return;
     }
     final String body = controller.text.trim();
     if (body.isEmpty) {
-      OgLNotifier.of(context).info(_t('commentRequired'));
+      if (context.mounted) {
+        OgLNotifier.of(context).info(_t('commentRequired'));
+      }
       return;
     }
     if (body.length > _kMaxCommentChars) {
+      if (!context.mounted) {
+        return;
+      }
       OgLNotifier.of(context).warning(
         _t('commentTooLong', {'length': body.length, 'max': _kMaxCommentChars}),
       );
@@ -444,7 +451,7 @@ class _IssuePageState extends State<IssuePage> {
       () => widget.surface.domain.api
           .updateIssueComment(widget.fullName, commentId, body: body),
     );
-    if (ok && _alive) {
+    if (ok && mounted && context.mounted) {
       OgLNotifier.of(context).info(_t('commentEdited'));
       await _commentsC().load();
     }
@@ -469,7 +476,7 @@ class _IssuePageState extends State<IssuePage> {
         ],
       ),
     );
-    if (confirmed != true || !_alive) {
+    if (confirmed != true || !mounted) {
       return;
     }
     final bool ok = await _runWrite(
@@ -480,7 +487,7 @@ class _IssuePageState extends State<IssuePage> {
       () => widget.surface.domain.api
           .deleteIssueComment(widget.fullName, commentId),
     );
-    if (ok && _alive) {
+    if (ok && mounted && context.mounted) {
       OgLNotifier.of(context).info(_t('commentDeleted'));
       await _commentsC().load();
     }
@@ -527,7 +534,7 @@ class _IssuePageState extends State<IssuePage> {
         state: closingState ? 'closed' : 'open',
       ),
     );
-    if (ok && _alive) {
+    if (ok && mounted && context.mounted) {
       setState(() => _state = closingState ? 'closed' : 'open');
     }
   }
@@ -537,12 +544,17 @@ class _IssuePageState extends State<IssuePage> {
   Future<void> _postComment() async {
     final String body = _comment.text.trim();
     if (body.isEmpty) {
-      OgLNotifier.of(context).info(_t('commentRequired'));
+      if (context.mounted) {
+        OgLNotifier.of(context).info(_t('commentRequired'));
+      }
       return;
     }
     // 护栏：GitHub 对评论正文有长度上限；本地先拦，避免把超大负载发出去
     // 后被服务端拒绝（浪费一次往返，且错误信息不如本地清晰）。
     if (body.length > _kMaxCommentChars) {
+      if (!context.mounted) {
+        return;
+      }
       OgLNotifier.of(context).warning(
         _t('commentTooLong', {'length': body.length, 'max': _kMaxCommentChars}),
       );
@@ -619,12 +631,12 @@ class _IssuePageState extends State<IssuePage> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.label_outline),
-                  title: Text(_t('manage') + ' · ' + _t('labels')),
+                  title: Text('${_t('manage')} · ${_t('labels')}'),
                   onTap: () => Navigator.of(sheetContext).pop('labels'),
                 ),
                 ListTile(
                   leading: const Icon(Icons.person_outline),
-                  title: Text(_t('manage') + ' · ' + _t('assignees')),
+                  title: Text('${_t('manage')} · ${_t('assignees')}'),
                   onTap: () => Navigator.of(sheetContext).pop('assignees'),
                 ),
                 ListTile(
@@ -638,7 +650,7 @@ class _IssuePageState extends State<IssuePage> {
           ),
         ) ??
         '';
-    if (!_alive || action.isEmpty) {
+    if (!mounted || action.isEmpty) {
       return;
     }
     switch (action) {
@@ -1069,11 +1081,6 @@ class _EditCommentDialog extends StatelessWidget {
       ],
     );
   }
-}
-
-/// 当前登录名（懒取一次；取不到视为游客）。
-extension on _IssuePageState {
-  String get _viewerLogin => _viewerLoginMemo ??= _loadViewerLogin();
 }
 
 /// 懒加载的查看者登录名缓存。

@@ -54,7 +54,6 @@ class OgLLogBody extends StatefulWidget {
 class _OgLLogBodyState extends State<OgLLogBody> {
   List<String> _chunks = const <String>[];
   final ScrollController _scroll = ScrollController();
-  final GlobalKey _bodyKey = GlobalKey();
 
   /// 命中偏移列表（全文，按出现顺序）。
   List<int> _hits = const <int>[];

@@ -20,8 +20,8 @@ abstract final class OgLFontPickers {
   ///
   /// 返回 `null` = 用户取消；文件不存在或非字体扩展名抛异常（调用方提示）。
   static Future<Uint8List?> pickFontBytes(State state) async {
-    final BuildContext? context = state.context;
-    if (context == null || !context.mounted) {
+    final BuildContext context = state.context;
+    if (!context.mounted) {
       return null;
     }
     final TextEditingController controller = TextEditingController();

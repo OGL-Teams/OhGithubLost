@@ -898,10 +898,13 @@ class _DiscoverPageState extends State<DiscoverPage>
           'https://github.com/${repo.fullName}.git',
           tag: _t('actionCopyClone'),
         );
-        if (mounted) {
+        if (context.mounted) {
           OgLNotifier.of(context).info(_t('cloneCopied'));
         }
       case 'browser':
+        if (!context.mounted) {
+          return;
+        }
         await openLinkOrCopy(
           context,
           'https://github.com/${repo.fullName}',
