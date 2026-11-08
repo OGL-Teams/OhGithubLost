@@ -538,8 +538,10 @@ class DohDnsResolver implements DnsResolver {
       }
       // ★ B1-A-13：不校验 answer.name 会接受「别的域名」的应答
       //   （投毒/错配）。DoH JSON 的 name 通常带尾点，统一去掉后比对。
+      //   host 为空（纯解析、无查询上下文）时不做过滤——只解析的调用方
+      //   没有可供比对的查询域名，此时交给上层（resolve 里传了 host）。
       final Object? answerName = answer['name'];
-      if (answerName is String) {
+      if (host.isNotEmpty && answerName is String) {
         final String normalized = answerName.toLowerCase().replaceAll(
               RegExp(r'\.$'),
               '',

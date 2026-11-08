@@ -238,6 +238,29 @@ void main() {
       expect(DohDnsResolver.parseDohJson(body), <String>['5.6.7.8']);
     });
 
+    test('带 host 时过滤错域应答（B1-A-13 回归）', () {
+      const body = '{"Status":0,"Answer":['
+          '{"name":"evil.com.","type":1,"data":"9.9.9.9"},'
+          '{"name":"a.com.","type":1,"data":"5.6.7.8"}]}';
+      // 尾点归一化后必须与查询域名一致，错域应答被丢弃。
+      expect(
+        DohDnsResolver.parseDohJson(body, host: 'a.com'),
+        <String>['5.6.7.8'],
+      );
+    });
+
+    test('应答里含私网 / 非法 IPv4 一律丢弃（B1-B-09 回归）', () {
+      const body = '{"Status":0,"Answer":['
+          '{"name":"a.com","type":1,"data":"169.254.169.254"},'
+          '{"name":"a.com","type":1,"data":"10.0.0.5"},'
+          '{"name":"a.com","type":1,"data":"999.1.1.1"},'
+          '{"name":"a.com","type":1,"data":"8.8.4.4"}]}';
+      expect(
+        DohDnsResolver.parseDohJson(body, host: 'a.com'),
+        <String>['8.8.4.4'],
+      );
+    });
+
     test('Status 非 0 → 抛异常', () {
       expect(
         () => DohDnsResolver.parseDohJson('{"Status":3}'),
