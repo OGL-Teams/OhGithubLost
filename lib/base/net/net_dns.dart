@@ -869,7 +869,12 @@ class DnsService {
     if (host.isEmpty) {
       throw const DnsException('主机名为空');
     }
-    if (_ipv4.hasMatch(host)) {
+    if (_ipv4Shape.hasMatch(host)) {
+      // B1-B-09：逐段 0..255；私网/回环 IP 字面量不作为解析目标
+      // （避免自定义 DNS 把域名指向内网或云元数据）。
+      if (!ogLIsSafeIpv4(host)) {
+        throw DnsException('不安全的 IPv4 字面量：$host');
+      }
       return <String>[host];
     }
     // IPv6 字面量（含压缩写法）直接返回，不做无谓查询。

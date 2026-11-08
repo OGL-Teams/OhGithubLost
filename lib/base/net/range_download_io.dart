@@ -144,6 +144,7 @@ class OgLRangeDownloader implements DownloadEngine {
               url: request.url,
               part: parts[i],
               range: plan[i],
+              expectedTotal: request.total,
               headers: request.headers,
               cancel: cancel,
               onBytes: (int delta) {
@@ -209,6 +210,7 @@ class OgLRangeDownloader implements DownloadEngine {
     required Uri url,
     required File part,
     required OgLByteRange range,
+    required int expectedTotal,
     required Map<String, String> headers,
     DownloadCancelToken? cancel,
     required void Function(int delta) onBytes,
@@ -251,10 +253,10 @@ class OgLRangeDownloader implements DownloadEngine {
     final int? total = _totalFromContentRange(
       response.headers.value(HttpHeaders.contentRangeHeader),
     );
-    if (total != null && total != request.total) {
+    if (total != null && total != expectedTotal) {
       await response.drain<void>();
       throw DownloadHttpException(
-        '分片 $range 的 Content-Range 总量不符：$total != ${request.total}',
+        '分片 $range 的 Content-Range 总量不符：$total != $expectedTotal',
         statusCode: response.statusCode,
       );
     }
