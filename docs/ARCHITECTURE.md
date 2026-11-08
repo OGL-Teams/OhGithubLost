@@ -52,7 +52,7 @@ graph TD
 | --- | --- | --- | --- |
 | kernel (L0) | [`lib/kernel/`](../lib/kernel) | 契约（`contract/` 下的抽象接口）+ DI + 模块总线 + 信任链（引导清单签名与完整性）+ 日志接口 | `KernelDi` · `KernelModuleBus` · `OgLModule` · `BootLoader` · `BootIntegrityVerifier` · `KernelLogSink` |
 | platform | [`lib/platform/`](../lib/platform) | 平台识别与窗口能力（标题栏 / 最大化 / 权限网关 / 存储裁决的选型点） | `ogLDetectPlatform()` · `window_capability.dart` · `window_*.dart` |
-| base (L1) | [`lib/base/`](../lib/base) | 网络传输（重试 / 主机冷却 / DoH 回落）、磁盘存储、缓存引擎（D1–D7 一致性）、DNS | `NetTransport` · `ResilientTransport` · `DnsService` · `RepositoryCache` · `OgLStorage` |
+| base (L1) | [`lib/base/`](../lib/base) | 网络传输（重试 / 统一重定向守卫）、磁盘存储、缓存引擎（D1–D9 一致性，权威描述见 [`CONSISTENCY.md`](CONSISTENCY.md)）、DNS（含 DoH） | `NetTransport` · `ResilientTransport` · `DnsService` · `RepositoryCache` · `OgLStorage` |
 | domain (L2) | [`lib/domain/`](../lib/domain) | GitHub API 客户端、下载与预签名、仓库文件写回、设备信息等业务逻辑 | `GhApi` · `DomainBridge` · `IxPresign` · `SysInfoService` |
 | surface (L3) | [`lib/surface/`](../lib/surface) | 页面、控件、i18n、主题、用户交互与其共用构件 | `SurfaceBridge` · 页面 `pages/*_page.dart` · 共用构件 `app/`（`AsyncController` / `AsyncView` · `OgLNotifier` · `PagedController`） |
 
