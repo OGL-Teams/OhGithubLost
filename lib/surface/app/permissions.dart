@@ -217,6 +217,27 @@ abstract class _HandlerGateway implements OgLPermissionGateway {
   /// 说明里的**平台差异提示**（默认无；例如 Android 按版本不同）。
   String storageRationaleExtra() => '';
 
+  /// 存储授权（默认实现：逐个候选请求 → 写入探针二次确认）。
+  ///
+  /// Android 网关覆写为**版本感知 + 自动回退**（5.1+ 全版本可用）。
+  Future<OgLPermissionStatus> requestStorage() async {
+    final List<Permission> storage = storagePermissions();
+    if (storage.isEmpty) {
+      return OgLPermissionStatus.notRequired;
+    }
+    for (final Permission item in storage) {
+      final OgLPermissionStatus status = await _requestOf(item);
+      if (status == OgLPermissionStatus.granted) {
+        break;
+      }
+    }
+    if (await _storageOk()) {
+      return OgLPermissionStatus.granted;
+    }
+    await _openAppSettings();
+    return OgLPermissionStatus.needsUserAction;
+  }
+
   Future<bool> _storageOk() async {
     final probe = storageProbe;
     if (probe == null) {
@@ -288,23 +309,7 @@ abstract class _HandlerGateway implements OgLPermissionGateway {
   Future<OgLPermissionStatus> request(OgLPermission permission) async {
     switch (permission) {
       case OgLPermission.storage:
-        final List<Permission> storage = storagePermissions();
-        if (storage.isEmpty) {
-          return OgLPermissionStatus.notRequired;
-        }
-        // ★ 真正调起系统弹窗：逐个请求，任一授予即视为已授权。
-        for (final Permission item in storage) {
-          final OgLPermissionStatus status = await _requestOf(item);
-          if (status == OgLPermissionStatus.granted) {
-            break;
-          }
-        }
-        // 授权后仍以真实写入探针做二次确认（授权 ≠ 可写）。
-        if (await _storageOk()) {
-          return OgLPermissionStatus.granted;
-        }
-        await _openAppSettings();
-        return OgLPermissionStatus.needsUserAction;
+        return await requestStorage();
       case OgLPermission.notifications:
         final Permission? notify = notificationPermission();
         if (notify == null) {
@@ -331,15 +336,51 @@ class _AndroidPermissionGateway extends _HandlerGateway {
   String storageRationaleExtra() => _t('storageHintModern');
 
   @override
-  List<Permission> storagePermissions() => const <Permission>[
+  List<Permission> storagePermissions() => <Permission>[
         // Android 11+ 需要「所有文件访问」才能写 /sdcard 根目录；
         // 旧版本则用传统存储权限。两者都请求，命中即止。
+        //
+        // ★ Android 5.1（API 22）起支持：安装即授予读写外部存储权限
+        //   （运行时权限机制自 API 23 才开始），更早的版本走
+        //   application-permission 声明即可，无需运行时弹窗。
         Permission.manageExternalStorage,
         Permission.storage,
       ];
 
   @override
   Permission? notificationPermission() => Permission.notification;
+
+  /// ★ 版本感知的存储授权（Android 5.1+ 全版本支持，自动回退）。
+  ///
+  /// 不硬编码 SDK_INT 判定，而用**请求结果驱动回退**——这样对厂商 ROM
+  /// 与未来系统版本都成立：
+  /// 1. 先试「所有文件访问」（Android 11+ 才有意义，低版本会失败）；
+  /// 2. 失败/不支持 → 自动降级试传统存储权限（API 23+ 运行时弹窗）；
+  /// 3. 再失败（API 22 及以下：安装即授权）→ 以**真实写入探针**判定：
+  ///    能写用户可见位置即视为已授权；只能写私有目录 → 如实报
+  ///    needsUserAction，并说明「本系统版本不提供公共目录写入」。
+  @override
+  Future<OgLPermissionStatus> requestStorage() async {
+    final List<Permission> candidates = storagePermissions();
+    if (candidates.isEmpty) {
+      // 本平台不需要（如 API 22 以下：安装即授予）——用探针确认可用性。
+      return await _storageOk()
+          ? OgLPermissionStatus.granted
+          : OgLPermissionStatus.needsUserAction;
+    }
+    for (final Permission item in candidates) {
+      final OgLPermissionStatus status = await _requestOf(item);
+      if (status == OgLPermissionStatus.granted) {
+        break;
+      }
+      // unsupported / restricted：换下一个候选（自动回退）。
+    }
+    // 授权后仍以真实写入探针做二次确认（授权 ≠ 可写）。
+    if (await _storageOk()) {
+      return OgLPermissionStatus.granted;
+    }
+    return OgLPermissionStatus.needsUserAction;
+  }
 }
 
 /// iOS：沙箱内存储无需权限；通知需系统弹窗。

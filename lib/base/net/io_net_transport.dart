@@ -332,7 +332,17 @@ class IoNetTransport implements NetTransport {
         next.host == uri.host &&
         next.port == uri.port;
     if (!sameOrigin) {
-      // 跨主机重定向：不跟随。3xx 会被 ResilientTransport 归为语义性响应交上层。
+      // 跨主机重定向：**一律不跟随**（B1-A-17/A-23/B-03/B-04）。
+      //   · 带凭证请求跨主机 = 凭证外泄（authorization / cookie / api-key …，
+      //     见 _kSensitiveHeaders）；
+      //   · 无凭证请求跨主机也可能打内网 / 云元数据，或把 https 降级成 http
+      //     （_ogLIsSafeRedirectTarget 已拦降级与私网目标）。
+      //   3xx 原样交还上层，由 GhClient 映射成显式失败（如实报错，不静默）。
+      if (_carriesSensitiveHeader(request.headers)) {
+        // 带凭证的跨主机跳转：**明确拒绝**（不跟随、不重发凭证）。
+        // 交还 3xx 让上层报错；用户看到的是"该地址要求跨站跳转，已拒绝"。
+        return response;
+      }
       return response;
     }
     // 同源跟随：RFC 7231 §6.4.3 / §6.4.4 —— 302/303 只对 **POST** 降级为
@@ -346,14 +356,55 @@ class IoNetTransport implements NetTransport {
         ? null
         : (identical(bodyOverride, _kUnset) ? request.body : bodyOverride);
     await response.drain<void>();
+    if (switchToGet) {
+      // ★ B1-A-30：降级为 GET 且丢 body 时，与 body 绑定的头必须一并剔除
+      //   （Content-Length/Content-Type/If-Match …）——否则第二跳带着
+      //   "Content-Length: N" 却没有 body，会挂起或直接 400。
+      return _sendWithGuardedRedirect(
+        NetMethod.get.verb,
+        next,
+        request.copyWith(headers: _withoutBodyBoundHeaders(request.headers)),
+        redirectsLeft: redirectsLeft - 1,
+        bodyOverride: nextBody,
+        receiveTimeout: receiveTimeout,
+      );
+    }
     return _sendWithGuardedRedirect(
-      switchToGet ? NetMethod.get.verb : verb,
+      verb,
       next,
       request,
       redirectsLeft: redirectsLeft - 1,
       bodyOverride: nextBody,
       receiveTimeout: receiveTimeout,
     );
+  }
+
+  /// 请求是否携带凭证头（B1-A-17/B1-B-03）。
+  ///
+  /// 集合覆盖 authorization / proxy-authorization / cookie / x-auth-token /
+  /// api-key / x-api-key —— dart:io 的自动跟随会原样重发全部头，
+  /// 跨主机跳转时等于把这些凭证送到第三方。
+  static bool _carriesSensitiveHeader(Map<String, String> headers) {
+    for (final String key in headers.keys) {
+      if (_kSensitiveHeaders.contains(key.toLowerCase())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// 剔除与请求体绑定的头（B1-A-30）：降级 GET 且无 body 时必须一起去掉。
+  static Map<String, String> _withoutBodyBoundHeaders(
+    Map<String, String> headers,
+  ) {
+    final Map<String, String> out = <String, String>{};
+    for (final MapEntry<String, String> entry in headers.entries) {
+      if (_kBodyBoundHeaders.contains(entry.key.toLowerCase())) {
+        continue;
+      }
+      out[entry.key] = entry.value;
+    }
+    return out;
   }
 
   /// 写请求体（含默认 Content-Type 注入；从 send() 抽出复用）。
