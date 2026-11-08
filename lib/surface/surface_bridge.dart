@@ -675,12 +675,12 @@ List<OgLModule> surfaceLayerModules() => <OgLModule>[
 /// ## 平台差异在哪
 /// 实现细节按平台收敛在底座（`base/disk/app_dirs_fs_io.dart`），
 /// 展示层里**一个 `dart:io` 都不需要**。
-/// 落盘根（`OgLStorage.plan().root`）；探不到时返回 `null`，由调用方如实报错。
-Future<String?> _storageRoot() async {
+/// 落盘根（`OgLStorage.plan().root`）；探不到时抛异常，由调用方如实报错。
+Future<String> _storageRoot() async {
   try {
     return (await OgLStorage.plan()).root;
-  } catch (_) {
-    return null;
+  } catch (error) {
+    throw StateError('存储根目录不可用：$error');
   }
 }
 

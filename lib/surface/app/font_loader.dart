@@ -108,7 +108,7 @@ class OgLFontLoader {
     if (isLoaded(OgLBuiltinFonts.notoSerifSc)) {
       return ogLCustomFontFamily(OgLBuiltinFonts.notoSerifSc);
     }
-    const OgLCustomFont font = OgLCustomFont(
+    final OgLCustomFont font = OgLCustomFont(
       id: OgLBuiltinFonts.notoSerifSc,
       name: OgLI18n.instance.t('settings', 'uiFontNotoSerif'),
       source: OgLBuiltinFonts.notoSerifScUrl,

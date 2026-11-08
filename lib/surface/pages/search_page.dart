@@ -747,8 +747,9 @@ class _DiscoverPageState extends State<DiscoverPage>
                 if (index == _repos.length) {
                   return _repoDone
                       ? const SizedBox.shrink()
-                      : const Padding(
-                          padding: EdgeInsets.symmetric(vertical: OgLSpace.md),
+                      : Padding(
+                          padding:
+                              const EdgeInsets.symmetric(vertical: OgLSpace.md),
                           child: _SkeletonCard(
                               key: ValueKey<String>('more-$index')),
                         );

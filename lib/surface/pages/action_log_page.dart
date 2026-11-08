@@ -19,14 +19,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../kernel/log/og_l_log_file.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
-import '../types.dart';
 import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 import '../util/og_l_radius.dart';
