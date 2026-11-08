@@ -11,7 +11,6 @@
 /// 成 `Uint8List` 后注册，路径差异收敛在 [bytesOf]。
 library;
 
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 

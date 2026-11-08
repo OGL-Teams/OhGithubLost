@@ -911,6 +911,32 @@ class OgLSettingsController extends ChangeNotifier {
       apply(_settings.copyWith(reduceMotion: enabled));
 
   /// 便捷：设置全局动效档位（越界夹紧到 0–3）。
+  /// 切换界面字体（外观字体管理）。
+  Future<void> setUiFont(String fontId) =>
+      apply(_settings.copyWith(uiFontId: fontId));
+
+  /// 保存 / 更新一条私有字体。
+  Future<void> upsertCustomFont(OgLCustomFont font) {
+    final List<OgLCustomFont> next = <OgLCustomFont>[
+      for (final OgLCustomFont item in _settings.customFonts)
+        if (item.id != font.id) item,
+      font,
+    ];
+    return apply(_settings.copyWith(customFonts: next));
+  }
+
+  /// 删除一条私有字体；若正是当前使用则回落系统字体。
+  Future<void> removeCustomFont(String fontId) {
+    final List<OgLCustomFont> next = <OgLCustomFont>[
+      for (final OgLCustomFont item in _settings.customFonts)
+        if (item.id != fontId) item,
+    ];
+    return apply(_settings.copyWith(
+      customFonts: next,
+      uiFontId: _settings.uiFontId == fontId ? 'system' : null,
+    ));
+  }
+
   Future<void> setMotionLevel(int level) => apply(
         _settings.copyWith(
           motionLevel: level < 0 ? 0 : (level > 3 ? 3 : level),

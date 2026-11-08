@@ -474,6 +474,7 @@ class SurfaceBridge {
   String? _themeCacheSeed;
   String? _themeCacheDensity;
   int? _themeCacheMotion;
+  String? _themeCacheUiFont;
   ThemeData? _themeCache;
 
   /// 当前主题（**带缓存**）。

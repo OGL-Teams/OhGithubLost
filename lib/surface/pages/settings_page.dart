@@ -497,7 +497,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     // 账户 → 界面 → 代码与文件 → 存储与网络 → 关于与帮助 →
                     // 日志，危险区在最底。一屏正好 5~7 个可点条目。
                     _accountCard(theme),
-                    _interfaceGroup(value),
+                    _interfaceGroup(theme, value),
                     _codeGroup(context, theme, value),
                     _storageGroup(theme, value),
                     _aboutGroup(theme),
@@ -537,7 +537,7 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 能"选一个"的走**选择行**（右侧显示当前值，点开弹窗），只有连续量
   /// （文字缩放）留滑杆。原来平铺的色板 / 分段按钮会把一屏的可点条目从
   /// 6 个挤到 2 个，而且每换一个值都要在一整张长卡里找目标。
-  Widget _interfaceGroup(OgLSettings value) {
+  Widget _interfaceGroup(ThemeData theme, OgLSettings value) {
     final int motion =
         value.motionLevel.clamp(0, _motionShort.length - 1).toInt();
     return OgLSettingsGroup(

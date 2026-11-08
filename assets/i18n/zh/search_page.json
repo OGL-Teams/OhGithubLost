@@ -1,4 +1,10 @@
 {
+  "actionCopyClone": "复制克隆地址",
+  "actionOpenBrowser": "在浏览器打开",
+  "actionOpenRepo": "打开仓库",
+  "catHot": "热门",
+  "categoryFilter": "推荐分类",
+  "cloneCopied": "克隆地址已复制到剪贴板",
   "codeResults": "「{q}」代码结果：{count} 条",
   "codeSearch": "代码搜索",
   "discover": "发现",
@@ -7,6 +13,7 @@
   "feedPull": "PR",
   "feedRelease": "发布",
   "issuesAll": "全部",
+  "issuesComments": "{count} 条评论",
   "issuesEmpty": "没有新 issue",
   "issuesFeed": "Issues 聚合",
   "issuesMine": "我提出的",

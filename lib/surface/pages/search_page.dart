@@ -17,19 +17,107 @@ import '../app/async.dart';
 import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
+import '../theme.dart';
 import '../types.dart';
+import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
+import '../util/link_opener.dart';
 import 'issue_page.dart';
 import 'repo_page.dart';
 
-/// 取 `search_page` 分片文案。
+  /// 取 `search_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
     'search_page', key,
     args:
         args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+
+/// 骨架块：加载态统一用主题色圆角块代替转圈。
+class _SkeletonBox extends StatelessWidget {
+  const _SkeletonBox({required this.height, this.width});
+
+  final double height;
+  final double? width;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        height: height,
+        width: width,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(OgLRadius.sm),
+        ),
+      );
+}
+
+/// 统一加载骨架卡片（三 tab 共用）：圆角卡内模拟标题 / 正文 / 元信息。
+class _SkeletonCard extends StatelessWidget {
+  const _SkeletonCard({required super.key, this.dense = false});
+
+  /// 紧凑模式：Issues tab 的列表行骨架。
+  final bool dense;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget body = dense
+        ? const Row(
+            children: <Widget>[
+              _SkeletonBox(height: 16, width: 16),
+              SizedBox(width: OgLSpace.md),
+              Expanded(child: _SkeletonBox(height: 16)),
+              SizedBox(width: OgLSpace.md),
+              _SkeletonBox(height: 12, width: 48),
+            ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  const _SkeletonBox(height: 32, width: 32),
+                  const SizedBox(width: OgLSpace.sm),
+                  const Expanded(child: _SkeletonBox(height: 16)),
+                  const SizedBox(width: OgLSpace.sm),
+                  const _SkeletonBox(height: 14, width: 56),
+                ],
+              ),
+              const SizedBox(height: OgLSpace.md),
+              const _SkeletonBox(height: 14),
+              const SizedBox(height: OgLSpace.sm),
+              const _SkeletonBox(height: 12, width: 160),
+            ],
+          );
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(OgLSpace.md),
+        child: body,
+      ),
+    );
+  }
+}
+
+/// 统一加载骨架列表（三 tab 共用）。
+class _SkeletonList extends StatelessWidget {
+  const _SkeletonList({super.key, this.dense = false});
+
+  final bool dense;
+
+  @override
+  Widget build(BuildContext context) => ListView.builder(
+        padding: const EdgeInsets.all(OgLSpace.lg),
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 5,
+        itemBuilder: (BuildContext context, int index) => Padding(
+          padding: const EdgeInsets.only(bottom: OgLSpace.md),
+          child: _SkeletonCard(
+            key: ValueKey<String>('skeleton-$index'),
+            dense: dense,
+          ),
+        ),
+      );
+}
 
 /// 一条搜索命中（结果页共用）。
 class _SearchHit {
@@ -76,6 +164,18 @@ class _DiscoverPageState extends State<DiscoverPage>
   bool _repoDone = false;
   Object? _repoError;
   final ScrollController _repoScroll = ScrollController();
+
+  /// 推荐 tab 的分类筛选（0 热门 / 1 TypeScript / 2 Dart / 3 Flutter / 4 Rust）。
+  int _repoCategory = 0;
+
+  /// 分类 → 搜索限定词（热门不给限定符）。
+  static const List<String> _kCategoryQueries = <String>[
+    'stars:>10000',
+    'language:TypeScript stars:>5000',
+    'language:Dart stars:>2000',
+    'topic:flutter stars:>2000',
+    'language:Rust stars:>3000',
+  ];
 
   /// Issues 聚合（保留原有语义）。
   AsyncController<List<Map<String, dynamic>>>? _issues;
@@ -141,7 +241,7 @@ class _DiscoverPageState extends State<DiscoverPage>
     }
     try {
       final List<GhRepo> page = await widget.surface.domain.api.searchRepos(
-        'stars:>10000',
+        _kCategoryQueries[_repoCategory],
         perPage: 10,
         page: _repoPage,
       );
@@ -247,6 +347,113 @@ class _DiscoverPageState extends State<DiscoverPage>
     return '';
   }
 
+  /// 通知流条目 → `subject.type`（Release / Issue / PullRequest / Discussion…）。
+  String _feedSubjectTypeOf(Map<String, dynamic> item) {
+    final Object? subject = item['subject'];
+    return subject is Map<Object?, Object?>
+        ? ghStr(Map<String, dynamic>.from(subject), 'type')
+        : '';
+  }
+
+  /// 通知流条目 → `subject.url`。
+  String _feedSubjectUrlOf(Map<String, dynamic> item) {
+    final Object? subject = item['subject'];
+    return subject is Map<Object?, Object?>
+        ? ghStr(Map<String, dynamic>.from(subject), 'url')
+        : '';
+  }
+
+  /// 通知流条目 → 是否未读。
+  bool _feedUnreadOf(Map<String, dynamic> item) =>
+      ghStr(item, 'unread') == 'true' || item['unread'] == true;
+
+  /// 通知类型 → 徽章（图标 + 颜色）。
+  ///
+  /// Release 绿（成功色）/ Issue 红（error）/ PR 紫（tertiary）/
+  /// 讨论蓝（info）；未知类型回落 neutral + reason 文案。
+  ({IconData icon, Color color, bool tinted}) _feedBadgeOf(
+    BuildContext context,
+    Map<String, dynamic> item,
+  ) {
+    final ThemeData theme = Theme.of(context);
+    final OgLSemanticColors sem =
+        theme.extension<OgLSemanticColors>()!;
+    return switch (_feedSubjectTypeOf(item)) {
+      'Release' => (
+        icon: Icons.tag,
+        color: sem.success,
+        tinted: true,
+      ),
+      'Issue' => (
+        icon: Icons.error_outline,
+        color: theme.colorScheme.error,
+        tinted: true,
+      ),
+      'PullRequest' => (
+        icon: Icons.merge,
+        color: theme.colorScheme.tertiary,
+        tinted: true,
+      ),
+      'Discussion' => (
+        icon: Icons.forum,
+        color: sem.info,
+        tinted: true,
+      ),
+      _ => (
+        icon: Icons.notifications_none,
+        color: theme.colorScheme.onSurfaceVariant,
+        tinted: false,
+      ),
+    };
+  }
+
+  /// 点击通知卡：issue/PR → IssuePage；release → 仓库页；
+  /// 都解析不出 → 降级用浏览器打开（openLinkOrCopy 内含复制兜底）。
+  Future<void> _openFeedItem(Map<String, dynamic> item) async {
+    final String repoName = _feedRepoOf(item);
+    final String subjectUrl = _feedSubjectUrlOf(item);
+    final String subjectType = _feedSubjectTypeOf(item);
+    final String issueNumber =
+        subjectUrl.contains('/issues/') || subjectUrl.contains('/pulls/')
+            ? subjectUrl.split('/').last
+            : '';
+    if (subjectType == 'Issue' || subjectType == 'PullRequest') {
+      final String number = issueNumber;
+      if (repoName.isNotEmpty && number.isNotEmpty && mounted) {
+        await Navigator.of(context).push<void>(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => IssuePage(
+              surface: widget.surface,
+              fullName: repoName,
+              issue: <String, dynamic>{'number': int.tryParse(number) ?? 0},
+            ),
+          ),
+        );
+        return;
+      }
+    }
+    if (repoName.isNotEmpty && mounted) {
+      try {
+        final GhRepo repo = await widget.surface.domain.api.repo(repoName);
+        if (mounted) {
+          await Navigator.of(context).push<void>(
+            MaterialPageRoute<void>(
+              builder: (BuildContext context) =>
+                  RepoPage(surface: widget.surface, repo: repo),
+            ),
+          );
+        }
+        return;
+      } on Object {
+        // 仓库拉取失败：降级为浏览器打开 subject 链接（无链接则静默返回，
+        // 卡片上的「在浏览器打开」按钮仍是兜底入口）。
+      }
+    }
+    if (subjectUrl.isNotEmpty && mounted) {
+      await openLinkOrCopy(context, subjectUrl, tag: 'Feed');
+    }
+  }
+
   /// 通知流条目 → 可读类型（微粒子小字用）。
   String _feedTypeOf(Map<String, dynamic> item) {
     final Object? subject = item['subject'];
@@ -276,11 +483,9 @@ class _DiscoverPageState extends State<DiscoverPage>
   }
 
   Future<void> _openIssue(Map<String, dynamic> item) async {
-    final Object? repo = item['repository'];
-    final String full = repo is Map<Object?, Object?>
-        ? ghStr(Map<String, dynamic>.from(repo), 'full_name')
-        : _repoFullOf(item);
-    if (full.isEmpty || !mounted) {
+    final String full = _repoFullOf(item);
+    final int number = ghInt(item, 'number');
+    if (full.isEmpty || number <= 0 || !mounted) {
       return;
     }
     await Navigator.of(context).push<void>(
@@ -288,7 +493,12 @@ class _DiscoverPageState extends State<DiscoverPage>
         builder: (BuildContext context) => IssuePage(
           surface: widget.surface,
           fullName: full,
-          issue: item,
+          // 只带定位所需字段（fullName + number），详情由 IssuePage 自行拉取。
+          issue: <String, dynamic>{
+            'number': number,
+            'title': ghStr(item, 'title'),
+            'html_url': ghStr(item, 'html_url'),
+          },
         ),
       ),
     );
@@ -334,7 +544,7 @@ class _DiscoverPageState extends State<DiscoverPage>
   // ── tab 1：动态（官方通知流，微博式纵向信息流）────────────────────
 
   Widget _buildFeedTab() => _feed == null
-      ? const Center(child: CircularProgressIndicator())
+      ? _SkeletonList(key: const ValueKey<String>('feed-skeleton'))
       : RefreshIndicator(
           onRefresh: () => _feed!.load(),
           child: AsyncView<List<Map<String, dynamic>>>(
@@ -354,76 +564,97 @@ class _DiscoverPageState extends State<DiscoverPage>
                 final String title = subject is Map<Object?, Object?>
                     ? ghStr(Map<String, dynamic>.from(subject), 'title')
                     : '';
-                final String url = subject is Map<Object?, Object?>
-                    ? ghStr(Map<String, dynamic>.from(subject), 'url')
-                    : '';
+                final String url = _feedSubjectUrlOf(item);
+                final ({IconData icon, Color color, bool tinted}) badge =
+                    _feedBadgeOf(context, item);
                 return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(OgLSpace.md),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            CircleAvatar(
-                              radius: 16,
-                              child: Text(
-                                repoName.isNotEmpty
-                                    ? repoName[0].toUpperCase()
-                                    : 'R',
-                                style: Theme.of(context).textTheme.labelMedium,
+                  key: ValueKey<String>('feed-$index-${ghStr(item, 'id')}'),
+                  child: InkWell(
+                    onTap: () => unawaited(_openFeedItem(item)),
+                    borderRadius: BorderRadius.circular(OgLRadius.md),
+                    child: Padding(
+                      padding: const EdgeInsets.all(OgLSpace.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              CircleAvatar(
+                                radius: 16,
+                                child: Text(
+                                  repoName.isNotEmpty
+                                      ? repoName[0].toUpperCase()
+                                      : 'R',
+                                  style:
+                                      Theme.of(context).textTheme.labelMedium,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: OgLSpace.sm),
-                            Expanded(
-                              child: Text(
-                                repoName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.labelLarge,
+                              const SizedBox(width: OgLSpace.sm),
+                              Expanded(
+                                child: Text(
+                                  repoName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style:
+                                      Theme.of(context).textTheme.labelLarge,
+                                ),
                               ),
-                            ),
-                            Text(
-                              _feedTypeOf(item),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: OgLSpace.sm),
-                        Text(
-                          title.isEmpty ? _t('feedRelease') : title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        const SizedBox(height: OgLSpace.xxs),
-                        Text(
-                          ghDate(item, 'updated_at'),
-                          style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                              // 类型徽章：图标 + 着色小字。
+                              Icon(badge.icon, size: 14, color: badge.color),
+                              const SizedBox(width: OgLSpace.xxs),
+                              Text(
+                                _feedTypeOf(item),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(color: badge.color),
+                              ),
+                              // 未读圆点。
+                              if (_feedUnreadOf(item)) ...<Widget>[
+                                const SizedBox(width: OgLSpace.sm),
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onSurfaceVariant,
+                                        .primary,
+                                    shape: BoxShape.circle,
                                   ),
-                        ),
-                        if (url.isNotEmpty)
-                          Align(
-                            alignment: AlignmentDirectional.centerEnd,
-                            child: TextButton.icon(
-                              onPressed: () => unawaited(
-                                openLinkOrCopy(context, url, tag: 'Feed'),
-                              ),
-                              icon: const Icon(Icons.open_in_new, size: 14),
-                              label: Text(_t('openInBrowser')),
-                            ),
+                                ),
+                              ],
+                            ],
                           ),
-                      ],
+                          const SizedBox(height: OgLSpace.sm),
+                          Text(
+                            title.isEmpty ? _t('feedRelease') : title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: OgLSpace.xxs),
+                          Text(
+                            ghDate(item, 'updated_at'),
+                            style:
+                                Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                          ),
+                          if (url.isNotEmpty)
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: TextButton.icon(
+                                onPressed: () => unawaited(
+                                  openLinkOrCopy(context, url, tag: 'Feed'),
+                                ),
+                                icon: const Icon(Icons.open_in_new, size: 14),
+                                label: Text(_t('openInBrowser')),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -436,7 +667,7 @@ class _DiscoverPageState extends State<DiscoverPage>
 
   Widget _buildRecommendedTab() {
     if (_repos.isEmpty && _repoLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return _SkeletonList(key: const ValueKey<String>('repos-skeleton'));
     }
     if (_repos.isEmpty && _repoError != null) {
       return Center(
@@ -459,20 +690,58 @@ class _DiscoverPageState extends State<DiscoverPage>
     if (_repos.isEmpty) {
       return Center(child: Text(_t('recommendedEmpty')));
     }
-    return RefreshIndicator(
-      onRefresh: () async {
-        _repos.clear();
-        _readmeOf.clear();
-        _versionOf.clear();
-        _repoPage = 1;
-        _repoDone = false;
-        await _loadMoreRepos();
-      },
-      child: ListView.separated(
-        controller: _repoScroll,
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(OgLSpace.lg),
-        itemCount: _repos.length + 1,
+    return Column(
+      children: <Widget>[
+        // 分类筛选行：切换时重置分页状态并重新加载（换数据维度）。
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+              OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.sm),
+          child: Semantics(
+            label: _t('categoryFilter'),
+            child: SegmentedButton<int>(
+              segments: <ButtonSegment<int>>[
+                ButtonSegment<int>(value: 0, label: Text(_t('catHot'))),
+                ButtonSegment<int>(value: 1, label: const Text('TypeScript')),
+                ButtonSegment<int>(value: 2, label: const Text('Dart')),
+                ButtonSegment<int>(value: 3, label: const Text('Flutter')),
+                ButtonSegment<int>(value: 4, label: const Text('Rust')),
+              ],
+              selected: <int>{_repoCategory},
+              showSelectedIcon: false,
+              onSelectionChanged: (Set<int> selection) {
+                if (selection.isNotEmpty && selection.first != _repoCategory) {
+                  setState(() {
+                    _repoCategory = selection.first;
+                    _repos.clear();
+                    _readmeOf.clear();
+                    _versionOf.clear();
+                    _repoPage = 1;
+                    _repoDone = false;
+                    _repoError = null;
+                  });
+                  unawaited(_loadMoreRepos());
+                }
+              },
+            ),
+          ),
+        ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              _repos.clear();
+              _readmeOf.clear();
+              _versionOf.clear();
+              _repoPage = 1;
+              _repoDone = false;
+              await _loadMoreRepos();
+            },
+            child: ListView.separated(
+              key: ValueKey<String>('repos-$_repoCategory'),
+              controller: _repoScroll,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.lg, OgLSpace.xxs, OgLSpace.lg, OgLSpace.lg),
+              itemCount: _repos.length + 1,
         separatorBuilder: (BuildContext context, int index) =>
             const SizedBox(height: OgLSpace.md),
         itemBuilder: (BuildContext context, int index) {
@@ -480,16 +749,19 @@ class _DiscoverPageState extends State<DiscoverPage>
             return _repoDone
                 ? const SizedBox.shrink()
                 : const Padding(
-                    padding: EdgeInsets.all(OgLSpace.lg),
-                    child: Center(child: CircularProgressIndicator()),
+                    padding: EdgeInsets.symmetric(vertical: OgLSpace.md),
+                    child: _SkeletonCard(),
                   );
           }
           final GhRepo repo = _repos[index];
           final String excerpt = _readmeOf[repo.fullName] ?? '';
           final String? version = _versionOf[repo.fullName];
           return Card(
+            key: ValueKey<String>('repo-${repo.fullName}'),
             child: InkWell(
               onTap: () => unawaited(_openRepo(repo)),
+              onLongPress: () => _showRepoActions(context, repo),
+              borderRadius: BorderRadius.circular(OgLRadius.md),
               child: Padding(
                 padding: const EdgeInsets.all(OgLSpace.md),
                 child: Column(
@@ -570,7 +842,64 @@ class _DiscoverPageState extends State<DiscoverPage>
           );
         },
       ),
+        ),
+      ],
     );
+  }
+
+  /// 推荐卡片长按菜单：打开仓库 / 复制克隆地址 / 在浏览器打开。
+  Future<void> _showRepoActions(BuildContext context, GhRepo repo) async {
+    final String? action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (BuildContext sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.open_in_new),
+              title: Text(_t('actionOpenRepo')),
+              onTap: () => Navigator.of(sheetContext).pop('open'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.copy),
+              title: Text(_t('actionCopyClone')),
+              subtitle: Text(
+                'https://github.com/${repo.fullName}.git',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              onTap: () => Navigator.of(sheetContext).pop('clone'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.language),
+              title: Text(_t('actionOpenBrowser')),
+              onTap: () => Navigator.of(sheetContext).pop('browser'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || action == null) {
+      return;
+    }
+    switch (action) {
+      case 'open':
+        await _openRepo(repo);
+      case 'clone':
+        await ogLCopyText(
+          'https://github.com/${repo.fullName}.git',
+          tag: _t('actionCopyClone'),
+        );
+        if (mounted) {
+          OgLNotifier.of(context).info(_t('cloneCopied'));
+        }
+      case 'browser':
+        await openLinkOrCopy(
+          context,
+          'https://github.com/${repo.fullName}',
+          tag: 'Repo',
+        );
+    }
   }
 
   // ── tab 2：Issues ────────────────────────────────────────────────────
@@ -597,7 +926,7 @@ class _DiscoverPageState extends State<DiscoverPage>
           ),
           Expanded(
             child: _issues == null
-                ? const Center(child: CircularProgressIndicator())
+                ? _SkeletonList(key: const ValueKey<String>('issues-skeleton'), dense: true)
                 : AsyncView<List<Map<String, dynamic>>>(
                     controller: _issues!,
                     emptyIcon: Icons.inbox_outlined,
@@ -623,6 +952,8 @@ class _DiscoverPageState extends State<DiscoverPage>
                           final bool mine =
                               _mineUrls.contains(ghStr(item, 'html_url'));
                           return ListTile(
+                            key: ValueKey<String>(
+                                'issue-${ghStr(item, 'html_url')}'),
                             leading: Icon(
                               mine ? Icons.person_outline : Icons.star_border,
                             ),
@@ -639,7 +970,25 @@ class _DiscoverPageState extends State<DiscoverPage>
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            trailing: const Icon(Icons.chevron_right, size: 18),
+                            // 右侧：评论数 + 进入箭头。
+                            trailing: Semantics(
+                              label: _t('issuesComments', {
+                                'count': ghInt(item, 'comments'),
+                              }),
+                              child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                const Icon(Icons.chat_bubble_outline, size: 14),
+                                const SizedBox(width: OgLSpace.xxs),
+                                Text('${ghInt(item, 'comments')}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall),
+                                const SizedBox(width: OgLSpace.sm),
+                                const Icon(Icons.chevron_right, size: 18),
+                              ],
+                              ),
+                            ),
                             onTap: () => unawaited(_openIssue(item)),
                           );
                         },

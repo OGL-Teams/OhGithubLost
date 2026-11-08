@@ -1,4 +1,10 @@
 {
+  "actionCopyClone": "Copier l’URL de clone",
+  "actionOpenBrowser": "Ouvrir dans le navigateur",
+  "actionOpenRepo": "Ouvrir le dépôt",
+  "catHot": "Populaires",
+  "categoryFilter": "Catégorie de recommandations",
+  "cloneCopied": "URL de clone copiée dans le presse-papiers",
   "codeResults": "Résultats de code pour « {q} » : {count}",
   "codeSearch": "Recherche de code",
   "discover": "Découvrir",
@@ -7,6 +13,7 @@
   "feedPull": "PR",
   "feedRelease": "Publication",
   "issuesAll": "Tous",
+  "issuesComments": "{count} commentaires",
   "issuesEmpty": "Aucune issue ouverte",
   "issuesFeed": "Flux d’issues",
   "issuesMine": "Les miennes",

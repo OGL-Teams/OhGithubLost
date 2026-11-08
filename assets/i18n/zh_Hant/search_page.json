@@ -1,4 +1,10 @@
 {
+  "actionCopyClone": "複製 Clone 位址",
+  "actionOpenBrowser": "在瀏覽器開啟",
+  "actionOpenRepo": "開啟倉庫",
+  "catHot": "熱門",
+  "categoryFilter": "推薦分類",
+  "cloneCopied": "Clone 位址已複製到剪貼簿",
   "codeResults": "\"{q}\" 程式碼結果：{count}",
   "codeSearch": "程式碼搜尋",
   "discover": "發現",
@@ -7,6 +13,7 @@
   "feedPull": "PR",
   "feedRelease": "發布",
   "issuesAll": "全部",
+  "issuesComments": "{count} 條評論",
   "issuesEmpty": "沒有新 issue",
   "issuesFeed": "Issues 聚合",
   "issuesMine": "我提出的",

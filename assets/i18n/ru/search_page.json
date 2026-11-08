@@ -1,4 +1,10 @@
 {
+  "actionCopyClone": "Копировать clone-адрес",
+  "actionOpenBrowser": "Открыть в браузере",
+  "actionOpenRepo": "Открыть репозиторий",
+  "catHot": "Популярные",
+  "categoryFilter": "Категория рекомендаций",
+  "cloneCopied": "Clone-адрес скопирован в буфер обмена",
   "codeResults": "Результаты кода по запросу «{q}»: {count}",
   "codeSearch": "Поиск кода",
   "discover": "Обзор",
@@ -7,6 +13,7 @@
   "feedPull": "PR",
   "feedRelease": "Релиз",
   "issuesAll": "Все",
+  "issuesComments": "{count} коммент.",
   "issuesEmpty": "Нет открытых issues",
   "issuesFeed": "Лента Issues",
   "issuesMine": "Мои",

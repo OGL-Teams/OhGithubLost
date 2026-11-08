@@ -45,6 +45,7 @@ import '../widgets/anim/anim_preload.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/readme_view.dart';
 import '../widgets/scroll_aware_action.dart';
+import '../widgets/settings/settings_group.dart';
 import 'action_run_page.dart';
 import 'code_editor_page.dart';
 import 'commit_page.dart';
@@ -3620,9 +3621,17 @@ class _RepoSettingsTab extends StatefulWidget {
 class _RepoSettingsTabState extends State<_RepoSettingsTab> {
   late final TextEditingController _name =
       TextEditingController(text: widget.repo.name);
-  late final TextEditingController _description =
-      TextEditingController(text: widget.repo.description ?? '');
   final TextEditingController _cname = TextEditingController();
+
+  /// 仓库描述的临时值（点击行弹编辑框，确认后落状态，保存时提交）。
+  String? _descriptionValue;
+
+  /// 主页 URL 的临时值。
+  String? _homepageValue;
+
+  /// Topics 的临时值（已归一化的小写列表）。
+  List<String> _topicsValue = const <String>[];
+
   bool _busy = false;
   Future<Map<String, dynamic>?>? _pagesFuture;
 
@@ -3634,7 +3643,9 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
   /// 表单是否已输入未保存的内容（对照 [widget.repo] 的真值）。
   bool get _dirty =>
       _name.text != widget.repo.name ||
-      _description.text != (widget.repo.description ?? '') ||
+      _descriptionValue != (widget.repo.description ?? '') ||
+      _homepageValue != (widget.repo.htmlUrl ?? '') ||
+      _topicsValue.join(',') != _repoTopics.join(',') ||
       (_cnameInitial != null && _cname.text != _cnameInitial);
 
   /// 返回前的「放弃确认」（复用 `code_editor_page` 分片的既有文案，语义一致）。
@@ -3650,8 +3661,10 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
   void initState() {
     super.initState();
     _name.addListener(_onFieldChanged);
-    _description.addListener(_onFieldChanged);
     _cname.addListener(_onFieldChanged);
+    _descriptionValue = widget.repo.description ?? '';
+    _homepageValue = widget.repo.htmlUrl ?? '';
+    _topicsValue = _repoTopics;
     _pagesFuture = _loadPages();
     unawaited(_loadCname());
   }
@@ -3659,10 +3672,8 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
   @override
   void dispose() {
     _name.removeListener(_onFieldChanged);
-    _description.removeListener(_onFieldChanged);
     _cname.removeListener(_onFieldChanged);
     _name.dispose();
-    _description.dispose();
     _cname.dispose();
     super.dispose();
   }
@@ -3698,16 +3709,258 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       final GhRepo updated = await widget.surface.domain.api.updateRepo(
         _full,
         name: _name.text.trim().isEmpty ? null : _name.text.trim(),
-        description: _description.text.trim(),
+        description: _descriptionValue?.trim() ?? '',
+        homepage: _homepageValue?.trim() ?? '',
+        topics: _topicsValue,
       );
       OgLAppLog.instance.result('仓库', _t('basicInfoUpdated'), _full);
       if (mounted) {
+        setState(() {
+          _descriptionValue = updated.description ?? '';
+          _homepageValue = updated.htmlUrl ?? '';
+          _topicsValue = updated.rawTopics;
+        });
         widget.onRepoChanged(updated);
         OgLNotifier.of(context).success(_t('saved'));
       }
     } catch (error) {
       if (mounted) {
         OgLNotifier.of(context).warning(_t('saveFailed', {'error': error}));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  /// 从更新后的仓库里取 topics（同 [_repoTopics] 的理由，不碰模型）。
+  static List<String> _topicsOf(GhRepo repo) {
+    final Object? topics = repo.raw['topics'];
+    if (topics is List<Object?>) {
+      return topics.whereType<String>().toList(growable: false);
+    }
+    return const <String>[];
+  }
+
+  /// 归一化 Topics 输入：GitHub 只接受小写字母 / 数字 / 连字符。
+  ///
+  /// 返回（合法列表, 被丢弃的个数）；空串、重复项都收掉。
+  static (List<String>, int) _normalizeTopics(String input) {
+    final RegExp valid = RegExp(r'^[a-z0-9][a-z0-9-]*$');
+    final List<String> result = <String>[];
+    int dropped = 0;
+    for (final String raw in input.split(RegExp(r'[,\s]+'))) {
+      final String topic = raw.trim().toLowerCase();
+      if (topic.isEmpty) {
+        continue;
+      }
+      if (!valid.hasMatch(topic) || result.contains(topic)) {
+        dropped++;
+        continue;
+      }
+      result.add(topic);
+    }
+    return (result, dropped);
+  }
+
+  /// 弹多行编辑框；确认返回输入值，取消返回 null。
+  Future<String?> _promptText({
+    required String title,
+    required String hint,
+    required String initial,
+    int maxLines = 3,
+    TextInputType? keyboardType,
+  }) {
+    final TextEditingController controller =
+        TextEditingController(text: initial);
+    return ogLShowDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          maxLines: maxLines,
+          autofocus: true,
+          keyboardType: keyboardType,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(_t('cancel')),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(controller.text),
+            child: Text(_t('confirm')),
+          ),
+        ],
+      ),
+    ).whenComplete(controller.dispose);
+  }
+
+  /// 仓库描述：行控件点开编辑框，确认落状态（随「保存基本信息」提交）。
+  Future<void> _editDescription() async {
+    final String? next = await _promptText(
+      title: _t('editDescription'),
+      hint: _t('editDescriptionDesc'),
+      initial: _descriptionValue ?? '',
+      maxLines: 4,
+    );
+    if (next == null || !mounted) {
+      return;
+    }
+    setState(() => _descriptionValue = next);
+  }
+
+  /// 主页 URL：同描述模式。
+  Future<void> _editHomepage() async {
+    final String? next = await _promptText(
+      title: _t('editHomepage'),
+      hint: _t('editHomepageDesc'),
+      initial: _homepageValue ?? '',
+      maxLines: 1,
+      keyboardType: TextInputType.url,
+    );
+    if (next == null || !mounted) {
+      return;
+    }
+    setState(() => _homepageValue = next);
+  }
+
+  /// Topics：逗号 / 空格分隔 → 归一化 → 回显 chips。
+  Future<void> _editTopics() async {
+    final String? next = await _promptText(
+      title: _t('editTopics'),
+      hint: _t('editTopicsDesc'),
+      initial: _topicsValue.join(', '),
+      maxLines: 2,
+    );
+    if (next == null || !mounted) {
+      return;
+    }
+    final (List<String> topics, int dropped) = _normalizeTopics(next);
+    setState(() => _topicsValue = topics);
+    if (dropped > 0) {
+      OgLNotifier.of(context)
+          .info(_t('topicsInvalidIgnored', {'count': dropped}));
+    }
+  }
+
+  /// 可见性切换（**危险操作**：二次确认 + 影响面说明）。
+  Future<void> _setVisibility(bool priv) async {
+    if (priv == widget.repo.isPrivate) {
+      return;
+    }
+    final bool? confirmed = await ogLShowDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: Text(_t('visibility')),
+        content: Text(
+          priv
+              ? _t('visibilityChangeConfirmPrivate', {'full': _full})
+              : _t('visibilityChangeConfirmPublic', {'full': _full}),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(_t('cancel')),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(_t('confirm')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      final GhRepo updated =
+          await widget.surface.domain.api.updateRepo(_full, private: priv);
+      OgLAppLog.instance.result('仓库', _t('visibilityChanged'), _full);
+      if (mounted) {
+        widget.onRepoChanged(updated);
+        OgLNotifier.of(context).success(_t('visibilityChanged'));
+      }
+    } catch (error) {
+      if (mounted) {
+        OgLNotifier.of(context).warning(_t('saveFailed', {'error': error}));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  /// 转移仓库（**危险操作**：二次确认 + 输入目标账号名）。
+  Future<void> _transferRepo() async {
+    final String? owner = await _promptText(
+      title: _t('transferTitle'),
+      hint: _t('transferNewOwnerLabel'),
+      initial: '',
+      maxLines: 1,
+    );
+    if (owner == null || !mounted) {
+      return;
+    }
+    final String target = owner.trim();
+    if (target.isEmpty) {
+      OgLNotifier.of(context).info(_t('transferNewOwnerRequired'));
+      return;
+    }
+    final bool? confirmed = await ogLShowDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: Text(_t('transferTitle')),
+        content: Text(_t('transferDesc', {'full': _full})),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(_t('cancel')),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(_t('transferTo', {'owner': target})),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await widget.surface.domain.api
+          .transferRepo(_full, newOwner: target);
+      OgLAppLog.instance.result(
+        '仓库',
+        _t('transferred', {'owner': target}),
+        _full,
+      );
+      if (mounted) {
+        OgLNotifier.of(context)
+            .success(_t('transferred', {'owner': target}));
+        // 仓库已换址：旧 fullName 不再可用，退出详情页让列表刷新。
+        Navigator.of(context).pop(true);
+      }
+    } catch (error) {
+      if (mounted) {
+        OgLNotifier.of(context)
+            .warning(_t('transferFailed', {'error': error}));
       }
     } finally {
       if (mounted) {
@@ -3969,13 +4222,72 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
               ),
             ),
             const SizedBox(height: OgLSpace.md),
-            TextField(
-              controller: _description,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: _t('description'),
-                border: OutlineInputBorder(),
+            Text(_t('detailInfo'), style: theme.textTheme.titleMedium),
+            const SizedBox(height: OgLSpace.sm),
+            OgLSettingsActionRow(
+              title: _t('description'),
+              onTap: _busy ? () {} : _editDescription,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.sm),
+              child: Text(
+                (_descriptionValue ?? '').trim().isEmpty
+                    ? _t('editDescriptionDesc')
+                    : _descriptionValue!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
+            ),
+            OgLSettingsActionRow(
+              title: _t('homepageLabel'),
+              onTap: _busy ? () {} : _editHomepage,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.sm),
+              child: Text(
+                (_homepageValue ?? '').trim().isEmpty
+                    ? _t('editHomepageDesc')
+                    : _homepageValue!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            OgLSettingsActionRow(
+              title: _t('topicsLabel'),
+              onTap: _busy ? () {} : _editTopics,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.sm),
+              child: _topicsValue.isEmpty
+                  ? Text(
+                      _t('topicsEmptyHint'),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    )
+                  : Wrap(
+                      spacing: OgLSpace.xxs,
+                      runSpacing: OgLSpace.xxs,
+                      children: <Widget>[
+                        for (final String topic in _topicsValue)
+                          Chip(
+                            label: Text(topic),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                      ],
+                    ),
+            ),
+            OgLSettingsSwitchRow(
+              title: _t('privateRepo'),
+              subtitle:
+                  widget.repo.isPrivate ? _t('privateHint') : _t('publicHint'),
+              value: widget.repo.isPrivate,
+              onChanged: _busy ? null : (bool value) => _setVisibility(value),
             ),
             const SizedBox(height: OgLSpace.md),
             Align(
@@ -4129,6 +4441,12 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
                   children: <Widget>[
                     Text(_t('deleteRepoWarning')),
                     const SizedBox(height: OgLSpace.md),
+                    OgLSettingsActionRow(
+                      title: _t('transfer'),
+                      icon: Icons.drive_file_move_outline,
+                      onTap: _busy ? () {} : _transferRepo,
+                    ),
+                    const SizedBox(height: OgLSpace.sm),
                     // A1：删除仓库需要 **admin** 权限——仅 push 的协作者此前
                     // 也能看到按钮，点了只会 403。按权限收敛。
                     if (widget.repo.canAdmin == true)
@@ -4166,3 +4484,10 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
 // [OgLAsyncEmptyPane]、失败用 [OgLAsyncErrorPane]（自带重试），与 AsyncView /
 // OgLAsyncSliver 同一套视觉与文案；原私有 `_MessagePane` 与
 // [OgLAsyncEmptyPane] 的实现逐字相同，属重复代码，已删除。
+�──────────────────────────
+
+// 消息面板：Phase 5 后半已收敛到 `surface/app/async.dart` —— 空态用
+// [OgLAsyncEmptyPane]、失败用 [OgLAsyncErrorPane]（自带重试），与 AsyncView /
+// OgLAsyncSliver 同一套视觉与文案；原私有 `_MessagePane` 与
+// [OgLAsyncEmptyPane] 的实现逐字相同，属重复代码，已删除。
+�删除。

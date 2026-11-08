@@ -21,6 +21,8 @@ import 'dart:convert';
 import 'package:archive/archive.dart';
 
 import 'ix_action_logs_http_io.dart';
+import 'ix_action_logs_save_io.dart'
+    if (dart.library.js_interop) 'ix_action_logs_save_stub.dart' as io_impl;
 
 /// 日志拉取失败（HTTP 状态或网络错误）。
 ///
@@ -49,6 +51,67 @@ class IxActionLogs {
 
   /// 令牌提供者。
   final Future<String?> Function() tokenProvider;
+
+  /// GitHub API 根（默认官方；装配层可覆盖以支持企业实例）。
+  String apiBase = 'https://api.github.com';
+
+  /// 带令牌发一个 **POST 写操作**（rerun / cancel），非 2xx 抛
+  /// [IxActionLogsException]。
+  ///
+  /// 与 [fetch] 共用同一套传输（手动重定向、不复用连接）——写操作
+  /// **不经过加速通道、不带查询参数**，响应体（通常为空）被丢弃。
+  Future<void> _post(String path) async {
+    final String? token = await tokenProvider();
+    final Uri uri = Uri.parse('$apiBase$path');
+    final Map<String, String> headers = <String, String>{
+      'accept': 'application/vnd.github+json',
+      'content-length': '0',
+      if (token != null) 'authorization': 'Bearer $token',
+    };
+    try {
+      await IxActionLogsHttp.postEmpty(uri, headers);
+    } on IxActionLogsException {
+      rethrow;
+    }
+  }
+
+  /// 把一份日志文本保存到本地可见目录（`<publicOrAppRoot>/actions/<name>`）。
+  ///
+  /// - [root]：落盘根（页面从装配层取 `OgLStorage.plan().root`，本层不做裁决）；
+  /// - [fileName]：形如 `owner-repo-run123456.log`（调用方负责净化）；
+  /// - 返回完整路径（提示用户"存到了哪"）；
+  /// - Web 无文件系统 → 抛 [IxActionLogsException]（如实报错，不假装成功）。
+  ///
+  /// 为什么不进 [IxDownloadManager]：下载器是"从 URL 拉字节"，日志文本
+  /// 已在内存里，再绕一圈 URL 等于编造来源；直接落盘才是如实的路径。
+  Future<String> saveToDisk({
+    required String root,
+    required String fileName,
+    required String text,
+  }) =>
+      io_impl.ogLActionLogSaveToDisk(
+        root: root,
+        fileName: fileName,
+        text: text,
+      );
+
+  /// 重新运行一次运行中 **失败的 job**（写操作）。
+  ///
+  /// 端点：`POST /repos/{o}/{r}/actions/runs/{id}/rerun-failed-jobs`。
+  /// 403 = 无 `actions: write` 权限，调用方如实提示，不降级猜测。
+  Future<void> rerunFailedJobs(String fullName, int runId) =>
+      _post('/repos/$fullName/actions/runs/$runId/rerun-failed-jobs');
+
+  /// 取消一次运行（写操作）。
+  ///
+  /// 端点：`POST /repos/{o}/{r}/actions/runs/{id}/cancel`。
+  Future<void> cancel(String fullName, int runId) =>
+      _post('/repos/$fullName/actions/runs/$runId/cancel');
+
+  /// 把一次运行的日志拼成单份文本（`=== job ===` 分段），供下载 / 复制。
+  static String joinLogs(Map<String, String> logs) => logs.entries
+      .map((MapEntry<String, String> e) => '=== ${e.key} ===\n${e.value}')
+      .join('\n\n');
 
   /// 拉取一次运行的日志；失败抛出 [IxActionLogsException]（调用方如实提示）。
   Future<Map<String, String>> fetch(String fullName, int runId) async {

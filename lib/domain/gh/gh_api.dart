@@ -291,6 +291,24 @@ class GhApi implements CacheRemote {
     return GhRepo.fromJson(response.jsonObject ?? const <String, dynamic>{});
   }
 
+  /// 转移仓库到其他账号（**危险操作**，调用方必须先二次确认）。
+  ///
+  /// `POST /repos/{owner}/{repo}/transfer`，body `new_owner`；
+  /// 成功返回 202，仓库 `full_name` 随之改变 —— 调用方应按"仓库已离开
+  /// 当前地址"处理（刷新列表 / 退出详情页），不得继续用旧名读写。
+  Future<void> transferRepo(
+    String fullName, {
+    required String newOwner,
+  }) =>
+      client
+          .send(GhRequest(
+            path: '/repos/$fullName/transfer',
+            method: NetMethod.post,
+            body: <String, Object?>{'new_owner': newOwner},
+            label: 'POST /repos/$fullName/transfer',
+          ))
+          .then((_) {});
+
   /// 加星 / 取消星标。
   Future<void> setStarred(String fullName, bool starred) => client
       .send(GhRequest(
@@ -1652,6 +1670,90 @@ class GhApi implements CacheRemote {
     ));
     return response.jsonObject ?? const <String, dynamic>{};
   }
+
+  /// 编辑评论（Issue 与 PR 共用同一端点）。
+  Future<Map<String, dynamic>> updateIssueComment(
+    String fullName,
+    int commentId, {
+    required String body,
+  }) async {
+    final response = await client.send(GhRequest(
+      path: '/repos/$fullName/issues/comments/$commentId',
+      method: NetMethod.patch,
+      body: <String, Object?>{'body': body},
+      label: 'PATCH issues/comments/$commentId',
+    ));
+    return response.jsonObject ?? const <String, dynamic>{};
+  }
+
+  /// 删除评论（Issue 与 PR 共用同一端点）。
+  Future<void> deleteIssueComment(String fullName, int commentId) =>
+      client.send(GhRequest(
+        path: '/repos/$fullName/issues/comments/$commentId',
+        method: NetMethod.delete,
+        label: 'DELETE issues/comments/$commentId',
+      ));
+
+  /// 锁定讨论（[lockReason] 可选：`off-topic` / `too heated` / `resolved` /
+  /// `spam`；GitHub 会校验枚举值，传非法值会 422）。
+  Future<void> lockIssue(
+    String fullName,
+    int number, {
+    String? lockReason,
+  }) =>
+      client
+          .send(GhRequest(
+            path: '/repos/$fullName/issues/$number/lock',
+            method: NetMethod.patch,
+            body: <String, Object?>{
+              if (lockReason != null && lockReason.isNotEmpty)
+                'lock_reason': lockReason,
+            },
+            label: 'PATCH issues/$number/lock',
+          ))
+          .then((_) {});
+
+  /// 解锁讨论。
+  Future<void> unlockIssue(String fullName, int number) =>
+      client.send(GhRequest(
+        path: '/repos/$fullName/issues/$number/lock',
+        method: NetMethod.delete,
+        label: 'DELETE issues/$number/lock',
+      ));
+
+  /// **全量替换** Issue 标签（PATCH 语义：传什么就是什么，删除项直接消失）。
+  ///
+  /// 传空列表 = 清空全部标签；调用方需基于当前标签算好目标集合再调用。
+  Future<void> updateIssueLabels(
+    String fullName,
+    int number, {
+    required List<String> labels,
+  }) =>
+      client
+          .send(GhRequest(
+            path: '/repos/$fullName/issues/$number',
+            method: NetMethod.patch,
+            body: <String, Object?>{'labels': labels},
+            label: 'PATCH issues/$number labels',
+          ))
+          .then((_) {});
+
+  /// **全量替换** Issue 指派人（PATCH `assignees` 语义同标签）。
+  ///
+  /// 传空列表 = 清空全部指派人；登录名必须是对仓库可指派者，否则 422。
+  Future<void> updateIssueAssignees(
+    String fullName,
+    int number, {
+    required List<String> assignees,
+  }) =>
+      client
+          .send(GhRequest(
+            path: '/repos/$fullName/issues/$number',
+            method: NetMethod.patch,
+            body: <String, Object?>{'assignees': assignees},
+            label: 'PATCH issues/$number assignees',
+          ))
+          .then((_) {});
 
   /// PR 列表。
   Future<List<Map<String, dynamic>>> pulls(

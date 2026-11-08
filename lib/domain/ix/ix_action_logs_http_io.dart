@@ -83,6 +83,44 @@ abstract final class IxActionLogsHttp {
     }
   }
 
+  /// 发起 POST（空 body，写操作），非 2xx/3xx 抛 [IxActionLogsException]。
+  ///
+  /// 与 [fetchBytes] 同策略：手动重定向（后续跳不携带凭证）、不复用连接、
+  /// 即用即关。响应体被丢弃（GitHub 的写操作端点返回 2xx + 空体）。
+  static Future<void> postEmpty(
+    Uri uri,
+    Map<String, String> headers,
+  ) async {
+    final HttpClient client = _defaultClient();
+    try {
+      final HttpClientRequest request =
+          await client.postUrl(uri).timeout(_connectTimeout);
+      request.followRedirects = false;
+      request.maxRedirects = 0;
+      request.persistentConnection = false;
+      headers.forEach((String key, String value) {
+        request.headers.set(key, value);
+      });
+      final HttpClientResponse response =
+          await request.close().timeout(_receiveTimeout);
+      await response.drain<void>();
+      // 手动重定向：POST 被远端 302 时（罕见）按失败处理，不跟随——
+      // 跟随可能把写操作变成对另一台主机的第二次写。
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw IxActionLogsException(
+          '写操作失败（HTTP ${response.statusCode}）',
+          statusCode: response.statusCode,
+        );
+      }
+    } on IxActionLogsException {
+      rethrow;
+    } on Object catch (error) {
+      throw IxActionLogsException('写操作异常：$error');
+    } finally {
+      client.close(force: true);
+    }
+  }
+
   static HttpClient _defaultClient() {
     final HttpClient client = HttpClient();
     // 空闲连接存活时间压短（是否复用由每个请求的 persistentConnection 决定）。

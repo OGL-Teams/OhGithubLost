@@ -1,4 +1,10 @@
 {
+  "actionCopyClone": "Clone-URL kopieren",
+  "actionOpenBrowser": "Im Browser öffnen",
+  "actionOpenRepo": "Repository öffnen",
+  "catHot": "Beliebt",
+  "categoryFilter": "Empfehlungskategorie",
+  "cloneCopied": "Clone-URL in die Zwischenablage kopiert",
   "codeResults": "\"{q}\" Code-Ergebnisse: {count}",
   "codeSearch": "Code-Suche",
   "discover": "Entdecken",
@@ -7,6 +13,7 @@
   "feedPull": "PR",
   "feedRelease": "Release",
   "issuesAll": "Alle",
+  "issuesComments": "{count} Kommentare",
   "issuesEmpty": "Keine offenen Issues",
   "issuesFeed": "Issues-Feed",
   "issuesMine": "Meine",
