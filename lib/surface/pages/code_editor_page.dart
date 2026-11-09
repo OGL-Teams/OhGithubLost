@@ -382,10 +382,11 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
     );
   }
 
-  Widget _buildToolbar(BuildContext context, ThemeData theme) {
+  Widget _buildToolbar(BuildContext context) {
     // ★ 修复「顶栏漏缝」：工具栏背景与代码区背景同色，视觉连成一体
     //   （此前用 surfaceContainerHighest，与代码配色主题之间出现色带）。
-    final Color toolbarColor = prefs.theme(context).background;
+    final Color toolbarColor =
+        _EditorPrefs(widget.surface).theme(context).background;
     return Material(
       color: toolbarColor,
       child: SingleChildScrollView(
@@ -635,7 +636,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
             child: Column(
               children: <Widget>[
                 // ── 紧凑工具栏：低频操作一行收纳（带 tooltip；可收起）──────
-                if (_toolbarExpanded) _buildToolbar(context, theme),
+                if (_toolbarExpanded) _buildToolbar(context),
                 Expanded(
                   child: OgLCodeField(
                     controller: _controller,
