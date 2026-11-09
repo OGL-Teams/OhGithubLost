@@ -350,18 +350,13 @@ class _DiscoverPageState extends State<DiscoverPage>
       label: _t('tabFeed'),
       isEmpty: (List<Map<String, dynamic>> value) => value.isEmpty,
       loader: () async {
-        // ★ 修复：发现页初始化早于壳的 _check（refreshState 异步完成），
-        //   此时 state 可能仍是 unknown——直接判 isSignedIn 会把已登录
-        //   用户误当游客，动态永远为空。先等状态就绪（unknown → 明确态），
-        //   再按登录态分流。
-        final auth = widget.surface.domain.auth;
-        // 等待轮询（非动画）：throttle 语义，100ms 间隔探测状态就绪。
-        for (int i = 0; i < 50 && auth.state == GhAuthState.unknown; i++) {
-          // throttle: 状态就绪轮询，非动画。
-          await Future<void>.delayed(
-              const Duration(milliseconds: 100)); // throttle
-        }
-        if (!auth.isSignedIn) {
+        // ★ 修复「动态不可用」：不用 auth.state 判登录——它由壳的
+        //   _check 异步填充，发现页初始化时可能仍是 unknown，且同值
+        //   短路后不再有通知。直接探测登录事实（activeAccount 非空，
+        //   读的是保险库元数据，结果可靠），未登录返回空（如实显示
+        //   「暂无动态」，不发注定 401 的请求）。
+        final account = await widget.surface.domain.auth.activeAccount();
+        if (account == null) {
           return <Map<String, dynamic>>[];
         }
         // ★ 官方 API：GitHub 自己的通知流，覆盖关注/star/参与仓库的
@@ -825,6 +820,11 @@ class _DiscoverPageState extends State<DiscoverPage>
                     _repoPage = 1;
                     _repoDone = false;
                     _repoError = null;
+                    // ★ 修复「选语言后永远空」：在途旧请求仍占着 _repoLoading，
+                    //   新分类的 _loadMoreRepos 会被防重入闸门直接 return，
+                    //   列表已清空 → 永远「暂无推荐」。旧请求已被世代作废，
+                    //   它的 finally 只复位自己的标志，这里同步解锁。
+                    _repoLoading = false;
                   });
                   unawaited(_loadMoreRepos());
                 }

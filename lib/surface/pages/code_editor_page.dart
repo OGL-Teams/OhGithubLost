@@ -382,67 +382,72 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
     );
   }
 
-  Widget _buildToolbar(BuildContext context, ThemeData theme) => Material(
-        color: theme.colorScheme.surfaceContainerHighest,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: OgLSpace.sm),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              IconButton(
+  Widget _buildToolbar(BuildContext context, ThemeData theme) {
+    // ★ 修复「顶栏漏缝」：工具栏背景与代码区背景同色，视觉连成一体
+    //   （此前用 surfaceContainerHighest，与代码配色主题之间出现色带）。
+    final Color toolbarColor = prefs.theme(context).background;
+    return Material(
+      color: toolbarColor,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: OgLSpace.sm),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.undo),
+              tooltip: _t('undo'),
+              onPressed: _controller.canUndo ? _controller.undo : null,
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.redo),
+              tooltip: _t('redo'),
+              onPressed: _controller.canRedo ? _controller.redo : null,
+            ),
+            ValueListenableBuilder<CodeFindValue?>(
+              valueListenable: _find,
+              builder:
+                  (BuildContext context, CodeFindValue? value, Widget? _) =>
+                      IconButton(
                 visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.undo),
-                tooltip: _t('undo'),
-                onPressed: _controller.canUndo ? _controller.undo : null,
+                icon: Icon(value == null ? Icons.search : Icons.search_off),
+                tooltip: _t('findReplace'),
+                onPressed: () =>
+                    value == null ? _find.findMode() : _find.close(),
               ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.redo),
-                tooltip: _t('redo'),
-                onPressed: _controller.canRedo ? _controller.redo : null,
-              ),
-              ValueListenableBuilder<CodeFindValue?>(
-                valueListenable: _find,
-                builder:
-                    (BuildContext context, CodeFindValue? value, Widget? _) =>
-                        IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon: Icon(value == null ? Icons.search : Icons.search_off),
-                  tooltip: _t('findReplace'),
-                  onPressed: () =>
-                      value == null ? _find.findMode() : _find.close(),
-                ),
-              ),
-              const VerticalDivider(width: OgLSpace.lg),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: Icon(_wrap ? Icons.wrap_text : Icons.notes),
-                tooltip: _wrap ? _t('wrapOff') : _t('wrapOn'),
-                onPressed: () => setState(() => _wrap = !_wrap),
-              ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.remove),
-                tooltip: _t('fontSmaller'),
-                onPressed: () => _changeFont(-1),
-              ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.add),
-                tooltip: _t('fontLarger'),
-                onPressed: () => _changeFont(1),
-              ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.visibility_outlined),
-                tooltip: _t('preview'),
-                onPressed: _previewSheet,
-              ),
-            ],
-          ),
+            ),
+            const VerticalDivider(width: OgLSpace.lg),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: Icon(_wrap ? Icons.wrap_text : Icons.notes),
+              tooltip: _wrap ? _t('wrapOff') : _t('wrapOn'),
+              onPressed: () => setState(() => _wrap = !_wrap),
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.remove),
+              tooltip: _t('fontSmaller'),
+              onPressed: () => _changeFont(-1),
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.add),
+              tooltip: _t('fontLarger'),
+              onPressed: () => _changeFont(1),
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.visibility_outlined),
+              tooltip: _t('preview'),
+              onPressed: _previewSheet,
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 
   /// ★ MT 式「跳转到行」：输入行号（1..lineCount），光标直达并滚动到可见区。
   Future<void> _showGoToLineDialog() async {
