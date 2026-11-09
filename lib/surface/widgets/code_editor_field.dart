@@ -771,6 +771,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _findRow(BuildContext context, CodeFindValue value) {
     final String result = _resultTextOf(value);
+    final ThemeData theme = Theme.of(context);
     return Row(
       children: <Widget>[
         const SizedBox(width: OgLSpace.sm),

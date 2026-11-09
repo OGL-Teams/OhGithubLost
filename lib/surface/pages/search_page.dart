@@ -20,7 +20,6 @@ import '../app/notifier.dart';
 import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
-import '../theme.dart';
 import '../types.dart';
 import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
@@ -650,11 +649,6 @@ class _DiscoverPageState extends State<DiscoverPage>
     return at < 0 ? '' : url.substring(at + '/repos/'.length);
   }
 
-  String _repoSubtitle(GhRepo repo) {
-    final String? desc = repo.description;
-    return (desc == null || desc.isEmpty) ? (repo.language ?? '') : desc;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -880,7 +874,9 @@ class _DiscoverPageState extends State<DiscoverPage>
                                       ),
                                       repo: _repos[row * columns + col],
                                       excerpt: _readmeOf[
-                                          _repos[row * columns + col].fullName],
+                                              _repos[row * columns + col]
+                                                  .fullName] ??
+                                          '',
                                       version: _versionOf[
                                           _repos[row * columns + col].fullName],
                                       onOpen: _openRepo,

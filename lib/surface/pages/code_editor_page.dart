@@ -21,6 +21,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/gh_format.dart';
+import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 
@@ -99,8 +100,8 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   bool _wrap = false;
   double _fontSize = 13;
 
-  /// 顶部紧凑工具栏是否展开（收起时 AppBar 仍保留撤销 / 重做 / 查找）。
-  bool _toolbarExpanded = true;
+  /// 顶部工具栏恒展开（可横向滑动）；AppBar 只留保存按钮。
+  static const bool _toolbarExpanded = true;
 
   // B2-B-01：草稿箱入口的 initialText 是草稿正文，此时「未改动」也仍是
   // 有待提交内容；但 dirty 只用于退出确认，草稿箱入口不该弹「放弃修改」。
@@ -379,17 +380,39 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
     );
   }
 
-  /// 顶部紧凑工具栏：换行 / 字号 / 预览 / 收起（一行 IconButton，均带 tooltip）。
-  ///
-  /// 为什么是"低频操作"：撤销 / 重做 / 查找 / 保存是**边写边用**的高频动作，
-  /// 必须一步可达（留在 AppBar）；字号 / 换行 / 预览通常**每会话只调一次**，
-  /// 收进工具栏后 AppBar 不再挤满 8 个图标。
   Widget _buildToolbar(BuildContext context, ThemeData theme) => Material(
         color: theme.colorScheme.surfaceContainerHighest,
-        child: Padding(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: OgLSpace.sm),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.undo),
+                tooltip: _t('undo'),
+                onPressed: _controller.canUndo ? _controller.undo : null,
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.redo),
+                tooltip: _t('redo'),
+                onPressed: _controller.canRedo ? _controller.redo : null,
+              ),
+              ValueListenableBuilder<CodeFindValue?>(
+                valueListenable: _find,
+                builder:
+                    (BuildContext context, CodeFindValue? value, Widget? _) =>
+                        IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(value == null ? Icons.search : Icons.search_off),
+                  tooltip: _t('findReplace'),
+                  onPressed: () =>
+                      value == null ? _find.findMode() : _find.close(),
+                ),
+              ),
+              const VerticalDivider(width: OgLSpace.lg),
               IconButton(
                 visualDensity: VisualDensity.compact,
                 icon: Icon(_wrap ? Icons.wrap_text : Icons.notes),
@@ -413,13 +436,6 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
                 icon: const Icon(Icons.visibility_outlined),
                 tooltip: _t('preview'),
                 onPressed: _previewSheet,
-              ),
-              const Spacer(),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.keyboard_arrow_up),
-                tooltip: _t('toolbarCollapse'),
-                onPressed: () => setState(() => _toolbarExpanded = false),
               ),
             ],
           ),
@@ -518,36 +534,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
             style: theme.textTheme.titleMedium,
           ),
           actions: <Widget>[
-            // 常用操作收进 AppBar：撤销 / 重做 / 查找（高频，保持一步可达）。
-            // 预览 / 字号 / 换行属于"调一遍就不再碰"的低频项，收进紧凑工具栏。
-            IconButton(
-              icon: const Icon(Icons.undo),
-              tooltip: _t('undo'),
-              onPressed: _controller.canUndo ? _controller.undo : null,
-            ),
-            IconButton(
-              icon: const Icon(Icons.redo),
-              tooltip: _t('redo'),
-              onPressed: _controller.canRedo ? _controller.redo : null,
-            ),
-            ValueListenableBuilder<CodeFindValue?>(
-              valueListenable: _find,
-              builder:
-                  (BuildContext context, CodeFindValue? value, Widget? _) =>
-                      IconButton(
-                icon: Icon(value == null ? Icons.search : Icons.search_off),
-                tooltip: _t('findReplace'),
-                onPressed: () =>
-                    value == null ? _find.findMode() : _find.close(),
-              ),
-            ),
-            // 工具栏收起后从这里展开回来（展开态时不需要这个入口）。
-            if (!_toolbarExpanded)
-              IconButton(
-                icon: const Icon(Icons.tune),
-                tooltip: _t('toolbarExpand'),
-                onPressed: () => setState(() => _toolbarExpanded = true),
-              ),
+            // 其余全部动作收进可横向滑动的工具栏：窄屏不挤压、不重叠。
             // 保存：FilledButton.tonalIcon —— 有未提交改动时用 primaryContainer
             // 高亮（tonal 底色在 AppBar 上明显区别于 IconButton），干净时淡显。
             Padding(
