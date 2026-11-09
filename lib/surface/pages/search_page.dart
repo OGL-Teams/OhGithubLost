@@ -350,10 +350,18 @@ class _DiscoverPageState extends State<DiscoverPage>
       label: _t('tabFeed'),
       isEmpty: (List<Map<String, dynamic>> value) => value.isEmpty,
       loader: () async {
-        // ★ B3-A-04：游客未登录时 /notifications 必然 401，且 401 会触发
-        //   全局令牌失效出口把游客踢回登录门。未登录直接返回空（如实
-        //   显示"暂无动态"），不发这个注定失败的请求。
-        if (!widget.surface.domain.auth.isSignedIn) {
+        // ★ 修复：发现页初始化早于壳的 _check（refreshState 异步完成），
+        //   此时 state 可能仍是 unknown——直接判 isSignedIn 会把已登录
+        //   用户误当游客，动态永远为空。先等状态就绪（unknown → 明确态），
+        //   再按登录态分流。
+        final auth = widget.surface.domain.auth;
+        // 等待轮询（非动画）：throttle 语义，100ms 间隔探测状态就绪。
+        for (int i = 0; i < 50 && auth.state == GhAuthState.unknown; i++) {
+          // throttle: 状态就绪轮询，非动画。
+          await Future<void>.delayed(
+              const Duration(milliseconds: 100)); // throttle
+        }
+        if (!auth.isSignedIn) {
           return <Map<String, dynamic>>[];
         }
         // ★ 官方 API：GitHub 自己的通知流，覆盖关注/star/参与仓库的

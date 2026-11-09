@@ -516,9 +516,18 @@ class SurfaceBridge {
     //   私有字体若尚未注册（启动早期），先回落系统字体；加载完成后
     //   设置页会触发主题重建，字体随下一次编译生效。
     final ThemeData built = base.copyWith(
-      // ThemeData 无 fontFamily 命名参数，用 textTheme.apply 逐样式覆写；
-      // _uiFontFamilyOf 返回 null = 保持平台字体。
-      textTheme: base.textTheme.apply(fontFamily: _uiFontFamilyOf(uiFontId)),
+      // ★ 字体逻辑（B7 收口）：外观字体**只影响正文阅读**（body* 三档），
+      //   label/title/display 等控件字形保持平台默认——按钮、芯片、
+      //   分段控件混入等宽/衬线会破坏 Material 可读性（截图实证）。
+      //   · _uiFontFamilyOf 返回 null = 全部保持平台字体。
+      textTheme: base.textTheme.copyWith(
+        bodyLarge: base.textTheme.bodyLarge
+            ?.copyWith(fontFamily: _uiFontFamilyOf(uiFontId)),
+        bodyMedium: base.textTheme.bodyMedium
+            ?.copyWith(fontFamily: _uiFontFamilyOf(uiFontId)),
+        bodySmall: base.textTheme.bodySmall
+            ?.copyWith(fontFamily: _uiFontFamilyOf(uiFontId)),
+      ),
       pageTransitionsTheme: OgLMotion.pageTransitions(motionLevel),
       // ExpansionTile（关于页的诊断折叠组等）也接**动效档位**：
       // 时长 / 曲线与整页动效同源（档位 0 → 零时长，即"立即展开"）。

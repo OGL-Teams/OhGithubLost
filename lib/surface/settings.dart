@@ -933,6 +933,7 @@ class OgLSettingsController extends ChangeNotifier {
     ];
     return apply(_settings.copyWith(
       customFonts: next,
+      // 只在删的正是当前使用字体时回落 system；否则保持不变。
       uiFontId: _settings.uiFontId == fontId ? 'system' : null,
     ));
   }

@@ -149,7 +149,6 @@ ThemeData buildOgLTheme(
   Brightness brightness, {
   Color seedColor = kOgLSeedColor,
   VisualDensity density = VisualDensity.standard,
-  String? uiFontFamily,
 }) {
   final ColorScheme scheme = ColorScheme.fromSeed(
     seedColor: seedColor,
@@ -220,14 +219,14 @@ ThemeData buildOgLTheme(
         vertical: OgLSpace.xl,
       ),
       titleTextStyle: TextStyle(
-        fontFamily: uiFontFamily,
+        // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
         color: scheme.onSurface,
         fontSize: 20,
         fontWeight: FontWeight.w600,
         height: 1.3,
       ),
       contentTextStyle: TextStyle(
-        fontFamily: uiFontFamily,
+        // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
         color: scheme.onSurfaceVariant,
         fontSize: 14,
         height: 1.5,
@@ -254,7 +253,7 @@ ThemeData buildOgLTheme(
           ? scheme.surfaceContainerHighest
           : scheme.inverseSurface,
       contentTextStyle: TextStyle(
-        fontFamily: uiFontFamily,
+        // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
         color: brightness == Brightness.dark
             ? scheme.onSurface
             : scheme.onInverseSurface,
@@ -278,7 +277,7 @@ ThemeData buildOgLTheme(
       backgroundColor: scheme.surface,
       surfaceTintColor: Colors.transparent,
       titleTextStyle: TextStyle(
-        fontFamily: uiFontFamily,
+        // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
         color: scheme.onSurface,
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -304,7 +303,7 @@ ThemeData buildOgLTheme(
       labelTextStyle:
           WidgetStateProperty.resolveWith((Set<WidgetState> states) {
         return TextStyle(
-          fontFamily: uiFontFamily,
+          // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
           fontSize: 12,
           fontWeight: states.contains(WidgetState.selected)
               ? FontWeight.w600
@@ -351,10 +350,26 @@ ThemeData buildOgLTheme(
         vertical: OgLSpace.xxs,
       ),
       labelStyle: TextStyle(
-        fontFamily: uiFontFamily,
+        // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
         color: scheme.onSurfaceVariant,
         fontSize: 12,
         fontWeight: FontWeight.w500,
+      ),
+    ),
+
+    // ── 分段控件（M3 收敛：默认胶囊过高过圆，截图实证错位感）──────
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        textStyle: WidgetStatePropertyAll<TextStyle>(
+          base.textTheme.labelLarge ?? const TextStyle(),
+        ),
+        visualDensity: VisualDensity.compact,
+        shape: WidgetStatePropertyAll<OutlinedBorder>(
+          RoundedRectangleBorder(borderRadius: OgLRadius.cSm),
+        ),
+        side: WidgetStatePropertyAll<BorderSide>(
+          BorderSide(color: scheme.outlineVariant),
+        ),
       ),
     ),
 
@@ -397,7 +412,7 @@ ThemeData buildOgLTheme(
         minimumSize: minButton,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
         textStyle: TextStyle(
-          fontFamily: uiFontFamily,
+          // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
@@ -409,7 +424,7 @@ ThemeData buildOgLTheme(
         minimumSize: minTouch,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.md),
         textStyle: TextStyle(
-          fontFamily: uiFontFamily,
+          // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -422,7 +437,7 @@ ThemeData buildOgLTheme(
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
         side: BorderSide(color: scheme.outline),
         textStyle: TextStyle(
-          fontFamily: uiFontFamily,
+          // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),

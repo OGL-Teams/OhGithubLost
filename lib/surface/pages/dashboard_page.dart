@@ -109,6 +109,8 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    // ★ 自动加载：滚动到距底部 300px 时触发当前分页控制器的 loadMore。
+    _scroll.addListener(_onScroll);
     WidgetsBinding.instance
         .addPostFrameCallback((_) => unawaited(_bootstrap()));
     // 分级预加载：本页主视觉的图片资源 = 身份头像。
@@ -124,10 +126,22 @@ class _DashboardPageState extends State<DashboardPage> {
     _preloadRepoAvatars();
   }
 
+  /// 滚动自动加载（★ 替代手动「加载更多」按钮）：距底 300px 触发；
+  /// loading/done 由分页控制器自身闸门防重入。
+  void _onScroll() {
+    if (!_scroll.hasClients) return;
+    final _RepoPaged p = _segment == 0 ? _mine : _starred;
+    if (p.loading || p.done) return;
+    if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 300) {
+      unawaited(p.loadMore());
+    }
+  }
+
   @override
   void dispose() {
     _mine.dispose();
     _starred.dispose();
+    _scroll.removeListener(_onScroll);
     _scroll.dispose();
     super.dispose();
   }
@@ -396,18 +410,6 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       body: Column(
         children: <Widget>[
-          // ★ 搜索框样式的入口按钮（居中、放大镜 + 「搜索仓库」占位文案）。
-          //   用 [TextField] 的外观承载按钮语义：一进首页就能看到"这里可以搜"，
-          //   点击直达仓库搜索结果页（见 [_openRepoSearch]）。
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-                OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
-            child: Semantics(
-              button: true,
-              label: _t('searchTooltip'),
-              child: _SearchEntryButton(onPressed: _openRepoSearch),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(
                 OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
@@ -478,17 +480,11 @@ class _DashboardPageState extends State<DashboardPage> {
                         const Divider(height: 1),
                     itemBuilder: (BuildContext context, int index) {
                       if (index == p.items.length) {
-                        return Padding(
-                          padding: const EdgeInsets.all(OgLSpace.md),
-                          child: Center(
-                            child: p.loading
-                                ? const CircularProgressIndicator()
-                                : OutlinedButton(
-                                    onPressed: p.loadMore,
-                                    child: Text(_t(
-                                        'loadMore', {'count': p.items.length})),
-                                  ),
-                          ),
+                        // ★ 自动加载：尾部骨架屏（滚动到底由 _onScroll 触发
+                        //   loadMore），不再要手动按钮。
+                        return const Padding(
+                          padding: EdgeInsets.all(OgLSpace.md),
+                          child: Center(child: CircularProgressIndicator()),
                         );
                       }
                       final GhRepo repo = p.items[index];
@@ -644,59 +640,3 @@ class _RepoPaged extends ChangeNotifier {
 /// - 用 `InkWell` + 主题输入框同款底色（`surfaceContainerHighest`）+ 描边，
 ///   视觉与真输入框一致；圆角 / 间距 / 颜色全部走令牌；
 /// - 文案用 `onSurfaceVariant`（占位符的"灰"），不抢真输入框的戏。
-class _SearchEntryButton extends StatelessWidget {
-  /// 创建入口按钮。
-  const _SearchEntryButton({required this.onPressed});
-
-  /// 点击回调（跳仓库搜索结果页）。
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return Material(
-      color: theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(
-        borderRadius: OgLRadius.cSm,
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: OgLSpace.md,
-            vertical: OgLSpace.md,
-          ),
-          child: Row(
-            children: <Widget>[
-              Icon(
-                Icons.search,
-                size: OgLIconSize.md,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: OgLSpace.sm),
-              Expanded(
-                child: Text(
-                  _t('searchHint'),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              const SizedBox(width: OgLSpace.sm),
-              Text(
-                _t('searchRepos'),
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
