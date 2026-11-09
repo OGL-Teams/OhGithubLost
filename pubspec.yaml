@@ -99,13 +99,12 @@ dependencies:
   # 真机探针需要时再选与构建链兼容的版本。
 
 dependency_overrides:
-  # background_downloader 依赖 connectivity_plus '>=6.1.3 <8.0.0'，
-  # 但 7.x 的 macOS/iOS Swift 使用了 runner SDK 尚未提供的
-  # `NWPath.isUltraConstrained`，导致 iOS / macOS 构建失败；
-  # 故固定到 6.1.4（仍满足 background_downloader 的约束）。
-  # ★ dart2wasm 依赖解锁：re_highlight → re_editor → isolate_manager
-  #   ^4.1.5+1 → isolate_contactor ^4.x（入口库 `import 'dart:html'`，
-  #   dart2wasm 不支持）。6.x 删掉 isolate_contactor、直接用 package:web。
+  # ★ dart2wasm 依赖解锁（Web Lite 必需）：re_highlight → re_editor →
+  #   isolate_manager ^4.1.5+1 会拉入 isolate_contactor ^4.x（入口库
+  #   `import 'dart:html'`，dart2wasm 不支持）。6.x 删除该依赖，
+  #   直接用 package:web。此 override 删掉则 Web 构建必然失败。
+  isolate_manager: ^6.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

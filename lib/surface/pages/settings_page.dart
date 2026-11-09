@@ -804,6 +804,11 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 是同一个 [ogLShowSettingsChoice]）。
   Widget _networkGroup(ThemeData theme, OgLSettings value) => OgLSettingsGroup(
         title: _t('networkSettings'),
+        leading: const Icon(Icons.settings_ethernet),
+        expanded: _isOpen('network'),
+        onToggle: (bool open) => _toggleGroup('network', open),
+        expandLabel: _t('expandGroup'),
+        collapseLabel: _t('collapseGroup'),
         children: _networkTiles(context, theme, value),
       );
 

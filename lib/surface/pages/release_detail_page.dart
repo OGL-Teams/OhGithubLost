@@ -271,8 +271,8 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
         expectedSha256: IxPresign.normalizeDigest(asset.raw['digest']),
       );
       if (mounted) {
-        OgLDownloadNotice.instance.show(context, widget.surface,
-            message: _t('addedToDownload', {'name': asset.name}));
+        OgLNotifier.of(context)
+            .info(_t('addedToDownload', {'name': asset.name}));
       }
     } catch (error) {
       if (mounted) {

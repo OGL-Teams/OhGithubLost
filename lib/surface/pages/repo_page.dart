@@ -1757,8 +1757,8 @@ class _CodeTabState extends State<_CodeTab> {
       if (!mounted) {
         return;
       }
-      OgLDownloadNotice.instance.show(context, widget.surface,
-          message: _t('addedToDownload', {'name': ghPathName(entry.path)}));
+      OgLNotifier.of(context)
+          .info(_t('addedToDownload', {'name': ghPathName(entry.path)}));
     } catch (error) {
       _notifier.warning(_t('addDownloadFailed', {'error': error}));
     }

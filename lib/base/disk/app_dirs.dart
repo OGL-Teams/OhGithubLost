@@ -86,7 +86,7 @@ abstract final class OgLAppDirs {
     final OgLTargetPlatform platform = ogLDetectPlatform();
     if (platform == OgLTargetPlatform.windows ||
         platform == OgLTargetPlatform.linux ||
-        platform == OgLTargetPlatform.macOS) {
+        platform == OgLTargetPlatform.macos) {
       return OgLStorageTier.desktop;
     }
     return OgLStorageTier.unknown;
