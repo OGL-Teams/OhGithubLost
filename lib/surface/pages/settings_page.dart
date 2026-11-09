@@ -47,7 +47,6 @@ import '../widgets/code_editor_field.dart';
 import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
 import 'legal_text_page.dart';
-import 'network_page.dart';
 import 'onboarding_page.dart';
 import 'profile_page.dart';
 
@@ -803,6 +802,11 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 子页面不再自造第二种内边距（原来自带默认 16/16，与设置页的 16/12
   /// 不一致），也不再各自手写选择弹窗（选 DNS 的弹窗与设置页的选择行
   /// 是同一个 [ogLShowSettingsChoice]）。
+  Widget _networkGroup(ThemeData theme, OgLSettings value) => OgLSettingsGroup(
+        title: _t('networkSettings'),
+        children: _networkTiles(context, theme, value),
+      );
+
   List<Widget> _networkTiles(
           BuildContext context, ThemeData theme, OgLSettings value) =>
       <Widget>[
@@ -966,21 +970,6 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 打开**网络设置页**（独立页面；不再是可折叠分组）。
   ///
   /// 分节内容仍由本页闭包生成——逻辑与文案只有一份。
-  void _openNetwork() {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => NetworkSettingsPage(
-          surface: widget.surface,
-          builder: (BuildContext context, OgLSettings value) => Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: _networkTiles(context, Theme.of(context), value),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   /// **存储与网络**分组：存储位置（权限档位 + SAF）/ 网络设置（DNS / 下载 / 加速）。
   ///
@@ -1004,13 +993,7 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: _showStorage,
           ),
           const Divider(height: 1),
-          _navTile(
-            theme,
-            icon: Icons.dns_outlined,
-            title: _t('network'),
-            subtitle: _t('dnsMode'),
-            onTap: _openNetwork,
-          ),
+          _networkGroup(theme, value),
         ],
       );
 

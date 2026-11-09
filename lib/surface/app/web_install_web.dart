@@ -1,4 +1,4 @@
-/// [web_install.dart] 的 **Web 实现**（只用 `dart:js_interop`，不引入第三方包）。
+/// L3 展示级 · [web_install.dart] 的 **Web 实现**（只用 `dart:js_interop`，不引入第三方包）。
 ///
 /// ## 为什么手写 extension type 而不用 `package:web`
 /// 本项目依赖清单"只保留真的被 import 到的包"；这里只用到 `window` /

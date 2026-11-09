@@ -19,9 +19,7 @@ import '../types.dart';
 import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
 import '../widgets/scroll_aware_action.dart';
-import 'download_manager_page.dart';
 import 'new_repo_page.dart';
-import 'notifications_page.dart';
 import 'repo_page.dart';
 import 'search_page.dart';
 
@@ -276,29 +274,6 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  void _openDownloads() {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) =>
-            DownloadManagerPage(surface: widget.surface),
-      ),
-    );
-  }
-
-  void _openNotifications() {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        // 子页是 push 出来的路由：包一层路由作用域 `route:notifications`
-        //（`notifications_page` 自己也按这条登记），pop 时整组取消未完成项。
-        builder: (BuildContext context) => const OgLAnimPreloadBoundary(
-          group: _kNotificationsRouteGroup,
-          kinds: <OgLAnimPreloadKind>[OgLAnimPreloadKind.currentPage],
-          child: NotificationsPage(),
-        ),
-      ),
-    );
-  }
-
   Future<void> _createRepo() async {
     final GhRepo? created = await Navigator.of(context).push<GhRepo>(
       MaterialPageRoute<GhRepo>(
@@ -323,38 +298,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_t('home')),
-        actions: <Widget>[
-          ValueListenableBuilder<int>(
-            valueListenable: OgLAppLog.instance.alertCount,
-            builder: (BuildContext context, int alerts, Widget? _) =>
-                IconButton(
-              icon: alerts > 0
-                  ? Badge(
-                      label: Text('$alerts'),
-                      child: const Icon(Icons.notifications_outlined),
-                    )
-                  : const Icon(Icons.notifications_outlined),
-              tooltip: _t('notifications'),
-              onPressed: _openNotifications,
-            ),
-          ),
-          ListenableBuilder(
-            listenable: widget.surface.domain.downloads,
-            builder: (BuildContext context, Widget? _) {
-              final int running = widget.surface.domain.downloads.runningCount;
-              return IconButton(
-                icon: running > 0
-                    ? Badge(
-                        label: Text('$running'),
-                        child: const Icon(Icons.download_outlined),
-                      )
-                    : const Icon(Icons.download_outlined),
-                tooltip: _t('downloads'),
-                onPressed: _openDownloads,
-              );
-            },
-          ),
-        ],
+        actions: <Widget>[],
       ),
       // 首页「新建仓库」：下滑收边（只露 1/4，点击弹出）、上滑弹回、近底部收起。
       floatingActionButton: ScrollAwareAction(

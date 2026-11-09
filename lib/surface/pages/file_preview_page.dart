@@ -30,7 +30,6 @@ import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
-import 'download_manager_page.dart';
 import 'settings_page.dart';
 
 /// 取 `common` 分片文案。

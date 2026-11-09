@@ -40,17 +40,14 @@ import '../widgets/anim/anim_preload.dart';
 import '../widgets/code_editor_field.dart';
 import '../widgets/readme_view.dart';
 import '../widgets/scroll_aware_action.dart';
-import 'action_run_page.dart';
 import 'code_editor_page.dart';
 import 'commit_page.dart';
-import 'download_manager_page.dart';
 import 'file_preview_page.dart';
 import 'issue_page.dart';
 import 'new_issue_page.dart';
 import 'new_release_page.dart';
 import 'pull_page.dart';
 import 'release_detail_page.dart';
-import 'workflow_dispatch_page.dart';
 
 /// 取 `repo` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -3291,22 +3288,6 @@ class _ActionsTabState extends State<_ActionsTab> {
     super.dispose();
   }
 
-  Future<void> _dispatch() async {
-    final bool? triggered = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
-        builder: (BuildContext context) => WorkflowDispatchPage(
-          surface: widget.surface,
-          fullName: widget.fullName,
-          defaultBranch: widget.branch,
-        ),
-      ),
-    );
-    if (triggered == true && mounted) {
-      OgLNotifier.of(context).info(_t('workflowTriggered'));
-      await _paged.refresh();
-    }
-  }
-
   bool _matches(Map<String, dynamic> run) {
     if (_filter == 'all') {
       return true;
@@ -3358,7 +3339,11 @@ class _ActionsTabState extends State<_ActionsTab> {
               child: Row(
                 children: <Widget>[
                   FilledButton.tonalIcon(
-                    onPressed: _dispatch,
+                    // Web 版不承载工作流派发（需要服务端令牌与写权限），
+                    // 改为在 GitHub 官方页面触发。
+                    onPressed: () => unawaited(openLinkOrCopy(context,
+                        'https://github.com/${widget.fullName}/actions/workflows',
+                        tag: _t('manualTrigger'))),
                     icon: const Icon(Icons.play_arrow),
                     label: Text(_t('manualTrigger')),
                   ),
@@ -3436,15 +3421,8 @@ class _ActionsTabState extends State<_ActionsTab> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           trailing: const Icon(Icons.chevron_right),
-                          onTap: () => Navigator.of(context).push<void>(
-                            MaterialPageRoute<void>(
-                              builder: (BuildContext context) => ActionRunPage(
-                                surface: widget.surface,
-                                fullName: widget.fullName,
-                                run: run,
-                              ),
-                            ),
-                          ),
+                          onTap: () => openLinkOrCopy(context,
+                              'https://github.com/${widget.fullName}/actions/runs/${ghStr(run, 'id')}'),
                         );
                       },
                       emptyIcon: Icons.play_circle_outline,

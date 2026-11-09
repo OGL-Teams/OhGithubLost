@@ -81,32 +81,22 @@ class OgLI18n extends ChangeNotifier {
   /// 需要加载的页面分片（新增页面时在这里补一项即可）。
   static const List<String> pages = <String>[
     'about_page',
-    'action_log_page',
-    'action_run_page',
     'code_editor_page',
     'commit_page',
     'common',
     'dashboard_page',
-    'download_manager_page',
     'drafts_page',
-    'gist_detail_page',
-    'gists_page',
     'issue_page',
     'login',
-    'new_gist_page',
     'new_issue_page',
-    'new_release_page',
     'new_repo_page',
-    'notifications_page',
     'onboarding',
     'profile_page',
     'pull_page',
-    'release_detail_page',
     'repo',
     'search_page',
     'settings',
     'shell',
-    'workflow_dispatch_page',
   ];
 
   String _locale = 'zh';
@@ -153,11 +143,37 @@ class OgLI18n extends ChangeNotifier {
   }
 
   Future<void> _loadLocale(String code) async {
-    // ★ 分片必须**并发**读取，不能顺序 await。
-    //
-    // 每个分片是一次独立的资源请求（Web 上就是一次 HTTP 取回）。20 余个分片
-    // 顺序读取意味着 20 余次往返：桌面宽带下约 1~2 秒，移动网络下可达十几秒，
-    // 期间界面停在启动画面。并发读取后总耗时接近单次往返。
+    // ★ Web Lite 性能：启动时只读 **1 个 bundle**（每语言 1 次 HTTP 请求），
+    //   旧实现每语言 27 个分片 = 46 次往返，是首帧最大的可消除延迟。
+    //   bundle 由 tool/build_i18n_bundle.py 在构建期生成；缺失时回退分片并发。
+    try {
+      final String raw = await rootBundle.loadString(
+        'assets/i18n/$code/bundle.json',
+      );
+      final Object? decoded = jsonDecode(raw);
+      if (decoded is Map) {
+        final Map<String, Map<String, String>> pagesData =
+            <String, Map<String, String>>{};
+        for (final MapEntry<Object?, Object?> e in decoded.entries) {
+          final Object? value = e.value;
+          if (value is! Map) continue;
+          pagesData['${e.key}'] = <String, String>{
+            for (final MapEntry<Object?, Object?> kv in value.entries)
+              '${kv.key}': '${kv.value}',
+          };
+        }
+        // 缺页补齐：bundle 生成时遗漏的分片单独取，不让整语言失效。
+        for (final String page in pages) {
+          if (!pagesData.containsKey(page)) {
+            pagesData[page] = await _loadPage(code, page);
+          }
+        }
+        _data[code] = pagesData;
+        return;
+      }
+    } catch (_) {
+      // bundle 缺失/损坏：回退旧路径（分片并发），行为不变。
+    }
     final List<Map<String, String>> results = await Future.wait(
       pages.map((String page) => _loadPage(code, page)),
     );

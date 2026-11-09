@@ -91,8 +91,6 @@ dependencies:
   # ── 中枢层 · 工作流参数解析 ─────────────────────────────────────────
   # 手动触发工作流前，从 `.github/workflows/*.yml` 解析 `on.workflow_dispatch.inputs`
   # （必选参数 / 默认值 / 选项），据此生成表单。纯 Dart，无平台依赖。
-  yaml: ^3.1.2
-
   # 已移除（未被任何代码 import，重写时一并裁掉）：
   #   provider · shared_preferences · file_picker
   #   cached_network_image · mocktail
@@ -105,12 +103,9 @@ dependency_overrides:
   # 但 7.x 的 macOS/iOS Swift 使用了 runner SDK 尚未提供的
   # `NWPath.isUltraConstrained`，导致 iOS / macOS 构建失败；
   # 故固定到 6.1.4（仍满足 background_downloader 的约束）。
-  connectivity_plus: 6.1.4
   # ★ dart2wasm 依赖解锁：re_highlight → re_editor → isolate_manager
   #   ^4.1.5+1 → isolate_contactor ^4.x（入口库 `import 'dart:html'`，
   #   dart2wasm 不支持）。6.x 删掉 isolate_contactor、直接用 package:web。
-  isolate_manager: ^6.3.2
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

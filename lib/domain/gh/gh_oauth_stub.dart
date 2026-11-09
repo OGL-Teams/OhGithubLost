@@ -1,4 +1,4 @@
-/// Web / 未知平台：Device Flow 暂不支持（浏览器端需要独立 CORS 通道）。
+/// L2 中枢级 · Web / 未知平台：Device Flow 暂不支持（浏览器端需要独立 CORS 通道）。
 library;
 
 import 'gh_oauth_types.dart';

@@ -17,7 +17,6 @@ import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/og_l_space.dart';
 import 'drafts_page.dart';
-import 'gists_page.dart';
 import 'login_page.dart';
 import 'repo_page.dart';
 
@@ -193,14 +192,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _openGists() {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => GistsPage(surface: widget.surface),
-      ),
-    );
-  }
-
   void _openDrafts() {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
@@ -308,17 +299,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _openDrafts,
-                ),
-              ),
-              const SizedBox(height: OgLSpace.sm),
-              Card(
-                margin: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
-                child: ListTile(
-                  leading: const Icon(Icons.article_outlined),
-                  title: Text(_t('gists')),
-                  subtitle: Text(_t('gistsDesc')),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: _openGists,
                 ),
               ),
               const SizedBox(height: OgLSpace.lg),

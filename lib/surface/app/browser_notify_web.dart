@@ -1,4 +1,4 @@
-/// [browser_notify.dart] 的 **Web 实现**：直接使用浏览器的 `Notification`。
+/// L3 展示级 · [browser_notify.dart] 的 **Web 实现**：直接使用浏览器的 `Notification`。
 ///
 /// ## 只用 `dart:js_interop`
 /// 不引入 `package:web`（依赖清单纪律，见 `web_install_web.dart` 的说明）。

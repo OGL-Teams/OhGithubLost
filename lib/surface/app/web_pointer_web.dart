@@ -1,4 +1,4 @@
-/// [web_pointer.dart] 的 **Web 实现**（只用 `dart:js_interop`，不引入第三方包）。
+/// L3 展示级 · [web_pointer.dart] 的 **Web 实现**（只用 `dart:js_interop`，不引入第三方包）。
 ///
 /// ## 为什么手写 extension type 而不用 `package:web`
 /// 与 `web_install_web.dart` 同一套路：这里只用到 `window.matchMedia` 一个成员，

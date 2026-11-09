@@ -26,7 +26,6 @@ import 'gh/gh_auth.dart';
 import 'gh/gh_client.dart';
 import 'gh/gh_read_cache.dart';
 import 'gh/repo_file_service.dart';
-import 'ix/ix_action_logs.dart';
 import 'ix/ix_download.dart';
 import 'ix/ix_notify.dart';
 import 'ix/ix_presign.dart';
@@ -48,12 +47,9 @@ class DomainBridge {
     required this.sysInfo,
     required this.sysAccess,
     IxDownloadManager? downloads,
-    IxActionLogs? actionLogs,
     IxPresign? presign,
     RepoFileService? repoFiles,
   })  : downloads = downloads ?? IxDownloadManager(),
-        actionLogs =
-            actionLogs ?? IxActionLogs(tokenProvider: () async => null),
         presign = presign ?? IxPresign(tokenProvider: () async => null),
         _repoFiles = repoFiles ?? RepoFileService(api: api);
 
@@ -85,7 +81,6 @@ class DomainBridge {
   final IxDownloadManager downloads;
 
   /// Actions 运行日志服务。
-  final IxActionLogs actionLogs;
 
   /// 第一跳解析（把需认证的地址换成短期签名地址；**令牌不出设备**）。
   final IxPresign presign;
@@ -204,20 +199,23 @@ class GhModule extends OgLModule {
     // 只依赖磁盘上的提交日志，失败不阻断启动（记录后照常进入界面）。
     // 运行中每 30s 再查一次队列：此前只在启动时重放，运行中失败的任务
     // 会一直挂在"待同步"里（用户看到的就是"提交入队后迟迟不成功"）。
-    // 队列连续空转 3 次后自停：常驻定时器只在有待办时有意义。
-    var idleTicks = 0;
+    // ★ B3-A-11：定时器**不得自停**——自停后运行中新入队的失败写入
+    //   再无触发点，直到重启才补做。每 30s 只是读一次 KV 队列，开销极小；
+    //   不自停、不计数。
+    bool replayInFlight = false;
     Timer.periodic(const Duration(seconds: 30), (Timer timer) {
-      if (idleTicks >= 3) {
-        timer.cancel();
+      // ★ B2-B-19：防重入——上一次重放（30s 周期但可能耗时超过周期）还在
+      //   跑时不再叠加。
+      if (replayInFlight) {
         return;
       }
+      replayInFlight = true;
       unawaited(
         base.disk.cache.replayPending().then((List<WriteOutcome> outcomes) {
+          replayInFlight = false;
           if (outcomes.isEmpty) {
-            idleTicks++;
             return;
           }
-          idleTicks = 0;
           final int ok = outcomes.where((WriteOutcome o) => o.ok).length;
           context.diagnostics.info(
             'CONS',
@@ -229,6 +227,10 @@ class GhModule extends OgLModule {
             },
           );
         }).catchError((Object error) {
+          // ★ B3-A-11：异常路径必须在**同一个** handler 里复位标志。
+          //   此前复位放在第二个 catchError（前一个已正常返回，永不执行），
+          //   一次失败后重放永久停摆。
+          replayInFlight = false;
           context.diagnostics.warn(
             'CONS',
             '待同步重放失败',
@@ -370,7 +372,6 @@ class IxModule extends OgLModule {
   late final IxTaskRunner tasks;
   late final IxNotificationCenter notifications;
   late final IxDownloadManager downloads;
-  late final IxActionLogs actionLogs;
   late final IxPresign presign;
 
   @override
@@ -408,9 +409,6 @@ class IxModule extends OgLModule {
       downloadDirProvider: () async =>
           '${(await OgLStorage.plan()).root}/download',
     );
-    actionLogs = IxActionLogs(
-      tokenProvider: () async => (await auth.activeToken())?.value,
-    );
     presign = IxPresign(
       tokenProvider: () async => (await auth.activeToken())?.value,
     );
@@ -419,7 +417,6 @@ class IxModule extends OgLModule {
     context.di.register<IxTaskRunner>(tasks);
     context.di.register<IxNotificationCenter>(notifications);
     context.di.register<IxDownloadManager>(downloads);
-    context.di.register<IxActionLogs>(actionLogs);
     context.di.register<IxPresign>(presign);
     context.diagnostics.info(
       'IX',
@@ -480,7 +477,6 @@ class DomainLayerModule extends OgLModule {
       sysInfo: context.di.resolve<SysInfoService>(),
       sysAccess: context.di.resolve<SysAccessGuard>(),
       downloads: context.di.resolve<IxDownloadManager>(),
-      actionLogs: context.di.resolve<IxActionLogs>(),
       repoFiles: repoFiles,
       // 第一跳解析：此前**漏传**，DomainBridge 只能退回 `tokenProvider` 恒为
       // `null` 的兜底实例 —— 私有仓库的 Release 附件 / Action 产物因此拿不到

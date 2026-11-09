@@ -1,4 +1,4 @@
-/// [browser_notify.dart] 的**非 Web 空实现**。
+/// L3 展示级 · [browser_notify.dart] 的**非 Web 空实现**。
 ///
 /// 原生平台的通知走 `permission_handler` / `flutter_local_notifications`
 /// （见 `permissions.dart` 与 `system_notifier.dart`），与浏览器通知无关；

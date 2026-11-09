@@ -84,6 +84,9 @@ jobs:
       - name: 生成平台目录
         run: flutter create --platforms=web --org com.yingo --project-name ohgithublost .
 
+      - name: 合并 i18n 分片（Web Lite：启动只发 1 次请求）
+        run: python3 tool/build_i18n_bundle.py
+
       - name: 生成并注入 .dart_define.json（Ed25519 签名引导清单）
         env:
           VERSION_INPUT: ${{ inputs.version_name }}

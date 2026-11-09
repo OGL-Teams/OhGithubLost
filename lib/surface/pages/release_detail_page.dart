@@ -26,7 +26,6 @@ import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_space.dart';
 import '../widgets/readme_view.dart';
-import 'download_manager_page.dart';
 
 /// 取 `release_detail_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
