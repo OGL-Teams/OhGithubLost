@@ -40,5 +40,9 @@
   "tabDiscover": "發現",
   "tabFeed": "動態",
   "tabIssues": "Issues",
-  "tabRepos": "字庫"
+  "tabRepos": "字庫",
+  "timeJustNow": "剛剛",
+  "timeMinutesAgo": "{count} 分鐘前",
+  "timeHoursAgo": "{count} 小時前",
+  "timeDaysAgo": "{count} 天前"
 }

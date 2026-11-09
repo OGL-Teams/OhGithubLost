@@ -17,6 +17,7 @@ import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
 import '../widgets/scroll_aware_action.dart';
@@ -131,8 +132,25 @@ class _DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 
-  /// 跳到搜索页（星标为空时给一条"去哪找仓库"的路）。
-  void _goSearch() {
+  /// 打开**仓库搜索结果页**（空查询、仓库模式）。
+  ///
+  /// 为什么是这里而不是 DiscoverPage：用户反馈「搜索仓库功能没有看到」——
+  /// 搜索功能一直都在（`SearchResultsPage`），只是入口埋在发现页里。
+  /// 首页给它一个**一步直达**的入口：不预填任何词，进来就能搜。
+  void _openRepoSearch() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => SearchResultsPage(
+          surface: widget.surface,
+          query: '',
+          mode: 0,
+        ),
+      ),
+    );
+  }
+
+  /// 跳到发现页（星标为空时给一条"去哪逛逛"的路）。
+  void _goDiscover() {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
         builder: (BuildContext context) =>
@@ -327,6 +345,14 @@ class _DashboardPageState extends State<DashboardPage> {
         title: _t('home'),
         scrollController: _scroll,
         actions: <Widget>[
+          // ★ 搜索入口（全局可发现性）： AppBar 图标一步直达仓库搜索结果页。
+          //   功能早已存在（`SearchResultsPage`），此前只有发现页里的一条路，
+          //   用户反馈"没有看到"——首页 AppBar 是最先被看到的位置。
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: _t('searchTooltip'),
+            onPressed: _openRepoSearch,
+          ),
           ValueListenableBuilder<int>(
             valueListenable: OgLAppLog.instance.alertCount,
             builder: (BuildContext context, int alerts, Widget? _) =>
@@ -370,6 +396,18 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       body: Column(
         children: <Widget>[
+          // ★ 搜索框样式的入口按钮（居中、放大镜 + 「搜索仓库」占位文案）。
+          //   用 [TextField] 的外观承载按钮语义：一进首页就能看到"这里可以搜"，
+          //   点击直达仓库搜索结果页（见 [_openRepoSearch]）。
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+                OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
+            child: Semantics(
+              button: true,
+              label: _t('searchTooltip'),
+              child: _SearchEntryButton(onPressed: _openRepoSearch),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(
                 OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
@@ -421,7 +459,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     child: Text(_t('newRepo')),
                                   )
                                 : FilledButton.tonal(
-                                    onPressed: _goSearch,
+                                    onPressed: _goDiscover,
                                     child: Text(_t('goSearch')),
                                   ),
                           ),
@@ -594,3 +632,71 @@ class _RepoPaged extends ChangeNotifier {
 // 消息面板：Phase 5 后半已收敛到 `surface/app/async.dart` —— 空态用
 // [OgLAsyncEmptyPane]、失败用 [OgLAsyncErrorPane]（自带重试）；原私有
 // `_RepoMessage` 与前者实现逐字相同，属重复代码，已删除。
+
+/// 首页顶部的**搜索框样式入口按钮**。
+///
+/// ## 为什么长得像输入框却是个按钮
+/// 用户对"搜索"的心理模型是一根输入条（搜索引擎 / 文件管理器都这样）；
+/// 把入口做成同款外观，可发现性远高于一枚 IconButton。但**语义仍是导航**：
+/// 点击跳转 `SearchResultsPage`，输入发生在那边（本页不持输入状态）。
+///
+/// ## 实现取舍
+/// - 用 `InkWell` + 主题输入框同款底色（`surfaceContainerHighest`）+ 描边，
+///   视觉与真输入框一致；圆角 / 间距 / 颜色全部走令牌；
+/// - 文案用 `onSurfaceVariant`（占位符的"灰"），不抢真输入框的戏。
+class _SearchEntryButton extends StatelessWidget {
+  /// 创建入口按钮。
+  const _SearchEntryButton({required this.onPressed});
+
+  /// 点击回调（跳仓库搜索结果页）。
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Material(
+      color: theme.colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(
+        borderRadius: OgLRadius.cSm,
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: OgLSpace.md,
+            vertical: OgLSpace.md,
+          ),
+          child: Row(
+            children: <Widget>[
+              Icon(
+                Icons.search,
+                size: OgLIconSize.md,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: OgLSpace.sm),
+              Expanded(
+                child: Text(
+                  _t('searchHint'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              const SizedBox(width: OgLSpace.sm),
+              Text(
+                _t('searchRepos'),
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

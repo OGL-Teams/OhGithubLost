@@ -11,6 +11,9 @@
   "repoCreated": "Dépôt créé",
   "repoCreatedName": "Créé {name}",
   "retry": "Réessayer",
+  "searchHint": "Rechercher des dépôts…",
+  "searchRepos": "Rechercher des dépôts",
+  "searchTooltip": "Rechercher des dépôts",
   "starred": "Étoilés",
   "starsCount": "{count} étoiles"
 }

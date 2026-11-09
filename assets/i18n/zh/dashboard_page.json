@@ -11,6 +11,9 @@
   "repoCreated": "已创建仓库",
   "repoCreatedName": "已创建 {name}",
   "retry": "重试",
+  "searchHint": "搜索仓库…",
+  "searchRepos": "搜索仓库",
+  "searchTooltip": "搜索仓库",
   "starred": "星标",
   "starsCount": "{count} 星标"
 }

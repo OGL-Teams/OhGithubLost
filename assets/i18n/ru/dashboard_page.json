@@ -11,6 +11,9 @@
   "repoCreated": "Репозиторий создан",
   "repoCreatedName": "Создано {name}",
   "retry": "Повторить",
+  "searchHint": "Поиск репозиториев…",
+  "searchRepos": "Поиск репозиториев",
+  "searchTooltip": "Поиск репозиториев",
   "starred": "Звёздочные",
   "starsCount": "{count} звёзд"
 }

@@ -40,5 +40,9 @@
   "tabDiscover": "发现",
   "tabFeed": "动态",
   "tabIssues": "Issues",
-  "tabRepos": "仓库"
+  "tabRepos": "仓库",
+  "timeJustNow": "刚刚",
+  "timeMinutesAgo": "{count} 分钟前",
+  "timeHoursAgo": "{count} 小时前",
+  "timeDaysAgo": "{count} 天前"
 }

@@ -1,6 +1,7 @@
 {
   "baseline": "依據：{sha}",
   "cancelledRemoteUpdated": "已取消：遠端已更新，未進行覆寫",
+  "column": "欄",
   "commitFailedConflict": "提交失敗 ({conflict})：{detail}",
   "commitFailedDetail": "提交失敗：{detail}",
   "commitFailedError": "提交失敗：{error}",
@@ -12,11 +13,13 @@
   "discardTitle": "要捨棄未儲存的變更嗎？",
   "draftRestored": "已還原上次未提交的草稿",
   "editTitle": "編輯",
+  "encoding": "UTF-8",
   "findReplace": "尋找／取代",
   "fontLarger": "增大字體大小",
   "fontSmaller": "縮小字體大小",
   "forceOverwrite": "強制覆寫",
   "keepRemote": "取消（保留遠端）",
+  "line": "行",
   "overwriteWarning": "覆寫將會捨棄此遠端變更。",
   "preview": "預覽（唯讀）",
   "previewTruncated": "{text}\n…（預覽已截斷）",
@@ -28,8 +31,11 @@
   "remoteUpdated": "遠端已更新，可能會覆寫其他人的變更",
   "save": "儲存",
   "stats": "{lines} 行 · {chars} 個字元",
+  "toolbarCollapse": "收合工具列",
+  "toolbarExpand": "展開工具列",
   "undo": "中斷",
   "unsaved": " · 未儲存",
+  "unsavedDot": "●",
   "wrapOff": "停用文字自動換行",
   "wrapOn": "啟用文字自動換行"
 }

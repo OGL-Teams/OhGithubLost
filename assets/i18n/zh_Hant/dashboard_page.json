@@ -11,6 +11,9 @@
   "repoCreated": "倉庫已建立",
   "repoCreatedName": "已建立 {name}",
   "retry": "重新嘗試",
+  "searchHint": "搜尋儲存庫…",
+  "searchRepos": "搜尋儲存庫",
+  "searchTooltip": "搜尋儲存庫",
   "starred": "已標星",
   "starsCount": "{count} 個星標"
 }

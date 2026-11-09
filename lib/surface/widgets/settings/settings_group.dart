@@ -389,10 +389,12 @@ class OgLSettingsActionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Padding(
-      padding: EdgeInsets.only(left: indent),
+      padding: EdgeInsetsDirectional.only(start: indent),
       child: ListTile(
         dense: dense,
-        contentPadding: EdgeInsets.only(left: indent > 0 ? 0 : 16, right: 16),
+        // 与开关行 / 选择行同一内边距常量：同一组内不再出现 16/12 与 16/16
+        // 两种视觉；缩进由外层 Padding 承担，内层保持标准起始边。
+        contentPadding: kOgLSettingsRowPadding,
         leading: icon == null ? null : Icon(icon),
         title: Text(title, style: theme.textTheme.bodyLarge),
         trailing: const Icon(Icons.chevron_right, size: 20),

@@ -40,5 +40,9 @@
   "tabDiscover": "Découvrir",
   "tabFeed": "Fil",
   "tabIssues": "Issues",
-  "tabRepos": "Dépôts"
+  "tabRepos": "Dépôts",
+  "timeJustNow": "à l'instant",
+  "timeMinutesAgo": "il y a {count} min",
+  "timeHoursAgo": "il y a {count} h",
+  "timeDaysAgo": "il y a {count} j"
 }

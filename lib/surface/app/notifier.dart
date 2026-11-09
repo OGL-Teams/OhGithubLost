@@ -29,6 +29,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../util/og_l_space.dart';
+
 /// 统一用户反馈（SnackBar）。
 ///
 /// 替代散落在各页面的 7 份 `_toast` 私有实现。
@@ -68,6 +70,11 @@ class OgLNotifier {
         ),
         // 悬浮样式：不压住底部导航栏（也符合 Material 3 的默认推荐）。
         behavior: SnackBarBehavior.floating,
+        // 宽度统一：floating SnackBar 的实际宽度由最近的 Scaffold 决定，
+        // 不同页面（发现页 / 设置页）的留隙因此不一致。margin 全局只有
+        // 这里一处定义——发现页与设置页同款（左右 16 / 上下 12）。
+        margin: const EdgeInsets.symmetric(
+            horizontal: OgLSpace.lg, vertical: OgLSpace.md),
         backgroundColor: isError ? scheme.error : null,
       ),
     );

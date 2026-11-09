@@ -40,5 +40,9 @@
   "tabDiscover": "Обзор",
   "tabFeed": "Лента",
   "tabIssues": "Issues",
-  "tabRepos": "Репозитории"
+  "tabRepos": "Репозитории",
+  "timeJustNow": "только что",
+  "timeMinutesAgo": "{count} мин назад",
+  "timeHoursAgo": "{count} ч назад",
+  "timeDaysAgo": "{count} дн назад"
 }

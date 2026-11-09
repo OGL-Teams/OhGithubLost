@@ -11,6 +11,9 @@
   "repoCreated": "Repository erstellt",
   "repoCreatedName": "{name} erstellt",
   "retry": "Erneut versuchen",
+  "searchHint": "Repositories durchsuchen…",
+  "searchRepos": "Repositories durchsuchen",
+  "searchTooltip": "Repositories durchsuchen",
   "starred": "Markiert",
   "starsCount": "{count} Sterne"
 }

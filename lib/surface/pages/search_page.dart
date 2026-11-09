@@ -1,11 +1,12 @@
-/// L3 展示级 · 发现页（微博式纵向信息流 + 三个左右滑动子标签）。
+/// L3 展示级 · 发现页（紧凑行式信息流 + 三个左右滑动子标签）。
 ///
-/// - **动态**：GitHub 官方 `/notifications` 通知流（Release / Issue / PR），
-///   一次请求聚合关注仓库的新事项，卡片式上下滑动；
-/// - **推荐**：热门仓库分页信息流（滚动到底自动加载），含描述 / README 切片 /
-///   星数·语言·最新版本号微粒子小字；
+/// - **动态**：GitHub 官方 `/notifications` 通知流，紧凑行式布局——
+///   左侧 4px 状态竖条（未读 primary / 已读透明），一行标题 + 一行
+///   元信息（仓库 · 类型 · 相对时间），条目间 Divider，行高 ≤64；
+/// - **推荐**：热门仓库双列网格（≥600px 两列 / 窄屏单列），含描述 /
+///   折叠的 README 切片 / 星数·语言·最新版本号 meta 行；
 /// - **Issues**：聚合「我提出的」与「star 仓库新提出的」open issue，
-///   新的在上，支持 全部 / 我的 / Star 三档筛选；
+///   紧凑行式，FilterChip 横滑筛选行；
 /// - 搜索入口在仓库页右上角（搜索图标）与首页空态；本页不再承担搜索框。
 library;
 
@@ -35,6 +36,31 @@ String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
     args:
         args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
 
+/// ISO 8601 时间 → 相对时间（人眼扫信息流时「3 小时前」比「2026-07-14」省力）。
+///
+/// 现有 `gh_format` 只有绝对日期（[ghDate]），没有相对时间，这里就地补一个
+/// 页面级实现：只到天（>30 天回落绝对日期），避免引入新依赖。
+String _relativeTime(String iso) {
+  final DateTime? time = DateTime.tryParse(iso)?.toLocal();
+  if (time == null) {
+    return '';
+  }
+  final Duration delta = DateTime.now().difference(time);
+  if (delta.inMinutes < 1) {
+    return _t('timeJustNow');
+  }
+  if (delta.inMinutes < 60) {
+    return _t('timeMinutesAgo', {'count': delta.inMinutes});
+  }
+  if (delta.inHours < 24) {
+    return _t('timeHoursAgo', {'count': delta.inHours});
+  }
+  if (delta.inDays < 30) {
+    return _t('timeDaysAgo', {'count': delta.inDays});
+  }
+  return iso.split('T').first;
+}
+
 /// 骨架块：加载态统一用主题色圆角块代替转圈。
 class _SkeletonBox extends StatelessWidget {
   const _SkeletonBox({required this.height, this.width});
@@ -48,74 +74,65 @@ class _SkeletonBox extends StatelessWidget {
         width: width,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(OgLRadius.sm),
+          borderRadius: OgLRadius.cSm,
         ),
       );
 }
 
-/// 统一加载骨架卡片（三 tab 共用）：圆角卡内模拟标题 / 正文 / 元信息。
-class _SkeletonCard extends StatelessWidget {
-  const _SkeletonCard({required super.key, this.dense = false});
-
-  /// 紧凑模式：Issues tab 的列表行骨架。
-  final bool dense;
+/// 统一加载骨架行（三 tab 共用）：与紧凑行式对齐——
+/// 左侧状态条占位 + 标题行 + 元信息行。
+class _SkeletonRow extends StatelessWidget {
+  const _SkeletonRow({required super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final Widget body = dense
-        ? const Row(
-            children: <Widget>[
-              _SkeletonBox(height: 16, width: 16),
-              SizedBox(width: OgLSpace.md),
-              Expanded(child: _SkeletonBox(height: 16)),
-              SizedBox(width: OgLSpace.md),
-              _SkeletonBox(height: 12, width: 48),
-            ],
-          )
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: OgLSpace.lg,
+          vertical: OgLSpace.sm,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const _SkeletonBox(height: OgLSpace.xxl, width: OgLSpace.xxs),
+            const SizedBox(width: OgLSpace.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  const _SkeletonBox(height: 32, width: 32),
-                  const SizedBox(width: OgLSpace.sm),
-                  const Expanded(child: _SkeletonBox(height: 16)),
-                  const SizedBox(width: OgLSpace.sm),
-                  const _SkeletonBox(height: 14, width: 56),
+                  const _SkeletonBox(height: OgLSpace.md),
+                  const SizedBox(height: OgLSpace.xxs),
+                  Row(
+                    children: <Widget>[
+                      const Expanded(
+                        flex: 3,
+                        child: _SkeletonBox(height: OgLSpace.sm),
+                      ),
+                      const SizedBox(width: OgLSpace.sm),
+                      Expanded(
+                        flex: 2,
+                        child: _SkeletonBox(height: OgLSpace.sm),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-              const SizedBox(height: OgLSpace.md),
-              const _SkeletonBox(height: 14),
-              const SizedBox(height: OgLSpace.sm),
-              const _SkeletonBox(height: 12, width: 160),
-            ],
-          );
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(OgLSpace.md),
-        child: body,
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+      );
 }
 
 /// 统一加载骨架列表（三 tab 共用）。
 class _SkeletonList extends StatelessWidget {
-  const _SkeletonList({super.key, this.dense = false});
-
-  final bool dense;
+  const _SkeletonList({super.key});
 
   @override
   Widget build(BuildContext context) => ListView.builder(
-        padding: const EdgeInsets.all(OgLSpace.lg),
+        padding: const EdgeInsets.symmetric(vertical: OgLSpace.sm),
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: 5,
-        itemBuilder: (BuildContext context, int index) => Padding(
-          padding: const EdgeInsets.only(bottom: OgLSpace.md),
-          child: _SkeletonCard(
-            key: ValueKey<String>('skeleton-$index'),
-            dense: dense,
-          ),
+        itemCount: 6,
+        itemBuilder: (BuildContext context, int index) => _SkeletonRow(
+          key: ValueKey<String>('skeleton-$index'),
         ),
       );
 }
@@ -133,6 +150,144 @@ class _SearchHit {
   final String subtitle;
   final GhRepo? repo;
   final String? initialPath;
+}
+
+/// 推荐仓库卡（网格单元）：仓库名 + 两行描述 + 折叠的 README 切片 +
+/// meta 行（★数 · 语言 · 版本号）。README 默认折叠，点击展开。
+class _RepoCard extends StatefulWidget {
+  const _RepoCard({
+    required this.repo,
+    required this.excerpt,
+    required this.version,
+    required this.onOpen,
+    required this.onActions,
+    super.key,
+  });
+
+  final GhRepo repo;
+  final String excerpt;
+  final String? version;
+  final Future<void> Function(GhRepo) onOpen;
+  final Future<void> Function(BuildContext, GhRepo) onActions;
+
+  @override
+  State<_RepoCard> createState() => _RepoCardState();
+}
+
+class _RepoCardState extends State<_RepoCard> {
+  bool _readmeExpanded = false;
+
+  String get _subtitle {
+    final String? desc = widget.repo.description;
+    return (desc == null || desc.isEmpty) ? (widget.repo.language ?? '') : desc;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final GhRepo repo = widget.repo;
+    return Card(
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: () => unawaited(widget.onOpen(repo)),
+        onLongPress: () => unawaited(widget.onActions(context, repo)),
+        child: Padding(
+          padding: const EdgeInsets.all(OgLSpace.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                repo.fullName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium,
+              ),
+              const SizedBox(height: OgLSpace.xxs),
+              Text(
+                _subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall,
+              ),
+              // README 切片：默认折叠（点击展开），长文本不刷屏。
+              if (widget.excerpt.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: OgLSpace.xxs),
+                  child: InkWell(
+                    onTap: _readmeExpanded
+                        ? null
+                        : () => setState(() => _readmeExpanded = true),
+                    borderRadius: OgLRadius.cXs,
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(vertical: OgLSpace.xxs),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              widget.excerpt,
+                              maxLines: _readmeExpanded ? null : 2,
+                              overflow: _readmeExpanded
+                                  ? null
+                                  : TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: OgLSpace.xxs),
+                          Icon(
+                            _readmeExpanded
+                                ? Icons.expand_less
+                                : Icons.expand_more,
+                            size: OgLIconSize.sm,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: OgLSpace.sm),
+              // meta 行：★数 · 语言 · 版本号。
+              Row(
+                children: <Widget>[
+                  Icon(
+                    Icons.star_border,
+                    size: OgLIconSize.sm,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: OgLSpace.xxs),
+                  Text('${repo.stars}', style: theme.textTheme.bodySmall),
+                  if (repo.language != null && repo.language!.isNotEmpty)
+                    Expanded(
+                      child: Text(
+                        ' · ${repo.language!}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  if (widget.version != null && widget.version!.isNotEmpty)
+                    Text(
+                      widget.version!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// 发现页。
@@ -163,8 +318,7 @@ class _DiscoverPageState extends State<DiscoverPage>
   int _repoPage = 1;
 
   /// ★ B6-A-01：推荐 tab 的世代计数——分类切换 / 下拉刷新时自增，
-  ///   在途 `_loadMoreRepos()` 回写前校验，防止旧分类数据混入新列表
-  ///   （四线新增 UI 此前绕过了项目已成体系的 generation 防线）。
+  ///   在途 `_loadMoreRepos()` 回写前校验，防止旧分类数据混入新列表。
   int _repoGeneration = 0;
   bool _repoLoading = false;
   bool _repoDone = false;
@@ -396,46 +550,7 @@ class _DiscoverPageState extends State<DiscoverPage>
   bool _feedUnreadOf(Map<String, dynamic> item) =>
       ghStr(item, 'unread') == 'true' || item['unread'] == true;
 
-  /// 通知类型 → 徽章（图标 + 颜色）。
-  ///
-  /// Release 绿（成功色）/ Issue 红（error）/ PR 紫（tertiary）/
-  /// 讨论蓝（info）；未知类型回落 neutral + reason 文案。
-  ({IconData icon, Color color, bool tinted}) _feedBadgeOf(
-    BuildContext context,
-    Map<String, dynamic> item,
-  ) {
-    final ThemeData theme = Theme.of(context);
-    final OgLSemanticColors sem = theme.extension<OgLSemanticColors>()!;
-    return switch (_feedSubjectTypeOf(item)) {
-      'Release' => (
-          icon: Icons.tag,
-          color: sem.success,
-          tinted: true,
-        ),
-      'Issue' => (
-          icon: Icons.error_outline,
-          color: theme.colorScheme.error,
-          tinted: true,
-        ),
-      'PullRequest' => (
-          icon: Icons.merge,
-          color: theme.colorScheme.tertiary,
-          tinted: true,
-        ),
-      'Discussion' => (
-          icon: Icons.forum,
-          color: sem.info,
-          tinted: true,
-        ),
-      _ => (
-          icon: Icons.notifications_none,
-          color: theme.colorScheme.onSurfaceVariant,
-          tinted: false,
-        ),
-    };
-  }
-
-  /// 点击通知卡：issue/PR → IssuePage；release → 仓库页；
+  /// 点击通知行：issue/PR → IssuePage；release → 仓库页；
   /// 都解析不出 → 降级用浏览器打开（openLinkOrCopy 内含复制兜底）。
   Future<void> _openFeedItem(Map<String, dynamic> item) async {
     final String repoName = _feedRepoOf(item);
@@ -474,7 +589,7 @@ class _DiscoverPageState extends State<DiscoverPage>
         return;
       } on Object {
         // 仓库拉取失败：降级为浏览器打开 subject 链接（无链接则静默返回，
-        // 卡片上的「在浏览器打开」按钮仍是兜底入口）。
+        // 行的浏览器入口仍是兜底）。
       }
     }
     if (subjectUrl.isNotEmpty && mounted) {
@@ -482,12 +597,9 @@ class _DiscoverPageState extends State<DiscoverPage>
     }
   }
 
-  /// 通知流条目 → 可读类型（微粒子小字用）。
+  /// 通知流条目 → 可读类型（元信息行用）。
   String _feedTypeOf(Map<String, dynamic> item) {
-    final Object? subject = item['subject'];
-    final String type = subject is Map<Object?, Object?>
-        ? ghStr(Map<String, dynamic>.from(subject), 'type')
-        : '';
+    final String type = _feedSubjectTypeOf(item);
     return switch (type) {
       'Release' => _t('feedRelease'),
       'Issue' => _t('feedIssue'),
@@ -569,7 +681,69 @@ class _DiscoverPageState extends State<DiscoverPage>
     );
   }
 
-  // ── tab 1：动态（官方通知流，微博式纵向信息流）────────────────────
+  // ── tab 1：动态（官方通知流，紧凑行式信息流）────────────────────────
+
+  /// 单条动态的紧凑行：4px 状态竖条（未读 primary / 已读透明）+
+  /// 一行标题 + 一行元信息（仓库 · 类型 · 相对时间），行高 ≤64。
+  Widget _buildFeedRow(BuildContext context, Map<String, dynamic> item) {
+    final ThemeData theme = Theme.of(context);
+    final String repoName = _feedRepoOf(item);
+    final Object? subject = item['subject'];
+    final String title = subject is Map<Object?, Object?>
+        ? ghStr(Map<String, dynamic>.from(subject), 'title')
+        : '';
+    final bool unread = _feedUnreadOf(item);
+    return Material(
+      color: theme.colorScheme.surface,
+      child: InkWell(
+        onTap: () => unawaited(_openFeedItem(item)),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            // 状态竖条：未读点亮 primary，已读透明（占位宽度恒定，行不跳动）。
+            Container(
+              width: OgLSpace.xxs,
+              color: unread
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.surface,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: OgLSpace.md,
+                  vertical: OgLSpace.sm,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      title.isEmpty ? _t('feedRelease') : title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: unread
+                          ? theme.textTheme.titleMedium
+                          : theme.textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: OgLSpace.xxs),
+                    Text(
+                      '$repoName · ${_feedTypeOf(item)} · '
+                      '${_relativeTime(ghStr(item, 'updated_at'))}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildFeedTab() => _feed == null
       ? _SkeletonList(key: const ValueKey<String>('feed-skeleton'))
@@ -581,117 +755,19 @@ class _DiscoverPageState extends State<DiscoverPage>
             emptyText: _t('feedEmpty'),
             builder: (BuildContext context, List<Map<String, dynamic>> items) =>
                 ListView.separated(
-              padding: const EdgeInsets.all(OgLSpace.lg),
+              padding: const EdgeInsets.symmetric(vertical: OgLSpace.sm),
               itemCount: items.length,
               separatorBuilder: (BuildContext context, int index) =>
-                  const SizedBox(height: OgLSpace.md),
-              itemBuilder: (BuildContext context, int index) {
-                final Map<String, dynamic> item = items[index];
-                final String repoName = _feedRepoOf(item);
-                final Object? subject = item['subject'];
-                final String title = subject is Map<Object?, Object?>
-                    ? ghStr(Map<String, dynamic>.from(subject), 'title')
-                    : '';
-                final String url = _feedSubjectUrlOf(item);
-                final ({IconData icon, Color color, bool tinted}) badge =
-                    _feedBadgeOf(context, item);
-                return Card(
-                  key: ValueKey<String>('feed-$index-${ghStr(item, 'id')}'),
-                  child: InkWell(
-                    onTap: () => unawaited(_openFeedItem(item)),
-                    borderRadius: BorderRadius.circular(OgLRadius.md),
-                    child: Padding(
-                      padding: const EdgeInsets.all(OgLSpace.md),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              CircleAvatar(
-                                radius: 16,
-                                child: Text(
-                                  repoName.isNotEmpty
-                                      ? repoName[0].toUpperCase()
-                                      : 'R',
-                                  style:
-                                      Theme.of(context).textTheme.labelMedium,
-                                ),
-                              ),
-                              const SizedBox(width: OgLSpace.sm),
-                              Expanded(
-                                child: Text(
-                                  repoName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.labelLarge,
-                                ),
-                              ),
-                              // 类型徽章：图标 + 着色小字。
-                              Icon(badge.icon, size: 14, color: badge.color),
-                              const SizedBox(width: OgLSpace.xxs),
-                              Text(
-                                _feedTypeOf(item),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
-                                    ?.copyWith(color: badge.color),
-                              ),
-                              // 未读圆点。
-                              if (_feedUnreadOf(item)) ...<Widget>[
-                                const SizedBox(width: OgLSpace.sm),
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                          const SizedBox(height: OgLSpace.sm),
-                          Text(
-                            title.isEmpty ? _t('feedRelease') : title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                          const SizedBox(height: OgLSpace.xxs),
-                          Text(
-                            ghDate(item, 'updated_at'),
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                ),
-                          ),
-                          if (url.isNotEmpty)
-                            Align(
-                              alignment: AlignmentDirectional.centerEnd,
-                              child: TextButton.icon(
-                                onPressed: () => unawaited(
-                                  openLinkOrCopy(context, url, tag: 'Feed'),
-                                ),
-                                icon: const Icon(Icons.open_in_new, size: 14),
-                                label: Text(_t('openInBrowser')),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+                  const Divider(height: 1),
+              itemBuilder: (BuildContext context, int index) => _buildFeedRow(
+                context,
+                items[index],
+              ),
             ),
           ),
         );
 
-  // ── tab 2：推荐（无限下拉 + 富信息卡片）────────────────────────────
+  // ── tab 2：推荐（双列网格 + 无限下拉）────────────────────────────────
 
   Widget _buildRecommendedTab() {
     if (_repos.isEmpty && _repoLoading) {
@@ -765,118 +841,57 @@ class _DiscoverPageState extends State<DiscoverPage>
               _repoDone = false;
               await _loadMoreRepos();
             },
-            child: ListView.separated(
-              key: ValueKey<String>('repos-$_repoCategory'),
-              controller: _repoScroll,
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(
-                  OgLSpace.lg, OgLSpace.xxs, OgLSpace.lg, OgLSpace.lg),
-              itemCount: _repos.length + 1,
-              separatorBuilder: (BuildContext context, int index) =>
-                  const SizedBox(height: OgLSpace.md),
-              itemBuilder: (BuildContext context, int index) {
-                if (index == _repos.length) {
-                  return _repoDone
-                      ? const SizedBox.shrink()
-                      : Padding(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: OgLSpace.md),
-                          child: _SkeletonCard(
-                              key: ValueKey<String>('more-$index')),
-                        );
-                }
-                final GhRepo repo = _repos[index];
-                final String excerpt = _readmeOf[repo.fullName] ?? '';
-                final String? version = _versionOf[repo.fullName];
-                return Card(
-                  key: ValueKey<String>('repo-${repo.fullName}'),
-                  child: InkWell(
-                    onTap: () => unawaited(_openRepo(repo)),
-                    onLongPress: () => _showRepoActions(context, repo),
-                    borderRadius: BorderRadius.circular(OgLRadius.md),
-                    child: Padding(
-                      padding: const EdgeInsets.all(OgLSpace.md),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            repo.fullName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleSmall,
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                // ★ 宽屏（≥600）双列拉满信息密度；窄屏单列。
+                final int columns = constraints.maxWidth >= 600 ? 2 : 1;
+                final int rows = (_repos.length + columns - 1) ~/ columns;
+                return ListView.builder(
+                  key: ValueKey<String>('repos-$_repoCategory-$columns'),
+                  controller: _repoScroll,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                      OgLSpace.md, OgLSpace.sm, OgLSpace.md, OgLSpace.lg),
+                  // +1 尾行：加载中骨架或空占位。
+                  itemCount: rows + 1,
+                  itemBuilder: (BuildContext context, int row) {
+                    if (row == rows) {
+                      return _repoDone
+                          ? const SizedBox.shrink()
+                          : const Padding(
+                              padding: EdgeInsets.all(OgLSpace.md),
+                              child: _SkeletonRow(
+                                key: ValueKey<String>('repos-more'),
+                              ),
+                            );
+                    }
+                    return Row(
+                      key: ValueKey<String>('repos-row-$row-$columns'),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        for (int col = 0; col < columns; col++)
+                          Expanded(
+                            child: row * columns + col < _repos.length
+                                ? Padding(
+                                    padding: const EdgeInsets.all(OgLSpace.xxs),
+                                    child: _RepoCard(
+                                      key: ValueKey<String>(
+                                        'repo-${_repos[row * columns + col].fullName}',
+                                      ),
+                                      repo: _repos[row * columns + col],
+                                      excerpt: _readmeOf[
+                                          _repos[row * columns + col].fullName],
+                                      version: _versionOf[
+                                          _repos[row * columns + col].fullName],
+                                      onOpen: _openRepo,
+                                      onActions: _showRepoActions,
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
                           ),
-                          const SizedBox(height: OgLSpace.xxs),
-                          Text(
-                            _repoSubtitle(repo),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          if (excerpt.isNotEmpty) ...<Widget>[
-                            const SizedBox(height: OgLSpace.sm),
-                            // README 切片：小字、次要色，与正文层次拉开。
-                            Text(
-                              excerpt,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                    height: 1.4,
-                                  ),
-                            ),
-                          ],
-                          const SizedBox(height: OgLSpace.sm),
-                          // 微粒子小字：星数 / 语言 / 最新版本号。
-                          Row(
-                            children: <Widget>[
-                              const Icon(Icons.star_border, size: 12),
-                              const SizedBox(width: OgLSpace.xxs),
-                              Text('${repo.stars}',
-                                  style:
-                                      Theme.of(context).textTheme.labelSmall),
-                              if (repo.language != null &&
-                                  repo.language!.isNotEmpty) ...<Widget>[
-                                const SizedBox(width: OgLSpace.sm),
-                                Text(repo.language!,
-                                    style:
-                                        Theme.of(context).textTheme.labelSmall),
-                              ],
-                              const Spacer(),
-                              if (version != null && version.isNotEmpty)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: OgLSpace.sm,
-                                      vertical: OgLSpace.xxs / 2),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .secondaryContainer,
-                                    borderRadius:
-                                        BorderRadius.circular(OgLRadius.xs),
-                                  ),
-                                  child: Text(
-                                    version,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall
-                                        ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSecondaryContainer,
-                                        ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                      ],
+                    );
+                  },
                 );
               },
             ),
@@ -944,32 +959,47 @@ class _DiscoverPageState extends State<DiscoverPage>
     }
   }
 
-  // ── tab 2：Issues ────────────────────────────────────────────────────
+  // ── tab 3：Issues（紧凑行式 + FilterChip 横滑筛选）────────────────────
+
+  /// Issues 筛选档 → chip 文案。
+  String _issuesFilterLabel(int filter) => switch (filter) {
+        1 => _t('issuesMine'),
+        2 => _t('issuesStar'),
+        _ => _t('issuesAll'),
+      };
 
   Widget _buildIssuesTab() => Column(
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-                OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
-            child: SegmentedButton<int>(
-              segments: <ButtonSegment<int>>[
-                ButtonSegment<int>(value: 0, label: Text(_t('issuesAll'))),
-                ButtonSegment<int>(value: 1, label: Text(_t('issuesMine'))),
-                ButtonSegment<int>(value: 2, label: Text(_t('issuesStar'))),
+          // 分类筛选：FilterChip 横滑行（比 SegmentedButton 省宽度，可扩档）。
+          SizedBox(
+            height: OgLSpace.mega / 2,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(
+                horizontal: OgLSpace.lg,
+                vertical: OgLSpace.sm,
+              ),
+              children: <Widget>[
+                for (int filter = 0; filter < 3; filter++)
+                  Padding(
+                    padding: const EdgeInsets.only(right: OgLSpace.sm),
+                    child: FilterChip(
+                      key: ValueKey<String>('issues-chip-$filter'),
+                      label: Text(_issuesFilterLabel(filter)),
+                      selected: _issuesFilter == filter,
+                      onSelected: (bool selected) {
+                        if (selected) {
+                          setState(() => _issuesFilter = filter);
+                        }
+                      },
+                    ),
+                  ),
               ],
-              selected: <int>{_issuesFilter},
-              showSelectedIcon: false,
-              onSelectionChanged: (Set<int> selection) {
-                if (selection.isNotEmpty) {
-                  setState(() => _issuesFilter = selection.first);
-                }
-              },
             ),
           ),
           Expanded(
             child: _issues == null
-                ? _SkeletonList(
-                    key: const ValueKey<String>('issues-skeleton'), dense: true)
+                ? _SkeletonList(key: const ValueKey<String>('issues-skeleton'))
                 : AsyncView<List<Map<String, dynamic>>>(
                     controller: _issues!,
                     emptyIcon: Icons.inbox_outlined,
@@ -987,6 +1017,9 @@ class _DiscoverPageState extends State<DiscoverPage>
                         );
                       }
                       return ListView.separated(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: OgLSpace.sm,
+                        ),
                         itemCount: shown.length,
                         separatorBuilder: (BuildContext context, int index) =>
                             const Divider(height: 1),
@@ -994,46 +1027,87 @@ class _DiscoverPageState extends State<DiscoverPage>
                           final Map<String, dynamic> item = shown[index];
                           final bool mine =
                               _mineUrls.contains(ghStr(item, 'html_url'));
-                          return ListTile(
+                          final ThemeData theme = Theme.of(context);
+                          return InkWell(
                             key: ValueKey<String>(
                                 'issue-${ghStr(item, 'html_url')}'),
-                            leading: Icon(
-                              mine ? Icons.person_outline : Icons.star_border,
-                            ),
-                            title: Text(
-                              ghStr(item, 'title'),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            subtitle: Text(
-                              '${_repoFullOf(item)}'
-                              ' #${ghInt(item, 'number')} · '
-                              '${ghLogin(item)} · '
-                              '${ghDate(item, 'created_at')}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            // 右侧：评论数 + 进入箭头。
-                            trailing: Semantics(
-                              label: _t('issuesComments', {
-                                'count': ghInt(item, 'comments'),
-                              }),
+                            onTap: () => unawaited(_openIssue(item)),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: OgLSpace.lg,
+                                vertical: OgLSpace.sm,
+                              ),
                               child: Row(
-                                mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
-                                  const Icon(Icons.chat_bubble_outline,
-                                      size: 14),
-                                  const SizedBox(width: OgLSpace.xxs),
-                                  Text('${ghInt(item, 'comments')}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelSmall),
+                                  Icon(
+                                    mine
+                                        ? Icons.person_outline
+                                        : Icons.star_border,
+                                    size: OgLIconSize.sm,
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
                                   const SizedBox(width: OgLSpace.sm),
-                                  const Icon(Icons.chevron_right, size: 18),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                          ghStr(item, 'title'),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: theme.textTheme.titleMedium,
+                                        ),
+                                        const SizedBox(height: OgLSpace.xxs),
+                                        Text(
+                                          '${_repoFullOf(item)} '
+                                          '#${ghInt(item, 'number')} · '
+                                          '${ghLogin(item)} · '
+                                          '${_relativeTime(ghStr(item, 'created_at'))}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                            color: theme
+                                                .colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: OgLSpace.sm),
+                                  // 右侧：评论数 + 进入箭头。
+                                  Semantics(
+                                    label: _t('issuesComments', {
+                                      'count': ghInt(item, 'comments'),
+                                    }),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Icon(
+                                          Icons.chat_bubble_outline,
+                                          size: OgLIconSize.sm,
+                                          color: theme
+                                              .colorScheme.onSurfaceVariant,
+                                        ),
+                                        const SizedBox(width: OgLSpace.xxs),
+                                        Text(
+                                          '${ghInt(item, 'comments')}',
+                                          style: theme.textTheme.bodySmall,
+                                        ),
+                                        const SizedBox(width: OgLSpace.xxs),
+                                        Icon(
+                                          Icons.chevron_right,
+                                          size: OgLIconSize.md,
+                                          color: theme
+                                              .colorScheme.onSurfaceVariant,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
-                            onTap: () => unawaited(_openIssue(item)),
                           );
                         },
                       );

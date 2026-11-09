@@ -492,9 +492,18 @@ class OgLCodeField extends StatefulWidget {
     CodeChunkController chunkController,
     CodeIndicatorValueNotifier notifier,
   ) =>
+      // 当前行行号走主题强调色（见下）；库对未聚焦行号统一淡化（alpha 减半）。
+      // "我编辑到第几行"一眼可辨；配色全部来自 ColorScheme，不写字面色。
+      // （正文区的选中行高亮由 cursorLineColor / selectionColor 负责，
+      // 这里补齐的是行号一侧的对应反馈；行号本身是等宽场景，字号与编辑区一致。）
       DefaultCodeLineNumber(
         controller: editingController,
         notifier: notifier,
+        focusedTextStyle: TextStyle(
+          fontSize: 13,
+          fontFamily: kOglMonoFamily,
+          color: Theme.of(context).colorScheme.primary,
+        ),
       );
 
   static PreferredSizeWidget _findPanel(
@@ -611,6 +620,13 @@ class _OgLCodeFieldState extends State<OgLCodeField> {
           highlight: widget.highlight,
           palette: palette,
         ),
+      ),
+      // 行号列与正文之间的分隔线（库的 `leadingDivider`：渲染在行号与编辑区
+      // 之间的一根竖线，颜色走主题 outlineVariant —— 与全局 Divider 一致）。
+      leadingDivider: VerticalDivider(
+        width: 1,
+        thickness: 1,
+        color: theme.colorScheme.outlineVariant,
       ),
       indicatorBuilder:
           widget.showLineNumbers ? OgLCodeField._lineNumbers : null,
@@ -744,10 +760,17 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
         },
       );
 
+  /// 结果文案（x/y 或 0/0）。
+  String _resultTextOf(CodeFindValue? value) {
+    final CodeFindResult? result = value?.result;
+    if (result == null || result.matches.isEmpty) {
+      return '0/0';
+    }
+    return '${result.index + 1}/${result.matches.length}';
+  }
+
   Widget _findRow(BuildContext context, CodeFindValue value) {
-    final String result = value.result == null
-        ? '0/0'
-        : '${value.result!.index + 1}/${value.result!.matches.length}';
+    final String result = _resultTextOf(value);
     return Row(
       children: <Widget>[
         const SizedBox(width: OgLSpace.sm),
@@ -755,7 +778,10 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
           child: TextField(
             controller: controller.findInputController,
             focusNode: controller.findInputFocusNode,
-            style: const TextStyle(fontSize: 13),
+            style: TextStyle(
+              fontSize: 13,
+              fontFamily: kOglMonoFamily,
+            ),
             decoration: InputDecoration(
               isDense: true,
               hintText: _t('findHint'),
@@ -775,7 +801,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
           tooltip: _t('useRegex'),
           onPressed: controller.toggleRegex,
         ),
-        Text(result, style: const TextStyle(fontSize: 12)),
+        Text(result, style: theme.textTheme.labelSmall),
         IconButton(
           icon: const Icon(Icons.arrow_upward, size: 18),
           tooltip: _t('prevMatch'),
@@ -810,7 +836,10 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
             child: TextField(
               controller: controller.replaceInputController,
               focusNode: controller.replaceInputFocusNode,
-              style: const TextStyle(fontSize: 13),
+              style: TextStyle(
+                fontSize: 13,
+                fontFamily: kOglMonoFamily,
+              ),
               decoration: InputDecoration(
                 isDense: true,
                 hintText: _t('replaceWithHint'),
@@ -849,6 +878,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
               label,
               style: TextStyle(
                 fontSize: 13,
+                fontFamily: kOglMonoFamily,
                 fontWeight: checked ? FontWeight.w700 : FontWeight.w400,
               ),
             ),

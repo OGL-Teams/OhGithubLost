@@ -40,5 +40,9 @@
   "tabDiscover": "Discover",
   "tabFeed": "Feed",
   "tabIssues": "Issues",
-  "tabRepos": "Repos"
+  "tabRepos": "Repos",
+  "timeJustNow": "just now",
+  "timeMinutesAgo": "{count} min ago",
+  "timeHoursAgo": "{count} h ago",
+  "timeDaysAgo": "{count} d ago"
 }

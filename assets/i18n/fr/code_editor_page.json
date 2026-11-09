@@ -1,6 +1,7 @@
 {
   "baseline": "Basé sur : {sha}",
   "cancelledRemoteUpdated": "Annulé : la version distante a été mise à jour, aucune surécriture",
+  "column": "Col",
   "commitFailedConflict": "Échec du commit ({conflict}) : {detail}",
   "commitFailedDetail": "Échec du commit : {detail}",
   "commitFailedError": "Échec du commit : {error}",
@@ -12,11 +13,13 @@
   "discardTitle": "Ignorer les modifications non enregistrées ?",
   "draftRestored": "Dernier brouillon non commité restauré",
   "editTitle": "Modifier",
+  "encoding": "UTF-8",
   "findReplace": "Rechercher / Remplacer",
   "fontLarger": "Agrandir la police",
   "fontSmaller": "Réduire la police",
   "forceOverwrite": "Forcer la surécriture",
   "keepRemote": "Annuler (conserver la version distante)",
+  "line": "Lig",
   "overwriteWarning": "La surécriture entraînera la perte de cette modification distante.",
   "preview": "Aperçu (lecture seule)",
   "previewTruncated": "{text}\n…(Aperçu tronqué)",
@@ -28,8 +31,11 @@
   "remoteUpdated": "Version distante mise à jour, risque de surécrire les modifications d'autres utilisateurs",
   "save": "Enregistrer",
   "stats": "{lines} lignes · {chars} caractères",
+  "toolbarCollapse": "Réduire la barre d’outils",
+  "toolbarExpand": "Déployer la barre d’outils",
   "undo": "Annuler",
   "unsaved": " · Non enregistré",
+  "unsavedDot": "●",
   "wrapOff": "Désactiver le retour à la ligne",
   "wrapOn": "Activer le retour à la ligne"
 }

@@ -900,8 +900,7 @@ class _SettingsPageState extends State<SettingsPage> {
         expandLabel: _t('expandGroup'),
         collapseLabel: _t('collapseGroup'),
         children: <Widget>[
-          // 分组说明：收起态标题下是**当前值**摘要，展开后才给这段解释
-          // （原来的固定说明从"标题下的摘要"下移到这里，措辞不变）。
+          // 分组说明：展开后给一行解释（与日志组同一写法）。
           ListTile(
             dense: true,
             contentPadding: kOgLSettingsRowPadding,
@@ -2219,8 +2218,7 @@ class _SettingsPageState extends State<SettingsPage> {
         expandLabel: _t('expandGroup'),
         collapseLabel: _t('collapseGroup'),
         children: <Widget>[
-          // 分组说明：收起时标题下看到的是**当前值**摘要，展开后才给这段解释
-          // （原来的固定说明从"标题下的摘要"下移到这里，措辞不变）。
+          // 分组说明：收起时标题下是**当前值**摘要，展开后才给这段解释。
           ListTile(
             dense: true,
             contentPadding: kOgLSettingsRowPadding,

@@ -100,6 +100,10 @@ class OgLDownloadNotice {
       ),
       duration: const Duration(seconds: 8),
       backgroundColor: bg,
+      // 与 OgLNotifier 同款规格：悬浮 + 统一留隙（宽度只有一处出处）。
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.symmetric(
+          horizontal: OgLSpace.lg, vertical: OgLSpace.md),
       action: (label != null && handler != null)
           ? SnackBarAction(label: label, onPressed: handler)
           : null,

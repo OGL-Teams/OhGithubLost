@@ -25,6 +25,7 @@ import '../../kernel/boot/trust_warnings.dart';
 import '../../kernel/diagnostics.dart';
 import '../../kernel/log/og_l_log_file.dart';
 import '../i18n/og_l_i18n.dart';
+import '../util/og_l_space.dart';
 import 'overlays.dart';
 import 'system_notifier.dart';
 
@@ -568,7 +569,13 @@ class _OgLNoticeHostState extends State<OgLNoticeHost>
       OgLNoticeCenter.instance.requeueFront(notice);
       return;
     }
-    messenger.showSnackBar(SnackBar(content: Text(text)));
+    messenger.showSnackBar(SnackBar(
+      content: Text(text),
+      // 与 OgLNotifier 同款规格：悬浮 + 统一留隙（宽度只有一处出处）。
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.symmetric(
+          horizontal: OgLSpace.lg, vertical: OgLSpace.md),
+    ));
     _showing = false;
     WidgetsBinding.instance.addPostFrameCallback((_) => _drain());
   }

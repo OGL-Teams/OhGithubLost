@@ -1,6 +1,7 @@
 {
   "baseline": "Basierend auf: {sha}",
   "cancelledRemoteUpdated": "Abgebrochen: Remote-Branch aktualisiert, keine Überschreibung",
+  "column": "Sp",
   "commitFailedConflict": "Commit fehlgeschlagen ({conflict}): {detail}",
   "commitFailedDetail": "Commit fehlgeschlagen: {detail}",
   "commitFailedError": "Commit fehlgeschlagen: {error}",
@@ -12,11 +13,13 @@
   "discardTitle": "Unspeicherte Änderungen verwerfen?",
   "draftRestored": "Letzter nicht gecommitteter Entwurf wiederhergestellt",
   "editTitle": "Bearbeiten",
+  "encoding": "UTF-8",
   "findReplace": "Suchen / Ersetzen",
   "fontLarger": "Schriftgröße erhöhen",
   "fontSmaller": "Schriftgröße verringern",
   "forceOverwrite": "Überschreiben erzwingen",
   "keepRemote": "Abbrechen (Remote-Branch beibehalten)",
+  "line": "Z.",
   "overwriteWarning": "Durch das Überschreiben geht diese Remote-Änderung verloren.",
   "preview": "Vorschau (schreibgeschützt)",
   "previewTruncated": "{text}\n…(Vorschau gekürzt)",
@@ -28,8 +31,11 @@
   "remoteUpdated": "Remote-Branch aktualisiert, kann Änderungen anderer überschreiben",
   "save": "Speichern",
   "stats": "{lines} Zeilen · {chars} Zeichen",
+  "toolbarCollapse": "Werkzeugleiste einklappen",
+  "toolbarExpand": "Werkzeugleiste ausklappen",
   "undo": "Rückgängig machen",
   "unsaved": " · Nicht gespeichert",
+  "unsavedDot": "●",
   "wrapOff": "Zeilenumbruch deaktivieren",
   "wrapOn": "Zeilenumbruch aktivieren"
 }

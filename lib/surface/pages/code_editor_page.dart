@@ -99,10 +99,24 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   bool _wrap = false;
   double _fontSize = 13;
 
+  /// 顶部紧凑工具栏是否展开（收起时 AppBar 仍保留撤销 / 重做 / 查找）。
+  bool _toolbarExpanded = true;
+
   // B2-B-01：草稿箱入口的 initialText 是草稿正文，此时「未改动」也仍是
   // 有待提交内容；但 dirty 只用于退出确认，草稿箱入口不该弹「放弃修改」。
   bool get _dirty =>
       _controller.text != widget.initialText && widget.initialTextIsRemote;
+
+  /// 保存按钮高亮：**有未提交的改动就亮**（含草稿箱入口——那里的内容
+  /// 本身就是待提交的草稿正文）。
+  bool get _saveHighlighted {
+    if (_saving) {
+      return false;
+    }
+    return widget.initialTextIsRemote
+        ? _controller.text != widget.initialText
+        : true;
+  }
 
   @override
   void initState() {
@@ -365,21 +379,109 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
     );
   }
 
-  Widget _statusBar(ThemeData theme) => Material(
+  /// 顶部紧凑工具栏：换行 / 字号 / 预览 / 收起（一行 IconButton，均带 tooltip）。
+  ///
+  /// 为什么是"低频操作"：撤销 / 重做 / 查找 / 保存是**边写边用**的高频动作，
+  /// 必须一步可达（留在 AppBar）；字号 / 换行 / 预览通常**每会话只调一次**，
+  /// 收进工具栏后 AppBar 不再挤满 8 个图标。
+  Widget _buildToolbar(BuildContext context, ThemeData theme) => Material(
         color: theme.colorScheme.surfaceContainerHighest,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-              OgLSpace.md, OgLSpace.sm, OgLSpace.md, OgLSpace.sm),
-          child: Text(
-            '${_t('stats', {
-                  'lines': _controller.lineCount,
-                  'chars': _controller.text.length
-                })}'
-            '${_dirty ? _t('unsaved') : ''}',
-            style: theme.textTheme.bodySmall,
+          padding: const EdgeInsets.symmetric(horizontal: OgLSpace.sm),
+          child: Row(
+            children: <Widget>[
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: Icon(_wrap ? Icons.wrap_text : Icons.notes),
+                tooltip: _wrap ? _t('wrapOff') : _t('wrapOn'),
+                onPressed: () => setState(() => _wrap = !_wrap),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.remove),
+                tooltip: _t('fontSmaller'),
+                onPressed: () => _changeFont(-1),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.add),
+                tooltip: _t('fontLarger'),
+                onPressed: () => _changeFont(1),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.visibility_outlined),
+                tooltip: _t('preview'),
+                onPressed: _previewSheet,
+              ),
+              const Spacer(),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.keyboard_arrow_up),
+                tooltip: _t('toolbarCollapse'),
+                onPressed: () => setState(() => _toolbarExpanded = false),
+              ),
+            ],
           ),
         ),
       );
+
+  Widget _statusBar(ThemeData theme) {
+    final CodeLineSelection selection = _controller.selection;
+    // 光标位置（行:列，1 起）；光标失去焦点时保留上次位置（selection 恒有值）。
+    final int line = selection.extentIndex + 1;
+    final int column = selection.extentOffset + 1;
+    return Material(
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            OgLSpace.md, OgLSpace.xxs, OgLSpace.md, OgLSpace.xxs),
+        child: Row(
+          children: <Widget>[
+            Text(
+              _t('stats', {
+                'lines': _controller.lineCount,
+                'chars': _controller.text.length,
+              }),
+              style: theme.textTheme.labelSmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(width: OgLSpace.md),
+            Text(
+              '${_t('line')} $line · ${_t('column')} $column',
+              style: theme.textTheme.labelSmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(width: OgLSpace.md),
+            Text(
+              _t('encoding'),
+              style: theme.textTheme.labelSmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            const Spacer(),
+            // 未保存标记：dirty 时亮"●"（色板里最醒目的警示位），干净时不占位。
+            if (_dirty || !widget.initialTextIsRemote)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    _t('unsavedDot'),
+                    style: theme.textTheme.labelSmall
+                        ?.copyWith(color: theme.colorScheme.error),
+                  ),
+                  const SizedBox(width: OgLSpace.xxs),
+                  Text(
+                    _t('unsaved'),
+                    style: theme.textTheme.labelSmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -416,6 +518,8 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
             style: theme.textTheme.titleMedium,
           ),
           actions: <Widget>[
+            // 常用操作收进 AppBar：撤销 / 重做 / 查找（高频，保持一步可达）。
+            // 预览 / 字号 / 换行属于"调一遍就不再碰"的低频项，收进紧凑工具栏。
             IconButton(
               icon: const Icon(Icons.undo),
               tooltip: _t('undo'),
@@ -437,30 +541,40 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
                     value == null ? _find.findMode() : _find.close(),
               ),
             ),
-            IconButton(
-              icon: Icon(_wrap ? Icons.wrap_text : Icons.notes),
-              tooltip: _wrap ? _t('wrapOff') : _t('wrapOn'),
-              onPressed: () => setState(() => _wrap = !_wrap),
-            ),
-            IconButton(
-              icon: const Icon(Icons.remove),
-              tooltip: _t('fontSmaller'),
-              onPressed: () => _changeFont(-1),
-            ),
-            IconButton(
-              icon: const Icon(Icons.add),
-              tooltip: _t('fontLarger'),
-              onPressed: () => _changeFont(1),
-            ),
-            IconButton(
-              icon: const Icon(Icons.visibility_outlined),
-              tooltip: _t('preview'),
-              onPressed: _previewSheet,
-            ),
-            IconButton(
-              icon: const Icon(Icons.save_outlined),
-              tooltip: _t('save'),
-              onPressed: _saving ? null : _save,
+            // 工具栏收起后从这里展开回来（展开态时不需要这个入口）。
+            if (!_toolbarExpanded)
+              IconButton(
+                icon: const Icon(Icons.tune),
+                tooltip: _t('toolbarExpand'),
+                onPressed: () => setState(() => _toolbarExpanded = true),
+              ),
+            // 保存：FilledButton.tonalIcon —— 有未提交改动时用 primaryContainer
+            // 高亮（tonal 底色在 AppBar 上明显区别于 IconButton），干净时淡显。
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: OgLSpace.sm,
+                vertical: OgLSpace.xxs,
+              ),
+              child: FilledButton.tonalIcon(
+                onPressed: _saving ? null : _save,
+                icon: _saving
+                    ? const SizedBox(
+                        width: OgLIconSize.sm,
+                        height: OgLIconSize.sm,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save_outlined, size: OgLIconSize.md),
+                label: Text(_t('save')),
+                style: FilledButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  backgroundColor: _saveHighlighted
+                      ? theme.colorScheme.primaryContainer
+                      : theme.colorScheme.surfaceContainerHighest,
+                  foregroundColor: _saveHighlighted
+                      ? theme.colorScheme.onPrimaryContainer
+                      : theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
           ],
         ),
@@ -468,6 +582,8 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
             delay: Duration.zero,
             child: Column(
               children: <Widget>[
+                // ── 紧凑工具栏：低频操作一行收纳（带 tooltip；可收起）──────
+                if (_toolbarExpanded) _buildToolbar(context, theme),
                 Expanded(
                   child: OgLCodeField(
                     controller: _controller,
