@@ -360,8 +360,8 @@ ThemeData buildOgLTheme(
     // ── 分段控件（M3 收敛：默认胶囊过高过圆，截图实证错位感）──────
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
-        textStyle: WidgetStatePropertyAll<TextStyle>(
-          base.textTheme.labelLarge ?? const TextStyle(),
+        textStyle: const WidgetStatePropertyAll<TextStyle>(
+          TextStyle(fontWeight: FontWeight.w500),
         ),
         visualDensity: VisualDensity.compact,
         shape: WidgetStatePropertyAll<OutlinedBorder>(
