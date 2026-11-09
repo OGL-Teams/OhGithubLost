@@ -442,6 +442,56 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         ),
       );
 
+  /// ★ MT 式「跳转到行」：输入行号（1..lineCount），光标直达并滚动到可见区。
+  Future<void> _showGoToLineDialog() async {
+    final String? input = await showDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final TextEditingController controller = TextEditingController(
+            text: '${_controller.selection.extentIndex + 1}');
+        return AlertDialog(
+          title: Text(_t('goToLine')),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+            style: const TextStyle(fontFamily: kOglMonoFamily),
+            onSubmitted: (String value) =>
+                Navigator.of(dialogContext).pop(value),
+            decoration: InputDecoration(
+              hintText: _t('goToLineHint'),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(_t('cancel')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+              child: Text(_t('go')),
+            ),
+          ],
+        );
+      },
+    );
+    if (input == null || !mounted) return;
+    final int? target = int.tryParse(input);
+    if (target == null) return;
+    final int line = target.clamp(1, _controller.lineCount) - 1;
+    // re_editor 在 selection 变化时自动滚动到光标可见区（库内置行为），
+    // 无需手动估算行高滚动。
+    _controller.selection = CodeLineSelection(
+      baseIndex: line,
+      baseOffset: 0,
+      extentIndex: line,
+      extentOffset: 0,
+    );
+  }
+
   Widget _statusBar(ThemeData theme) {
     final CodeLineSelection selection = _controller.selection;
     // 光标位置（行:列，1 起）；光标失去焦点时保留上次位置（selection 恒有值）。
@@ -463,10 +513,18 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(width: OgLSpace.md),
-            Text(
-              '${_t('line')} $line · ${_t('column')} $column',
-              style: theme.textTheme.labelSmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            // ★ MT 式快捷跳转：点击行:列弹出行号输入，直达定位。
+            InkWell(
+              onTap: _showGoToLineDialog,
+              borderRadius: OgLRadius.cXs,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xxs),
+                child: Text(
+                  '${_t('line')} $line · ${_t('column')} $column',
+                  style: theme.textTheme.labelSmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ),
             ),
             const SizedBox(width: OgLSpace.md),
             Text(
