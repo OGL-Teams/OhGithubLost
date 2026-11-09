@@ -724,7 +724,25 @@ class IxDownloadManager extends ChangeNotifier {
       unawaited(_runRanged(id: id, connections: connections));
       return _snapshots[id] ?? queued;
     }
-    await _backend.enqueue(spec);
+    // ★ 下载可用性 P0：后端入队失败（库未初始化 / 权限 / 磁盘）
+    //   不能让任务永远挂在 queued —— 置 failed + 留痕，页面如实可见。
+    try {
+      await _backend.enqueue(spec);
+    } catch (error) {
+      final IxDownloadTask? cur = _snapshots[id];
+      if (cur != null && !_disposed) {
+        _snapshots[id] = cur.copyWith(
+          status: IxDownloadStatus.failed,
+          error: IxDownloadError(
+            IxDownloadErrorKind.unknown,
+            '入队失败：$error',
+          ),
+        );
+        _touchTasksCache();
+        _safeNotify();
+      }
+      rethrow;
+    }
     return _snapshots[id] ?? queued;
   }
 

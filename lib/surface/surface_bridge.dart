@@ -376,7 +376,7 @@ class SurfaceBridge {
       // 私有 + 加速：只有在用户已知情接受时才允许（令牌会交给代理）。
       privateAccelAccepted: current.accelPrivateRepoAccepted,
     );
-    if (candidates.first != rawUrl) {
+    if (candidates.isNotEmpty && candidates.first != rawUrl) {
       // 走加速。
       //
       // ★ 私有仓库加速时**必须带令牌**：raw 匿名 404，代理没有令牌同样取不到
