@@ -300,9 +300,25 @@ jobs:
       #   · `gradle` 额外绑定 pubspec.yaml（依赖变了必须重下）；
       #   · 都带 restore-keys 前缀回退 —— 键变了也能命中旧缓存，
       #     不会因为多一个版本就完全从零开始。
-      - name: 缓存 Gradle 与 Android SDK（NDK / cmake）
+      # ── 缓存层（2026-11-10 加；同日修正并发写问题）──────────────────
+      # 实测：Android 各腿构建 350~380s，大头是**每次重下**：
+      #   · Gradle 依赖（Maven 制品，数百 MB）；
+      #   · **Android NDK**（~2GB；本次实测还出现过
+      #     "Error on ZipFile unknown archive" 损坏下载 → 整条腿作废）。
+      #
+      # ★ 为什么用 restore/save 分离而不是 actions/cache@v4：
+      #   v4 会在**每个 job 的 post 步骤**自动打包并上传缓存。5 条腿用同一个
+      #   key 时实测 `Post 缓存` 各花 280~431s（比构建步还慢），而 GitHub
+      #   只允许一个 job 保留该 key —— 其余 4 份上传全是白烧；
+      #   缓存按 2GB 分段传输，并发分段还互相拖慢。
+      #   现在：4 条腿只读（零上传），仅 AAB 腿在最后显式 save 一次。
+      #
+      # 键的设计：绑定 FLUTTER_VERSION + pubspec.yaml，并带 restore-keys
+      #   前缀回退 —— 依赖变更不会用到旧缓存，版本递进也能命中旧缓存。
+      - name: 恢复 Android 构建缓存（NDK / cmake / Gradle）
+        id: android-cache
         if: matrix.build == 'apk' || matrix.build == 'appbundle'
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.gradle/caches
@@ -312,6 +328,7 @@ jobs:
           key: android-gradle-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml') }}
           restore-keys: |
             android-gradle-${{ env.FLUTTER_VERSION }}-
+
 
       - name: 缓存 Flutter SDK（arm64 宿主 · git 方式克隆的）
         # arm64 宿主没有官方 SDK 归档，只能 git clone —— 实测 Windows 这条
@@ -604,6 +621,26 @@ jobs:
           path: ${{ matrix.artifact }}
           if-no-files-found: warn
           retention-days: 14
+
+      # ★ 独占保存（2026-11-10 修并发写）：只有 AAB 腿写缓存，
+      #   其余 4 条腿用 restore-only 零上传。命中缓存时不再重复保存。
+      - name: 保存 Android 构建缓存（仅 AAB 腿 · 独占写）
+        # `success()` 而非 `always()`：构建失败时产物目录可能不完整，
+        #   把半拉好的 Gradle 状态存进缓存会污染后续所有 run。
+        #   AAB 腿失败 → 本轮不写缓存，下一轮冷启动重试即可（正确性优先）。
+        if: >-
+          success() &&
+          matrix.label == 'Android · AAB' &&
+          steps.android-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ${{ env.ANDROID_SDK_ROOT }}/ndk
+            ${{ env.ANDROID_SDK_ROOT }}/cmake
+          key: android-gradle-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml') }}
+
 
   # ---------------------------------------------------------------------------
   # 发布任务：仅手动触发（workflow_dispatch）且全部必过矩阵成功后执行。

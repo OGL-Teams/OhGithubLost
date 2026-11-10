@@ -36,6 +36,15 @@ except ImportError:
     sys.exit(2)
 
 
+def doc_all_steps(doc: dict) -> list[dict]:
+    """列出 workflow 里所有 job 的所有步骤（扁平化）。"""
+    out: list[dict] = []
+    for job in doc.get('jobs', {}).values():
+        if isinstance(job, dict):
+            out.extend(s for s in (job.get('steps') or []) if isinstance(s, dict))
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--fatal', action='store_true', help='有问题时退出 1')
@@ -88,6 +97,22 @@ def main() -> int:
                     issues.append(
                         f'{path.name}/{job_name}/{step.get("name")}: '
                         f'缓存键未绑定 pubspec.yaml / FLUTTER_VERSION，依赖变更不会失效')
+
+        # 3b) 同一 workflow 里若同时出现 cache/restore 与 cache/save，
+        #     save 必须带独占条件（不能每条 matrix 腿都写同一个 key）。
+        #     实测（run 42840707327）：5 条腿并发写同一个 ~2GB 缓存，
+        #     `Post 缓存` 各花 280~431s，比构建步还慢，且只有一个能保存成功。
+        restore_steps = [s for s in doc_all_steps(doc)
+                         if str(s.get('uses', '')).startswith('actions/cache/restore')]
+        save_steps = [s for s in doc_all_steps(doc)
+                      if str(s.get('uses', '')).startswith('actions/cache/save')]
+        if restore_steps and save_steps:
+            for s in save_steps:
+                cond = str(s.get('if', ''))
+                if 'matrix.label' not in cond and 'matrix.' not in cond:
+                    issues.append(
+                        f'{path.name}/{s.get("name")}: save 步骤缺少独占条件'
+                        f'（每条 matrix 腿都会写同一个 key → 并发上传白烧）')
 
         # 4) 发布产物压缩必须并行
         if '整理产物' in text or 'zip -r -9' in text:
