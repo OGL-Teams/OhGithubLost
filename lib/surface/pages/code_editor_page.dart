@@ -26,6 +26,7 @@ import '../util/gh_format.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
+import '../widgets/code_editor_toolbar.dart';
 
 /// 取 `code_editor_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -385,66 +386,38 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
   Widget _buildToolbar(BuildContext context) {
     // ★ 修复「顶栏漏缝」：工具栏背景与代码区背景同色，视觉连成一体
     //   （此前用 surfaceContainerHighest，与代码配色主题之间出现色带）。
+    //   ★ 但**同色不等于对齐**：横向 SingleChildScrollView 的内容
+    //   `Row(mainAxisSize: min)` 只有图标那么宽，Material 于是按内容
+    //   收缩——真机实测灰带只覆盖 x=43..978，两端各露 43/71px 的
+    //   surface 白缝，而下方代码区满宽 x=0..1038。
+    //   [OgLCodeEditorToolbar] 内部用 `SizedBox(width: double.infinity)`
+    //   铺满宽度（内容仍可横向滑动），保证边界与代码区齐平。
     final Color toolbarColor =
         _EditorPrefs(widget.surface).theme(context).background;
-    return Material(
-      color: toolbarColor,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: OgLSpace.sm),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.undo),
-              tooltip: _t('undo'),
-              onPressed: _controller.canUndo ? _controller.undo : null,
-            ),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.redo),
-              tooltip: _t('redo'),
-              onPressed: _controller.canRedo ? _controller.redo : null,
-            ),
-            ValueListenableBuilder<CodeFindValue?>(
-              valueListenable: _find,
-              builder:
-                  (BuildContext context, CodeFindValue? value, Widget? _) =>
-                      IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: Icon(value == null ? Icons.search : Icons.search_off),
-                tooltip: _t('findReplace'),
-                onPressed: () =>
-                    value == null ? _find.findMode() : _find.close(),
-              ),
-            ),
-            const VerticalDivider(width: OgLSpace.lg),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              icon: Icon(_wrap ? Icons.wrap_text : Icons.notes),
-              tooltip: _wrap ? _t('wrapOff') : _t('wrapOn'),
-              onPressed: () => setState(() => _wrap = !_wrap),
-            ),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.remove),
-              tooltip: _t('fontSmaller'),
-              onPressed: () => _changeFont(-1),
-            ),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.add),
-              tooltip: _t('fontLarger'),
-              onPressed: () => _changeFont(1),
-            ),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.visibility_outlined),
-              tooltip: _t('preview'),
-              onPressed: _previewSheet,
-            ),
-          ],
+    return ValueListenableBuilder<CodeFindValue?>(
+      valueListenable: _find,
+      builder: (BuildContext context, CodeFindValue? value, Widget? _) =>
+          OgLCodeEditorToolbar(
+        backgroundColor: toolbarColor,
+        canUndo: _controller.canUndo,
+        canRedo: _controller.canRedo,
+          wrap: _wrap,
+          onUndo: _controller.undo,
+          onRedo: _controller.redo,
+          onToggleFind: () =>
+              value == null ? _find.findMode() : _find.close(),
+          onToggleWrap: () => setState(() => _wrap = !_wrap),
+          onFontSmaller: () => _changeFont(-1),
+          onFontLarger: () => _changeFont(1),
+          onPreview: _previewSheet,
+          undoTooltip: _t('undo'),
+          redoTooltip: _t('redo'),
+          findTooltip: _t('findReplace'),
+          wrapOnTooltip: _t('wrapOn'),
+          wrapOffTooltip: _t('wrapOff'),
+          fontSmallerTooltip: _t('fontSmaller'),
+          fontLargerTooltip: _t('fontLarger'),
+          previewTooltip: _t('preview'),
         ),
       ),
     );
@@ -634,6 +607,12 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
         body: OgLReveal(
             delay: Duration.zero,
             child: Column(
+              // ★ 修复「顶栏漏缝」：Column 默认 crossAxisAlignment.center，
+              //   非 Expanded 子项（工具栏 / 状态栏）会按**内容固有宽度收缩**
+              //   再居中 —— 工具栏于是比下方满宽的代码区窄一截，两端露出
+              //   surface 白边（实测 x=43..978，两侧各白 43/71px）。
+              //   stretch 让所有横向子项撑满，与代码区严格对齐。
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 // ── 紧凑工具栏：低频操作一行收纳（带 tooltip；可收起）──────
                 if (_toolbarExpanded) _buildToolbar(context),

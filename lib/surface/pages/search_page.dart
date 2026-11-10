@@ -26,6 +26,7 @@ import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
+import '../widgets/discover_rows.dart';
 import 'issue_page.dart';
 import 'repo_page.dart';
 
@@ -682,63 +683,23 @@ class _DiscoverPageState extends State<DiscoverPage>
 
   /// 单条动态的紧凑行：4px 状态竖条（未读 primary / 已读透明）+
   /// 一行标题 + 一行元信息（仓库 · 类型 · 相对时间），行高 ≤64。
+  ///
+  /// ★ 行渲染委托给 [OgLFeedRow]：状态竖条若用
+  ///   `Row(crossAxisAlignment: stretch)` 撑满行高，纵向 ListView 的
+  ///   **无界**子项高度会让整行在 release 下不绘制（动态 tab 整页空白）。
+  ///   详见 [OgLFeedRow] 的文档注释与回归测试。
   Widget _buildFeedRow(BuildContext context, Map<String, dynamic> item) {
-    final ThemeData theme = Theme.of(context);
     final String repoName = _feedRepoOf(item);
     final Object? subject = item['subject'];
     final String title = subject is Map<Object?, Object?>
         ? ghStr(Map<String, dynamic>.from(subject), 'title')
         : '';
-    final bool unread = _feedUnreadOf(item);
-    return Material(
-      color: theme.colorScheme.surface,
-      child: InkWell(
-        onTap: () => unawaited(_openFeedItem(item)),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            // 状态竖条：未读点亮 primary，已读透明（占位宽度恒定，行不跳动）。
-            Container(
-              width: OgLSpace.xxs,
-              color: unread
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.surface,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: OgLSpace.md,
-                  vertical: OgLSpace.sm,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      title.isEmpty ? _t('feedRelease') : title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: unread
-                          ? theme.textTheme.titleMedium
-                          : theme.textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: OgLSpace.xxs),
-                    Text(
-                      '$repoName · ${_feedTypeOf(item)} · '
-                      '${_relativeTime(ghStr(item, 'updated_at'))}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return OgLFeedRow(
+      unread: _feedUnreadOf(item),
+      title: title.isEmpty ? _t('feedRelease') : title,
+      meta: '$repoName · ${_feedTypeOf(item)} · '
+          '${_relativeTime(ghStr(item, 'updated_at'))}',
+      onTap: () => unawaited(_openFeedItem(item)),
     );
   }
 
@@ -973,33 +934,24 @@ class _DiscoverPageState extends State<DiscoverPage>
       };
 
   Widget _buildIssuesTab() => Column(
+        // ★ 修复「胶囊文字溢出」：Column 默认 crossAxisAlignment.center，
+        //   子项按内容宽度收缩并居中——横向 ListView 于是按内容宽度定位，
+        //   超出屏幕宽的部分被裁掉（实测首个胶囊左缘 x=28 被切）。
+        //   stretch 让筛选行满宽。
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           // 分类筛选：FilterChip 横滑行（比 SegmentedButton 省宽度，可扩档）。
-          SizedBox(
-            height: OgLSpace.mega / 2,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(
-                horizontal: OgLSpace.lg,
-                vertical: OgLSpace.sm,
-              ),
-              children: <Widget>[
-                for (int filter = 0; filter < 3; filter++)
-                  Padding(
-                    padding: const EdgeInsets.only(right: OgLSpace.sm),
-                    child: FilterChip(
-                      key: ValueKey<String>('issues-chip-$filter'),
-                      label: Text(_issuesFilterLabel(filter)),
-                      selected: _issuesFilter == filter,
-                      onSelected: (bool selected) {
-                        if (selected) {
-                          setState(() => _issuesFilter = filter);
-                        }
-                      },
-                    ),
-                  ),
-              ],
-            ),
+          // ★ 高度由内容决定（此前写死 32dp，把标签文字挤到了胶囊之外）。
+          OgLIssuesFilterChips(
+            selected: _issuesFilter,
+            labels: <String>[
+              _issuesFilterLabel(0),
+              _issuesFilterLabel(1),
+              _issuesFilterLabel(2),
+            ],
+            onSelect: (int filter) {
+              setState(() => _issuesFilter = filter);
+            },
           ),
           Expanded(
             child: _issues == null
