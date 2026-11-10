@@ -126,6 +126,33 @@ root 所有的系统 SDK 无法可靠缓存，**接受这一成本**。
 Flutter SDK / pub 缓存（实测 arm64 两腿命中）。
 清理脚本：`/tmp/clean_ogl_caches.py`（按 key 前缀删除，保守只删失败项）。
 
+### 最终验证（run **42846860782**，commit `082f794`，完整 success）
+
+| 指标 | 优化前基线 | 并发写失败版 | 4GB 缓存失败版 | **最终版** |
+|---|---|---|---|---|
+| Build 墙钟 | ~420s | **940s** | 414s | **452s** |
+| Android 构建步 | 350~379s | 257~402s | 168~231s | 299~379s |
+| `Post 缓存` 步骤 | 无 | 280~508s × 5 | 无 | **无** |
+| 缓存 restore | — | 全失败 | 下载 4GB 后 `Failed to restore` | **0~1s，无 `Cannot utime` / `Failed to restore`** |
+| 独占 save | — | 8 次 `Failed to save` | `Failed to save` | **AAB 腿 14s 成功一次** |
+| 缓存包 | — | ~2GB × 5 | **4078 MB** | **1124 MB**（只有 Gradle 依赖） |
+| Actions 缓存总额 | — | — | 8.30 GB | **5.42 GB**（< 10GB 上限） |
+
+**诚实结论**：最终墙钟 452s 与优化前 ~420s 基本持平（+32s，
+这一轮是冷启动 + 独占 save 14s）。**Gradle 缓存并没有把构建压得更短**——
+因为 NDK 下载无法可靠缓存（root 所有的 runner 系统 SDK），
+它仍是 Android 腿的主要耗时。缓存的真实价值在于：
+- 消除了两次失败版引入的额外开销（940s / 4GB 恢复）；
+- Gradle Maven 制品与发行版不再每腿重下（下一轮起生效）；
+- 避免 NDK/Gradle 下载损坏时整腿作废的概率（CDN + 预装 CMake）。
+
+**真正稳定生效的压缩项**：
+1. `paths-ignore`：纯文档提交不再跑 9 腿矩阵（省整轮 ~7min）；
+2. 产物压缩并行化：发布 job **85s → ~15s**；
+3. arm64 两腿 Flutter SDK 缓存：实测 `Cache hit`，省 clone 与首次工具编译
+   （Windows 124s + 54s / Linux 27s）；
+4. CI 门禁离线自检：配置写坏不再要跑一轮 7 分钟才发现。
+
 **验证纪律**：`actions/cache` 在 job 的 post 步骤才写缓存，**run 被
 `cancel-in-progress` 取消时不会保存**。验证缓存收益时不要连续 push，
 必须让一整轮 Build 完整跑完；被取消的 run 里
