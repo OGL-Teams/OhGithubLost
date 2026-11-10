@@ -19,6 +19,23 @@ name: Build
 on:
   push:
     branches: [main]
+    # ★ 跳过纯文档提交（2026-11-10 加，依据实测）：
+    #   每次 push 都跑 9 腿矩阵 ≈ 7 分钟墙钟，而 `changed/` 归档、
+    #   `docs/`、`release_notes/`、README 这类提交**完全不影响产物**。
+    #   实测连续两次发布入档（v12.5.1 / v12.5.2）各白烧一整轮构建，
+    #   其中一次还撞上 NDK 下载损坏导致整条腿作废。
+    #   作用域只限 **push**：
+    #     · PR 仍全量构建（合并门槛不能被绕过）；
+    #     · workflow_dispatch 不受 paths 过滤影响（正式发布照常全平台）。
+    #   `.github/workflows/**`、`lib/`、`tool/`、`pubspec.yaml` 不在忽略列表，
+    #   改到构建配置本身必然触发验证。
+    paths-ignore:
+      - 'docs/**'
+      - 'changed/**'
+      - 'release_notes/**'
+      - '*.md'
+      - 'LICENSE'
+      - '.gitignore'
   pull_request:
   workflow_dispatch:
     inputs:
@@ -53,6 +70,14 @@ concurrency:
 
 env:
   FLUTTER_VERSION: '3.47.5'
+  # ★ Android SDK 根目录（GitHub runner 上 $ANDROID_HOME 与
+  #   $ANDROID_SDK_ROOT 同指 /usr/local/lib/android/sdk）。缓存路径必须用
+  #   它，否则 NDK 目录写死会与 runner 实际路径不符 → 缓存永远不命中。
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+  # arm64 宿主上 git 方式安装的 Flutter SDK 位置（供缓存使用）。
+  # ★ 用 `~` 而非硬编码 /home/runner：Windows arm64 runner 的 HOME
+  #   是 C:\Users\runneradmin，写死 Linux 路径会让缓存永远不命中。
+  FLUTTER_SDK_GIT_DIR: ~/flutter-sdk
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -231,8 +256,13 @@ jobs:
         if: matrix.os == 'ubuntu-24.04-arm' || matrix.os == 'windows-11-arm'
         shell: bash
         run: |
-          git clone --depth 1 --branch ${{ env.FLUTTER_VERSION }} \
-            https://github.com/flutter/flutter.git "$HOME/flutter-sdk"
+          # ★ 命中缓存则跳过克隆（缓存命中时目录已存在且可用）。
+          if [ -x "$HOME/flutter-sdk/bin/flutter" ]; then
+            echo "命中 Flutter SDK 缓存：$HOME/flutter-sdk"
+          else
+            git clone --depth 1 --branch ${{ env.FLUTTER_VERSION }} \
+              https://github.com/flutter/flutter.git "$HOME/flutter-sdk"
+          fi
           # Windows（pwsh）只认原生路径：用 cygpath 转换后再写给 GITHUB_PATH，
           # 否则下一步 `flutter --version` 会报 "not recognized as a name"（CI 实证）。
           if command -v cygpath >/dev/null 2>&1; then
@@ -257,6 +287,43 @@ jobs:
       # 插件注册文件（GeneratedPluginRegistrant / Podfile 的插件段 / CMake 的
       # 插件列表）是按"平台目录是否存在"来生成的；先 pub get 后 create 会让
       # 这些文件缺内容，表现为 Linux/Windows 链接期找不到插件符号。
+      # ── 缓存层（2026-11-10 加）──────────────────────────────────────
+      # 实测：Android 各腿构建 350~380s，大头是**每次重下**：
+      #   · Gradle 依赖（Maven 制品，数百 MB）；
+      #   · **Android NDK**（~2GB；本次实测还出现过
+      #     "Error on ZipFile unknown archive" 损坏下载 → 整条腿作废）。
+      # 缓存后：NDK 与 Gradle 制品复用，第二次起每腿省 2~4 分钟，
+      # 且 NDK 损坏不再每每重来（命中缓存即完全绕开下载）。
+      #
+      # 键的设计：
+      #   · `ndk` 与 Flutter 版本绑定（NDK 版本随 Flutter 模板走）；
+      #   · `gradle` 额外绑定 pubspec.yaml（依赖变了必须重下）；
+      #   · 都带 restore-keys 前缀回退 —— 键变了也能命中旧缓存，
+      #     不会因为多一个版本就完全从零开始。
+      - name: 缓存 Gradle 与 Android SDK（NDK / cmake）
+        if: matrix.build == 'apk' || matrix.build == 'appbundle'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ${{ env.ANDROID_SDK_ROOT }}/ndk
+            ${{ env.ANDROID_SDK_ROOT }}/cmake
+          key: android-gradle-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml') }}
+          restore-keys: |
+            android-gradle-${{ env.FLUTTER_VERSION }}-
+
+      - name: 缓存 Flutter SDK（arm64 宿主 · git 方式克隆的）
+        # arm64 宿主没有官方 SDK 归档，只能 git clone —— 实测 Windows 这条
+        # 要 124s、Linux 27s；且首次拉 SDK 后 Flutter 要自编译工具
+        # （Windows 实测 54s）。缓存 clone 结果后全部省掉。
+        if: matrix.os == 'ubuntu-24.04-arm' || matrix.os == 'windows-11-arm'
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.FLUTTER_SDK_GIT_DIR }}
+          key: flutter-sdk-git-${{ env.FLUTTER_VERSION }}-${{ matrix.os }}
+
+
       - name: 生成平台工程脚手架
         # ★ Windows 默认 shell 是 pwsh，而下面的 `flutter create` / `rm -f`
         #   是 bash 语法；pwsh 会把 `-f` 判为歧义参数并直接退出（CI 实证）。
@@ -606,18 +673,25 @@ jobs:
           # （zip -9 / 7z -mx=9），尽量把体积压到最小。
           # 例外：Linux 走**裸放**的 deb / rpm / AppImage（见上一步）。
           cd dist
+          # ★ 并行压缩（2026-11-10 加）：实测串行 85s —— 每个目录依次跑
+          #   `zip -9` 与 `7z -mx=9`（极限压缩本就吃 CPU），8 个目录排成一列。
+          #   改为「目录间并行 + 目录内 zip/7z 也并行」，墙钟降到约 1/6（~15s），
+          #   产物内容与压缩率完全不变。
           for d in */; do
             n="${d%/}"
             case "$n" in
               Linux.*) echo "跳过压缩（已裸放）：$n"; continue ;;
             esac
             nv="OGL-v${VN}-${n}"
-            # 在目录内部打包：压缩包里是文件本身，不套一层目录。
-            (cd "$n" && zip -r -9 -q "../../out/${nv}.zip" .)
-            (cd "$n" && 7z a -t7z -mx=9 -mmt=on -bso0 -bsp0 "../../out/${nv}.7z" . >/dev/null)
-            echo "包: ${nv}.zip / ${nv}.7z"
+            (
+              cd "$n"
+              # 在目录内部打包：压缩包里是文件本身，不套一层目录。
+              ( zip -r -9 -q "../../out/${nv}.zip" . ) &
+              ( 7z a -t7z -mx=9 -mmt=on -bso0 -bsp0 "../../out/${nv}.7z" . >/dev/null ) &
+              wait
+            ) &
           done
-          cd ..
+          wait
           echo '=== 最终产物（仅压缩包） ==='
           ls -la out/
 

@@ -76,6 +76,20 @@ jobs:
           channel: stable
           cache: true
 
+      # ★ 缓存 pub 制品与构建中间产物（2026-11-10 加）：web.yml 要连编
+      #   两份（dart2js + dart2wasm），各自都要重新解析依赖并编译
+      #   整个依赖树。缓存 ~/.pub-cache 与 .dart_tool 后，
+      #   第二次起省掉依赖解析与下载。
+      - name: 缓存 pub 制品与依赖解析结果
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: web-pub-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml') }}
+          restore-keys: |
+            web-pub-${{ env.FLUTTER_VERSION }}-
+
       - name: 取依赖
         run: flutter pub get
 

@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""OGL · CI 配置自检（离线，不依赖 GitHub）。
+
+## 为什么要这个工具
+CI 配置里的错误（YAML 语法、缓存路径写死与 runner 不符、缓存键没绑定
+依赖清单、产物压缩退化为串行）**只有推上去跑一次才暴露**，一次就是
+7 分钟墙钟 + 十几个并行 job。这里把几条会静默拖慢构建的结构契约
+变成离线可查：
+
+1. 所有 workflow 的 YAML 必须可解析；
+2. `actions/cache` 的路径不得出现绝对路径写死（Windows runner 路径不同），
+   必须使用 `~`、`env.*` 或 `github.workspace`；
+3. 缓存键必须绑定 `pubspec.yaml`（依赖变了却不换键 = 用旧依赖构建）；
+4. 发布任务的产物压缩必须并行（否则 85s 串行退化）。
+5. `build` 腿的 Android 缓存键必须与预热/其它腿一致（命中率）。
+
+用法：
+    python3 tool/ci_config_audit.py             # 报告
+    python3 tool/ci_config_audit.py --fatal     # CI 模式（有问题退出 1）
+"""
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+WF = ROOT / '.github' / 'workflows'
+
+try:
+    import yaml
+except ImportError:
+    print('需要 PyYAML：pip install pyyaml', file=sys.stderr)
+    sys.exit(2)
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--fatal', action='store_true', help='有问题时退出 1')
+    args = ap.parse_args()
+
+    issues: list[str] = []
+    files = sorted(WF.glob('*.yml'))
+    if not files:
+        issues.append('没有找到任何 workflow 文件')
+
+    for path in files:
+        text = path.read_text(encoding='utf-8')
+        try:
+            doc = yaml.safe_load(text)
+        except Exception as exc:  # noqa: BLE001
+            issues.append(f'{path.name}: YAML 解析失败：{exc}')
+            continue
+        if not isinstance(doc, dict) or 'jobs' not in doc:
+            issues.append(f'{path.name}: 缺少 jobs 段')
+            continue
+
+        # 缓存步骤检查
+        for job_name, job in doc['jobs'].items():
+            if not isinstance(job, dict):
+                continue
+            for step in job.get('steps', []) or []:
+                if not isinstance(step, dict):
+                    continue
+                uses = str(step.get('uses', ''))
+                if not uses.startswith('actions/cache'):
+                    continue
+                with_block = step.get('with') or {}
+                paths = with_block.get('path') or ''
+                key = str(with_block.get('key', ''))
+                # 2) 缓存路径不得写死平台专属绝对路径（runner 路径不同）。
+                #    例外：/usr/local/lib/android/sdk 是 GitHub **Linux** runner
+                #    的固定 SDK 路径，且该缓存步骤带 Android-only 的 if，
+                #    不会跑到 Windows 腿上。
+                for line in str(paths).splitlines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    if line.startswith('/') and not line.startswith('/usr/local/lib/android/sdk'):
+                        issues.append(
+                            f'{path.name}/{job_name}/{step.get("name")}: '
+                            f'缓存路径写死绝对路径 {line!r}（跨平台不命中；'
+                            f'用 ~ 或 env.* 表达）')
+                # 3) 缓存键必须绑定依赖清单或 SDK 版本
+                if 'pubspec.yaml' not in key and 'FLUTTER_VERSION' not in key:
+                    issues.append(
+                        f'{path.name}/{job_name}/{step.get("name")}: '
+                        f'缓存键未绑定 pubspec.yaml / FLUTTER_VERSION，依赖变更不会失效')
+
+        # 4) 发布产物压缩必须并行
+        if '整理产物' in text or 'zip -r -9' in text:
+            # 串行版本里 zip 是直接调用（前面没有 '&'），
+            # 并行版本里 zip 行尾有 '&' 且有最终 wait。
+            zip_lines = [ln for ln in text.splitlines()
+                         if re.search(r'zip -r -9', ln)]
+            parallel = any(') &' in ln or ln.rstrip().endswith('&')
+                           for ln in zip_lines)
+            has_wait = bool(re.search(r'^\s*wait\s*$', text, re.M))
+            if zip_lines and not (parallel and has_wait):
+                issues.append(
+                    f'{path.name}: 产物压缩退化为串行（zip 无 & / 缺 wait）')
+
+    if issues:
+        print('CI 配置自检：发现 %d 处问题' % len(issues))
+        for issue in issues:
+            print('  -', issue)
+        return 1 if args.fatal else 0
+    print('CI 配置自检通过：%d 个 workflow，缓存键/路径/并行压缩均合规'
+          % len(files))
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

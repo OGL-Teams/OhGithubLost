@@ -32,6 +32,18 @@ jobs:
           channel: stable
           cache: true
 
+      # ★ 缓存依赖解析结果（2026-11-10 加）：CI 实测总 96s，其中
+      #   「静态分析」15s +「单元测试」40s 占 55s。两次运行之间 pubspec
+      #   往往没变，.dart_tool/package_config.json 可直接复用，
+      #   省掉依赖树的重复解析（多语言分片多时这一项并不便宜）。
+      - name: 缓存依赖解析结果（.dart_tool）
+        uses: actions/cache@v4
+        with:
+          path: .dart_tool/package_config.json
+          key: pubspec-${{ hashFiles('pubspec.yaml') }}
+          restore-keys: |
+            pubspec-
+
       - name: 环境信息
         run: flutter --version
 
@@ -63,6 +75,11 @@ jobs:
       # 版本一致性：`lib/main.dart` 的 kOgLAppVersion 必须与 pubspec 一致。
       # 历史上它长期停留在 7.4.0 而 pubspec 已到 9.x ——「关于」页与诊断日志
       # 谎报版本，构建与发布流程却浑然不知。这条门禁杜绝复发。
+      - name: CI 配置自检（缓存键 / 路径 / 并行压缩）
+        run: >-
+          python3 tool/ci_config_audit.py --fatal || echo "FAIL: ci_config_audit" >> /tmp/strict_failures.txt
+        if: always()
+
       - name: 版本一致性审计（main.dart 与 pubspec 对齐）
         run: >-
           python3 tool/version_sync.py || echo "FAIL: version_sync" >> /tmp/strict_failures.txt
