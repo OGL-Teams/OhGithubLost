@@ -20,6 +20,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ohgithublost/surface/widgets/code_editor_toolbar.dart';
 import 'package:ohgithublost/surface/widgets/discover_rows.dart';
 
+/// 取装饰框的左侧边框（[BoxBorder] 基类没有 `left`，需先收窄成 [Border]）。
+BorderSide _leftSide(DecoratedBox box) {
+  final BoxBorder border = (box.decoration as BoxDecoration).border!;
+  return (border as Border).left;
+}
+
 void main() {
   group('动态行（OgLFeedRow）', () {
     testWidgets('在无界高度里渲染不抛异常、且内容可见', (WidgetTester tester) async {
@@ -63,14 +69,14 @@ void main() {
       final DecoratedBox box = tester.widget<DecoratedBox>(
         find.byType(DecoratedBox).first,
       );
-      final BorderSide side = (box.decoration as BoxDecoration).border!.left;
+      final BorderSide side = _leftSide(box);
       expect(side.width, greaterThan(0), reason: '未读行必须有状态竖条');
 
       await tester.pumpWidget(build(false));
       final DecoratedBox box2 = tester.widget<DecoratedBox>(
         find.byType(DecoratedBox).first,
       );
-      final BorderSide side2 = (box2.decoration as BoxDecoration).border!.left;
+      final BorderSide side2 = _leftSide(box2);
       expect(side2.width, greaterThan(0), reason: '已读行宽度恒定，行不跳动');
     });
   });
@@ -106,6 +112,7 @@ void main() {
         final Rect text = tester.getRect(find.text(label));
         expect(
           text.top >= chip.top - 0.5 && text.bottom <= chip.bottom + 0.5,
+          isTrue,
           reason: '「$label」的文字超出了胶囊的垂直范围',
         );
       }
