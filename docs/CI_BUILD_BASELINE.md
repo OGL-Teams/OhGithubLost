@@ -87,6 +87,45 @@
 - `ci_config_audit.py` 新增检查：同时出现 restore/save 时，
   save 必须带 `matrix.*` 独占条件，防止复发。
 
+### 第二次失败（缓存内容选错，**更要记住**）
+
+修正并发写后 run **42843889680**：墙钟 **414s**（回到基线），
+CI 绿、Build 绿。但日志显示**缓存完全没生效**：
+
+```
+Cache hit for: android-gradle-...        ← 先报命中
+Cache Size: ~4078 MB (4.2 GB)
+tar: ... Cannot utime: Operation not permitted   ← 数百条
+tar: Exiting with failure status due to previous errors
+##[warning]Failed to restore
+Cache not found for input keys: ...
+```
+
+5 条腿全部如此：下载 4GB、解包失败、各白花 57~107s；AAB 腿的
+独占 save 也 `Failed to save: Unable to reserve cache`。
+
+根因：把 `${ANDROID_SDK_ROOT}/ndk` 与 `/cmake` **整目录**塞进缓存。
+runner 预装 SDK 属 **root**，且含 3 个 NDK 版本（27/29/30）+ 2 个 cmake，
+共 4GB；用户态 `tar` 无法恢复其 `utime/chmod`，必然失败。
+
+**最终修法**：缓存路径收敛为**用户可写、各腿共享、体积小**的两项：
+`~/.gradle/caches/modules-2`（Maven 制品）与 `~/.gradle/wrapper/dists`
+（Gradle 发行版，已换官方 CDN）。NDK 交给 Flutter Gradle 插件按需下载，
+靠「预装 CMake」与 CDN 降低失败率——hosted runner 每腿独立 VM，
+root 所有的系统 SDK 无法可靠缓存，**接受这一成本**。
+
+`ci_config_audit.py` 再加规则：缓存路径出现
+`ANDROID_SDK_ROOT / ANDROID_HOME / android/sdk` 且带 `/ndk`、`/cmake`
+段即报错（含变量引用形式），并做了反向注入验证。
+
+### 额度清理
+
+失败版产生 8 条缓存共 **8.30 GB**（逼近 10GB 上限）：
+删掉 4.08GB 的 `android-gradle-*` 与 0 字节的 `pubspec-*`，
+**8.30 GB → 4.32 GB**（释放 3.98 GB）。保留 6 条仍有效的
+Flutter SDK / pub 缓存（实测 arm64 两腿命中）。
+清理脚本：`/tmp/clean_ogl_caches.py`（按 key 前缀删除，保守只删失败项）。
+
 **验证纪律**：`actions/cache` 在 job 的 post 步骤才写缓存，**run 被
 `cancel-in-progress` 取消时不会保存**。验证缓存收益时不要连续 push，
 必须让一整轮 Build 完整跑完；被取消的 run 里

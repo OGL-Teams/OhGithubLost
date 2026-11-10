@@ -80,9 +80,6 @@ def main() -> int:
                 paths = with_block.get('path') or ''
                 key = str(with_block.get('key', ''))
                 # 2) 缓存路径不得写死平台专属绝对路径（runner 路径不同）。
-                #    例外：/usr/local/lib/android/sdk 是 GitHub **Linux** runner
-                #    的固定 SDK 路径，且该缓存步骤带 Android-only 的 if，
-                #    不会跑到 Windows 腿上。
                 for line in str(paths).splitlines():
                     line = line.strip()
                     if not line:
@@ -92,6 +89,24 @@ def main() -> int:
                             f'{path.name}/{job_name}/{step.get("name")}: '
                             f'缓存路径写死绝对路径 {line!r}（跨平台不命中；'
                             f'用 ~ 或 env.* 表达）')
+                    # 2b) ★ 不许缓存 runner 预装的只读系统 SDK 目录。
+                    #   实测（run 42843889680）：把 ${ANDROID_SDK_ROOT}/ndk 与
+                    #   /cmake 整目录塞进缓存 → 4078 MB，解包时数百条
+                    #   `tar: Cannot utime: Operation not permitted`，
+                    #   最终 `Failed to restore`，5 条腿全白下载 4GB。
+                    #   SDK 属 root，用户态 tar 无法恢复其元数据。
+                    #   注意路径可能写成 `${{ env.ANDROID_SDK_ROOT }}/ndk`
+                    #   这类变量引用，不含字面 `android/sdk` —— 所以按
+                    #   「ANDROID_SDK_ROOT / android/sdk 变量 + ndk/cmake 段」
+                    #   判定，而不是只找字面路径。
+                    mentions_sdk = ('ANDROID_SDK_ROOT' in line.upper()
+                                    or 'ANDROID_HOME' in line.upper()
+                                    or 'android/sdk' in line)
+                    if mentions_sdk and ('/ndk' in line or '/cmake' in line):
+                        issues.append(
+                            f'{path.name}/{job_name}/{step.get("name")}: '
+                            f'缓存了 runner 预装的只读 SDK 目录 {line!r}'
+                            f'（restore 会因权限失败；只缓存 ~/.gradle 依赖）')
                 # 3) 缓存键必须绑定依赖清单或 SDK 版本
                 if 'pubspec.yaml' not in key and 'FLUTTER_VERSION' not in key:
                     issues.append(

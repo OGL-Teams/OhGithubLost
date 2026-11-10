@@ -70,10 +70,6 @@ concurrency:
 
 env:
   FLUTTER_VERSION: '3.47.5'
-  # ★ Android SDK 根目录（GitHub runner 上 $ANDROID_HOME 与
-  #   $ANDROID_SDK_ROOT 同指 /usr/local/lib/android/sdk）。缓存路径必须用
-  #   它，否则 NDK 目录写死会与 runner 实际路径不符 → 缓存永远不命中。
-  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
   # arm64 宿主上 git 方式安装的 Flutter SDK 位置（供缓存使用）。
   # ★ 用 `~` 而非硬编码 /home/runner：Windows arm64 runner 的 HOME
   #   是 C:\Users\runneradmin，写死 Linux 路径会让缓存永远不命中。
@@ -300,31 +296,35 @@ jobs:
       #   · `gradle` 额外绑定 pubspec.yaml（依赖变了必须重下）；
       #   · 都带 restore-keys 前缀回退 —— 键变了也能命中旧缓存，
       #     不会因为多一个版本就完全从零开始。
-      # ── 缓存层（2026-11-10 加；同日修正并发写问题）──────────────────
-      # 实测：Android 各腿构建 350~380s，大头是**每次重下**：
-      #   · Gradle 依赖（Maven 制品，数百 MB）；
-      #   · **Android NDK**（~2GB；本次实测还出现过
-      #     "Error on ZipFile unknown archive" 损坏下载 → 整条腿作废）。
-      #
-      # ★ 为什么用 restore/save 分离而不是 actions/cache@v4：
-      #   v4 会在**每个 job 的 post 步骤**自动打包并上传缓存。5 条腿用同一个
-      #   key 时实测 `Post 缓存` 各花 280~431s（比构建步还慢），而 GitHub
-      #   只允许一个 job 保留该 key —— 其余 4 份上传全是白烧；
-      #   缓存按 2GB 分段传输，并发分段还互相拖慢。
-      #   现在：4 条腿只读（零上传），仅 AAB 腿在最后显式 save 一次。
+      # ── 缓存层（2026-11-10 加；同日两次修正）────────────────────────
+      # ★ 修正 1：并发写。v4 在每个 job 的 post 步骤自动上传；5 条腿用同一
+      #   key 时实测 `Post 缓存` 各花 280~508s（比构建步还慢），GitHub 只
+      #   允许一个 job 保留该 key，其余 4 份纯白烧 → 改 restore/save 分离，
+      #   仅 AAB 腿独占写一次。
+      # ★ 修正 2：缓存内容。曾把 ${ANDROID_SDK_ROOT}/ndk 与 /cmake 整目录
+      #   塞进缓存 —— runner 预装 SDK 属 **root**，且含 3 个 NDK 版本 +
+      #   2 个 cmake，共 **4078 MB**；恢复时数百条
+      #   `tar: Cannot utime: Operation not permitted`，最终
+      #   `Failed to restore`，5 条腿全白下载 4GB（各 57~107s）。
+      #   现在只缓存**用户可写、各腿共享、体积小**的 Gradle 依赖：
+      #     ~/.gradle/caches/modules-2（Maven 制品）
+      #     ~/.gradle/wrapper/dists（Gradle 发行版，已换官方 CDN）
+      #   不含 SDK 目录、不含 ~/.gradle/caches 全量（避免把各腿不同的
+      #   增量编译产物、锁文件、journal 也打包进去）。
+      #   NDK 由 Flutter Gradle 插件按需下载到 runner 预装 SDK，
+      #   hosted runner 每腿独立 VM，无法可靠缓存 —— 接受这一成本，
+      #   靠「预装 CMake」与 Gradle CDN 降低其失败率。
       #
       # 键的设计：绑定 FLUTTER_VERSION + pubspec.yaml，并带 restore-keys
       #   前缀回退 —— 依赖变更不会用到旧缓存，版本递进也能命中旧缓存。
-      - name: 恢复 Android 构建缓存（NDK / cmake / Gradle）
+      - name: 恢复 Gradle 依赖缓存（Maven 制品 / 发行版）
         id: android-cache
         if: matrix.build == 'apk' || matrix.build == 'appbundle'
         uses: actions/cache/restore@v4
         with:
           path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            ${{ env.ANDROID_SDK_ROOT }}/ndk
-            ${{ env.ANDROID_SDK_ROOT }}/cmake
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper/dists
           key: android-gradle-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml') }}
           restore-keys: |
             android-gradle-${{ env.FLUTTER_VERSION }}-
@@ -622,9 +622,9 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      # ★ 独占保存（2026-11-10 修并发写）：只有 AAB 腿写缓存，
-      #   其余 4 条腿用 restore-only 零上传。命中缓存时不再重复保存。
-      - name: 保存 Android 构建缓存（仅 AAB 腿 · 独占写）
+      # ★ 独占保存：只有 AAB 腿写缓存，其余 4 条腿 restore-only 零上传。
+      #   命中缓存时不再重复保存；构建失败时不写半拉好的状态。
+      - name: 保存 Gradle 依赖缓存（仅 AAB 腿 · 独占写）
         # `success()` 而非 `always()`：构建失败时产物目录可能不完整，
         #   把半拉好的 Gradle 状态存进缓存会污染后续所有 run。
         #   AAB 腿失败 → 本轮不写缓存，下一轮冷启动重试即可（正确性优先）。
@@ -635,10 +635,8 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            ${{ env.ANDROID_SDK_ROOT }}/ndk
-            ${{ env.ANDROID_SDK_ROOT }}/cmake
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper/dists
           key: android-gradle-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.yaml') }}
 
 
