@@ -677,6 +677,11 @@ jobs:
           #   `zip -9` 与 `7z -mx=9`（极限压缩本就吃 CPU），8 个目录排成一列。
           #   改为「目录间并行 + 目录内 zip/7z 也并行」，墙钟降到约 1/6（~15s），
           #   产物内容与压缩率完全不变。
+          #
+          # ★ 退出码纪律：`wait` 不带参数只返回**最后一个**后台任务的码，
+          #   后台压缩失败会被静默吞掉（少发一个包而发布照样成功）——
+          #   绝不允许。故逐个 wait 取码，任何一个失败立即整体失败。
+          pids=""
           for d in */; do
             n="${d%/}"
             case "$n" in
@@ -684,14 +689,20 @@ jobs:
             esac
             nv="OGL-v${VN}-${n}"
             (
-              cd "$n"
+              cd "$n" || exit 1
               # 在目录内部打包：压缩包里是文件本身，不套一层目录。
-              ( zip -r -9 -q "../../out/${nv}.zip" . ) &
-              ( 7z a -t7z -mx=9 -mmt=on -bso0 -bsp0 "../../out/${nv}.7z" . >/dev/null ) &
-              wait
+              ( zip -r -9 -q "../../out/${nv}.zip" . ) & p_zip=$!
+              ( 7z a -t7z -mx=9 -mmt=on -bso0 -bsp0 "../../out/${nv}.7z" . >/dev/null ) & p_7z=$!
+              wait "$p_zip" || exit 1
+              wait "$p_7z" || exit 1
             ) &
+            pids="$pids $!"
           done
-          wait
+          for p in $pids; do
+            wait "$p" || { echo "::error::产物压缩失败（pid $p）"; exit 1; }
+          done
+          cd ..
+
           echo '=== 最终产物（仅压缩包） ==='
           ls -la out/
 

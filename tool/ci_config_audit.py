@@ -91,13 +91,15 @@ def main() -> int:
 
         # 4) 发布产物压缩必须并行
         if '整理产物' in text or 'zip -r -9' in text:
-            # 串行版本里 zip 是直接调用（前面没有 '&'），
-            # 并行版本里 zip 行尾有 '&' 且有最终 wait。
+            # 并行版本里 zip 行尾有 '&'，且必须有显式 wait
+            # （无参数 wait 或带 PID 的 wait "$p" 都算）。
             zip_lines = [ln for ln in text.splitlines()
                          if re.search(r'zip -r -9', ln)]
             parallel = any(') &' in ln or ln.rstrip().endswith('&')
                            for ln in zip_lines)
-            has_wait = bool(re.search(r'^\s*wait\s*$', text, re.M))
+            # 只要存在后台启动（&）且后续有任意显式的 wait 调用即算并行。
+            # （wait 可能是 `wait`、`wait "$p"`、`wait "$p_zip"` 等形式。）
+            has_wait = bool(re.search(r'^\s*wait\b', text, re.M))
             if zip_lines and not (parallel and has_wait):
                 issues.append(
                     f'{path.name}: 产物压缩退化为串行（zip 无 & / 缺 wait）')
