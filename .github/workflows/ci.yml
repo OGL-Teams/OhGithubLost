@@ -76,7 +76,10 @@ jobs:
       # 历史上它长期停留在 7.4.0 而 pubspec 已到 9.x ——「关于」页与诊断日志
       # 谎报版本，构建与发布流程却浑然不知。这条门禁杜绝复发。
       - name: CI 配置自检（缓存键 / 路径 / 并行压缩）
+        # ★ 自检依赖 PyYAML：runner 通常预装，但不作假设 —— 缺则显式补装，
+        #   避免「新加的门禁自己因为环境缺包而误红」。
         run: >-
+          python3 -c 'import yaml' 2>/dev/null || python3 -m pip install --quiet pyyaml;
           python3 tool/ci_config_audit.py --fatal || echo "FAIL: ci_config_audit" >> /tmp/strict_failures.txt
         if: always()
 
