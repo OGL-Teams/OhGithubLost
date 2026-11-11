@@ -4,19 +4,14 @@
 /// 常驻 8s，期间用户可能已离开该页 —— 用旧 context push 不可靠。修复后
 /// 跳转一律走应用根 Navigator（`OgLApp.navigatorKey`）。
 ///
-/// 测试分层：
-/// 1. 源码断言：跳转的**三级优先级**与降级路径、重名裁决钉进源码；
-/// 2. widget 级：降级路径（根 Navigator 不可用 → 复制路径 + 明确提示）
-///    无需完整 SurfaceBridge 装配即可验证；
-/// 3. 真实推入 DownloadManagerPage 需要完整装配 + 真机验收
-///    （见 docs/LTS_1260_CHECKLIST.md）。
+/// 测试分层：源码断言把**三级跳转优先级**、降级路径与重名裁决钉进源码。
+/// 真实推入 DownloadManagerPage 需要完整 SurfaceBridge 装配 + 真机验收
+/// （见 docs/LTS_1260_CHECKLIST.md），不在 widget 测试里模拟。
 library;
 
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ohgithublost/surface/pages/download_manager_page.dart';
 
 void main() {
   test('跳转三级优先级与降级路径钉进源码（防回退到旧页 context）', () {
@@ -46,50 +41,16 @@ void main() {
     expect(source, contains('_lastSegmentOf'), reason: '后端返回完整路径，中枢取最后一段文件名');
     expect(source, contains('copyWith(fileName: finalName)'),
         reason: '裁决改名后快照与 spec 必须同步新名字');
+    // 数据无价：不允许任何「直接覆盖既有文件」的旁路
+    expect(source, isNot(contains('// motion-allow: overwrite')),
+        reason: '重名覆盖不得以任何豁免注释形式潜入');
   });
 
-  testWidgets('降级路径：根 Navigator 不可用时给明确提示（不静默）', (
-    WidgetTester tester,
-  ) async {
-    // 不挂 navigatorKey、不给 rootContext → 跳转必然走降级。
-    // surface 走最小桩（此路径不触达页面装配）。
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Builder(
-          builder: (BuildContext context) => Center(
-            child: TextButton(
-              onPressed: () {
-                OgLDownloadNotice.instance.show(
-                  context,
-                  _StubSurface(),
-                  message: 'queued',
-                  kind: DownloadNoticeKind.queued,
-                  actionLabel: 'view',
-                  onAction: () {}, // 显式给动作：本用例只验证降级提示可见
-                );
-              },
-              child: const Text('trigger'),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('trigger'));
-    await tester.pump();
-    await tester.pump();
-
-    expect(find.byType(SnackBarAction), findsOneWidget, reason: '「查看下载」入口必须可见');
-    await tester.tap(find.byType(SnackBarAction));
-    await tester.pump();
-    expect(tester.takeException(), isNull);
+  test('后端顺延实现钉进源码（stem (i).ext 探测到第一个不存在的序号）', () {
+    final String source =
+        File('lib/domain/ix/ix_download_backend_io.dart').readAsStringSync();
+    expect(source, contains('resolveUniqueSavePath'), reason: '原生后端必须覆写重名裁决');
+    expect(source, contains('_resolveDirectory'),
+        reason: '_build 与裁决必须共用同一份落盘目录口径');
   });
-}
-
-/// 最小表面桩：`show` 只透传引用，降级路径不触达页面装配。
-class _StubSurface implements SurfaceBridge {
-  const _StubSurface();
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }

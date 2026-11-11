@@ -157,7 +157,7 @@ class OgLDownloadNotice {
       return;
     }
     // 降级：根 Navigator 未就绪（极端时序）。给用户一条明确出路。
-    unawaited<void>(ogLCopyText('/download', tag: '下载管理页'));
+    unawaited(ogLCopyText('/download', tag: '下载管理页'));
     OgLDownloadNotice.instance.show(
       context,
       surface,
