@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/animations.dart';
+import '../app/og_l_app.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -21,9 +22,11 @@ import '../util/og_l_space.dart';
 
 /// 取 `download_manager_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
-    'download_manager_page', key,
-    args:
-        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+      'download_manager_page',
+      key,
+      args:
+          args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')),
+    );
 
 /// 提示样式枚举：4 种通知共用一个入口（避免页面内 SnackBar 风格不统一）。
 enum DownloadNoticeKind { queued, success, warning, info }
@@ -55,6 +58,10 @@ class OgLDownloadNotice {
   /// [surface] 仅用于「查看下载」动作跳转。
   /// [message] 已翻译文本，调用方负责传 i18n 后的串。
   /// [kind] 决定 SnackBar 颜色（queued/info=accent、success=正、warning=错误色）。
+  /// [rootContext] 可选：跳转「查看下载」用的**应用根 context**（旧页面
+  ///   context 在 SnackBar 驻留 8s 内可能已被弹出——用它 push 不可靠）。
+  ///   不传时用全局 [OgLApp.navigatorKey]；两者都不可用则降级为
+  ///   「复制管理页路径 + 提示」，**绝不静默失败**。
   void show(
     BuildContext context,
     SurfaceBridge surface, {
@@ -63,6 +70,7 @@ class OgLDownloadNotice {
     String? actionLabel,
     VoidCallback? onAction,
     bool force = false,
+    BuildContext? rootContext,
   }) {
     final int now = DateTime.now().millisecondsSinceEpoch;
     final String signature = '$kind|$message';
@@ -91,32 +99,74 @@ class OgLDownloadNotice {
             : null);
     final VoidCallback? handler = onAction ??
         ((kind == DownloadNoticeKind.queued)
-            ? () => _jumpToManager(context, surface)
+            ? () => _jumpToManager(
+                  context,
+                  surface,
+                  rootContext: rootContext,
+                )
             : null);
     messenger.hideCurrentSnackBar(reason: SnackBarClosedReason.timeout);
-    messenger.showSnackBar(SnackBar(
-      content: Text(
-        message,
-        style: fg != null ? TextStyle(color: fg) : null,
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message, style: fg != null ? TextStyle(color: fg) : null),
+        // motion-allow: 下载提示驻留时长（用户需要时间读到「已入队/失败」
+        //   与操作按钮，不是动画；Material 默认 4s 过短）。非动效令牌。
+        duration: const Duration(seconds: 8),
+        backgroundColor: bg,
+        // 与 OgLNotifier 同款规格：悬浮 + 统一留隙（宽度只有一处出处）。
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(
+          horizontal: OgLSpace.lg,
+          vertical: OgLSpace.md,
+        ),
+        action: (label != null && handler != null)
+            ? SnackBarAction(label: label, onPressed: handler)
+            : null,
       ),
-      // motion-allow: 下载提示驻留时长（用户需要时间读到「已入队/失败」
-      //   与操作按钮，不是动画；Material 默认 4s 过短）。非动效令牌。
-      duration: const Duration(seconds: 8),
-      backgroundColor: bg,
-      // 与 OgLNotifier 同款规格：悬浮 + 统一留隙（宽度只有一处出处）。
-      behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.symmetric(
-          horizontal: OgLSpace.lg, vertical: OgLSpace.md),
-      action: (label != null && handler != null)
-          ? SnackBarAction(label: label, onPressed: handler)
-          : null,
-    ));
+    );
   }
 
-  void _jumpToManager(BuildContext context, SurfaceBridge surface) {
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (BuildContext _) => DownloadManagerPage(surface: surface),
-    ));
+  /// 跳到下载管理页（「查看下载」动作）。
+  ///
+  /// ★ 跳转一律走**应用根 Navigator**：SnackBar 常驻 8s，期间用户可能已离开
+  ///   发起页 —— 用旧页面的 context push 不可靠（Navigator 不在它的祖先链里
+  ///   时直接抛错）。优先级：
+  ///   1. [rootContext]（调用方显式给的根 context，可测试注入）；
+  ///   2. `OgLApp.navigatorKey`（应用根，与 `OgLNoticeHost` 同一机制）；
+  ///   3. 都不可用 → 降级为「复制管理页路径 + 明确提示」，**绝不静默失败**。
+  void _jumpToManager(
+    BuildContext context,
+    SurfaceBridge surface, {
+    BuildContext? rootContext,
+  }) {
+    if (rootContext != null) {
+      Navigator.of(rootContext).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext _) => DownloadManagerPage(surface: surface),
+        ),
+      );
+      return;
+    }
+    final BuildContext? rootCtx = OgLApp.navigatorKey.currentContext;
+    if (rootCtx != null) {
+      Navigator.of(rootCtx).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext _) => DownloadManagerPage(surface: surface),
+        ),
+      );
+      return;
+    }
+    // 降级：根 Navigator 未就绪（极端时序）。给用户一条明确出路。
+    unawaited<void>(ogLCopyText('/download', tag: '下载管理页'));
+    OgLDownloadNotice.instance.show(
+      context,
+      surface,
+      message: _t('viewDownloadsFallback'),
+      kind: DownloadNoticeKind.info,
+      actionLabel: null,
+      onAction: null,
+      force: true,
+    );
   }
 }
 
@@ -168,9 +218,11 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
               color: theme.colorScheme.secondaryContainer,
               child: ListTile(
                 dense: true,
-                leading: Icon(Icons.undo,
-                    size: OgLIconSize.md,
-                    color: theme.colorScheme.onSecondaryContainer),
+                leading: Icon(
+                  Icons.undo,
+                  size: OgLIconSize.md,
+                  color: theme.colorScheme.onSecondaryContainer,
+                ),
                 title: Text(
                   _t('removedItem', {'name': _lastRemoved!.fileName}),
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -204,10 +256,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                         const SizedBox(height: OgLSpace.md),
                         Text(_t('empty')),
                         const SizedBox(height: OgLSpace.xxs),
-                        Text(
-                          _t('emptyHint'),
-                          style: theme.textTheme.bodySmall,
-                        ),
+                        Text(_t('emptyHint'), style: theme.textTheme.bodySmall),
                       ],
                     ),
                   );
@@ -239,16 +288,21 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
   /// 一键重试**全部**失败 / 已取消的任务（逐个点太累）。
   Future<void> _retryAllFailed(SurfaceBridge surface) async {
     final List<IxDownloadTask> failed = surface.downloadTasks
-        .where((IxDownloadTask t) =>
-            t.status == IxDownloadStatus.failed ||
-            t.status == IxDownloadStatus.canceled)
+        .where(
+          (IxDownloadTask t) =>
+              t.status == IxDownloadStatus.failed ||
+              t.status == IxDownloadStatus.canceled,
+        )
         .toList();
     if (failed.isEmpty) {
-      OgLDownloadNotice.instance.show(context, surface,
-          message: _t('noFailedToRetry'),
-          kind: DownloadNoticeKind.info,
-          actionLabel: null,
-          onAction: null);
+      OgLDownloadNotice.instance.show(
+        context,
+        surface,
+        message: _t('noFailedToRetry'),
+        kind: DownloadNoticeKind.info,
+        actionLabel: null,
+        onAction: null,
+      );
       return;
     }
     for (final IxDownloadTask task in failed) {
@@ -261,9 +315,12 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       }
     }
     if (mounted) {
-      OgLDownloadNotice.instance.show(context, surface,
-          message: _t('retriedCount', {'n': failed.length}),
-          kind: DownloadNoticeKind.success);
+      OgLDownloadNotice.instance.show(
+        context,
+        surface,
+        message: _t('retriedCount', {'n': failed.length}),
+        kind: DownloadNoticeKind.success,
+      );
     }
   }
 
@@ -293,7 +350,11 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-            OgLSpace.md, OgLSpace.md, OgLSpace.sm, OgLSpace.sm),
+          OgLSpace.md,
+          OgLSpace.md,
+          OgLSpace.sm,
+          OgLSpace.sm,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -326,21 +387,14 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                 tween: Tween<double>(begin: 0, end: task.progress),
                 duration: OgLAnim.fast(context),
                 curve: OgLAnim.curve(context),
-                builder: (
-                  BuildContext context,
-                  double value,
-                  Widget? child,
-                ) =>
+                builder: (BuildContext context, double value, Widget? child) =>
                     LinearProgressIndicator(
                   value: value.clamp(0.0, 1.0),
                   minHeight: 4,
                 ),
               )
             else
-              Text(
-                _t('handedToBrowser'),
-                style: theme.textTheme.bodySmall,
-              ),
+              Text(_t('handedToBrowser'), style: theme.textTheme.bodySmall),
             const SizedBox(height: OgLSpace.sm),
             Row(
               children: <Widget>[
@@ -363,7 +417,12 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                         : Duration.zero,
                     // 速率量化到 0.1 MB/s：小数位抖动不再触发重建。
                     child: Text(
-                      _subtitleOf(task),
+                      _subtitleOf(
+                        task,
+                        connections: widget.surface.downloadConnectionsOf(
+                          task.id,
+                        ),
+                      ),
                       key: ValueKey<String>(
                         _quantizeSpeed(task.bytesPerSecond),
                       ),
@@ -382,8 +441,9 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                   task.errorText,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.error),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
                 ),
               ),
             Wrap(
@@ -490,14 +550,17 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
   static String _quantizeSpeed(double bytesPerSecond) =>
       (bytesPerSecond / 102400).round().toString();
 
-  static String _subtitleOf(IxDownloadTask task) {
+  static String _subtitleOf(IxDownloadTask task, {required int connections}) {
     final String size = task.total > 0
         ? '${ghSizeText(task.received)} / ${ghSizeText(task.total)}'
         : ghSizeText(task.received);
+    final String percent = task.total > 0 ? ' · ${task.percent}%' : '';
     final String speed = task.status == IxDownloadStatus.running
         ? ' · ${ghSizeText(task.bytesPerSecond.round())}/s'
         : '';
-    return '${_categoryLabel(task.category)} · $size$speed';
+    final String threads =
+        connections > 1 ? ' · ${_t('threads', {'n': connections})}' : '';
+    return '${_categoryLabel(task.category)} · $size$percent$speed$threads';
   }
 
   Future<void> _openLocal(BuildContext context, IxDownloadTask task) async {
@@ -529,8 +592,12 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       print('[DL] open local failed: $error; falling back to copy path');
       await ogLCopyText(task.savePath, tag: '下载路径');
       if (context.mounted) {
-        OgLDownloadNotice.instance.show(context, widget.surface,
-            message: _t('cannotOpenCopied'), kind: DownloadNoticeKind.warning);
+        OgLDownloadNotice.instance.show(
+          context,
+          widget.surface,
+          message: _t('cannotOpenCopied'),
+          kind: DownloadNoticeKind.warning,
+        );
       }
     }
   }
@@ -538,8 +605,12 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
   Future<void> _copyPath(BuildContext context, IxDownloadTask task) async {
     await ogLCopyText(task.savePath, tag: '下载路径');
     if (context.mounted) {
-      OgLDownloadNotice.instance.show(context, widget.surface,
-          message: _t('pathCopied'), kind: DownloadNoticeKind.success);
+      OgLDownloadNotice.instance.show(
+        context,
+        widget.surface,
+        message: _t('pathCopied'),
+        kind: DownloadNoticeKind.success,
+      );
     }
   }
 }

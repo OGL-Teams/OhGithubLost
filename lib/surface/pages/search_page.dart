@@ -34,10 +34,11 @@ import 'repo_page.dart';
 
 /// 取 `search_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
-  'search_page',
-  key,
-  args: args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')),
-);
+      'search_page',
+      key,
+      args:
+          args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')),
+    );
 
 /// ISO 8601 时间 → 相对时间（人眼扫信息流时「3 小时前」比「2026-07-14」省力）。
 ///
@@ -73,13 +74,13 @@ class _SkeletonBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    height: height,
-    width: width,
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      borderRadius: OgLRadius.cSm,
-    ),
-  );
+        height: height,
+        width: width,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: OgLRadius.cSm,
+        ),
+      );
 }
 
 /// 统一加载骨架行（三 tab 共用）：与紧凑行式对齐——
@@ -89,37 +90,38 @@ class _SkeletonRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(
-      horizontal: OgLSpace.lg,
-      vertical: OgLSpace.sm,
-    ),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        const _SkeletonBox(height: OgLSpace.xxl, width: OgLSpace.xxs),
-        const SizedBox(width: OgLSpace.sm),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const _SkeletonBox(height: OgLSpace.md),
-              const SizedBox(height: OgLSpace.xxs),
-              Row(
+        padding: const EdgeInsets.symmetric(
+          horizontal: OgLSpace.lg,
+          vertical: OgLSpace.sm,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const _SkeletonBox(height: OgLSpace.xxl, width: OgLSpace.xxs),
+            const SizedBox(width: OgLSpace.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  const Expanded(
-                    flex: 3,
-                    child: _SkeletonBox(height: OgLSpace.sm),
+                  const _SkeletonBox(height: OgLSpace.md),
+                  const SizedBox(height: OgLSpace.xxs),
+                  Row(
+                    children: <Widget>[
+                      const Expanded(
+                        flex: 3,
+                        child: _SkeletonBox(height: OgLSpace.sm),
+                      ),
+                      const SizedBox(width: OgLSpace.sm),
+                      Expanded(
+                          flex: 2, child: _SkeletonBox(height: OgLSpace.sm)),
+                    ],
                   ),
-                  const SizedBox(width: OgLSpace.sm),
-                  Expanded(flex: 2, child: _SkeletonBox(height: OgLSpace.sm)),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      );
 }
 
 /// 统一加载骨架列表（三 tab 共用）。
@@ -133,14 +135,14 @@ class _SkeletonList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListView.separated(
-    padding: const EdgeInsets.symmetric(vertical: OgLSpace.sm),
-    physics: const NeverScrollableScrollPhysics(),
-    itemCount: 6,
-    separatorBuilder: (BuildContext context, int index) =>
-        const Divider(height: 1),
-    itemBuilder: (BuildContext context, int index) =>
-        _SkeletonRow(key: ValueKey<String>('skeleton-$index')),
-  );
+        padding: const EdgeInsets.symmetric(vertical: OgLSpace.sm),
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 6,
+        separatorBuilder: (BuildContext context, int index) =>
+            const Divider(height: 1),
+        itemBuilder: (BuildContext context, int index) =>
+            _SkeletonRow(key: ValueKey<String>('skeleton-$index')),
+      );
 }
 
 /// 一条搜索命中（结果页共用）。
@@ -371,17 +373,16 @@ class _DiscoverPageState extends State<DiscoverPage>
         }
         // ★ 官方 API：GitHub 自己的通知流，覆盖关注/star/参与仓库的
         //   Release、Issue、PR 等新事项，按 updated_at 倒序（新的在上）。
-        final List<Map<String, dynamic>> items = await widget.surface.domain.api
-            .notifications(perPage: 30);
-        return items..sort((Map<String, dynamic> a, Map<String, dynamic> b) {
-          final DateTime da =
-              DateTime.tryParse(ghStr(a, 'updated_at')) ??
-              DateTime.fromMillisecondsSinceEpoch(0);
-          final DateTime db =
-              DateTime.tryParse(ghStr(b, 'updated_at')) ??
-              DateTime.fromMillisecondsSinceEpoch(0);
-          return db.compareTo(da);
-        });
+        final List<Map<String, dynamic>> items =
+            await widget.surface.domain.api.notifications(perPage: 30);
+        return items
+          ..sort((Map<String, dynamic> a, Map<String, dynamic> b) {
+            final DateTime da = DateTime.tryParse(ghStr(a, 'updated_at')) ??
+                DateTime.fromMillisecondsSinceEpoch(0);
+            final DateTime db = DateTime.tryParse(ghStr(b, 'updated_at')) ??
+                DateTime.fromMillisecondsSinceEpoch(0);
+            return db.compareTo(da);
+          });
       },
     );
     unawaited(_feed!.load());
@@ -444,12 +445,12 @@ class _DiscoverPageState extends State<DiscoverPage>
             return;
           }
           if (!_readmeOf.containsKey(repo.fullName)) {
-            _readmeOf[repo.fullName] = await widget.surface.domain.api
-                .readmeExcerpt(repo.fullName);
+            _readmeOf[repo.fullName] =
+                await widget.surface.domain.api.readmeExcerpt(repo.fullName);
           }
           if (!_versionOf.containsKey(repo.fullName)) {
-            _versionOf[repo.fullName] = await widget.surface.domain.api
-                .latestVersionOf(repo.fullName);
+            _versionOf[repo.fullName] =
+                await widget.surface.domain.api.latestVersionOf(repo.fullName);
           }
           if (mounted) {
             setState(() {});
@@ -514,11 +515,9 @@ class _DiscoverPageState extends State<DiscoverPage>
         }
         return merged.values.toList()
           ..sort((Map<String, dynamic> a, Map<String, dynamic> b) {
-            final DateTime da =
-                DateTime.tryParse(ghStr(a, 'created_at')) ??
+            final DateTime da = DateTime.tryParse(ghStr(a, 'created_at')) ??
                 DateTime.fromMillisecondsSinceEpoch(0);
-            final DateTime db =
-                DateTime.tryParse(ghStr(b, 'created_at')) ??
+            final DateTime db = DateTime.tryParse(ghStr(b, 'created_at')) ??
                 DateTime.fromMillisecondsSinceEpoch(0);
             return db.compareTo(da);
           });
@@ -578,8 +577,8 @@ class _DiscoverPageState extends State<DiscoverPage>
     final String subjectType = _feedSubjectTypeOf(item);
     final String issueNumber =
         subjectUrl.contains('/issues/') || subjectUrl.contains('/pulls/')
-        ? subjectUrl.split('/').last
-        : '';
+            ? subjectUrl.split('/').last
+            : '';
     if (subjectType == 'Issue' || subjectType == 'PullRequest') {
       final String number = issueNumber;
       if (repoName.isNotEmpty && number.isNotEmpty && mounted) {
@@ -719,8 +718,7 @@ class _DiscoverPageState extends State<DiscoverPage>
     return OgLFeedRow(
       unread: _feedUnreadOf(item),
       title: title.isEmpty ? _t('feedRelease') : title,
-      meta:
-          '$repoName · ${_feedTypeOf(item)} · '
+      meta: '$repoName · ${_feedTypeOf(item)} · '
           '${_relativeTime(ghStr(item, 'updated_at'))}',
       onTap: () => unawaited(_openFeedItem(item)),
     );
@@ -736,13 +734,13 @@ class _DiscoverPageState extends State<DiscoverPage>
             emptyText: _t('feedEmpty'),
             builder: (BuildContext context, List<Map<String, dynamic>> items) =>
                 ListView.separated(
-                  padding: const EdgeInsets.symmetric(vertical: OgLSpace.sm),
-                  itemCount: items.length,
-                  separatorBuilder: (BuildContext context, int index) =>
-                      const Divider(height: 1),
-                  itemBuilder: (BuildContext context, int index) =>
-                      _buildFeedRow(context, items[index]),
-                ),
+              padding: const EdgeInsets.symmetric(vertical: OgLSpace.sm),
+              itemCount: items.length,
+              separatorBuilder: (BuildContext context, int index) =>
+                  const Divider(height: 1),
+              itemBuilder: (BuildContext context, int index) =>
+                  _buildFeedRow(context, items[index]),
+            ),
           ),
         );
 
@@ -871,13 +869,12 @@ class _DiscoverPageState extends State<DiscoverPage>
                                         'repo-${_repos[row * columns + col].fullName}',
                                       ),
                                       repo: _repos[row * columns + col],
-                                      excerpt:
-                                          _readmeOf[_repos[row * columns + col]
-                                              .fullName] ??
+                                      excerpt: _readmeOf[
+                                              _repos[row * columns + col]
+                                                  .fullName] ??
                                           '',
-                                      version:
-                                          _versionOf[_repos[row * columns + col]
-                                              .fullName],
+                                      version: _versionOf[
+                                          _repos[row * columns + col].fullName],
                                       onOpen: _openRepo,
                                       onActions: _showRepoActions,
                                     ),
@@ -958,144 +955,151 @@ class _DiscoverPageState extends State<DiscoverPage>
 
   /// Issues 筛选档 → chip 文案。
   String _issuesFilterLabel(int filter) => switch (filter) {
-    1 => _t('issuesMine'),
-    2 => _t('issuesStar'),
-    _ => _t('issuesAll'),
-  };
+        1 => _t('issuesMine'),
+        2 => _t('issuesStar'),
+        _ => _t('issuesAll'),
+      };
 
   Widget _buildIssuesTab() => Column(
-    // ★ 修复「胶囊文字溢出」：Column 默认 crossAxisAlignment.center，
-    //   子项按内容宽度收缩并居中——横向 ListView 于是按内容宽度定位，
-    //   超出屏幕宽的部分被裁掉（实测首个胶囊左缘 x=28 被切）。
-    //   stretch 让筛选行满宽。
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: <Widget>[
-      // 分类筛选：FilterChip 横滑行（比 SegmentedButton 省宽度，可扩档）。
-      // ★ 高度由内容决定（此前写死 32dp，把标签文字挤到了胶囊之外）。
-      OgLIssuesFilterChips(
-        selected: _issuesFilter,
-        labels: <String>[
-          _issuesFilterLabel(0),
-          _issuesFilterLabel(1),
-          _issuesFilterLabel(2),
-        ],
-        onSelect: (int filter) {
-          setState(() => _issuesFilter = filter);
-        },
-      ),
-      Expanded(
-        child: _issues == null
-            ? _SkeletonList(key: const ValueKey<String>('issues-skeleton'))
-            : AsyncView<List<Map<String, dynamic>>>(
-                controller: _issues!,
-                emptyIcon: Icons.inbox_outlined,
-                emptyText: _t('issuesEmpty'),
-                builder: (BuildContext context, List<Map<String, dynamic>> items) {
-                  final List<Map<String, dynamic>> shown = items
-                      .where((Map<String, dynamic> item) => _matchFilter(item))
-                      .toList();
-                  if (shown.isEmpty) {
-                    return OgLAsyncEmptyPane(
-                      icon: Icons.inbox_outlined,
-                      text: _t('issuesEmpty'),
-                    );
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.symmetric(vertical: OgLSpace.sm),
-                    itemCount: shown.length,
-                    separatorBuilder: (BuildContext context, int index) =>
-                        const Divider(height: 1),
-                    itemBuilder: (BuildContext context, int index) {
-                      final Map<String, dynamic> item = shown[index];
-                      final bool mine = _mineUrls.contains(
-                        ghStr(item, 'html_url'),
-                      );
-                      final ThemeData theme = Theme.of(context);
-                      return InkWell(
-                        key: ValueKey<String>(
-                          'issue-${ghStr(item, 'html_url')}',
-                        ),
-                        onTap: () => unawaited(_openIssue(item)),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: OgLSpace.lg,
-                            vertical: OgLSpace.sm,
-                          ),
-                          child: Row(
-                            children: <Widget>[
-                              Icon(
-                                mine ? Icons.person_outline : Icons.star_border,
-                                size: OgLIconSize.sm,
-                                color: theme.colorScheme.onSurfaceVariant,
+        // ★ 修复「胶囊文字溢出」：Column 默认 crossAxisAlignment.center，
+        //   子项按内容宽度收缩并居中——横向 ListView 于是按内容宽度定位，
+        //   超出屏幕宽的部分被裁掉（实测首个胶囊左缘 x=28 被切）。
+        //   stretch 让筛选行满宽。
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          // 分类筛选：FilterChip 横滑行（比 SegmentedButton 省宽度，可扩档）。
+          // ★ 高度由内容决定（此前写死 32dp，把标签文字挤到了胶囊之外）。
+          OgLIssuesFilterChips(
+            selected: _issuesFilter,
+            labels: <String>[
+              _issuesFilterLabel(0),
+              _issuesFilterLabel(1),
+              _issuesFilterLabel(2),
+            ],
+            onSelect: (int filter) {
+              setState(() => _issuesFilter = filter);
+            },
+          ),
+          Expanded(
+            child: _issues == null
+                ? _SkeletonList(key: const ValueKey<String>('issues-skeleton'))
+                : AsyncView<List<Map<String, dynamic>>>(
+                    controller: _issues!,
+                    emptyIcon: Icons.inbox_outlined,
+                    emptyText: _t('issuesEmpty'),
+                    builder: (BuildContext context,
+                        List<Map<String, dynamic>> items) {
+                      final List<Map<String, dynamic>> shown = items
+                          .where(
+                              (Map<String, dynamic> item) => _matchFilter(item))
+                          .toList();
+                      if (shown.isEmpty) {
+                        return OgLAsyncEmptyPane(
+                          icon: Icons.inbox_outlined,
+                          text: _t('issuesEmpty'),
+                        );
+                      }
+                      return ListView.separated(
+                        padding:
+                            const EdgeInsets.symmetric(vertical: OgLSpace.sm),
+                        itemCount: shown.length,
+                        separatorBuilder: (BuildContext context, int index) =>
+                            const Divider(height: 1),
+                        itemBuilder: (BuildContext context, int index) {
+                          final Map<String, dynamic> item = shown[index];
+                          final bool mine = _mineUrls.contains(
+                            ghStr(item, 'html_url'),
+                          );
+                          final ThemeData theme = Theme.of(context);
+                          return InkWell(
+                            key: ValueKey<String>(
+                              'issue-${ghStr(item, 'html_url')}',
+                            ),
+                            onTap: () => unawaited(_openIssue(item)),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: OgLSpace.lg,
+                                vertical: OgLSpace.sm,
                               ),
-                              const SizedBox(width: OgLSpace.sm),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      ghStr(item, 'title'),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: theme.textTheme.titleMedium,
-                                    ),
-                                    const SizedBox(height: OgLSpace.xxs),
-                                    Text(
-                                      '${_repoFullOf(item)} '
-                                      '#${ghInt(item, 'number')} · '
-                                      '${ghLogin(item)} · '
-                                      '${_relativeTime(ghStr(item, 'created_at'))}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(
+                                    mine
+                                        ? Icons.person_outline
+                                        : Icons.star_border,
+                                    size: OgLIconSize.sm,
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: OgLSpace.sm),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                          ghStr(item, 'title'),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: theme.textTheme.titleMedium,
+                                        ),
+                                        const SizedBox(height: OgLSpace.xxs),
+                                        Text(
+                                          '${_repoFullOf(item)} '
+                                          '#${ghInt(item, 'number')} · '
+                                          '${ghLogin(item)} · '
+                                          '${_relativeTime(ghStr(item, 'created_at'))}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
                                             color: theme
-                                                .colorScheme
-                                                .onSurfaceVariant,
+                                                .colorScheme.onSurfaceVariant,
                                           ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(width: OgLSpace.sm),
+                                  // 右侧：评论数 + 进入箭头。
+                                  Semantics(
+                                    label: _t('issuesComments', {
+                                      'count': ghInt(item, 'comments'),
+                                    }),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Icon(
+                                          Icons.chat_bubble_outline,
+                                          size: OgLIconSize.sm,
+                                          color: theme
+                                              .colorScheme.onSurfaceVariant,
+                                        ),
+                                        const SizedBox(width: OgLSpace.xxs),
+                                        Text(
+                                          '${ghInt(item, 'comments')}',
+                                          style: theme.textTheme.bodySmall,
+                                        ),
+                                        const SizedBox(width: OgLSpace.xxs),
+                                        Icon(
+                                          Icons.chevron_right,
+                                          size: OgLIconSize.md,
+                                          color: theme
+                                              .colorScheme.onSurfaceVariant,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: OgLSpace.sm),
-                              // 右侧：评论数 + 进入箭头。
-                              Semantics(
-                                label: _t('issuesComments', {
-                                  'count': ghInt(item, 'comments'),
-                                }),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    Icon(
-                                      Icons.chat_bubble_outline,
-                                      size: OgLIconSize.sm,
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                    const SizedBox(width: OgLSpace.xxs),
-                                    Text(
-                                      '${ghInt(item, 'comments')}',
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                    const SizedBox(width: OgLSpace.xxs),
-                                    Icon(
-                                      Icons.chevron_right,
-                                      size: OgLIconSize.md,
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
-      ),
-    ],
-  );
+                  ),
+          ),
+        ],
+      );
 
   bool _matchFilter(Map<String, dynamic> item) {
     final String url = ghStr(item, 'html_url');
@@ -1173,30 +1177,27 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     _query = q;
     final AsyncController<List<_SearchHit>> controller =
         AsyncController<List<_SearchHit>>(
-          label: _t(_mode == 0 ? 'repoSearch' : 'codeSearch'),
-          isEmpty: (List<_SearchHit> value) => value.isEmpty,
-          loader: () async {
-            if (_mode == 0) {
-              final List<GhRepo> repos = await widget.surface.domain.api
-                  .searchRepos(q, perPage: 30);
-              return repos
-                  .map(
-                    (GhRepo repo) => _SearchHit(
-                      title: repo.fullName,
-                      subtitle: _repoSubtitle(repo),
-                      repo: repo,
-                    ),
-                  )
-                  .toList();
-            }
-            final List<Map<String, dynamic>> items = await widget
-                .surface
-                .domain
-                .api
-                .searchCode(q, perPage: 30);
-            return items.map(_hitFromCode).toList();
-          },
-        );
+      label: _t(_mode == 0 ? 'repoSearch' : 'codeSearch'),
+      isEmpty: (List<_SearchHit> value) => value.isEmpty,
+      loader: () async {
+        if (_mode == 0) {
+          final List<GhRepo> repos =
+              await widget.surface.domain.api.searchRepos(q, perPage: 30);
+          return repos
+              .map(
+                (GhRepo repo) => _SearchHit(
+                  title: repo.fullName,
+                  subtitle: _repoSubtitle(repo),
+                  repo: repo,
+                ),
+              )
+              .toList();
+        }
+        final List<Map<String, dynamic>> items =
+            await widget.surface.domain.api.searchCode(q, perPage: 30);
+        return items.map(_hitFromCode).toList();
+      },
+    );
     final AsyncController<List<_SearchHit>>? old = _results;
     setState(() => _results = controller);
     old?.dispose();
@@ -1319,31 +1320,31 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     emptyText: _t('noResults', {'query': _query}),
                     builder: (BuildContext context, List<_SearchHit> hits) =>
                         ListView.separated(
-                          itemCount: hits.length,
-                          separatorBuilder: (BuildContext context, int index) =>
-                              const Divider(height: 1),
-                          itemBuilder: (BuildContext context, int index) {
-                            final _SearchHit hit = hits[index];
-                            return ListTile(
-                              leading: Icon(
-                                hit.initialPath == null
-                                    ? Icons.folder_outlined
-                                    : Icons.description_outlined,
-                              ),
-                              title: Text(
-                                hit.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Text(
-                                hit.subtitle,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              onTap: () => unawaited(_open(hit)),
-                            );
-                          },
-                        ),
+                      itemCount: hits.length,
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const Divider(height: 1),
+                      itemBuilder: (BuildContext context, int index) {
+                        final _SearchHit hit = hits[index];
+                        return ListTile(
+                          leading: Icon(
+                            hit.initialPath == null
+                                ? Icons.folder_outlined
+                                : Icons.description_outlined,
+                          ),
+                          title: Text(
+                            hit.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            hit.subtitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () => unawaited(_open(hit)),
+                        );
+                      },
+                    ),
                   ),
           ),
         ],

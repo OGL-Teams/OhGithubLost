@@ -33,5 +33,7 @@
   "undoRemove": "Annuler la suppression",
   "unverified": "Non vérifié",
   "verified": "Vérifié",
-  "verifyFailed": "Échec de la vérification d'intégrité"
+  "verifyFailed": "Échec de la vérification d'intégrité",
+  "threads": "{n} connexions",
+  "viewDownloadsFallback": "Impossible d’ouvrir le gestionnaire de téléchargements ; chemin copié : /download"
 }

@@ -33,5 +33,7 @@
   "undoRemove": "取消移除",
   "unverified": "未驗證",
   "verified": "已驗證",
-  "verifyFailed": "完整性檢查失敗"
+  "verifyFailed": "完整性檢查失敗",
+  "threads": "{n} 線程",
+  "viewDownloadsFallback": "未能開啟下載管理頁，路徑已複製：/download"
 }

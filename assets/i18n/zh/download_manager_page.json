@@ -33,5 +33,7 @@
   "noFailedToRetry": "没有失败的任务需要重试",
   "undoRemove": "撤销移除",
   "removedItem": "已移除：{name}",
-  "retriedCount": "已重试 {n} 个失败任务"
+  "retriedCount": "已重试 {n} 个失败任务",
+  "threads": "{n} 线程",
+  "viewDownloadsFallback": "未能打开下载管理页，路径已复制：/download"
 }

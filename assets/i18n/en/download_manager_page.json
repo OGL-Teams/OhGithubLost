@@ -33,5 +33,7 @@
   "noFailedToRetry": "No failed tasks to retry",
   "undoRemove": "Undo remove",
   "removedItem": "Removed: {name}",
-  "retriedCount": "Retried {n} failed tasks"
+  "retriedCount": "Retried {n} failed tasks",
+  "threads": "{n} threads",
+  "viewDownloadsFallback": "Could not open download manager; path copied: /download"
 }

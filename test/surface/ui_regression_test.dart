@@ -137,8 +137,8 @@ void main() {
 
   group('异步 Sliver 四态（批 9 · B1）', () {
     test('空/错误/加载三态统一走 OgLSurfaceSwitch，data 态保持懒加载', () {
-      final String source = File('lib/surface/app/async.dart')
-          .readAsStringSync();
+      final String source =
+          File('lib/surface/app/async.dart').readAsStringSync();
       final String sliver = source.substring(
         source.indexOf('class OgLAsyncSliver'),
       );
@@ -188,10 +188,11 @@ void main() {
 
     testWidgets('未读与已读都有状态竖条（宽度恒定，行不跳动）', (WidgetTester tester) async {
       Widget build(bool unread) => MaterialApp(
-        home: Scaffold(
-          body: OgLFeedRow(unread: unread, title: 'T', meta: 'M', onTap: () {}),
-        ),
-      );
+            home: Scaffold(
+              body: OgLFeedRow(
+                  unread: unread, title: 'T', meta: 'M', onTap: () {}),
+            ),
+          );
 
       await tester.pumpWidget(build(true));
       final DecoratedBox box = tester.widget<DecoratedBox>(
@@ -310,9 +311,8 @@ void main() {
 
       // ★ 工具栏背景条必须与下方代码区**同宽**（真机上曾窄一截、两端露白缝）。
       final double screen = tester.getSize(find.byType(Scaffold)).width;
-      final double toolbar = tester
-          .getSize(find.byType(OgLCodeEditorToolbar))
-          .width;
+      final double toolbar =
+          tester.getSize(find.byType(OgLCodeEditorToolbar)).width;
       expect(toolbar, screen, reason: '工具栏没有铺满宽度，两端会露白缝');
       expect(tester.takeException(), isNull);
     });

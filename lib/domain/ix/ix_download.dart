@@ -43,21 +43,21 @@ enum IxDownloadCategory {
 
   /// 子目录名。
   String get folder => switch (this) {
-        IxDownloadCategory.release => 'release',
-        IxDownloadCategory.repo => 'repo',
-        IxDownloadCategory.gist => 'gist',
-        IxDownloadCategory.artifact => 'artifact',
-        IxDownloadCategory.other => 'other',
-      };
+    IxDownloadCategory.release => 'release',
+    IxDownloadCategory.repo => 'repo',
+    IxDownloadCategory.gist => 'gist',
+    IxDownloadCategory.artifact => 'artifact',
+    IxDownloadCategory.other => 'other',
+  };
 
   /// 展示名。
   String get label => switch (this) {
-        IxDownloadCategory.release => 'Release',
-        IxDownloadCategory.repo => '仓库文件',
-        IxDownloadCategory.gist => 'Gist',
-        IxDownloadCategory.artifact => '构建产物',
-        IxDownloadCategory.other => '其它',
-      };
+    IxDownloadCategory.release => 'Release',
+    IxDownloadCategory.repo => '仓库文件',
+    IxDownloadCategory.gist => 'Gist',
+    IxDownloadCategory.artifact => '构建产物',
+    IxDownloadCategory.other => '其它',
+  };
 }
 
 /// 下载状态。
@@ -82,13 +82,13 @@ enum IxDownloadStatus {
 
   /// 展示名。
   String get label => switch (this) {
-        IxDownloadStatus.queued => '排队中',
-        IxDownloadStatus.running => '下载中',
-        IxDownloadStatus.paused => '已暂停',
-        IxDownloadStatus.completed => '已完成',
-        IxDownloadStatus.failed => '失败',
-        IxDownloadStatus.canceled => '已取消',
-      };
+    IxDownloadStatus.queued => '排队中',
+    IxDownloadStatus.running => '下载中',
+    IxDownloadStatus.paused => '已暂停',
+    IxDownloadStatus.completed => '已完成',
+    IxDownloadStatus.failed => '失败',
+    IxDownloadStatus.canceled => '已取消',
+  };
 }
 
 /// 平台下载后端要执行的**一次任务描述**（不含平台类型，便于 Web/原生共用）。
@@ -124,12 +124,12 @@ class IxDownloadSpec {
   /// ★ 重名处理也会改写 [fileName]（入队时目标路径已被占用 → `name (1).ext`）：
   ///   只增不改既有调用面（原 `copyWith(url:)` 用法照常编译）。
   IxDownloadSpec copyWith({String? url, String? fileName}) => IxDownloadSpec(
-        id: id,
-        url: url ?? this.url,
-        fileName: fileName ?? this.fileName,
-        folder: folder,
-        headers: headers,
-      );
+    id: id,
+    url: url ?? this.url,
+    fileName: fileName ?? this.fileName,
+    folder: folder,
+    headers: headers,
+  );
 }
 
 /// 后端事件：状态变化或进度。
@@ -140,16 +140,16 @@ class IxDownloadSpec {
 class IxDownloadEvent {
   /// 状态事件。
   const IxDownloadEvent.state(this.id, this.status, {this.error})
-      : received = 0,
-        total = 0;
+    : received = 0,
+      total = 0;
 
   /// 进度事件。
   const IxDownloadEvent.progress(
     this.id, {
     required this.received,
     required this.total,
-  })  : status = null,
-        error = null;
+  }) : status = null,
+       error = null;
 
   /// 任务 id。
   final String id;
@@ -187,6 +187,25 @@ abstract class IxDownloadBackend {
   ///
   /// Web 上返回下载地址本身（页面没有本地路径可用）。
   Future<String> pathFor(IxDownloadSpec spec);
+
+  /// **重名裁决**：目标路径已被别的文件占用时返回改了名的落盘路径
+  /// （`name (1).ext`、`name (2).ext`…探测到第一个不存在的序号）；
+  /// 未被占用 / 无本地文件系统能力（Web）时原样返回。
+  ///
+  /// ## 为什么放在入队时（而不是完成时）
+  /// 路径在 `pathFor` 之后就已可知；完成时才改名等于把**用户已有文件**
+  /// 置于「被覆盖」的险境整整一个下载周期。数据无价：**不同任务的成品
+  /// 绝不覆盖同名旧文件**。同 id 重试（同源）由中枢层判「快照里已有
+  /// 同一 savePath」后跳过本裁决 → 保持覆盖语义。
+  ///
+  /// 默认实现 = 不改名（`intendedPath ?? pathFor(spec)`），保证既有
+  /// 自定义后端**向后兼容**；原生后端在 `ix_download_backend_io.dart`
+  /// 里覆写为真实文件系统探测。
+  Future<String> resolveUniqueSavePath(
+    IxDownloadSpec spec, {
+    String? intendedPath,
+  }) async =>
+      intendedPath ?? await pathFor(spec);
 
   /// 真正开始下载。
   Future<void> enqueue(IxDownloadSpec spec);
@@ -259,8 +278,9 @@ String ogLSafeDownloadFileName(String raw, {String fallback = 'download'}) {
   name = name.replaceAll(RegExp(r'[\x00-\x1F\x7F<>:"/\\|?*]'), '');
   name = name.trim().replaceAll(RegExp(r'\s+'), ' ');
   // ③ 去掉前导点（隐藏文件）与尾部的点/空格（Windows 不允许尾随点与空格）。
-  name =
-      name.replaceAll(RegExp(r'^[.]+'), '').replaceAll(RegExp(r'[. ]+$'), '');
+  name = name
+      .replaceAll(RegExp(r'^[.]+'), '')
+      .replaceAll(RegExp(r'[. ]+$'), '');
   if (name.isEmpty) {
     return fallback;
   }
@@ -346,6 +366,13 @@ IxDownloadErrorKind _kindOfText(String text) {
     }
   }
   return IxDownloadErrorKind.unknown;
+}
+
+/// 从最终落盘路径取末段文件名；解析不出（Web 的降级路径）时退回原文件名。
+String _lastSegmentOf(String path, String fallback) {
+  final int slash = path.lastIndexOf('/');
+  final String name = slash >= 0 ? path.substring(slash + 1) : path;
+  return name.isEmpty ? fallback : name;
 }
 
 /// 由后端给的**描述文本**构造结构化错误；没有描述 = 没有错误（`null`）。
@@ -470,22 +497,20 @@ class IxDownloadTask {
     Object? error = _kUnset,
     String? savePath,
     bool? verified,
-  }) =>
-      IxDownloadTask(
-        id: id,
-        url: url,
-        fileName: fileName,
-        category: category,
-        savePath: savePath ?? this.savePath,
-        status: status ?? this.status,
-        received: received ?? this.received,
-        total: total ?? this.total,
-        bytesPerSecond: bytesPerSecond ?? this.bytesPerSecond,
-        createdAt: createdAt,
-        error:
-            identical(error, _kUnset) ? this.error : error as IxDownloadError?,
-        verified: verified ?? this.verified,
-      );
+  }) => IxDownloadTask(
+    id: id,
+    url: url,
+    fileName: fileName,
+    category: category,
+    savePath: savePath ?? this.savePath,
+    status: status ?? this.status,
+    received: received ?? this.received,
+    total: total ?? this.total,
+    bytesPerSecond: bytesPerSecond ?? this.bytesPerSecond,
+    createdAt: createdAt,
+    error: identical(error, _kUnset) ? this.error : error as IxDownloadError?,
+    verified: verified ?? this.verified,
+  );
 }
 
 /// 下载管理器（展示层唯一入口；内部委托平台后端）。
@@ -502,10 +527,10 @@ class IxDownloadManager extends ChangeNotifier {
     Future<String?> Function()? downloadDirProvider,
     IxDownloadBackend? backend,
     this.notifications,
-  })  : _diagnostics = diagnostics,
-        _engine = engine,
-        _exporter = storageExporter,
-        _backend = backend ?? createDownloadBackend() {
+  }) : _diagnostics = diagnostics,
+       _engine = engine,
+       _exporter = storageExporter,
+       _backend = backend ?? createDownloadBackend() {
     _subscription = _backend.events.listen(_onEvent);
     _backend.downloadDirProvider = downloadDirProvider;
   }
@@ -541,6 +566,12 @@ class IxDownloadManager extends ChangeNotifier {
   /// 走分片引擎的任务 → 并发数（重试用同一份参数）。
   final Map<String, int> _rangeConnections = <String, int>{};
 
+  /// 已登记「同 id 重试、入队时保持原文件名」的任务 id。
+  ///
+  /// `enqueue` 走重名裁决时据此跳过改名（同 id 重试覆盖自己上一轮的成品
+  /// 是正确语义）；消费一次即删（每次入队都必须重新判定，不能永久豁免）。
+  final Set<String> _retrySavePaths = <String>{};
+
   /// 每个任务的**候选地址（按优先级）**：首个是首选，其余用于**静默降级**。
   final Map<String, List<String>> _urlCandidates = <String, List<String>>{};
 
@@ -552,6 +583,9 @@ class IxDownloadManager extends ChangeNotifier {
 
   /// 是否由分片引擎接管（页面据此显示"多线程"标记；Web 上恒为 `false`）。
   bool isRanged(String id) => _rangeTokens.containsKey(id);
+
+  /// 该任务的并发连接数（非分片任务 = 1；页面据此显示「N 线程」）。
+  int connectionsOf(String id) => _rangeConnections[id] ?? 1;
 
   StreamSubscription<IxDownloadEvent>? _subscription;
 
@@ -568,9 +602,14 @@ class IxDownloadManager extends ChangeNotifier {
 
   /// 任务列表（新的在前）。
   List<IxDownloadTask> get tasks {
-    // 快照未变时复用上次排序：下载进行中每 200ms 一次通知，
-    // 每次重建都重排全表（O(n log n) + 全量分配）纯属浪费。
-    if (_tasksCacheVersion == _tasksCacheUsed) {
+ t.compareTo(a.createdAt),
+    );
+    _tasksCacheUsed = _tasksCacheVersion;
+    _tasksCache = list;
+    return list;
+  }
+
+  /// 快照变更计数：任何 `_snapsho    if (_tasksCacheVersion == _tasksCacheUsed) {
       return _tasksCache!;
     }
     final List<IxDownloadTask> list = _snapshots.values.toList();
@@ -620,8 +659,7 @@ class IxDownloadManager extends ChangeNotifier {
     String url,
     String fileName,
     IxDownloadCategory category,
-  ) =>
-      '${category.folder}:$fileName#$url';
+  ) => '${category.folder}:$fileName#$url';
 
   /// 加入一个下载任务。
   Future<IxDownloadTask> enqueue({
@@ -654,7 +692,8 @@ class IxDownloadManager extends ChangeNotifier {
     final IxDownloadTask? previous = _snapshots[id];
     if (previous != null) {
       final IxDownloadStatus previousStatus = previous.status;
-      final bool terminal = previousStatus == IxDownloadStatus.completed ||
+      final bool terminal =
+          previousStatus == IxDownloadStatus.completed ||
           previousStatus == IxDownloadStatus.failed ||
           previousStatus == IxDownloadStatus.canceled;
       if (!terminal) {
@@ -712,7 +751,31 @@ class IxDownloadManager extends ChangeNotifier {
     if (_disposed || !identical(_snapshots[id], queued)) {
       return _snapshots[id] ?? queued;
     }
-    _snapshots[id] = queued.copyWith(savePath: savePath);
+    // ★ 重名裁决（数据无价）：入队时路径已可知 → **此时**就决定最终文件名，
+    //   绝不等完成时才发现同名（那等于整个下载周期都悬在"覆盖"之上）。
+    //   - 同 id 重试（[_retrySavePaths] 已登记，旧文件就是**本任务**上一轮
+    //     的成品）→ 覆盖是正确语义，保持原名；
+    //   - 不同任务（首次入队时目标已被占用）→ 自动改名 `name (1).ext`…，
+    //     **绝不覆盖用户已有文件**。
+    String finalPath = savePath;
+    if (savePath.isNotEmpty && !_retrySavePaths.remove(id)) {
+      try {
+        finalPath = await _backend.resolveUniqueSavePath(
+          spec,
+          intendedPath: savePath,
+        );
+      } catch (_) {
+        // 裁决失败（如 Web 无文件系统）：维持原路径，不阻塞下载。
+        finalPath = savePath;
+      }
+      if (_disposed || !identical(_snapshots[id], queued)) {
+        return _snapshots[id] ?? queued;
+      }
+    }
+    // 快照与 spec 同步为**最终**文件名（界面显示、后端建任务都用它）。
+    final String finalName = _lastSegmentOf(finalPath, safeName);
+    _specs[id] = spec.copyWith(fileName: finalName);
+    _snapshots[id] = queued.copyWith(savePath: finalPath, fileName: finalName);
     _touchTasksCache();
     _safeNotify();
 
@@ -736,10 +799,7 @@ class IxDownloadManager extends ChangeNotifier {
       if (cur != null && !_disposed) {
         _snapshots[id] = cur.copyWith(
           status: IxDownloadStatus.failed,
-          error: IxDownloadError(
-            IxDownloadErrorKind.unknown,
-            '入队失败：$error',
-          ),
+          error: IxDownloadError(IxDownloadErrorKind.unknown, '入队失败：$error'),
         );
         _touchTasksCache();
         _safeNotify();
@@ -801,9 +861,10 @@ class IxDownloadManager extends ChangeNotifier {
       reachable ??= candidate;
       if (current.supportsRange &&
           current.total != null &&
-          current.total! > 0) {
-        uri = parsed;
-        probe = current;
+        }
+
+    if (uri == null) {
+      // 没有一个地址可并发current;
         break;
       }
     }
@@ -1172,6 +1233,13 @@ class IxDownloadManager extends ChangeNotifier {
     _roundOf.remove(id);
     _rangeConnections.remove(id);
     _pausedIds.remove(id);
+    // ★ 重试改名豁免：本次移除的记录若已有落盘路径，记住它 —— 同一条任务
+    //   （同 id）再次入队时**保持原文件名**（覆盖自己上一轮的成品是正确
+    //   语义）；别的任务撞上这个路径仍会被自动改名，绝不覆盖旧文件。
+    final String? knownPath = _snapshots[id]?.savePath;
+    if (knownPath != null && knownPath.isNotEmpty) {
+      _retrySavePaths.add(id);
+    }
     await _backend.cancel(id);
     _specs.remove(id);
     _snapshots.remove(id);
@@ -1180,6 +1248,7 @@ class IxDownloadManager extends ChangeNotifier {
     _expectedSha256.remove(id);
     _urlCandidates.remove(id);
     _exportedToSaf.remove(id);
+    _retrySavePaths.remove(id);
     _safeNotify();
   }
 
@@ -1187,7 +1256,8 @@ class IxDownloadManager extends ChangeNotifier {
   void clearFinished() {
     final Set<String> gone = <String>{};
     _snapshots.removeWhere((String id, IxDownloadTask t) {
-      final bool finished = t.status == IxDownloadStatus.completed ||
+      final bool finished =
+          t.status == IxDownloadStatus.completed ||
           t.status == IxDownloadStatus.canceled ||
           t.status == IxDownloadStatus.failed;
       if (finished) {
@@ -1207,6 +1277,7 @@ class IxDownloadManager extends ChangeNotifier {
       _expectedSha256.remove(id);
       _urlCandidates.remove(id);
       _exportedToSaf.remove(id);
+      _retrySavePaths.remove(id);
     }
     _touchTasksCache();
     _safeNotify();
@@ -1496,7 +1567,8 @@ class IxDownloadManager extends ChangeNotifier {
     // 单连接库任务在库的重试退避窗口里被用户"暂停"后，后续仍可能到达
     // 一两条进度/running 事件；若这里强制写回 running，按钮就会在
     // 「暂停 / 进行中」之间闪烁，且暂停实际未生效。
-    final bool statusLive = snap.status == IxDownloadStatus.running ||
+    final bool statusLive =
+        snap.status == IxDownloadStatus.running ||
         snap.status == IxDownloadStatus.queued;
     _snapshots[id] = snap.copyWith(
       received: received,

@@ -33,5 +33,7 @@
   "undoRemove": "Entfernen rückgängig machen",
   "unverified": "Nicht verifiziert",
   "verified": "Verifiziert",
-  "verifyFailed": "Integritätsprüfung fehlgeschlagen"
+  "verifyFailed": "Integritätsprüfung fehlgeschlagen",
+  "threads": "{n} Verbindungen",
+  "viewDownloadsFallback": "Downloadverwaltung konnte nicht geöffnet werden; Pfad kopiert: /download"
 }

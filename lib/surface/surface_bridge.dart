@@ -430,6 +430,12 @@ class SurfaceBridge {
   /// 下载后端是否支持**暂停 / 继续**（Web = `false`，页面据此隐藏这两个按钮）。
   bool get supportsPauseResume => domain.downloads.supportsPauseResume;
 
+  /// 是否由分片引擎接管（页面据此显示"多线程"标记；Web 上恒为 `false`）。
+  bool isRangedDownload(String id) => domain.downloads.isRanged(id);
+
+  /// 该任务的并发连接数（非分片任务 = 1；页面据此显示「N 线程」）。
+  int downloadConnectionsOf(String id) => domain.downloads.connectionsOf(id);
+
   /// 清除已完成任务。
   void clearFinishedDownloads() => domain.downloads.clearFinished();
 
@@ -521,12 +527,15 @@ class SurfaceBridge {
       //   分段控件混入等宽/衬线会破坏 Material 可读性（截图实证）。
       //   · _uiFontFamilyOf 返回 null = 全部保持平台字体。
       textTheme: base.textTheme.copyWith(
-        bodyLarge: base.textTheme.bodyLarge
-            ?.copyWith(fontFamily: _uiFontFamilyOf(uiFontId)),
-        bodyMedium: base.textTheme.bodyMedium
-            ?.copyWith(fontFamily: _uiFontFamilyOf(uiFontId)),
-        bodySmall: base.textTheme.bodySmall
-            ?.copyWith(fontFamily: _uiFontFamilyOf(uiFontId)),
+        bodyLarge: base.textTheme.bodyLarge?.copyWith(
+          fontFamily: _uiFontFamilyOf(uiFontId),
+        ),
+        bodyMedium: base.textTheme.bodyMedium?.copyWith(
+          fontFamily: _uiFontFamilyOf(uiFontId),
+        ),
+        bodySmall: base.textTheme.bodySmall?.copyWith(
+          fontFamily: _uiFontFamilyOf(uiFontId),
+        ),
       ),
       pageTransitionsTheme: OgLMotion.pageTransitions(motionLevel),
       // ExpansionTile（关于页的诊断折叠组等）也接**动效档位**：
@@ -575,8 +584,10 @@ class SurfaceBridge {
 /// 用 L1 的 KV 实现设置持久化（**唯一**允许把 L3 的存储需求接到 L1 的地方）。
 class KvSettingsPersistence implements OgLSettingsPersistence {
   /// 创建。
-  const KvSettingsPersistence(this._kv,
-      {this.key = OgLSettingsController.storageKey});
+  const KvSettingsPersistence(
+    this._kv, {
+    this.key = OgLSettingsController.storageKey,
+  });
 
   final DiskKv _kv;
 
@@ -671,9 +682,7 @@ class SurfaceLayerModule extends OgLModule {
 ///
 /// **只暴露一个模块**：展示层的所有能力都从 [SurfaceBridge] 出去，
 /// 不像 L1/L2 那样需要按子系统拆分——因为 UI 本来就是"一张皮"。
-List<OgLModule> surfaceLayerModules() => <OgLModule>[
-      SurfaceLayerModule(),
-    ];
+List<OgLModule> surfaceLayerModules() => <OgLModule>[SurfaceLayerModule()];
 
 /// 存储探针：**按三档方案裁决**「用户拿不拿得到文件」。
 ///

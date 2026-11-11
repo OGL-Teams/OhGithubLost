@@ -245,11 +245,13 @@ class IoDownloadBackend implements IxDownloadBackend {
       if (id == null) {
         return;
       }
-      _events.add(IxDownloadEvent.state(
-        id,
-        _mapStatus(update.status),
-        error: update.exception?.description,
-      ));
+      _events.add(
+        IxDownloadEvent.state(
+          id,
+          _mapStatus(update.status),
+          error: update.exception?.description,
+        ),
+      );
       return;
     }
     if (update is TaskProgressUpdate) {
@@ -263,8 +265,9 @@ class IoDownloadBackend implements IxDownloadBackend {
       //   不守卫会算出负的 received → 界面显示「-4.3 MB / 4.3 MB」。
       final double clamped = update.progress < 0 ? 0 : update.progress;
       final int received = total > 0 ? (clamped * total).round() : 0;
-      _events
-          .add(IxDownloadEvent.progress(id, received: received, total: total));
+      _events.add(
+        IxDownloadEvent.progress(id, received: received, total: total),
+      );
     }
   }
 

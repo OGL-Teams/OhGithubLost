@@ -55,9 +55,8 @@ class OgLFeedRow extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           left: BorderSide(
-            color: unread
-                ? theme.colorScheme.primary
-                : theme.colorScheme.surface,
+            color:
+                unread ? theme.colorScheme.primary : theme.colorScheme.surface,
             width: OgLSpace.xxs,
           ),
         ),
@@ -133,31 +132,31 @@ class OgLIssuesFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(
-      horizontal: OgLSpace.lg,
-      vertical: OgLSpace.sm,
-    ),
-    child: SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          for (int index = 0; index < labels.length; index++)
-            Padding(
-              padding: const EdgeInsets.only(right: OgLSpace.sm),
-              child: FilterChip(
-                key: ValueKey<String>('issues-chip-$index'),
-                label: Text(labels[index]),
-                selected: selected == index,
-                onSelected: (bool isSelected) {
-                  if (isSelected) {
-                    onSelect(index);
-                  }
-                },
-              ),
-            ),
-        ],
-      ),
-    ),
-  );
+        padding: const EdgeInsets.symmetric(
+          horizontal: OgLSpace.lg,
+          vertical: OgLSpace.sm,
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              for (int index = 0; index < labels.length; index++)
+                Padding(
+                  padding: const EdgeInsets.only(right: OgLSpace.sm),
+                  child: FilterChip(
+                    key: ValueKey<String>('issues-chip-$index'),
+                    label: Text(labels[index]),
+                    selected: selected == index,
+                    onSelected: (bool isSelected) {
+                      if (isSelected) {
+                        onSelect(index);
+                      }
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
 }
