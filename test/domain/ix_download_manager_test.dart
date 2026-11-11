@@ -49,6 +49,13 @@ class FakeDownloadBackend implements IxDownloadBackend {
       '/tmp/ogl/${spec.folder}/${spec.fileName}';
 
   @override
+  Future<String> resolveUniqueSavePath(IxDownloadSpec spec,
+          {String? intendedPath}) async =>
+      // 内存假后端不落盘：与 pathFor 同值（重名裁决的顺延逻辑由
+      // ix_download_dedup_test 专门覆盖真实文件系统路径）。
+      intendedPath ?? await pathFor(spec);
+
+  @override
   Future<void> enqueue(IxDownloadSpec spec) async {
     enqueueCalls++;
     specs.add(spec);
