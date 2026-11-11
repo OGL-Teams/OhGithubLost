@@ -1,7 +1,7 @@
 # AGENTS.md — OhGithubLost 工程规范与代码地图
 
 > 面向 AI 助手与贡献者的项目导读。项目：Flutter 多平台 GitHub 客户端（v12.0.0 LTS，Apache-2.0），
-> Android / Windows / Linux / Web，lib/ 159 个 Dart 文件 ≈ 55,800 行，测试 49 文件 ≈ 10,700 行。
+> Android / Windows / Linux / Web，lib/ 161 个 Dart 文件 ≈ 56,586 行，测试 52 文件 ≈ 11,021 行。
 > 工程底线：**数据可靠性 + 失败如实可见** —— 不静默降级、不预置加速通道、不掩盖版本冲突。
 
 ## 1. 五层架构与依赖门禁

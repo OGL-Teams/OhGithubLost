@@ -10,7 +10,11 @@ CI 全绿下共存。本脚本只做**可静态确证**的结构检查：
   2. `lib/base`、`lib/domain` 的文件头层级前缀（L1/L2）；
   3. `defaultTargetPlatform` 是否绕过 `lib/platform` 门面（白名单外）；
   4. `docs/` 中被引用为契约出处的文档是否真实存在；
-  5. 204/206 等状态码在写回执路径是否有对应的回归测试（弱提示）。
+  5. 全部四层（含 kernel）的文件头层级前缀是否与所在层一致。
+
+★ 批 9 交叉：旧版 docstring 第 5 项写「204/206 状态码弱提示」，
+  脚本里**从未实现**这一检查（B8-C-01 死描述，挂了三个版本）。
+  自述必须与实现一致，否则门禁的可信度无从谈起。
 
 用法：
     python3 tool/contract_audit.py
@@ -96,7 +100,10 @@ def check_headers(files: dict[str, str]) -> list[str]:
     want = {'base': 'L1', 'domain': 'L2', 'surface': 'L3', 'kernel': 'L0'}
     for rel, text in files.items():
         lay = layer_of(rel)
-        if lay is None or lay == 'kernel' or rel in HEADER_EXEMPT:
+        # ★ 批 9 · X-05：此前 `lay == 'kernel'` 直接跳过，
+        #   于是 kernel/contract/ 下三个文件自称「L1 底座级」
+        #   （实为 L0）永远不会被发现。L0 同样要有正确的层级头。
+        if lay is None or rel in HEADER_EXEMPT:
             continue
         head = text[:400]
         m = HEADER_RE.search(head)

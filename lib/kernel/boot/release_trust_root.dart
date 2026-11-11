@@ -1,4 +1,4 @@
-/// 发布信任根（Release Trust Root）：内嵌 Ed25519 公钥。
+/// L0 内核级 · 发布信任根（Release Trust Root）：内嵌 Ed25519 公钥。
 ///
 /// 信任模型：
 /// - CI 构建时用对应**私钥**给引导清单（Boot Manifest）签名；

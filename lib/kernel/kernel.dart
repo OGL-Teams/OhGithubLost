@@ -1,4 +1,4 @@
-/// OGL 内核门面：把"引导、装配、生命周期、桥发现、诊断"串成一条启动链。
+/// L0 内核级 · OGL 内核门面：把"引导、装配、生命周期、桥发现、诊断"串成一条启动链。
 ///
 /// 启动链：
 /// ```
@@ -249,7 +249,14 @@ class OgLKernel {
 
     await lifecycle.registerAll(ordered, context);
     di.seal();
-    bridges.seal();
+    // ★ 批 9 交叉 X-04：L1/L2/L3 三座层桥必须在封存前全部到齐。
+    //   L0 内核自身没有桥（它是被依赖方），故期望集合恰为三项。
+    //   漏注册在启动期就抛 KernelBridgeError，不再拖到运行期 resolve。
+    bridges.seal(expected: <String>{
+      ModuleLayer.base.key,
+      ModuleLayer.domain.key,
+      ModuleLayer.surface.key,
+    });
     probes.seal();
     await lifecycle.startAll(ordered);
 

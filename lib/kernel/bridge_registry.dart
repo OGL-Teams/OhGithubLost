@@ -1,4 +1,4 @@
-/// 桥注册与发现（每层一座桥）。
+/// L0 内核级 · 桥注册与发现（每层一座桥）。
 ///
 /// 内核**不认识**任何具体桥类型——它只维护"层级键 → 桥实例"的映射，
 /// 由调用方在 `resolve` 时声明期望类型。这样内核永远不依赖上层实现。
@@ -61,7 +61,19 @@ class KernelBridgeRegistry {
       Map<String, Object>.unmodifiable(_bridges);
 
   /// 封存注册表：装配阶段结束后调用。
-  void seal() {
+  ///
+  /// ★ 批 9 交叉 X-04：此前只置 `_sealed = true`，
+  ///   **某层漏注册桥不报错**，要到运行期 `resolve()` 才炸（往往在用户
+  ///   点开某个页面时）。现在由装配根显式声明必须到齐的层级键，
+  ///   封存即校验，把「漏注册」提前到启动期、变成一次明确的失败。
+  ///   `expected` 为空表示只封存不校验（供单测构造最小注册表用）。
+  void seal({Set<String> expected = const <String>{}}) {
+    if (expected.isNotEmpty) {
+      final Set<String> missing = expected.difference(_bridges.keys.toSet());
+      if (missing.isNotEmpty) {
+        throw KernelBridgeError('层级桥未注册齐全，封存被拒绝：缺 ${missing.join('、')}');
+      }
+    }
     _sealed = true;
   }
 }

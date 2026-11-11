@@ -24,6 +24,12 @@ import argparse
 import os
 import re
 import sys
+from pathlib import Path
+
+# ★ 门禁定根（批 9 · X-01）：CI 里若 CWD 不在仓库根，
+#   相对 'lib' 会扫到 0 文件却报「违规 0 处 / exit 0」——
+#   门禁失去能力时不是报错而是报绿，直接违反「失败必须如实可见」。
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 LAYERS = ['kernel', 'base', 'domain', 'surface']
 RANK = {name: index for index, name in enumerate(LAYERS)}
@@ -35,7 +41,9 @@ ALLOW = {
     'surface/types.dart',
 }
 
-IMPORT_RE = re.compile(r"^\s*import\s+'([^']+)'", re.M)
+# ★ 批 9 · X-03：export 与 import 同为依赖边。此前只匹配 import，
+#   `export '../../domain/...' show X;` 能绕过唯一类型门面纪律。
+IMPORT_RE = re.compile(r"^\s*(?:import|export)\s+'([^']+)'", re.M)
 
 # 已知的、待收敛项（下一批：为这两个**实现类**引入启动层契约接口）。
 #
@@ -56,7 +64,7 @@ def layer_of(rel):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lib', default='lib')
+    parser.add_argument('--lib', default=str(REPO_ROOT / 'lib'))
     parser.add_argument('--fatal', action='store_true')
     args = parser.parse_args()
 
@@ -93,6 +101,11 @@ def main():
                     violations.append((rel, imp, '%s 应经桥/门面' % tlay))
 
     print('文件总数：%d' % total)
+    # ★ 空扫即失败：参数错位 / 目录重构 / CWD 异常时，
+    #   绝不允许「0 文件 → 0 违规 → 通过」这种假绿。
+    if total == 0:
+        print('::error::分层审计扫描到 0 个 Dart 文件（--lib=%s 无效？）' % args.lib)
+        return 1
     print('已知待收敛（5.0 清单）：%d 处' % known_hits)
     print('违规：%d 处' % len(violations))
     for rel, imp, why in violations:

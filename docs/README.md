@@ -6,7 +6,7 @@
 | [`NETWORK.md`](NETWORK.md) | 网络连接总览：出口主机 / 资源取法 / 加速适用范围 / web 端限制 | 面向使用者的技术说明 |
 | [`I18N.md`](I18N.md) | 多语言维护手册：新增文案 / 翻译流程 | 贡献者 |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | 五层架构：层职责 / 依赖方向 / 命名约定 / 自检命令 | 贡献者 |
-| [`QUALITY_STANDARD.md`](QUALITY_STANDARD.md) | 质量标准：十条原则性条款（不谈实现，裁决依据） | 贡献者 |
+| [`QUALITY_STANDARD.md`](QUALITY_STANDARD.md) | 质量标准：59 条原则性条款（不谈实现，裁决依据） | 贡献者 |
 | [`CONSISTENCY.md`](CONSISTENCY.md) | 缓存一致性 D1–D9 权威描述：各防线语义、合法例外、失效路径 | 贡献者 |
 | [`OAUTH_ORG_SETUP.md`](OAUTH_ORG_SETUP.md) | 组织名下 GitHub OAuth App（Device Flow）创建与 Secret 注入指引 | 维护者 |
 

@@ -27,6 +27,10 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
+
+# ★ 批 9 · X-01：与 layer_audit 同因，禁止依赖 CWD。
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 CJK = re.compile(r'[\u4e00-\u9fff]')
 # 单/双引号字符串（含转义），以及 raw 字符串前缀。
@@ -192,8 +196,8 @@ def parse_pubspec_i18n(pubspec_path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lib', default='lib')
-    parser.add_argument('--i18n', default='assets/i18n')
+    parser.add_argument('--lib', default=str(REPO_ROOT / 'lib'))
+    parser.add_argument('--i18n', default=str(REPO_ROOT / 'assets' / 'i18n'))
     parser.add_argument('--json', dest='json_out')
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
@@ -213,6 +217,7 @@ def main():
         print('  %-14s %d 处' % (page, len(by_page[page])))
 
     shard_problems = []
+    value_problems = []
     # 与现有分片对齐：列出各语言缺哪些 page。
     if os.path.isdir(args.i18n):
         locales = sorted(
@@ -231,6 +236,16 @@ def main():
                 if shard is None:
                     shard_problems.append('%s/%s 缺失' % (locale, page))
                     continue
+                # ★ 批 9 · X-02：值必须是字符串。批 8 曾实测
+                #   zh_Hant/de/fr/ru 的 tokenExit* 共 32 个值是
+                #   「全语种字典」，运行时被 '${e.value}' 字符串化后
+                #   把整张字典显示给用户（令牌出本机安全警告变乱码），
+                #   而只比 key 集合的 --check 全绿放行。
+                for key, value in shard.items():
+                    if not isinstance(value, str):
+                        value_problems.append(
+                            '%s/%s 键 %s 的值类型是 %s（应为字符串）'
+                            % (locale, page, key, type(value).__name__))
                 keys = set(shard.keys())
                 missing = zh_all[page] - keys
                 extra = keys - zh_all[page]
@@ -242,6 +257,10 @@ def main():
                     shard_problems.append('%s/%s 多出 key：%s'
                                           % (locale, page,
                                              '、'.join(sorted(extra)[:6])))
+        if value_problems:
+            print('\n分片值类型错误（%d）：' % len(value_problems))
+            for row in value_problems[:20]:
+                print('  ' + row)
         if shard_problems:
             print('\n分片差异（%d）：' % len(shard_problems))
             for row in shard_problems[:40]:
@@ -310,6 +329,10 @@ def main():
         if shard_problems:
             failed = True
             print('\n[check] 分片键集合不一致：%d 处' % len(shard_problems),
+                  file=sys.stderr)
+        if value_problems:
+            failed = True
+            print('\n[check] 分片值类型错误：%d 处' % len(value_problems),
                   file=sys.stderr)
         if consistency:
             failed = True

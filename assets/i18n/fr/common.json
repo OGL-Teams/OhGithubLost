@@ -123,52 +123,12 @@
   "writeConflictServer": "Erreur du serveur - veuillez réessayer plus tard",
   "writeConflictStaleSha": "De nouvelles modifications existent à distance. Récupérez d'abord la dernière version.",
   "writeConflictVerificationFailed": "La vérification post-écriture a échoué - veuillez réessayer",
-  "tokenExitTitle": {
-    "de": "Dein Token verlässt dieses Gerät",
-    "fr": "Votre jeton quitte cet appareil",
-    "ru": "Ваш токен покидает это устройство",
-    "zh_Hant": "令牌將離開此裝置"
-  },
-  "tokenExitBody": {
-    "de": "Dieser Download sendet dein GitHub-Token (Anmeldeinformation) an den unten genannten Nicht-GitHub-Host, der das Token protokollieren und missbrauchen kann. Du handelst auf eigenes Risiko; wähle bei Unsicherheit „Abbrechen“.",
-    "fr": "Ce téléchargement envoie votre jeton GitHub (identifiant de connexion) à l'hôte non-GitHub ci-dessous, qui peut l'enregistrer et en abuser. Vous continuez à vos risques et périls ; en cas de doute, choisissez « Annuler ».",
-    "ru": "Эта загрузка отправит ваш GitHub-токен (учётные данные) на указанный ниже сторонний хост, не относящийся к GitHub; он может сохранить и использовать его во вред. Вы действуете на свой риск; если сомневаетесь — нажмите «Отмена».",
-    "zh_Hant": "這次下載會把你的 GitHub 令牌（登入憑證）傳送給下列非 GitHub 官方主機，對方可能記錄並濫用該令牌。風險自負；不確定時請選擇「取消」。"
-  },
-  "tokenExitHost": {
-    "de": "Ziel-Host: {host}\nDownload-Ziel: {target}",
-    "fr": "Hôte cible : {host}\nCible du téléchargement : {target}",
-    "ru": "Целевой хост: {host}\nОбъект загрузки: {target}",
-    "zh_Hant": "目標主機：{host}\n下載目標：{target}"
-  },
-  "tokenExitConfirm": {
-    "de": "Trotzdem herunterladen",
-    "fr": "Télécharger quand même",
-    "ru": "Всё равно скачать",
-    "zh_Hant": "仍要下載"
-  },
-  "tokenExitCancel": {
-    "de": "Abbrechen",
-    "fr": "Annuler",
-    "ru": "Отмена",
-    "zh_Hant": "取消"
-  },
-  "tokenExitLogConfirmed": {
-    "de": "Benutzer hat das Senden des Tokens an Host {host} bestätigt (TOKEN-EXIT-01)",
-    "fr": "L'utilisateur a confirmé l'envoi du jeton à l'hôte {host} (TOKEN-EXIT-01)",
-    "ru": "Пользователь подтвердил отправку токена на хост {host} (TOKEN-EXIT-01)",
-    "zh_Hant": "使用者確認將令牌傳送給主機 {host}（TOKEN-EXIT-01）"
-  },
-  "tokenExitLogCancelled": {
-    "de": "Benutzer hat den Download abgebrochen: Token bleibt auf dem Gerät, Ziel-Host {host} (TOKEN-EXIT-01)",
-    "fr": "L'utilisateur a annulé le téléchargement : le jeton reste sur l'appareil, hôte cible {host} (TOKEN-EXIT-01)",
-    "ru": "Пользователь отменил загрузку: токен остаётся на устройстве, целевой хост {host} (TOKEN-EXIT-01)",
-    "zh_Hant": "使用者取消下載：令牌不出裝置，目標主機 {host}（TOKEN-EXIT-01）"
-  },
-  "tokenExitCancelled": {
-    "de": "Download abgebrochen: Das Token wird nicht an Host {host} gesendet",
-    "fr": "Téléchargement annulé : le jeton ne sera pas envoyé à l'hôte {host}",
-    "ru": "Загрузка отменена: токен не будет отправлен на хост {host}",
-    "zh_Hant": "已取消下載：令牌不會傳送給主機 {host}"
-  }
+  "tokenExitTitle": "Votre jeton quitte cet appareil",
+  "tokenExitBody": "Ce téléchargement envoie votre jeton GitHub (identifiant de connexion) à l'hôte non-GitHub ci-dessous, qui peut l'enregistrer et en abuser. Vous continuez à vos risques et périls ; en cas de doute, choisissez « Annuler ».",
+  "tokenExitHost": "Hôte cible : {host}\nCible du téléchargement : {target}",
+  "tokenExitConfirm": "Télécharger quand même",
+  "tokenExitCancel": "Annuler",
+  "tokenExitLogConfirmed": "L'utilisateur a confirmé l'envoi du jeton à l'hôte {host} (TOKEN-EXIT-01)",
+  "tokenExitLogCancelled": "L'utilisateur a annulé le téléchargement : le jeton reste sur l'appareil, hôte cible {host} (TOKEN-EXIT-01)",
+  "tokenExitCancelled": "Téléchargement annulé : le jeton ne sera pas envoyé à l'hôte {host}"
 }

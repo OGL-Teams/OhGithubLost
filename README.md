@@ -2,7 +2,7 @@
 
 # OhGithubLost
 
-**GitHub 仓库管理客户端 · v9.0.0**
+**GitHub 仓库管理客户端 · v12.5.2**
 
 Android · Windows · Linux · Web
 
