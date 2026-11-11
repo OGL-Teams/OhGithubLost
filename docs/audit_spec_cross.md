@@ -149,3 +149,30 @@ TabBarView、11 处 RefreshIndicator 仍是硬切；v12.5.2 的回归锁只锁�
 
 最该补的一条规范：**门禁失效必须报错，不得静默通过**。
 最该补的一道门禁：**gate-of-gates**（临时 CWD + 扫描数 > 0 + 自述=实现 + 文档数字）。
+
+## 七、修复引入的回归与更正（必须记录）
+
+批 9 第一轮修复（commit `5acb015`）在 `OgLKernel.boot()` 里**硬编码**
+`bridges.seal(expected: {base, domain, surface})`，CI 的
+`test/kernel/kernel_test.dart` 三个端到端用例随即变红：
+
+```
+KernelBridgeError: 层级桥未注册齐全，封存被拒绝：缺 domain、surface
+  package:ohgithublost/kernel/bridge_registry.dart 74  seal
+  package:ohgithublost/kernel/kernel.dart 255       OgLKernel.boot
+```
+
+根因：这些用例是**只装一两层假模块的最小测试台**，本就不该要求
+三桥到齐；内核层不认识具体业务层，把期望集合写死在内核里是错的。
+
+**更正**（待随本轮统一提交）：
+- `boot(modules, {expectedBridges = const <String>{}})`：内核保持通用，
+  默认空集合 = 只封存不校验（最小测试台恢复旧行为）；
+- 真实装配根 `lib/main.dart` 调 `boot()` 时显式传入
+  `{base, domain, surface}` —— 守卫仍在启动期生效，只是归位到
+  **知道有哪些层**的那一层；
+- `test/kernel/bridge_registry_test.dart` 保留：它直接测
+  `KernelBridgeRegistry.seal(expected:)` 本身，不经过 `boot()`。
+
+这正是本项目反复强调的教训：**静态审计结论与修复本身都必须经
+CI 测试裁决**；一次「补齐守卫」的改动照样能引入 P0 级回归。

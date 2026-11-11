@@ -7,14 +7,12 @@
 CI 全绿下共存。本脚本只做**可静态确证**的结构检查：
 
   1. 相对 `export` 是否指向真实文件、是否跨层向上；
-  2. `lib/base`、`lib/domain` 的文件头层级前缀（L1/L2）；
+  2. 全部四层（kernel L0 / base L1 / domain L2 / surface L3）的文件头
+     层级前缀是否与所在层一致（kernel 不再豁免 —— 曾有 kernel/contract/
+     下三个文件自称 L1 而无门禁可拦）；
   3. `defaultTargetPlatform` 是否绕过 `lib/platform` 门面（白名单外）；
-  4. `docs/` 中被引用为契约出处的文档是否真实存在；
-  5. 全部四层（含 kernel）的文件头层级前缀是否与所在层一致。
-
-★ 批 9 交叉：旧版 docstring 第 5 项写「204/206 状态码弱提示」，
-  脚本里**从未实现**这一检查（B8-C-01 死描述，挂了三个版本）。
-  自述必须与实现一致，否则门禁的可信度无从谈起。
+  4. `docs/` 中被引用为契约出处的文档是否真实存在（仅扫 docs/ 内的活文档，
+     `audit_*.md` 历史快照为记录时点性质，不在契约引用扫描范围）。
 
 用法：
     python3 tool/contract_audit.py
@@ -144,6 +142,68 @@ def check_doc_refs() -> list[str]:
     return issues
 
 
+def check_boot_order(files: dict[str, str]) -> list[str]:
+    """A-13：装配顺序 L1→L2→L3 的静态验证。
+
+    main.dart 里的模块装配列表（`bootstrap.modules` → `domainLayerModules()`
+    → `surfaceModule`）依赖顺序即拓扑；ModuleBus 在运行时会校验依赖图，
+    但若有人把新模块插错位置且各模块恰好未声明依赖，运行时不会报错。
+    这里按「分层模块所属层单调不减」静态断言装配顺序。
+    """
+    issues: list[str] = []
+    text = files.get('main.dart')
+    if text is None:
+        return issues
+    m = re.search(r'<OgLModule>\[', text)
+    if not m:
+        return issues  # 装配写法变更时不误报，交由运行时拓扑校验兜底
+    # 模块构造名 → 所属层（按 lib/ 内定义文件判定）。
+    layer_of_module: dict[str, str] = {}
+    for rel, body in files.items():
+        lay = layer_of(rel)
+        if lay is None:
+            continue
+        for cls in re.findall(r'^class (\w+)\s+extends\s+\w*Module\b',
+                              body, re.M):
+            layer_of_module[cls] = lay
+    # 模块变量（surfaceModule 等 camelCase 名）→ 通过其构造点回查：
+    # `final XxxModule surfaceModule = SurfaceLayerModule();`
+    var_of: dict[str, str] = {}
+    for m2 in re.finditer(r'\bfinal\s+[\w<>, ?]*?(\w+)\s*=\s*(\w+)\s*\(', text):
+        var_of[m2.group(1)] = m2.group(2)
+    RANK_MODULE = {'kernel': 0, 'base': 1, 'domain': 2, 'surface': 3}
+    # 层工厂函数名 → 层（domainLayerModules() / baseLayerModules…）。
+    FACTORY_LAYER = {'baseLayerModules': 'base', 'baseLayerModulesOnPlatform': 'base',
+                     'domainLayerModules': 'domain', 'surfaceLayerModules': 'surface'}
+    body = text[m.start():text.find('];', m.start())]
+    # 展开序列：`...factory()` / 裸变量 / 直接构造。
+    seq: list[tuple[str, str | None]] = []
+    for token in re.findall(r'\.\.\.(\w+)\(\)|\b([A-Za-z]\w*)\b', body):
+        if token[0]:
+            if token[0] in FACTORY_LAYER:
+                seq.append((token[0] + '()', FACTORY_LAYER[token[0]]))
+            continue
+        name = token[1]
+        if name in ('OgLModule', 'modules', 'const', 'final'):
+            continue
+        cls = var_of.get(name, name)
+        lay = layer_of_module.get(cls)
+        if lay is not None:
+            seq.append((name, lay))
+    prev_rank = -1
+    prev_name = '?'
+    prev_lay = '?'
+    issues: list[str] = []
+    for name, lay in seq:
+        rank = RANK_MODULE[lay]
+        if rank < prev_rank:
+            issues.append('main.dart: 模块 %s(%s) 排在 %s(%s) 之后，'
+                          '装配顺序违反 L0→L3 拓扑'
+                          % (name, lay, prev_name, prev_lay))
+        prev_rank, prev_name, prev_lay = max(rank, prev_rank), name, lay
+    return issues
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--fatal', action='store_true')
@@ -155,6 +215,7 @@ def main() -> int:
         '文件头层级前缀': check_headers(files),
         '平台门面': check_platform(files),
         '文档契约引用': check_doc_refs(),
+        '装配顺序（L0→L3）': check_boot_order(files),
     }
     total = 0
     for title, issues in sections.items():

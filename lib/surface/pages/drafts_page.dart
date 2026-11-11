@@ -19,7 +19,9 @@ import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
 import '../util/clipboard_x.dart';
+import '../app/refresh_indicator.dart';
 import 'code_editor_page.dart';
+import '../app/og_l_app_bar.dart';
 
 /// 取 `drafts_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -204,13 +206,13 @@ class _DraftsPageState extends State<DraftsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_t('title'))),
+      appBar: OgLAppBar(title: _t('title')),
       body: AsyncView<List<GhDraft>>(
         controller: _controller(),
         emptyIcon: Icons.edit_note,
         emptyText: _t('empty'),
         builder: (BuildContext context, List<GhDraft> drafts) =>
-            RefreshIndicator(
+            OgLRefreshIndicator(
           onRefresh: () => _controller().load(),
           child: ListView.separated(
             physics: const AlwaysScrollableScrollPhysics(),

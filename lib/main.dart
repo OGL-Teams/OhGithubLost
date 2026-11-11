@@ -4,7 +4,7 @@
 /// 1. **组装四层**：`baseLayerModules()` + `domainLayerModules()` + `SurfaceLayerModule`
 ///    （顺序即拓扑：L1 → L2 → L3，内核会自己校验依赖）；
 /// 2. **零外部资源启动**：引导清单**不读文件、不落盘**——
-///    仓库里没有任何 `assets/`，所以清单只能是"缺失"或"由发布流程注入"。
+///    引导清单不进 `assets/`（assets/ 现存 i18n、fonts 等，但都不是引导清单），
 ///    调试构建允许缺失（`developmentBypass`，必然产生 `OGL-BOOT-107` 告警）；
 ///    发布构建要求清单已签名，否则**拒绝启动**（这是信任链条的第一环）。
 /// 3. **把启动结果交给 UI**：[OgLApp] 会展示启动报告与信任告警，
@@ -168,7 +168,7 @@ void main() async {
   }
 
   // ★ 零外部资源的关键一步：
-  // 引导文件系统完全在内存里，仓库不含任何 assets 文件。
+  // 引导文件系统完全在内存里；引导清单不经 assets/（编译期 dart-define 注入）。
   // 发布构建时把 CI 签名好的清单（经 `--dart-define-from-file` 注入）
   // 写入内存文件系统；调试构建允许缺失（开发旁路 + OGL-BOOT-107 告警）。
   final bootFileSystem = InMemoryBootFileSystem();
@@ -213,7 +213,17 @@ void main() async {
 
   try {
     OgLAppLog.instance.step('启动', '内核引导（${modules.length} 个模块）…');
-    final report = await kernel.boot(modules);
+    // ★ 批 9 交叉 X-04：真实装配必须到齐 L1/L2/L3 三座层桥。
+    //   L0 内核自身没有桥（它是被依赖方）。
+    //   漏注册在启动期就抛 KernelBridgeError，不再拖到运行期 resolve。
+    final report = await kernel.boot(
+      modules,
+      expectedBridges: <String>{
+        ModuleLayer.base.key,
+        ModuleLayer.domain.key,
+        ModuleLayer.surface.key,
+      },
+    );
     lap('内核引导');
     OgLAppLog.instance.result(
       '启动',

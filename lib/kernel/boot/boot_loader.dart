@@ -82,7 +82,7 @@ class BootResult {
   /// 阶段结果（按执行顺序）。
   final List<BootStage> stages;
 
-  /// 本次引导产生的信任告警（**必须**被 UI 触达，见 docs/BOOT.md（该文件未落地，以源码为准））。
+  /// 本次引导产生的信任告警（**必须**被 UI 触达，见 docs/COLD_START.md）。
   final List<BootTrustWarning> trustWarnings;
 
   /// 引导清单（拒绝启动时为 `null`）。

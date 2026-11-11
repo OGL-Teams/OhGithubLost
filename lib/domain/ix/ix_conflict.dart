@@ -3,7 +3,7 @@
 /// 一致性引擎（[WriteOutcome]）只回答"是什么冲突、允许做什么"；
 /// **本文件回答"怎么讲给用户听、用户点了以后怎么办"**。
 ///
-/// 一条硬规矩来自 [DURABILITY.md](../docs/DURABILITY.md（该文件未落地，以源码为准）)：
+/// 一条硬规矩来自 [DURABILITY.md](../docs/CONSISTENCY.md)：
 /// 基线过期（`staleSha`）时**必须**先给"查看差异"，不得只给"覆盖"。
 library;
 

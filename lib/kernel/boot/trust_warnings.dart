@@ -1,6 +1,6 @@
 /// L0 内核级 · 信任告警：启动层与扩展装载的显式告警通道。
 ///
-/// 设计要点（见 `docs/BOOT.md（该文件未落地，以源码为准）`）：
+/// 设计要点（见 `docs/COLD_START.md`）：
 /// - 告警**不得只落日志**：必须经由收集器分发给 UI（弹窗/安全中心）与审计；
 /// - 告警是结构化数据（码 + 主体 + 严重级 + 说明），便于自动化与国际化；
 /// - 接收方异常不允许静默吞掉，统一记录到 [TrustWarningCollector.sinkErrors]。
@@ -18,7 +18,7 @@ enum TrustSeverity {
   danger,
 }
 
-/// 告警码段（见 `docs/NAMING.md（该文件未落地，以源码为准）` §4）。
+/// 告警码段（见 `docs/ARCHITECTURE.md` §4）。
 abstract final class BootWarningCodes {
   /// 未签名第三方 Mod 已加载。
   static const String unsignedModLoaded = 'OGL-BOOT-101';

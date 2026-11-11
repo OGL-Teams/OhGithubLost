@@ -1482,7 +1482,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           Row(
                             children: <Widget>[
                               Icon(Icons.warning_amber_rounded,
-                                  size: 18,
+                                  size: OgLIconSize.md,
                                   color: theme.colorScheme.onErrorContainer),
                               const SizedBox(width: OgLSpace.sm),
                               Expanded(
@@ -2299,7 +2299,8 @@ class _SettingsPageState extends State<SettingsPage> {
                           right: OgLSpace.sm, bottom: OgLSpace.sm),
                       child: TextButton.icon(
                         onPressed: () => _copyLogs(allLines),
-                        icon: const Icon(Icons.content_copy, size: 16),
+                        icon: const Icon(Icons.content_copy,
+                            size: OgLIconSize.sm),
                         label: Text(_t('copyAllLogs')),
                       ),
                     ),

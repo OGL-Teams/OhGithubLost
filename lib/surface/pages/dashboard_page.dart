@@ -20,6 +20,7 @@ import '../types.dart';
 import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
 import '../widgets/scroll_aware_action.dart';
+import '../app/refresh_indicator.dart';
 import 'download_manager_page.dart';
 import 'new_repo_page.dart';
 import 'notifications_page.dart';
@@ -443,7 +444,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 if (p.items.isEmpty) {
                   // 空态也要能下拉刷新（此前 RefreshIndicator 只包了"有数据"分支，
                   // 刚好在"没数据需要手动重试"时失效）。
-                  return RefreshIndicator(
+                  return OgLRefreshIndicator(
                     onRefresh: _refreshActive,
                     child: ListView(
                       children: <Widget>[
@@ -469,7 +470,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   );
                 }
-                return RefreshIndicator(
+                return OgLRefreshIndicator(
                   onRefresh: p.refresh,
                   child: ListView.separated(
                     controller: _scroll,

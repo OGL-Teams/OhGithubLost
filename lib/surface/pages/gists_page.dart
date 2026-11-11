@@ -16,8 +16,10 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../app/refresh_indicator.dart';
 import 'gist_detail_page.dart';
 import 'new_gist_page.dart';
+import '../app/og_l_app_bar.dart';
 
 /// 取 `gists_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -131,7 +133,7 @@ class _GistsPageState extends State<GistsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_t('title'))),
+      appBar: OgLAppBar(title: _t('title')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _create,
         icon: const Icon(Icons.add),
@@ -145,7 +147,7 @@ class _GistsPageState extends State<GistsPage> {
           BuildContext context,
           List<Map<String, dynamic>> gists,
         ) =>
-            RefreshIndicator(
+            OgLRefreshIndicator(
           onRefresh: () => _gistsC().load(),
           child: ListView.separated(
             physics: const AlwaysScrollableScrollPhysics(),

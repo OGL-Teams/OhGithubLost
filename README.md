@@ -107,6 +107,15 @@ lib/
 - [`release_notes/`](release_notes/) —— 逐版本发布说明（中英对照）
 - <https://oglb.344977.xyz/> —— 更新日志站点（逐版本中英对照）
 
+## 文档地图
+
+- [`docs/README.md`](docs/README.md) —— 文档分类索引（规范 / 设计 / 审计 / 运维）
+- [`AGENTS.md`](AGENTS.md) —— 工程总纲（分层、门禁与量化口径）
+- [`docs/QUALITY_STANDARD.md`](docs/QUALITY_STANDARD.md) —— 质量标准：59 条原则
+- [`docs/AUDIT_INDEX.md`](docs/AUDIT_INDEX.md) —— 九批三视角审计总索引
+- [`docs/CI_BUILD_BASELINE.md`](docs/CI_BUILD_BASELINE.md) —— CI 构建实测基线
+- [`release_notes/`](release_notes/) —— 逐版本发布说明（中英对照）
+
 ## 贡献
 
 OGL 不接受随意合入：分层违规、未本地化中文、动效绕档、质量反模式均由 CI 拦截。请先阅读 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) 的「依赖方向的保障机制」与 [`docs/I18N.md`](docs/I18N.md) 的流程，再提交变更。

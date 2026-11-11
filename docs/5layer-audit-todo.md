@@ -1,50 +1,56 @@
-# 5 层架构审计 · 待办（5layer-audit-todo.md）
+# 架构审计待办 · 历史占位（5layer-audit-todo.md）
 
-> 本文件为本仓库「5 层架构 + 兼容性 + 错误捕获」全面审计的待办清单。
-> 目前已落地机械门禁（layer_audit.py / motion_audit.py / perf_audit.py / i18n_scan.py），
-> 但仅验证语法 / 导入 / 分层规范，尚未验证语义设计的严密性。
+> 本文件是 v8.2.0 时期「5 层架构 + 兼容性 + 错误捕获」全面审计的**占位清单**。
+> 现行架构自 v12 起为 **四层 L0–L3**（见 `AGENTS.md`、`docs/ARCHITECTURE.md`），
+> 本文件保留原始待办供追溯，**不再作为现行规范**。
+> 现行审计已由 `docs/AUDIT_PLAN.md` 的九批三视角交叉法与
+> `docs/AUDIT_INDEX.md` 统一索引取代。
 
-## 已观察项（来自机械门禁，不代表设计严密）
+## 当时的机械门禁快照（v8.2.0，勿当现状）
 
-- `tool/layer_audit.py` 输出：`违规：0 处`（main 144 文件 / web 151 文件）
-- `tool/motion_audit.py --fatal` 输出：0 违规
-- `tool/perf_audit.py` 输出：0 违规
-- `tool/i18n_scan.py --check` 输出：通过
+| 工具 | 当时输出 |
+|---|---|
+| `tool/layer_audit.py` | `违规：0 处`（main 144 文件 / web 151 文件） |
+| `tool/motion_audit.py --fatal` | 0 违规 |
+| `tool/perf_audit.py` | 0 违规 |
+| `tool/i18n_scan.py --check` | 通过 |
 
-## 待查（按优先级）
+## 现行快照（2026-11-11 实测，仅作对照）
 
-### 1. domain → base 下穿点
-- KNOWN 列表当前 2 项：`RepositoryCache` / `NetBridge`
-- **问题**：是否仍被上层直接 import？是否已被新设施替代却仍残留在 KNOWN 列表中（白名单冗余）？
+| 工具 | 现行输出 |
+|---|---|
+| `tool/layer_audit.py --fatal` | **文件总数：154 / 已知待收敛 2 处 / 违规 0 处** |
+| `tool/contract_audit.py --fatal` | 5 节检查全 0（含 export / 四层文件头 / 平台门面 / 文档契约 / 装配顺序） |
+| `tool/gate_of_gates.py --fatal` | 7 支门禁在临时 CWD 下仍有能力 + 反向注入验证通过 |
+| 其余门禁 | ui / motion / perf / i18n / ci_config / version_sync 全绿 |
 
-### 2. 契约层 vs 实现层覆盖
-- `lib/kernel/contract/` 下 10 个文件
-- **问题**：每个是否都有 `io/` 与 `web/` 两套实现？哪些只有 `io/` 端，
-  靠 stub 在 web 上跑（是否静默降级 / 抛 NotImplementedError）？
+> 统计口径说明：154 是 `lib/` 下四个层级目录（kernel/base/domain/surface）
+> 的 Dart 文件数；`lib/platform/`（平台门面）与 `lib/main.dart`（组合根）
+> 不入四层统计，故与 `find lib -name '*.dart'` 的 161 不同。两者都对，
+> 不要互相「修正」。
 
-### 3. 错误捕获
-- `on Object catch (e)` 的出现频次？是否存在吞掉错误的情况？
-- `unawaited(...)` 是否漏错误回调（dart:async 的 unhandled exception 出口）？
-- `try { ... } catch (e, st) { debugPrint(...) }` 后无 rethrow 的位置（用户消息丢失）？
+## 原始待办（历史记录，不改）
 
-### 4. 平台兼容性
-- `dart:io` 在 web 后端的隔离（condition_import 覆盖是否完备）
-- Plugin（permission_handler / window_manager / path_provider / flutter_local_notifications）
-  在 Web 上的降级路径是否完备，是否存在空实现（用 `defaultTargetPlatform` 判断后直接
-  return 而无任何提示 / 兜底）？
+1. domain → base 下穿点：KNOWN 2 项 `RepositoryCache` / `NetBridge`
+   是否仍被直接 import、是否已可移除。
+   **现状**：仍为 2 项，由 `tool/layer_audit.py` 的 `KNOWN` 显式登记；
+   正解是在 `kernel/contract/` 定义抽象，属独立批次。
+2. 契约层 vs 实现层覆盖：当时问 `kernel/contract/` 下 10 个文件是否都有
+   io/web 两套实现。**现状**：四层架构下 platform/ 条件 import 实际为零，
+   详见 `docs/ARCHITECTURE.md` §6.2 的现状说明。
+3. 错误捕获：`on Object catch` 频次、`unawaited(...)` 漏错误回调、
+   `catch` 后无 rethrow。
+4. 平台兼容性：`dart:io` 在 web 的隔离、各插件降级路径。
+5. 跨平台一致性：五平台 vs web 分支覆盖、CI 矩阵覆盖。
 
-### 5. 跨平台一致性
-- 5 平台 vs 1 平台（web）分支覆盖——哪些是 5 平台同样的代码，哪些是 web-only 退化？
-- CI 矩阵是否确实覆盖全平台（`pubspec.yaml` 的 platforms 字段 vs `.github/workflows/` 的 build matrix）？
+上述 3–5 项已在批 1–9 审计中逐项展开，结论见 `docs/AUDIT_INDEX.md`
+对应批次报告；本文件不再追加。
 
-## 启动审计信号后
+## 归档说明
 
-- 按本大纲逐项展开
-- **不重做已写内容**：kernel/contract 实现、layer_audit 规则等如已通过机械门禁，
-  仅核查语义；除非确属不合规，否则不重写文件
-- 审计报告输出至 `docs/5layer-audit-YYYY-MM-DD.md`，本占位文件随之归档
-
-## 对当前版本无影响
-
-- 本版本（8.2.0）**未启动**全面审计，仅落占位清单
-- 机械门禁已在 CI 中作为 fast-fail
+- 当时写「审计报告输出至 `docs/5layer-audit-YYYY-MM-DD.md`，本占位文件随之归档」；
+  实际走的是 `audit_b<N>_{a,b,c}.md` + `audit_b<N>_cross.md` 系列，
+  故本文件**保留不删**（历史报告里有互链），由 `docs/AUDIT_INDEX.md` 登记为
+  「批外专项 · 历史占位」。
+- 本版本（v12.5.2）未启动新的「5 层」全面审计；机械门禁已在 CI 中
+  作为 fast-fail 常驻。

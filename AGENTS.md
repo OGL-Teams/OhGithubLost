@@ -1,7 +1,9 @@
 # AGENTS.md — OhGithubLost 工程规范与代码地图
 
-> 面向 AI 助手与贡献者的项目导读。项目：Flutter 多平台 GitHub 客户端（v12.0.0 LTS，Apache-2.0），
-> Android / Windows / Linux / Web，lib/ 161 个 Dart 文件 ≈ 56,586 行，测试 52 文件 ≈ 11,021 行。
+> 面向 AI 助手与贡献者的项目导读。项目：Flutter 多平台 GitHub 客户端（v12.5.2，Apache-2.0），
+> Android / Windows / Linux / Web。文件 / 行数 / 测试数量等计量数字一律以
+> `find`/`wc` 实测或 `tool/version_sync.py` 校验为准，本文不维护具体计数快照
+> （避免「文档数字静默腐烂」，见 docs/audit_spec_c.md C-01）。
 > 工程底线：**数据可靠性 + 失败如实可见** —— 不静默降级、不预置加速通道、不掩盖版本冲突。
 
 ## 1. 五层架构与依赖门禁
@@ -19,7 +21,7 @@ CI 由 `tool/layer_audit.py --fatal` + `tool/contract_audit.py --fatal` 强制�
 
 **桥（bridge）机制**：每层一座层桥（`*bridge.dart`）注册进 `KernelBridgeRegistry`，上层只许 `XxxBridge.of(bridges)` resolve 层桥，禁止直接 import 下层内部文件。合法例外仅 3 文件（layer_audit `ALLOW`）：`domain/domain_bridge.dart`、`surface/surface_bridge.dart`（装配根）、`surface/types.dart`（唯一可 re-export domain DTO/异常的门面）。`KNOWN` 白名单恰 2 项待收敛：`gh_api.dart → base/disk/disk_cache.dart`、`gh_client.dart → base/net/net_bridge.dart`（正解：在 `kernel/contract/` 定义抽象）。
 
-**命名约定**（layer_audit 依赖识别，违反即无法被识别）：页面 `*_page.dart`；桥 `*bridge.dart`；平台实现 `*_io.dart` / `*_web.dart`（条件 import，编译期解析）；服务 `*service.dart` / `*manager.dart` / `*api.dart`；共用构件放 `surface/app/`（一件事一个文件）。
+**命名约定**：页面 `*_page.dart`（100% 合规，违者无法被识别为页面）；桥 `*bridge.dart`；平台实现 `*_io.dart` / `*_web.dart`（条件 import，编译期解析 —— 现状：`lib/platform/` 下无条件 import，见 ARCHITECTURE §6.2）；服务 `*service.dart` / `*manager.dart` / `*api.dart` 为**新增时的建议后缀**（不被脚本强制，存量部分不吻合，见 ARCHITECTURE §5）；共用构件放 `surface/app/`（一件事一个文件）。
 
 **非门禁层**：`dart analyze lib/kernel lib/base lib/domain lib/platform` 必须 0 问题（不依赖 Flutter SDK）；surface 无 SDK 环境用 `dart format --output=none lib` 兜底。
 
@@ -27,15 +29,23 @@ CI 由 `tool/layer_audit.py --fatal` + `tool/contract_audit.py --fatal` 强制�
 
 1. **layer_audit.py --fatal**：分层 import 检查（见上）。
 1a. **contract_audit.py --fatal**：结构契约检查（export/import 真实指向、L0–L3 文件头层级前缀、平台判定必须经 `lib/platform` 门面、docs 引用的契约文档必须存在；组合根与平台适配分派文件已登记白名单）。
-2. **perf_audit.py --fatal**（扫 lib/surface/）：fatal 硬规则 —— `shrinkWrap: true`、宽依赖 `MediaQuery.of(context)`（须用 `sizeOf`/`paddingOf`/`textScalerOf`）、四类 saveLayer 着色器源：`BackdropFilter(`、`ImageFilter.blur|BlurStyle`、`ColorFiltered(`、`ShaderMask(`（着色器不受整文件 ALLOW 豁免，SHADER_ALLOW 必须保持为空）。只报告不拦截：ListView(children:[...for]) 急加载长列表、非动画 `Opacity(`。白名单：ALLOW 7 文件 + REVIEWED_BOUNDED 7 文件。
-3. **motion_audit.py --fatal**（扫 lib/surface/**）：禁止硬编码动画时长 `Duration(milliseconds: n)`、`ScaleTransition(`/`AnimatedScale(`、`BackdropFilter(`/`ImageFilter.blur(`、`Curves.linear`（一律走 ease-out 阶梯）。白名单仅 `app/motion.dart`、`app/animations.dart`。
+2. **perf_audit.py --fatal**（扫 lib/surface/）：fatal 硬规则 —— `shrinkWrap: true`、宽依赖 `MediaQuery.of(context)`（须用 `sizeOf`/`paddingOf`/`textScalerOf`）、四类 saveLayer 着色器源：`BackdropFilter(`、`ImageFilter.blur|BlurStyle`、`ColorFiltered(`、`ShaderMask(`（着色器不受整文件 ALLOW 豁免，SHADER_ALLOW 必须保持为空）。只报告不拦截：ListView(children:[...for]) 急加载长列表、非动画 `Opacity(`。白名单：ALLOW 6 文件 + REVIEWED_BOUNDED 7 文件（以 `tool/perf_audit.py` 内登记为准，文档不另维护计数）。
+3. **motion_audit.py --fatal**（扫 lib/surface/**）：禁止硬编码动画/等待时长 `Duration(milliseconds:/seconds:/minutes:/hours:/days: n)`、`ScaleTransition(`/`AnimatedScale(`/`AnimatedXxx(` 隐式动效、`BackdropFilter(`/`ImageFilter.blur(`、`Curves.linear`（一律走 ease-out 阶梯）。行内豁免仅限逐行精确匹配等待语义（`Timer(`、`throttle`、`ttl`、`debounce`、`exitWindow`、`cache` 等提示词所在行），不再整行子串放行全部规则。白名单仅 `app/motion.dart`、`app/animations.dart`。
 4. **i18n_scan.py --check**：① lib/ 中文界面文案 0 处未本地化（log 豁免、`// i18n-allow:` 豁免）；② 所有语言分片 key 集合与 zh 完全一致；③ 三处语言清单一致（`OgLI18n.locales` × assets/i18n 目录 × pubspec assets）。
-5. **ui_audit.py --fatal**：设计令牌一致性 —— 间距刻度仅 {4,8,12,16,24,32,48,64}（`OgLSpace.*`）；圆角刻度仅 {4,8,12,16,24,999}（`OgLRadius.*`）；`fontSize` 必须走 `textTheme.*`（等宽上下文放行）；字面色禁止（仅放行 `Colors.transparent`、`Colors.entries`），须用 `colorScheme.*` / `OgLSemanticColors`；曲线白名单 10 个（easeOut、easeOutCubic、easeOutQuart、easeOutQuint、easeOutBack、linear、easeInOut、easeInOutCubic、fastOutSlowIn、decelerate）。
+5. **ui_audit.py --fatal**：设计令牌一致性 —— 间距刻度仅 {4,8,12,16,24,32,48,64}（`OgLSpace.*`）；圆角刻度仅 {4,8,12,16,24,999}（`OgLRadius.*`）；`fontSize` 必须走 `textTheme.*`（等宽上下文放行）；字面色禁止（仅放行 `Colors.transparent`、`Colors.entries`），须用 `colorScheme.*` / `OgLSemanticColors`；曲线白名单 = `tool/ui_audit.py` 的 `CURVES_ALLOWED`（ease-out 阶梯 + 特例，与 `app/motion.dart` 档位表一致，以脚本内登记为准）。
 6. **sort_imports.py**：`dart:` → `package:` → 相对路径，组间空行、组内字母序；处理 lib/ 与 test/。
 7. **version_sync.py**：main.dart `kOgLAppVersion` 必须等于 pubspec `version`，`--fix` 可自动改写。
 8. **boot_manifest.py**：四层目录逐文件 sha256 聚合 → coreDigest，Ed25519 签名（私钥仅 CI）；canonical JSON 与 `boot_manifest.dart` 的 `canonicalJsonEncode` 逐字节一致，改动须跑 `test/kernel/boot_release_chain_test.dart`。
 9. **inject_platform_spec.py + platform_spec.yaml**：平台私有文件注入（每条必须写 why；**spec 没写的能力必须在 lib/platform/ 用 Dart 实现，注入不是逃生舱**）。
 10. **verify_apk_cert.py**：发布后 APK 证书校验。
+
+## 3. 组合根（lib/main.dart）
+
+`lib/main.dart` 是**唯一装配点**，不在四层目录内、不参与 layer_audit 的分层扫描
+（`layer_of('main.dart')` 返回 None，属结构性豁免而非漏审 —— 它必须 import 各层
+桥与启动模块）。`contract_audit.py` 的 `PLATFORM_ALLOW` 已显式登记它
+（组合根诊断展示平台名）。新增跨层装配代码应写进 main.dart 或各层桥，
+不应再出现第 5 个跨层点。
 
 ## 3. Lint / 代码风格
 

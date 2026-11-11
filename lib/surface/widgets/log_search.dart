@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 日志查找条。
 class OgLLogSearchBar extends StatefulWidget {
@@ -61,7 +62,7 @@ class _OgLLogSearchBarState extends State<OgLLogSearchBar> {
             decoration: InputDecoration(
               isDense: true,
               border: const OutlineInputBorder(),
-              prefixIcon: const Icon(Icons.search, size: 20),
+              prefixIcon: const Icon(Icons.search, size: OgLIconSize.lg),
               hintText: widget.hintText,
             ),
             inputFormatters: <TextInputFormatter>[

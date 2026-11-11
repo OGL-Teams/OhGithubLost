@@ -315,7 +315,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
         theme,
         children: <Widget>[
           const SizedBox(height: OgLSpace.xl),
-          Icon(Icons.hub_outlined, size: 56, color: theme.colorScheme.primary),
+          Icon(Icons.hub_outlined,
+              size: OgLIconSize.hero, color: theme.colorScheme.primary),
           const SizedBox(height: OgLSpace.lg),
           Text(
             _t('welcomeTitle'),
@@ -360,7 +361,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     children: <Widget>[
                       Row(
                         children: <Widget>[
-                          Icon(_statusIcon(info.status), size: 20),
+                          Icon(_statusIcon(info.status), size: OgLIconSize.lg),
                           const SizedBox(width: OgLSpace.sm),
                           Expanded(
                             child: Text(

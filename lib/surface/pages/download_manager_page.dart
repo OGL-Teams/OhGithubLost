@@ -17,6 +17,7 @@ import '../types.dart';
 import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `download_manager_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -98,6 +99,8 @@ class OgLDownloadNotice {
         message,
         style: fg != null ? TextStyle(color: fg) : null,
       ),
+      // motion-allow: 下载提示驻留时长（用户需要时间读到「已入队/失败」
+      //   与操作按钮，不是动画；Material 默认 4s 过短）。非动效令牌。
       duration: const Duration(seconds: 8),
       backgroundColor: bg,
       // 与 OgLNotifier 同款规格：悬浮 + 统一留隙（宽度只有一处出处）。
@@ -166,7 +169,8 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
               child: ListTile(
                 dense: true,
                 leading: Icon(Icons.undo,
-                    size: 18, color: theme.colorScheme.onSecondaryContainer),
+                    size: OgLIconSize.md,
+                    color: theme.colorScheme.onSecondaryContainer),
                 title: Text(
                   _t('removedItem', {'name': _lastRemoved!.fileName}),
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -194,7 +198,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                       children: <Widget>[
                         Icon(
                           Icons.download_outlined,
-                          size: 48,
+                          size: OgLIconSize.empty,
                           color: theme.colorScheme.outline,
                         ),
                         const SizedBox(height: OgLSpace.md),
@@ -295,7 +299,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
           children: <Widget>[
             Row(
               children: <Widget>[
-                Icon(_iconFor(task.category), size: 20),
+                Icon(_iconFor(task.category), size: OgLIconSize.lg),
                 const SizedBox(width: OgLSpace.sm),
                 Expanded(
                   child: Text(
@@ -347,7 +351,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                       message: _t('multiConnection'),
                       child: Icon(
                         Icons.multiple_stop,
-                        size: 14,
+                        size: OgLIconSize.xs,
                         color: theme.colorScheme.primary,
                       ),
                     ),

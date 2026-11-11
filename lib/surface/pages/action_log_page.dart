@@ -513,7 +513,8 @@ class _JobCard extends StatelessWidget {
         // key 含初始展开态：失败置顶重排后能以正确展开态重建。
         key: ValueKey<String>('log-job-$name-$initiallyExpanded'),
         initiallyExpanded: initiallyExpanded,
-        leading: Icon(Icons.circle, size: 12, color: _dotColor(theme)),
+        leading:
+            Icon(Icons.circle, size: OgLIconSize.mini, color: _dotColor(theme)),
         title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
         trailing: hits != null && hits.isNotEmpty
             ? Padding(

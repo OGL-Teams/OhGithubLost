@@ -200,12 +200,27 @@ def main():
     parser.add_argument('--i18n', default=str(REPO_ROOT / 'assets' / 'i18n'))
     parser.add_argument('--json', dest='json_out')
     parser.add_argument('--check', action='store_true')
+    # ★ C-07：docstring 早年虚构了 --allowlist，现真正实现 ——
+    #   传入一个文本文件（每行一条中文字面量，`#` 开头为注释），
+    #   命中的条目在 --check 中豁免（用途：确认只是日志载荷、但
+    #   `i18n-allow:` 注释放不进去的少数情况）。
+    parser.add_argument('--allowlist', dest='allowlist',
+                        help='豁免清单文件（每行一条中文字面量，# 注释）')
     args = parser.parse_args()
+
+    allow_texts = set()
+    if args.allowlist:
+        with open(args.allowlist, encoding='utf-8') as handle:
+            for line in handle:
+                entry = line.strip()
+                if entry and not entry.startswith('#'):
+                    allow_texts.add(entry)
 
     items = collect(args.lib)
     ui_items = [item for item in items if item['kind'] == 'ui'
                 and item['file'] not in ALLOW_FILES
-                and (item['file'], item['text']) not in ALLOW_ITEMS]
+                and (item['file'], item['text']) not in ALLOW_ITEMS
+                and item['text'] not in allow_texts]
     log_items = [item for item in items if item not in ui_items]
     by_page = {}
     for item in ui_items:

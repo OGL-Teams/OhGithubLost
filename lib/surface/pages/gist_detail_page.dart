@@ -25,6 +25,7 @@ import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `gist_detail_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -396,7 +397,8 @@ class _GistDetailPageState extends State<GistDetailPage> {
                           OgLSpace.md, OgLSpace.sm, OgLSpace.xxs, OgLSpace.sm),
                       child: Row(
                         children: <Widget>[
-                          const Icon(Icons.description_outlined, size: 18),
+                          const Icon(Icons.description_outlined,
+                              size: OgLIconSize.md),
                           const SizedBox(width: OgLSpace.sm),
                           Expanded(
                             child: Column(
@@ -425,7 +427,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                                       children: <Widget>[
                                         Icon(
                                           Icons.warning_amber_rounded,
-                                          size: 14,
+                                          size: OgLIconSize.xs,
                                           color: theme.colorScheme.error,
                                         ),
                                         const SizedBox(width: OgLSpace.xxs),

@@ -1,5 +1,15 @@
 # 更新日志
 
+## 12.5.3（未发布）
+
+> 规范专项审查（批 9 三视角交叉）落地与仓库文档整理；本条目尚未随版本发布。
+
+- 门禁可信度：`layer_audit.py` / `i18n_scan.py` 按 `__file__` 定根，错误 CWD 不再静默全绿；新增 `tool/gate_of_gates.py` 反向验证门禁自身。
+- 分层桥接守卫与契约：`contract_audit.py` docstring 死描述修正，自述与实现一致。
+- i18n 安全文案修复：四语言 `common.json` 中 32 个 dict 值改为字符串译文；`i18n_scan --check` 新增值类型校验。
+- UI 动效与细节补全：按批 9 B 视角报告补齐动效档位与界面细节（见 `docs/audit_spec_b.md` / `docs/audit_spec_cross.md`）。
+- 仓库文档整理：新增 `docs/AUDIT_INDEX.md`（九批审计总索引）与 `docs/REPO_HYGIENE.md`（整理报告）；`docs/README.md` 重写为四类索引。
+
 ## 12.5.2（2026-11-10）
 
 ### 修复

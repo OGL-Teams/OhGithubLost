@@ -21,7 +21,11 @@ export '../domain/gh/gh_auth.dart' hide GhAuthService;
 export '../domain/gh/gh_client.dart' hide GhClient;
 export '../domain/gh/gh_draft.dart' show GhDraft, GhDraftRecord;
 export '../domain/gh/gh_models.dart';
-export '../domain/gh/gh_oauth.dart';
+export '../domain/gh/gh_oauth.dart'
+    show
+        GhOAuthDeviceFlow,
+        GhOAuthCode,
+        GhOAuthStatus; // 显式白名单（A-09）：其余符号不得自动进入页面可见面
 
 /// 仓库文件操作：暴露结果 / 进度 / 阶段 / 逐项明细，**隐藏**服务实现。
 export '../domain/gh/repo_file_service.dart' hide RepoFileService;

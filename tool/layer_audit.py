@@ -1,20 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""OGL · 四层分层审计（启动 / 硬件 / 逻辑 / 交互）。
+"""OGL · 四层分层审计（kernel / base / domain / surface，L0–L3）。
 
 ## 四层与允许的方向
-    L0 启动层 kernel   —— 谁都不依赖它之外的层：它可被任意层引用（契约）
-    L1 硬件层 base     —— 网络 + 硬盘（DnsService / DiskKv / RepositoryCache…）
-    L2 逻辑层 domain   —— API 与服务
-    L3 交互层 surface  —— UI 及其它
+    L0 kernel   —— 内核契约层：谁都不依赖它之外的层（契约）
+    L1 base     —— 底座层：网络 + 硬盘（DnsService / DiskKv / RepositoryCache…）
+    L2 domain   —— 逻辑层：API 与服务
+    L3 surface  —— 展示层：UI 及其它
 
 **依赖只能向下**（surface → domain → base → kernel）。
 
 ## 两个"合法性例外"（装配根 / 类型门面）
 1. `domain/domain_bridge.dart`、`surface/surface_bridge.dart`：每层的**装配根**，
    职责就是把下层接到本层，允许 import 下层桥。
-2. `surface/types.dart`：交互层的**类型门面**，唯一允许 re-export 逻辑层 DTO/异常
+2. `surface/types.dart`：展示层的**类型门面**，唯一允许 re-export 逻辑层 DTO/异常
    的地方；页面只 import 它，从而拿不到 domain 的服务类。
+
+另有**组合根例外**：`lib/main.dart` 不在四层目录内、不参与本审计（唯一装配点，
+详见 AGENTS.md §1）。`lib/platform/` 由 contract_audit 的平台门面规则守
+（平台判定必须经门面），且只许依赖 kernel —— 现状经 grep 复核成立。
+
+## KNOWN 白名单（A-05 收紧）
+按「解析后的规范化目标路径」匹配，不再按 import 原文字面匹配 ——
+改写相对路径（如 `../../base/...` 换成别的写法）无法套用同一豁免，
+且目标解析路径与登记不一致时**报违规**而非放行。
 
 ## 用法
     python3 tool/layer_audit.py            # 打印报告
@@ -32,7 +41,13 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 LAYERS = ['kernel', 'base', 'domain', 'surface']
+LAYER_LABEL = {'kernel': 'L0 kernel', 'base': 'L1 base',
+               'domain': 'L2 domain', 'surface': 'L3 surface'}
 RANK = {name: index for index, name in enumerate(LAYERS)}
+# platform 层（非 L 编号的五层之一）：仅依赖 kernel（AGENTS §1）。
+# 此前 platform 完全不入统计 —— 有人向 platform 引入 base/domain import
+# 时无任何门禁拦截。现按「platform → 只许 kernel」单边规则守。
+PLATFORM_ONLY_KERNEL = {'platform'}
 
 # 允许跨层 import 自己的"装配根 / 门面"。
 ALLOW = {
@@ -48,12 +63,14 @@ IMPORT_RE = re.compile(r"^\s*(?:import|export)\s+'([^']+)'", re.M)
 # 已知的、待收敛项（下一批：为这两个**实现类**引入启动层契约接口）。
 #
 # 为什么还留着：`RepositoryCache`（D1–D7 一致性引擎）与 `NetBridge` 都是
-# 硬件层的**实现**，逻辑层目前直接依赖它们的具体类型。正解是在
+# 底座层的**实现**，逻辑层目前直接依赖它们的具体类型。正解是在
 # `kernel/contract/` 定义 `ConsistencyCache` / `NetClient` 抽象，
-# 由硬件层实现、逻辑层只依赖抽象。属独立批次，避免与 4.9 的结构改动混在一起。
+# 由底座层实现、逻辑层只依赖抽象。属独立批次，避免与 4.9 的结构改动混在一起。
+# ★ A-05 收紧：key 与 value 都是「从 lib/ 算起的规范化目标路径」，
+#   匹配发生在解析之后 —— import 字面量怎么写都绕不开，且写错路径即违规。
 KNOWN = {
-    'domain/gh/gh_api.dart': {'../../base/disk/disk_cache.dart'},
-    'domain/gh/gh_client.dart': {'../../base/net/net_bridge.dart'},
+    'domain/gh/gh_api.dart': {'base/disk/disk_cache.dart'},
+    'domain/gh/gh_client.dart': {'base/net/net_bridge.dart'},
 }
 
 
@@ -91,11 +108,18 @@ def main():
                 target = os.path.normpath(
                     os.path.join(os.path.dirname(rel), imp)).replace(os.sep, '/')
                 tlay = layer_of(target)
+                if lay in PLATFORM_ONLY_KERNEL:
+                    if tlay is not None and tlay != 'kernel':
+                        violations.append(
+                            (rel, imp, 'platform 只许依赖 kernel，发现 %s' % tlay))
+                    continue
                 if tlay is None or tlay == lay or tlay == 'kernel':
                     continue  # 同层 / 内核契约：允许
                 if RANK[tlay] > RANK[lay]:
                     violations.append((rel, imp, '向上依赖 %s' % tlay))
-                elif rel in KNOWN and imp in KNOWN[rel]:
+                elif rel in KNOWN and target in KNOWN[rel]:
+                    # ★ A-05：按解析后的规范化路径比对；
+                    #   不匹配的目标（如经中转文件重导出）落进下一分支报违规。
                     known_hits += 1
                 else:
                     violations.append((rel, imp, '%s 应经桥/门面' % tlay))

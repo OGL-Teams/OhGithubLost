@@ -51,6 +51,7 @@ import 'package:re_highlight/re_highlight.dart';
 import '../i18n/og_l_i18n.dart';
 import '../theme.dart';
 import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `common` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -804,25 +805,25 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
         ),
         Text(result, style: theme.textTheme.labelSmall),
         IconButton(
-          icon: const Icon(Icons.arrow_upward, size: 18),
+          icon: const Icon(Icons.arrow_upward, size: OgLIconSize.md),
           tooltip: _t('prevMatch'),
           onPressed: value.result == null ? null : controller.previousMatch,
         ),
         IconButton(
-          icon: const Icon(Icons.arrow_downward, size: 18),
+          icon: const Icon(Icons.arrow_downward, size: OgLIconSize.md),
           tooltip: _t('nextMatch'),
           onPressed: value.result == null ? null : controller.nextMatch,
         ),
         if (!readOnly)
           IconButton(
-            icon: const Icon(Icons.swap_vert, size: 18),
+            icon: const Icon(Icons.swap_vert, size: OgLIconSize.md),
             tooltip: value.replaceMode ? _t('findOnly') : _t('replaceMode'),
             onPressed: value.replaceMode
                 ? controller.findMode
                 : controller.replaceMode,
           ),
         IconButton(
-          icon: const Icon(Icons.close, size: 18),
+          icon: const Icon(Icons.close, size: OgLIconSize.md),
           tooltip: _t('close'),
           onPressed: controller.close,
         ),
@@ -849,12 +850,12 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.done, size: 18),
+            icon: const Icon(Icons.done, size: OgLIconSize.md),
             tooltip: _t('replaceMode'),
             onPressed: value.result == null ? null : controller.replaceMatch,
           ),
           IconButton(
-            icon: const Icon(Icons.done_all, size: 18),
+            icon: const Icon(Icons.done_all, size: OgLIconSize.md),
             tooltip: _t('replaceAll'),
             onPressed:
                 value.result == null ? null : controller.replaceAllMatches,

@@ -22,6 +22,8 @@ import '../i18n/og_l_i18n.dart';
 import '../theme.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
+import '../app/og_l_app_bar.dart';
 
 /// 取 `about_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -96,7 +98,7 @@ class AboutPage extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final KernelReport? snapshot = report;
     return Scaffold(
-      appBar: AppBar(title: Text(_t('title'))),
+      appBar: OgLAppBar(title: _t('title')),
       // 根级子项逐个挂入场动画（[OgLRevealList] 自动错峰）；不再用整页
       // `OgLReveal` 包住整个列表 —— 那会与路由过渡叠加成双重动画。
       body: ListView(
@@ -129,7 +131,7 @@ class AboutPage extends StatelessWidget {
                   // 整行可点：仓库地址是"想去看一眼"的东西，只能复制太别扭。
                   onTap: () => _openUrl(context, OgLProjectInfo.repositoryUrl),
                   trailing: IconButton(
-                    icon: const Icon(Icons.content_copy, size: 18),
+                    icon: const Icon(Icons.content_copy, size: OgLIconSize.md),
                     tooltip: _t('copyRepoUrl'),
                     onPressed: () => _copy(
                       context,
@@ -150,7 +152,7 @@ class AboutPage extends StatelessWidget {
                       : () => _openUrl(context, OgLProjectInfo.licenseUrl),
                   trailing: OgLProjectInfo.licenseUrl.isEmpty
                       ? null
-                      : const Icon(Icons.open_in_new, size: 18),
+                      : const Icon(Icons.open_in_new, size: OgLIconSize.md),
                 ),
               ],
             ),
@@ -168,7 +170,7 @@ class AboutPage extends StatelessWidget {
                   'repo': OgLProjectInfo.repoFullName,
                 }),
               ),
-              trailing: const Icon(Icons.open_in_new, size: 18),
+              trailing: const Icon(Icons.open_in_new, size: OgLIconSize.md),
               onTap: () => _openSponsor(context),
             ),
           ),

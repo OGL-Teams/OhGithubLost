@@ -175,10 +175,17 @@ class OgLKernel {
 
   /// 启动内核：引导 → 装配 → 注册 → 封存 → 启动 → 报告。
   ///
+  /// [expectedBridges]：装配根声明「封存前必须到齐的层桥键」。
+  /// 内核本身**不认识**具体业务层（它可被最小测试台只用一层假模块启动），
+  /// 因此不硬编码键集合；由真实装配根（`main.dart`）传入
+  /// `{base, domain, surface}`，把「漏注册」提前到启动期变成明确失败。
+  /// 默认空集合 = 只封存不校验，供单测与最小装配使用。
+  ///
   /// 抛 [KernelBootException]：
   /// - 引导被拒绝（清单缺失/签名失败/schema 不支持）；
   /// - 模块注册或启动失败（已完成模块会先回滚）。
-  Future<KernelReport> boot(List<OgLModule> modules) async {
+  Future<KernelReport> boot(List<OgLModule> modules,
+      {Set<String> expectedBridges = const <String>{}}) async {
     if (_report != null) {
       throw KernelBootException('内核已启动，禁止重复 boot()');
     }
@@ -248,15 +255,9 @@ class OgLKernel {
     );
 
     await lifecycle.registerAll(ordered, context);
-    di.seal();
-    // ★ 批 9 交叉 X-04：L1/L2/L3 三座层桥必须在封存前全部到齐。
-    //   L0 内核自身没有桥（它是被依赖方），故期望集合恰为三项。
-    //   漏注册在启动期就抛 KernelBridgeError，不再拖到运行期 resolve。
-    bridges.seal(expected: <String>{
-      ModuleLayer.base.key,
-      ModuleLayer.domain.key,
-      ModuleLayer.surface.key,
-    });
+    // ★ 批 9 交叉 X-04：真实装配根在 main.dart 声明期望的三座层桥；
+    //   内核保持通用（最小测试台不传 expectedBridges，行为与旧版一致）。
+    bridges.seal(expected: expectedBridges);
     probes.seal();
     await lifecycle.startAll(ordered);
 

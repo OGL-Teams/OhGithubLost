@@ -79,6 +79,10 @@ def sort_file(path, apply_changes):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dry-run', action='store_true')
+    # ★ C-12：CI 严格模式用 `--dry-run --fatal` 检测「有 import 块待排序」。
+    #   此前脚本恒返回 0，接进 ci.yml 也是形同虚设——补上退出码语义。
+    parser.add_argument('--fatal', action='store_true',
+                        help='有待排序的 import 块时退出 1（供 CI 使用）')
     args = parser.parse_args()
     changed = 0
     for base in (LIB, TEST):
@@ -93,7 +97,7 @@ def main():
                     changed += 1
                     print('sorted', os.path.relpath(path, ROOT))
     print('changed %d（%s）' % (changed, 'dry-run' if args.dry_run else '已写入'))
-    return 0
+    return 1 if args.fatal and changed else 0
 
 
 if __name__ == '__main__':

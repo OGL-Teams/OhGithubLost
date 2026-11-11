@@ -21,6 +21,7 @@ import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_space.dart';
 import '../widgets/readme_view.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `issue_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -836,7 +837,8 @@ class _IssuePageState extends State<IssuePage> {
                               // 失败如实提示——这是 GitHub 语义的最小可行）。
                               if (canWrite || ghLogin(comment) == _viewerLogin)
                                 IconButton(
-                                  icon: const Icon(Icons.more_horiz, size: 18),
+                                  icon: const Icon(Icons.more_horiz,
+                                      size: OgLIconSize.md),
                                   tooltip: _t('commentMenu'),
                                   onPressed: () =>
                                       unawaited(_showCommentActions(comment)),

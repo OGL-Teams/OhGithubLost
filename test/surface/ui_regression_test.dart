@@ -15,6 +15,8 @@
 ///    y=319..341、文字 y=352..374）。
 library;
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ohgithublost/surface/widgets/code_editor_toolbar.dart';
@@ -26,7 +28,67 @@ BorderSide _leftSide(DecoratedBox box) {
   return (border as Border).left;
 }
 
+// ★ 批 9 · B14：上面三组测试都只 new 组件，页面若弃用它们测试照样绿。
+//   这里用源码静态断言把「页面确实接线」也钉住 —— 不做 widget 渲染
+//   （页面依赖 SurfaceBridge，测试环境构造成本高），只查真实引用。
+String _readSource(String relative) =>
+    File('lib/surface/pages/$relative').readAsStringSync();
+
 void main() {
+  group('页面接线（组件必须真的被页面使用）', () {
+    test('发现页接入 OgLFeedRow 与 OgLIssuesFilterChips', () {
+      final String source = _readSource('search_page.dart');
+      expect(source, contains('OgLFeedRow('),
+          reason: '发现页动态 tab 必须复用 OgLFeedRow');
+      expect(source, contains('OgLIssuesFilterChips('),
+          reason: '发现页 Issues tab 必须复用 OgLIssuesFilterChips');
+      expect(source, contains('crossAxisAlignment: CrossAxisAlignment.stretch'),
+          reason: 'Issues 筛选行满宽契约');
+    });
+
+    test('代码编辑器页接入 OgLCodeEditorToolbar 且 body 满宽', () {
+      final String source = _readSource('code_editor_page.dart');
+      expect(source, contains('OgLCodeEditorToolbar('),
+          reason: '编辑器页必须复用 OgLCodeEditorToolbar');
+      expect(source, contains('crossAxisAlignment: CrossAxisAlignment.stretch'),
+          reason: '工具栏与代码区同宽契约');
+    });
+
+    test('下拉刷新统一走 OgLRefreshIndicator（不留裸 RefreshIndicator）', () {
+      final Directory pages = Directory('lib/surface/pages');
+      final List<File> files = pages
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((File f) => f.path.endsWith('.dart'))
+          .toList();
+      int wrapped = 0;
+      for (final File f in files) {
+        final String text = f.readAsStringSync();
+        wrapped += 'OgLRefreshIndicator('.allMatches(text).length;
+        // 允许包装器自身文件与注释里出现，但页面源码不许裸用。
+        final String stripped = text.replaceAll('OgLRefreshIndicator(', '');
+        expect(stripped, isNot(contains('RefreshIndicator(')),
+            reason: '${f.path} 仍有裸 RefreshIndicator');
+      }
+      expect(wrapped, greaterThan(0), reason: '包装器没有被任何页面使用');
+    });
+  });
+
+  group('异步 Sliver 四态（批 9 · B1）', () {
+    test('空/错误/加载三态统一走 OgLSurfaceSwitch，data 态保持懒加载', () {
+      final String source =
+          File('lib/surface/app/async.dart').readAsStringSync();
+      final String sliver =
+          source.substring(source.indexOf('class OgLAsyncSliver'));
+      expect(sliver, contains('OgLSurfaceSwitch('),
+          reason: 'AsyncSliver 三态不能是硬切');
+      expect(sliver, contains("ValueKey<String>(state)"),
+          reason: '状态切换必须带 Key，AnimatedSwitcher 才能识别');
+      expect(sliver, contains('SliverList.builder'),
+          reason: '数据态必须保留按需构建，不能套动画容器一次建全表');
+    });
+  });
+
   group('动态行（OgLFeedRow）', () {
     testWidgets('在无界高度里渲染不抛异常、且内容可见', (WidgetTester tester) async {
       // ★ 无界高度正是 ListView 子项的真实约束；此前 stretch 竖条在此崩掉。

@@ -65,33 +65,40 @@ class OgLFeedRow extends StatelessWidget {
         color: theme.colorScheme.surface,
         child: InkWell(
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: OgLSpace.md,
-              vertical: OgLSpace.sm,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: unread
-                      ? theme.textTheme.titleMedium
-                      : theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: OgLSpace.xxs),
-                Text(
-                  meta,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+          // ★ 批 9 · B22：动态列表行对屏幕阅读器声明为按钮，
+          //   标题与元信息合并为一个语义节点（避免逐行停顿两次）。
+          child: Semantics(
+            button: true,
+            label: '$title，$meta',
+            excludeSemantics: true,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: OgLSpace.md,
+                vertical: OgLSpace.sm,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: unread
+                        ? theme.textTheme.titleMedium
+                        : theme.textTheme.bodyMedium,
                   ),
-                ),
-              ],
+                  const SizedBox(height: OgLSpace.xxs),
+                  Text(
+                    meta,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

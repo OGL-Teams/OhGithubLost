@@ -1,7 +1,8 @@
 /// L2 中枢级 · 层桥与模块装配。
 ///
 /// ## 这一层最重要的三根线
-/// 1. **`base.disk.cache ↔ GhApi`**：把底座的一致性引擎（D1–D10）接到真实
+/// 1. **`base.disk.cache ↔ GhApi`**：把底座的一致性引擎（D1–D9，详见
+///    docs/CONSISTENCY.md）接到真实
 ///    GitHub API 上。**没有这根线，D1–D7 就是空转**——它必须在这里、
 ///    且只在这里接。
 /// 2. **`NetBridge ↔ IxTaskRunner`**：批量任务选了"直连/镜像/自动"，
@@ -157,7 +158,7 @@ class GhModule extends OgLModule {
     api = GhApi(client: client);
 
     // ── 关键接线：一致性引擎 ← 真实 API ──
-    // 绑定之后，D1–D10 的每一次读写都会落到 GitHub 上。
+    // 绑定之后，D1–D9 的每一次读写都会落到 GitHub 上。
     base.disk.cache.bindRemote(api);
 
     // ★ 反向接线（此前缺失，导致 D1–D7 空转）：

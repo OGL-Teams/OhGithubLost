@@ -141,6 +141,18 @@ jobs:
           dart format --language-version=3.6 --set-exit-if-changed --output=none lib test || echo "FAIL: dart format" >> /tmp/strict_failures.txt
         if: always()
 
+      # ── C-12：import 规范化纳入门禁（有工具无门禁 → 严格模式步）。
+      #   --dry-run = --check：检测到可排序的块只报告不写盘，违规即非零退出。
+      - name: import 规范化审计（dart:/package:/相对 三组有序）
+        run: >-
+          python3 tool/sort_imports.py --dry-run --fatal || echo "FAIL: sort_imports" >> /tmp/strict_failures.txt
+        if: always()
+
+      - name: 发布说明文案审查（面向用户 / 无技术词）
+        run: >-
+          python3 changed/check_content.py --check || echo "FAIL: check_content" >> /tmp/strict_failures.txt
+        if: always()
+
       - name: 静态分析（警告即失败）
         run: >-
           flutter analyze --fatal-infos --fatal-warnings || echo "FAIL: flutter analyze" >> /tmp/strict_failures.txt
@@ -154,8 +166,18 @@ jobs:
       # ── 严格模式终审：收集到的全部失败一次性抛出（fail） ──
       - name: 严格模式终审（全部失败一起 fail）
         if: always()
+        # ★ C-13 修复：`N=$(grep -c ... || echo 0)` 有两处缺陷 ——
+        #   ① 文件存在但 grep 无匹配时退出码 1，`||` 分支同时再 echo 一个 0，
+        #      N 变成 "0\n0"（两个字）；
+        #   ② grep 异常退出（权限/二进制）时 `|| echo 0` 会**覆盖** grep 已
+        #      输出的真实计数 → 终审静默放行（"静默降级"形状）。
+        #   稳健写法：先确保文件存在（空文件占位），grep 计数照常取值，
+        #   再对空值兜底为 0；数字合法性由 [ "$N" -gt 0 ] 自身校验。
         run: |
-          N=$(grep -c 'FAIL:' /tmp/strict_failures.txt 2>/dev/null || echo 0)
+          touch /tmp/strict_failures.txt
+          N=$(grep -c 'FAIL:' /tmp/strict_failures.txt 2>/dev/null || true)
+          N=${N:-0}
+          case "$N" in ''|*[!0-9]*) N=0 ;; esac
           if [ "$N" -gt 0 ]; then
             echo "══════════════════════════════════════"
             echo " 质量门严格模式：共 $N 项失败，全部列出："

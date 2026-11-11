@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import '../../app/animations.dart';
 import '../../app/overlays.dart';
 import '../../util/og_l_space.dart';
+import '../../util/og_l_radius.dart';
 
 /// 行内统一内边距（左 16；缩进子项在此基础上再加 [OgLSettingsIndent.step]）。
 ///
@@ -106,7 +107,7 @@ Future<T?> ogLShowSettingsChoice<T>({
                   ),
                   // 当前项打勾：弹窗与行内显示的是同一个值，选了之后行内立刻跟上。
                   if (option.value == current)
-                    const Icon(Icons.check, size: 18),
+                    const Icon(Icons.check, size: OgLIconSize.md),
                 ],
               ),
             ),
@@ -207,7 +208,9 @@ class OgLSettingsGroup extends StatelessWidget {
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
-                                maxLines: 1,
+                                // ★ 批 9 · B21：系统字号 1.3× 时单行会把
+                                //   副标题整句截断；给两行余量，仍以省略号收尾。
+                                maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -322,7 +325,8 @@ class OgLSettingsChoiceTile<T> extends StatelessWidget {
           : Text(
               subtitle!,
               style: theme.textTheme.bodySmall,
-              maxLines: 1,
+              // ★ 批 9 · B21：大字体下保留两行，避免整句被截。
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
       trailing: Row(
@@ -336,7 +340,7 @@ class OgLSettingsChoiceTile<T> extends StatelessWidget {
               ),
             ),
           const SizedBox(width: OgLSpace.xxs),
-          const Icon(Icons.chevron_right, size: 18),
+          const Icon(Icons.chevron_right, size: OgLIconSize.md),
         ],
       ),
       onTap: onTap ??
@@ -397,7 +401,7 @@ class OgLSettingsActionRow extends StatelessWidget {
         contentPadding: kOgLSettingsRowPadding,
         leading: icon == null ? null : Icon(icon),
         title: Text(title, style: theme.textTheme.bodyLarge),
-        trailing: const Icon(Icons.chevron_right, size: 20),
+        trailing: const Icon(Icons.chevron_right, size: OgLIconSize.lg),
         onTap: onTap,
       ),
     );

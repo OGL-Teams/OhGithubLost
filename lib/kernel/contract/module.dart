@@ -10,7 +10,7 @@ import '../di.dart';
 import '../diagnostics.dart';
 import '../environment.dart';
 
-/// 层级标识（L0–L3，见 `docs/NAMING.md（该文件未落地，以源码为准）`）。
+/// 层级标识（L0–L3，见 `docs/ARCHITECTURE.md`）。
 enum ModuleLayer {
   /// L0 内核级（总线段）。
   kernel('kernel'),
@@ -118,7 +118,7 @@ class ModuleDescriptor {
 /// 内核上下文：模块在注册阶段获得的唯一接线入口（由内核注入）。
 ///
 /// 约定：模块通过 [di] 注册服务、通过 [bridges] 注册本层桥，
-/// 绝不允许直接 `new` 其他层的实现（见 `docs/ARCHITECTURE.md（该文件未落地，以源码为准）` 依赖规则）。
+/// 绝不允许直接 `new` 其他层的实现（见 `docs/ARCHITECTURE.md` 依赖规则）。
 class KernelContext {
   /// 创建上下文。
   const KernelContext({
@@ -138,7 +138,7 @@ class KernelContext {
   /// 桥注册表（每层注册且仅注册一座桥）。
   final KernelBridgeRegistry bridges;
 
-  /// 信任告警收集器（装载第三方扩展时必须上报，见 `docs/BOOT.md（该文件未落地，以源码为准）`）。
+  /// 信任告警收集器（装载第三方扩展时必须上报，见 `docs/COLD_START.md`）。
   final TrustWarningCollector warnings;
 
   /// 环境自检注册表（可空：内核未传入时为 `null`，模块需容错）。

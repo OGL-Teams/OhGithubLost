@@ -20,6 +20,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../util/og_l_space.dart';
+import '../util/og_l_radius.dart';
 
 /// 启动占位屏。
 class OgLBootSplash extends StatelessWidget {
@@ -41,7 +42,7 @@ class OgLBootSplash extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Icon(Icons.hub_outlined, size: 56, color: fg),
+              Icon(Icons.hub_outlined, size: OgLIconSize.hero, color: fg),
               const SizedBox(height: OgLSpace.xl),
               Text(
                 'OhGithubLost',

@@ -52,8 +52,10 @@
 
 - `test/base/cache_consistency_test.dart`：D1（含新建语义）、D2、D6、D7、D8 的离线断言
 - `test/base/durability_test.dart` / `chaos_test.dart`：原子写、失败注入
-- 门禁盲区（待补）：`layer_audit.py` 不解析 `export`，`motion/perf_audit.py` 只扫 `lib/surface/`；
-  本层语义目前无 CI 可裁决脚本——见 `docs/5layer-audit-todo.md`。
+- 门禁盲区（待补）：`motion/perf_audit.py` 只扫 `lib/surface/`（`layer_audit.py`
+  已解析 `import` 与 `export` 两种依赖边，contract_audit 覆盖 base/domain 文件头与
+  平台门面 —— 此前「不解析 export」的记录已过期）；
+  base 层语义目前无 CI 可裁决脚本——见 `docs/5layer-audit-todo.md`。
 
 ## 变更记录
 

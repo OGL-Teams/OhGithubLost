@@ -17,6 +17,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/og_l_space.dart';
+import '../app/refresh_indicator.dart';
 import 'drafts_page.dart';
 import 'gists_page.dart';
 import 'login_page.dart';
@@ -229,7 +230,7 @@ class _ProfilePageState extends State<ProfilePage> {
         emptyIcon: Icons.key_outlined,
         emptyText: _t('notLoggedIn'),
         builder: (BuildContext context, List<GhAccount> accounts) =>
-            RefreshIndicator(
+            OgLRefreshIndicator(
           onRefresh: _refresh,
           child: ListView(
             children: <Widget>[

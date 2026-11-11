@@ -22,6 +22,7 @@ import '../i18n/og_l_i18n.dart';
 import '../util/og_l_space.dart';
 import 'animations.dart';
 import 'error_surface.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `shell` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -359,7 +360,8 @@ class OgLAsyncErrorPane extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(Icons.error_outline, size: 40, color: scheme.error),
+            Icon(Icons.error_outline,
+                size: OgLIconSize.avatar, color: scheme.error),
             const SizedBox(height: OgLSpace.md),
             Text(
               message,
@@ -401,7 +403,7 @@ class OgLAsyncEmptyPane extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(icon, size: 40, color: scheme.outline),
+            Icon(icon, size: OgLIconSize.avatar, color: scheme.outline),
             const SizedBox(height: OgLSpace.md),
             Text(text, textAlign: TextAlign.center),
             if (action != null) ...<Widget>[
@@ -516,6 +518,8 @@ class OgLAsyncSliver<T> extends StatelessWidget {
         builder: (BuildContext context, Widget? _) {
           final T? data = controller.data;
           if (data != null && !controller.isEmptyResult) {
+            // ★ 数据态保持 SliverList.builder 的懒加载语义，
+            //   不套动画容器（否则 300 行会一次性构建，性能倒退）。
             return SliverPadding(
               padding: padding,
               sliver: SliverList.builder(
@@ -525,26 +529,40 @@ class OgLAsyncSliver<T> extends StatelessWidget {
               ),
             );
           }
+          // ★ 批 9 · B1：空 / 错误 / 加载三态此前是裸 return，
+          //   与 AsyncView 的 OgLSurfaceSwitch 不同权 —— PR、议题、提交
+          //   等页面的状态切换是硬切。这里统一走档位质量表控制的过渡，
+          //   档位 0 / 系统减少动效时 OgLSurfaceSwitch 自动退化为瞬时切换。
+          //   三态各带 ValueKey，AnimatedSwitcher 才能识别状态变化。
+          Widget stateChild;
+          String state;
           if (controller.isEmptyResult) {
-            return SliverToBoxAdapter(
-              child: OgLAsyncEmptyPane(
-                icon: emptyIcon,
-                text: emptyText ?? _t('noContent'),
-              ),
+            state = 'empty';
+            stateChild = OgLAsyncEmptyPane(
+              icon: emptyIcon,
+              text: emptyText ?? _t('noContent'),
             );
+          } else {
+            final String? failure = controller.error;
+            if (failure != null && !controller.isLoading) {
+              state = 'error';
+              stateChild =
+                  OgLAsyncErrorPane(message: failure, onRetry: controller.load);
+            } else {
+              state = 'loading';
+              stateChild = const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(OgLSpace.xxl),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
           }
-          final String? failure = controller.error;
-          if (failure != null && !controller.isLoading) {
-            return SliverToBoxAdapter(
-              child:
-                  OgLAsyncErrorPane(message: failure, onRetry: controller.load),
-            );
-          }
-          return const SliverToBoxAdapter(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(OgLSpace.xxl),
-                child: CircularProgressIndicator(),
+          return SliverToBoxAdapter(
+            child: OgLSurfaceSwitch(
+              child: KeyedSubtree(
+                key: ValueKey<String>(state),
+                child: stateChild,
               ),
             ),
           );

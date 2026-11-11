@@ -69,6 +69,12 @@ abstract final class OgLRadius {
 /// - [lg] 强调（导航、页头）；
 /// - [xl] 特大（空态、引导页）。
 abstract final class OgLIconSize {
+  /// 状态点 / 微型指示（12）。此前以裸值散落（action_log 圆点）。
+  static const double mini = 12;
+
+  /// 行内极小图标（14，徽标 / 速率箭头）。此前以裸值散落。
+  static const double xs = 14;
+
   /// 行内小图标。
   static const double sm = 16;
 
@@ -83,6 +89,9 @@ abstract final class OgLIconSize {
 
   /// 头像 / 大按钮（40）。
   static const double avatar = 40;
+
+  /// 空态大图标（48）。
+  static const double empty = 48;
 
   /// 页头主图标（56）。
   static const double hero = 56;

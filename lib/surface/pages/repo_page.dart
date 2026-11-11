@@ -46,6 +46,7 @@ import '../widgets/code_editor_field.dart';
 import '../widgets/readme_view.dart';
 import '../widgets/scroll_aware_action.dart';
 import '../widgets/settings/settings_group.dart';
+import '../app/refresh_indicator.dart';
 import 'action_run_page.dart';
 import 'code_editor_page.dart';
 import 'commit_page.dart';
@@ -58,6 +59,7 @@ import 'pull_page.dart';
 import 'release_detail_page.dart';
 import 'search_page.dart';
 import 'workflow_dispatch_page.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `repo` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -630,7 +632,7 @@ class _RepoPageState extends State<RepoPage> {
                   OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.md),
               child: Row(
                 children: <Widget>[
-                  const Icon(Icons.account_tree_outlined, size: 18),
+                  const Icon(Icons.account_tree_outlined, size: OgLIconSize.md),
                   const SizedBox(width: OgLSpace.sm),
                   Expanded(
                     child: Text(
@@ -793,7 +795,7 @@ Widget _pagedBody<T>(
       action: emptyAction,
     );
   }
-  return RefreshIndicator(
+  return OgLRefreshIndicator(
     onRefresh: paged.refresh,
     child: ListView.separated(
       controller: controller,
@@ -2052,7 +2054,8 @@ class _CodeTabState extends State<_CodeTab> {
         children: <Widget>[
           TextButton(onPressed: () => _goTo(''), child: Text(_t('rootDir'))),
           for (int i = 0; i < parts.length; i++) ...<Widget>[
-            Icon(Icons.chevron_right, size: 16, color: scheme.outline),
+            Icon(Icons.chevron_right,
+                size: OgLIconSize.sm, color: scheme.outline),
             TextButton(
               onPressed: i == parts.length - 1
                   ? null
@@ -2532,7 +2535,7 @@ class _CodeTabState extends State<_CodeTab> {
                         : null,
                   );
                 }
-                return RefreshIndicator(
+                return OgLRefreshIndicator(
                   onRefresh: () => _reload(),
                   child: CustomScrollView(
                     controller: _scroll,

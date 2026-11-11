@@ -69,11 +69,11 @@ python3 tool/layer_audit.py --fatal     # 有违规即退出 1（CI 门禁）
 ### 4.2 合法例外（`layer_audit.py` 的 `ALLOW`）
 
 1. **装配根**：`domain/domain_bridge.dart`、`surface/surface_bridge.dart` —— 各层的装配入口，其职责为将下层接入本层，允许导入下层桥；
-2. **类型门面**：`surface/types.dart` —— 交互层唯一允许 re-export 逻辑层 DTO / 异常的位置；页面仅导入该门面，因此无法取得 domain 的服务类。
+2. **类型门面**：`surface/types.dart` —— 展示层（L3）唯一允许 re-export 逻辑层（L2）DTO / 异常的位置；页面仅导入该门面，因此无法取得 domain 的服务类。
 
 ### 4.3 已知待收敛项（`KNOWN`）
 
-逻辑层目前直接依赖硬件层的两个具体类型 —— `GhApi` → `RepositoryCache`、`GhClient` → `NetBridge`。正确做法是在 `kernel/contract/` 定义抽象、由硬件层实现、逻辑层仅依赖抽象。
+逻辑层目前直接依赖底座层的两个具体类型 —— `GhApi` → `RepositoryCache`、`GhClient` → `NetBridge`。正确做法是在 `kernel/contract/` 定义抽象、由 kernel 实现、逻辑层仅依赖抽象。
 
 平台判定现状：`defaultTargetPlatform` 的**约定出处**为 `lib/platform/platform.dart`（本文即该约定的说明），但项目中仍有若干处按平台分流（`base/disk/app_dirs.dart`、`surface/app/permissions.dart` / `system_notifier.dart`、`domain/sys/sys_info.dart`）；将其统一收敛到 platform 层属待办事项。**新增代码不得直接进行平台判定**，应经 platform 层门面。
 
@@ -82,9 +82,9 @@ python3 tool/layer_audit.py --fatal     # 有违规即退出 1（CI 门禁）
 | 类别 | 命名 | 例 |
 | --- | --- | --- |
 | 页面 | `*_page.dart` | `pages/repo_page.dart` · `pages/settings_page.dart` |
-| 桥（本层装配入口） | `*bridge.dart` | `base/base_bridge.dart` · `domain/domain_bridge.dart` · `surface/surface_bridge.dart`（硬件层内还有 `disk/disk_bridge.dart` · `net/net_bridge.dart`） |
+| 桥（本层装配入口） | `*bridge.dart` | `base/base_bridge.dart` · `domain/domain_bridge.dart` · `surface/surface_bridge.dart`（base 层内还有 `disk/disk_bridge.dart` · `net/net_bridge.dart`） |
 | 平台实现 | `*_io.dart`（原生）· `*_web.dart`（浏览器） | `base/disk/app_dirs_fs_io.dart` · `base/net/net_dns_platform_io.dart`（web 分支已随 Web 支持一并移除，现无 `*_web.dart`；重新引入时按此命名） |
-| 服务 / 门面 | `*service.dart` · `*manager.dart` · `*api.dart` | `domain/gh/repo_file_service.dart` · `domain/gh/gh_api.dart`（`DownloadManagerPage` 是**页面**，不属此类） |
+| 服务 / 门面 | `*service.dart` · `*manager.dart` · `*api.dart` | `domain/gh/repo_file_service.dart` · `domain/gh/gh_api.dart`（`DownloadManagerPage` 是**页面**，不属此类）。**这是新增文件时的建议后缀**，供人阅读，不被脚本识别与强制 —— 存量文件（`gh_client.dart`、`ix_session.dart` 等）未按此命名，属合法现状 |
 | 共用构件（展示层） | 按"一件事一个文件"放在 `surface/app/` | `async.dart`（载 / 空 / 错 / 软错）· `notifier.dart`（提示语气）· `paged_controller.dart`（分页 + 快照） |
 
 ## 6. 决策记录
@@ -96,9 +96,17 @@ python3 tool/layer_audit.py --fatal     # 有违规即退出 1（CI 门禁）
 - **替换成本可控**：底层（`base`、`kernel`）的实现细节不暴露给上层，未来替换网络栈或存储引擎时影响面受限；
 - **测试隔离**：低层可独立于 Flutter SDK 运行 `dart analyze`，CI 验证周期更短。
 
-### 6.2 为何平台层用条件 import
+### 6.2 平台差异的实现现状（如实记载）
 
-平台层使用 `*_io.dart`（原生）与 `*_web.dart`（浏览器）的条件 import 约定，是因为 Flutter 的 `defaultTargetPlatform` 与 `kIsWeb` 判定在编译期即可解析，**不付出运行时分发代价**，又避免在 `base` / `domain` / `surface` 散落 `if (kIsWeb)` 分支；此约定由 `layer_audit.py` 的命名规则强制，违反命名（如 `*_web_stub.dart`）将无法被识别。
+条件 import 约定 `*_io.dart` / `*_web.dart` 保留给**编译期可解析**的平台差异
+（Flutter 的 `defaultTargetPlatform` 与 `kIsWeb` 判定在编译期即可解析，不付运行时
+分发代价）。现状：`lib/platform/` 下当前**没有**条件 import —— 窗口能力按平台
+名分文件（`window_linux.dart` 等），由 `platform.dart` 门面一次性 import、运行时
+分发（窗口代码量小，代价可接受）；`base` / `domain` 层各有条件 import
+（`gh_oauth.dart` 的 `*_stub`、`ix_action_logs.dart` 的 save_io/save_stub）。
+全仓当前无 `*_web.dart` 文件；重新引入 web 专属实现时按 §6.1 命名接入。
+门面层「判平台一律走门面」由 `contract_audit.py` 强制（`defaultTargetPlatform`
+白名单外即违规）。
 
 ### 6.3 为何把 Web 推到独立分支
 

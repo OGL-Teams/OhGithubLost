@@ -42,7 +42,7 @@ class KernelLogEntry {
   /// 级别。
   final KernelLogLevel level;
 
-  /// 标签（如 `KERNEL` / `BOOT` / `NET`，见 docs/NAMING.md（该文件未落地，以源码为准））。
+  /// 标签（如 `KERNEL` / `BOOT` / `NET`，见 docs/ARCHITECTURE.md）。
   final String tag;
 
   /// 人类可读信息。

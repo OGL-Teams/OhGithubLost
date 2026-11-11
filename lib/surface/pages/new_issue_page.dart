@@ -12,6 +12,7 @@ import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/og_l_space.dart';
+import '../app/og_l_app_bar.dart';
 
 /// 取 `new_issue_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -132,7 +133,7 @@ class _NewIssuePageState extends State<NewIssuePage> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(_t('title'))),
+        appBar: OgLAppBar(title: _t('title')),
         body: OgLReveal(
             delay: Duration.zero,
             child: ListView(

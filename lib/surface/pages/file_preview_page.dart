@@ -34,6 +34,7 @@ import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 import 'download_manager_page.dart';
 import 'settings_page.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `common` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -379,7 +380,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(Icons.data_usage, size: 40, color: theme.colorScheme.outline),
+            Icon(Icons.data_usage,
+                size: OgLIconSize.avatar, color: theme.colorScheme.outline),
             const SizedBox(height: OgLSpace.md),
             Text(
               _t('fileTooLargeTitle'),
@@ -542,7 +544,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
             children: <Widget>[
               Icon(
                 Icons.music_note_outlined,
-                size: 40,
+                size: OgLIconSize.avatar,
                 color: theme.colorScheme.outline,
               ),
               const SizedBox(height: OgLSpace.md),
@@ -647,7 +649,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Icon(icon, size: 40, color: theme.colorScheme.outline),
+              Icon(icon,
+                  size: OgLIconSize.avatar, color: theme.colorScheme.outline),
               const SizedBox(height: OgLSpace.md),
               Text(
                 message,
@@ -670,7 +673,9 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
         ),
         child: Row(
           children: <Widget>[
-            Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
+            Icon(icon,
+                size: OgLIconSize.sm,
+                color: theme.colorScheme.onSurfaceVariant),
             const SizedBox(width: OgLSpace.sm),
             Expanded(
               child: Text(

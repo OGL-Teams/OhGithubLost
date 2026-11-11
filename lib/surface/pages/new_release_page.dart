@@ -15,6 +15,7 @@ import '../surface_bridge.dart';
 import '../types.dart';
 import '../util/og_l_space.dart';
 import '../widgets/scroll_aware_action.dart';
+import '../app/og_l_app_bar.dart';
 
 /// 取 `new_release_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -158,7 +159,7 @@ class _NewReleasePageState extends State<NewReleasePage> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(_t('title'))),
+        appBar: OgLAppBar(title: _t('title')),
         body: OgLReveal(
             delay: Duration.zero,
             child: ListView(

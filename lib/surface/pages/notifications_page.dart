@@ -317,7 +317,7 @@ class _NotificationTile extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(top: OgLSpace.xxs),
-                child: Icon(icon, color: color, size: 20),
+                child: Icon(icon, color: color, size: OgLIconSize.lg),
               ),
               const SizedBox(width: OgLSpace.md),
               Expanded(
@@ -389,7 +389,7 @@ class _NotificationTile extends StatelessWidget {
                                         }
                                       },
                                       icon: const Icon(Icons.content_copy,
-                                          size: 16),
+                                          size: OgLIconSize.sm),
                                       label: Text(_t('copy')),
                                     ),
                                   ],
@@ -404,7 +404,7 @@ class _NotificationTile extends StatelessWidget {
               if (!read)
                 IconButton(
                   tooltip: _t('markRead'),
-                  icon: const Icon(Icons.done, size: 18),
+                  icon: const Icon(Icons.done, size: OgLIconSize.md),
                   onPressed: onMarkRead,
                 ),
               // 展开指示：图标旋转（不用任何 emoji / 符号字形）。
@@ -416,7 +416,7 @@ class _NotificationTile extends StatelessWidget {
                   turns: expanded ? 0.5 : 0,
                   child: Icon(
                     Icons.expand_more,
-                    size: 18,
+                    size: OgLIconSize.md,
                     color: theme.colorScheme.outline,
                   ),
                 ),

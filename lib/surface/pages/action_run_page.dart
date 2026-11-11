@@ -23,8 +23,10 @@ import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_space.dart';
+import '../app/refresh_indicator.dart';
 import 'action_log_page.dart';
 import 'download_manager_page.dart';
+import '../util/og_l_radius.dart';
 
 /// 取 `action_run_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -567,7 +569,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
           final String conclusion = ghStr(run, 'conclusion');
           final String htmlUrl = ghStr(run, 'html_url');
           final bool running = status != 'completed';
-          return RefreshIndicator(
+          return OgLRefreshIndicator(
             onRefresh: () => _detailC().load(),
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -737,7 +739,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
                                               ghStr(step, 'status'),
                                               ghStr(step, 'conclusion'),
                                             ),
-                                            size: 18,
+                                            size: OgLIconSize.md,
                                             color: _statusColor(
                                               theme,
                                               ghStr(step, 'status'),

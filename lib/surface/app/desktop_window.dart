@@ -26,6 +26,7 @@ import '../../platform/window_capability.dart';
 import '../i18n/og_l_i18n.dart';
 import '../util/og_l_space.dart';
 import 'error_surface.dart';
+import '../util/og_l_radius.dart';
 export '../../platform/window_capability.dart' show OgLWindowDecoration;
 
 /// 取 `shell` 分片文案（标题栏窗口控件的无障碍标签）。
@@ -213,7 +214,7 @@ class _OgLTitleBarState extends State<OgLTitleBar> with WindowListener {
           height: kOgLTitleBarHeight,
           child: Icon(
             icon,
-            size: 16,
+            size: OgLIconSize.sm,
             color: danger
                 ? theme.colorScheme.error
                 : theme.colorScheme.onSurfaceVariant,

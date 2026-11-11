@@ -80,10 +80,14 @@ RULES = [
     ('裸曲线', re.compile(r'Curves\.([a-zA-Z]+)')),
 ]
 
-# 曲线允许清单（档位表内定义的曲线族）
+# 曲线允许清单 —— 与档位表（app/motion.dart 各档 curve/largeCurve/settleCurve）
+# 实际使用的曲线族严格一致：easeOut、easeOutCubic、easeOutQuart、easeOutQuint、
+# easeOutBack、linear（档位 0 关档用）。
+# ★ B12 收紧：此前还放行 easeInOut / easeInOutCubic / fastOutSlowIn /
+#   decelerate —— 四者全仓 0 处使用且不在档位表内，属「纸面白名单」漏洞。
 CURVES_ALLOWED = {
-    'easeOut', 'easeOutCubic', 'easeOutQuart', 'easeOutQuint', 'easeOutBack',
-    'linear', 'easeInOut', 'easeInOutCubic', 'fastOutSlowIn', 'decelerate',
+    'easeOut', 'easeOutCubic', 'easeOutQuart', 'easeOutQuint',
+    'easeOutBack', 'linear',
 }
 
 # 颜色允许清单（中性值，不属于设计漂移）

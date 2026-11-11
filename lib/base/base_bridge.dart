@@ -1,6 +1,6 @@
 /// L1 底座级 · 层桥：把"网络连接"与"硬盘逻辑"合成为对外唯一通道。
 ///
-/// 架构要求（见 `docs/ARCHITECTURE.md（该文件未落地，以源码为准）`）：**每层只有一座桥**。
+/// 架构要求（见 `docs/ARCHITECTURE.md`）：**每层只有一座桥**。
 /// 因此 `base.net` 与 `base.disk` 各自注册服务后，由 [BaseLayerModule]
 /// 把它们合成 [BaseBridge]，并以层级键 `base` 注册到内核桥表。
 /// 上层（中枢）只允许 `resolve('base')` 拿桥，绝不允许直接 import 底座内部文件。

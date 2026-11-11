@@ -15,6 +15,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../kernel/log/og_l_log_file.dart';
+import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/notifier.dart';
 import '../app/og_l_app_bar.dart';
@@ -27,6 +28,7 @@ import '../util/link_opener.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/discover_rows.dart';
+import '../app/refresh_indicator.dart';
 import 'issue_page.dart';
 import 'repo_page.dart';
 
@@ -189,6 +191,9 @@ class _RepoCardState extends State<_RepoCard> {
     return Card(
       margin: EdgeInsets.zero,
       child: InkWell(
+        // ★ 批 9 · B18：Card 有圆角，水波纹必须同圆角裁剪，
+        //   否则按下时方角溢出卡片轮廓。
+        borderRadius: OgLRadius.cMd,
         onTap: () => unawaited(widget.onOpen(repo)),
         onLongPress: () => unawaited(widget.onActions(context, repo)),
         child: Padding(
@@ -670,6 +675,13 @@ class _DiscoverPageState extends State<DiscoverPage>
       ),
       body: TabBarView(
         controller: _tab,
+        // ★ 批 9 · B2：TabBarView 的滑动由框架动画驱动（没有公开的
+        //   duration 参数，再包 AnimatedSwitcher 只会双重动画）。
+        //   档位 0 / 系统减少动效时禁用**拖拽换页的物理动画**，
+        //   但点击 Tab 标签换页仍然可用 —— 降档 = 降质量，不砍功能。
+        physics: OgLAnim.enabled(context)
+            ? const AlwaysScrollableScrollPhysics()
+            : const NeverScrollableScrollPhysics(),
         children: <Widget>[
           _buildFeedTab(),
           _buildRecommendedTab(),
@@ -705,7 +717,7 @@ class _DiscoverPageState extends State<DiscoverPage>
 
   Widget _buildFeedTab() => _feed == null
       ? _SkeletonList(key: const ValueKey<String>('feed-skeleton'))
-      : RefreshIndicator(
+      : OgLRefreshIndicator(
           onRefresh: () => _feed!.load(),
           child: AsyncView<List<Map<String, dynamic>>>(
             controller: _feed!,
@@ -794,7 +806,7 @@ class _DiscoverPageState extends State<DiscoverPage>
           ),
         ),
         Expanded(
-          child: RefreshIndicator(
+          child: OgLRefreshIndicator(
             onRefresh: () async {
               _repoGeneration++; // ★ B6-A-01：作废在途旧页请求
               _repos.clear();

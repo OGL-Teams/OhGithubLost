@@ -202,7 +202,14 @@ class OgLI18n extends ChangeNotifier {
     }
     String out = raw;
     for (final MapEntry<String, String> entry in args.entries) {
-      out = out.replaceAll('{${entry.key}}', entry.value);
+      // B8-A-04：插值来自外部数据（文件名 / 用户名 / 路径…），过滤
+      // 控制字符 —— 分片文案中的换行占位是排版设计，外部值里的
+      // \n / \t / \u0000 只会破坏布局或被用于伪造多行提示。
+      final String safe = entry.value.replaceAll(
+        RegExp(r'[\x00-\x08\x0B-\x1F\x7F]'),
+        '',
+      );
+      out = out.replaceAll('{${entry.key}}', safe);
     }
     return out;
   }
