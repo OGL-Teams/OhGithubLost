@@ -176,3 +176,30 @@ KernelBridgeError: 层级桥未注册齐全，封存被拒绝：缺 domain、sur
 
 这正是本项目反复强调的教训：**静态审计结论与修复本身都必须经
 CI 测试裁决**；一次「补齐守卫」的改动照样能引入 P0 级回归。
+
+## 八、第二轮收口与代理迟到回传（2026-11-12）
+
+「全部修复 + 整理仓库」由三个代理并行推进，主会话统一收口于
+`9a65c6b`：
+
+- **文档组**完成 `docs/AUDIT_INDEX.md`（九批总索引）、
+  `docs/REPO_HYGIENE.md`（56 篇分类 / 17 处历史死链如实登记 /
+  新文档域 0 死链）、四类索引与「文档地图」。
+- **A/C 组**修了 A-05~A-13、B10/11/12、C-04~C-18 共 22 条；
+  它超时回传时列的三个待办（`sort_imports --fatal`、ci.yml 终审计数、
+  C-04/C-17/C-18）**主会话已全部补齐并推送**，故该回传无新增工作；
+  以 `docs/audit_spec_a_c_fixed.md` 为准（代理那份「未终验」稿未采用）。
+- **UI 组**超时并损坏 35 个 surface 文件（`repo_page.dart` 字符串截断、
+  `notifications_page.dart` 多括号），`dart format` 检出 2 处语法断裂而
+  九道 Python 门禁**全绿**。处置：整体回退 `lib/surface` 到 `5acb015`，
+  仅保留 `types.dart`(A-09)、`og_l_i18n.dart`(B8-A-04)、
+  `og_l_radius.dart`(令牌档位) 三处有效修复，再由主会话小步重做；
+  详见 `docs/audit_spec_b_fixed.md`。
+- 未全修项（真机节奏类 B3/B4/B6–B8/B13/B17/B20/B23、供应链三项、
+  带 actions/bottom 的裸 AppBar）在两份 `_fixed.md` 里逐条登记理由，
+  **不假装完成**。
+
+最终验证：`dart format` 0 语法错误 / 0 格式差异；十道门禁 +
+`check_content` + `py_compile` + 5 个 workflow YAML 全绿；
+裸 `RefreshIndicator` 与裸图标尺寸残留均为 0。类型与渲染仍由
+CI 的 `flutter analyze` / `flutter test` 裁决。
