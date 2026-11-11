@@ -12,14 +12,14 @@ import 'package:flutter/material.dart';
 import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
+import '../app/refresh_indicator.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
-import '../app/refresh_indicator.dart';
 import 'gist_detail_page.dart';
 import 'new_gist_page.dart';
-import '../app/og_l_app_bar.dart';
 
 /// 取 `gists_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(

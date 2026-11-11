@@ -19,6 +19,7 @@ import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/notifier.dart';
 import '../app/og_l_app_bar.dart';
+import '../app/refresh_indicator.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -28,7 +29,6 @@ import '../util/link_opener.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/discover_rows.dart';
-import '../app/refresh_indicator.dart';
 import 'issue_page.dart';
 import 'repo_page.dart';
 

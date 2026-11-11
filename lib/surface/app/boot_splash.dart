@@ -19,8 +19,8 @@ library;
 
 import 'package:flutter/material.dart';
 
-import '../util/og_l_space.dart';
 import '../util/og_l_radius.dart';
+import '../util/og_l_space.dart';
 
 /// 启动占位屏。
 class OgLBootSplash extends StatelessWidget {

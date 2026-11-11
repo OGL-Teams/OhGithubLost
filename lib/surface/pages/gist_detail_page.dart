@@ -23,9 +23,9 @@ import '../util/clipboard_x.dart';
 import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
-import '../util/og_l_radius.dart';
 
 /// 取 `gist_detail_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(

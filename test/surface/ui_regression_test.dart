@@ -82,7 +82,7 @@ void main() {
           source.substring(source.indexOf('class OgLAsyncSliver'));
       expect(sliver, contains('OgLSurfaceSwitch('),
           reason: 'AsyncSliver 三态不能是硬切');
-      expect(sliver, contains("ValueKey<String>(state)"),
+      expect(sliver, contains('ValueKey<String>(state)'),
           reason: '状态切换必须带 Key，AnimatedSwitcher 才能识别');
       expect(sliver, contains('SliverList.builder'),
           reason: '数据态必须保留按需构建，不能套动画容器一次建全表');

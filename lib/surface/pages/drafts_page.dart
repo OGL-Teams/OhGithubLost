@@ -13,15 +13,15 @@ import 'package:flutter/material.dart';
 import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
+import '../app/refresh_indicator.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
 import '../util/clipboard_x.dart';
-import '../app/refresh_indicator.dart';
 import 'code_editor_page.dart';
-import '../app/og_l_app_bar.dart';
 
 /// 取 `drafts_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(

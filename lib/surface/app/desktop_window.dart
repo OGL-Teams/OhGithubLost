@@ -24,9 +24,9 @@ import 'package:window_manager/window_manager.dart';
 import '../../platform/platform.dart';
 import '../../platform/window_capability.dart';
 import '../i18n/og_l_i18n.dart';
+import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import 'error_surface.dart';
-import '../util/og_l_radius.dart';
 export '../../platform/window_capability.dart' show OgLWindowDecoration;
 
 /// 取 `shell` 分片文案（标题栏窗口控件的无障碍标签）。

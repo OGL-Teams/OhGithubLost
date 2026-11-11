@@ -15,15 +15,15 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../kernel/kernel.dart';
 import '../app/animations.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/permission_selftest.dart';
 import '../app/permissions.dart';
 import '../app/project_info.dart';
 import '../i18n/og_l_i18n.dart';
 import '../theme.dart';
 import '../util/clipboard_x.dart';
-import '../util/og_l_space.dart';
 import '../util/og_l_radius.dart';
-import '../app/og_l_app_bar.dart';
+import '../util/og_l_space.dart';
 
 /// 取 `about_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(

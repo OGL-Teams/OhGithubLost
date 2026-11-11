@@ -255,6 +255,7 @@ class OgLKernel {
     );
 
     await lifecycle.registerAll(ordered, context);
+    di.seal();
     // ★ 批 9 交叉 X-04：真实装配根在 main.dart 声明期望的三座层桥；
     //   内核保持通用（最小测试台不传 expectedBridges，行为与旧版一致）。
     bridges.seal(expected: expectedBridges);
