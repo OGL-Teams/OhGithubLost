@@ -4,6 +4,7 @@
   "actionOpenRepo": "Открыть репозиторий",
   "catHot": "Популярные",
   "categoryFilter": "Категория рекомендаций",
+  "categoryRetry": "Повторить",
   "cloneCopied": "Clone-адрес скопирован в буфер обмена",
   "codeResults": "Результаты кода по запросу «{q}»: {count}",
   "codeSearch": "Поиск кода",

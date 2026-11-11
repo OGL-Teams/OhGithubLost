@@ -4,6 +4,7 @@
   "actionOpenRepo": "Ouvrir le dépôt",
   "catHot": "Populaires",
   "categoryFilter": "Catégorie de recommandations",
+  "categoryRetry": "Réessayer",
   "cloneCopied": "URL de clone copiée dans le presse-papiers",
   "codeResults": "Résultats de code pour « {q} » : {count}",
   "codeSearch": "Recherche de code",

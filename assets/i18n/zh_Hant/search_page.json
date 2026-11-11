@@ -4,6 +4,7 @@
   "actionOpenRepo": "開啟倉庫",
   "catHot": "熱門",
   "categoryFilter": "推薦分類",
+  "categoryRetry": "重試",
   "cloneCopied": "Clone 位址已複製到剪貼簿",
   "codeResults": "\"{q}\" 程式碼結果：{count}",
   "codeSearch": "程式碼搜尋",

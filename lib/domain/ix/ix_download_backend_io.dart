@@ -69,6 +69,25 @@ class IoDownloadBackend implements IxDownloadBackend {
   /// 公共目录场景传绝对路径，用 [BaseDirectory.root]（库对 root + 以 `/`
   /// 开头的 directory 会按绝对路径处理）。
   Future<DownloadTask> _build(IxDownloadSpec spec) async {
+    final ({String directory, BaseDirectory base}) resolvedDir =
+        await _resolveDirectory(spec);
+    return DownloadTask(
+      url: spec.url,
+      filename: spec.fileName,
+      directory: resolvedDir.directory,
+      baseDirectory: resolvedDir.base,
+      headers: spec.headers,
+      updates: Updates.statusAndProgress,
+      allowPause: true,
+      retries: 2,
+    );
+  }
+
+  /// 落盘目录的解析（`_build` 与 [resolveUniqueSavePath] 共用一份口径，
+  /// 保证「探测到的路径」与「库任务真正写的路径」永远一致）。
+  Future<({String directory, BaseDirectory base})> _resolveDirectory(
+    IxDownloadSpec spec,
+  ) async {
     String directory = 'ogl/download/${spec.folder}';
     BaseDirectory base = BaseDirectory.applicationDocuments;
     try {
@@ -80,16 +99,46 @@ class IoDownloadBackend implements IxDownloadBackend {
     } catch (_) {
       // 裁决失败：维持私有目录（下载可用性优先）。
     }
-    return DownloadTask(
-      url: spec.url,
-      filename: spec.fileName,
-      directory: directory,
-      baseDirectory: base,
-      headers: spec.headers,
-      updates: Updates.statusAndProgress,
-      allowPause: true,
-      retries: 2,
-    );
+    return (directory: directory, base: base);
+  }
+
+  @override
+  Future<String> resolveUniqueSavePath(
+    IxDownloadSpec spec, {
+    String? intendedPath,
+  }) async {
+    final String base;
+    if (intendedPath == null || intendedPath.isEmpty) {
+      base = await pathFor(spec);
+    } else {
+      base = intendedPath;
+    }
+    try {
+      final File candidate = File(base);
+      if (!await candidate.exists()) {
+        return base;
+      }
+      // 目录部分拿不到（pathFor 的降级路径只是文件名）→ 不猜，原样返回。
+      final String dir = candidate.parent.path;
+      if (dir == base || dir.isEmpty) {
+        return base;
+      }
+      final String name = candidate.uri.pathSegments.last;
+      final int dot = name.lastIndexOf('.');
+      final String stem = dot > 0 ? name.substring(0, dot) : name;
+      final String ext = dot > 0 ? name.substring(dot) : '';
+      for (int i = 1; i < 1000; i++) {
+        final String next = '$dir/$stem ($i)$ext';
+        if (!await File(next).exists()) {
+          return next;
+        }
+      }
+      // 999 个都已占用（理论极端）：宁可放弃改名也不静默覆盖。
+      return base;
+    } catch (_) {
+      // 探测失败（无文件系统能力等）：维持原路径。
+      return base;
+    }
   }
 
   @override

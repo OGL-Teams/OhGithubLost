@@ -25,6 +25,7 @@ import '../app/notifier.dart';
 import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
 import '../app/paged_controller.dart';
+import '../app/refresh_indicator.dart';
 // TOKEN-EXIT-01: 下载令牌出设备警告弹窗（不可关闭）。
 import '../app/token_exit_warning.dart';
 import '../i18n/og_l_i18n.dart';
@@ -39,6 +40,7 @@ import '../util/file_icons.dart';
 import '../util/file_preview.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../util/path_rules.dart';
 import '../widgets/anim/anim_preload.dart';
@@ -46,7 +48,6 @@ import '../widgets/code_editor_field.dart';
 import '../widgets/readme_view.dart';
 import '../widgets/scroll_aware_action.dart';
 import '../widgets/settings/settings_group.dart';
-import '../app/refresh_indicator.dart';
 import 'action_run_page.dart';
 import 'code_editor_page.dart';
 import 'commit_page.dart';
@@ -59,7 +60,6 @@ import 'pull_page.dart';
 import 'release_detail_page.dart';
 import 'search_page.dart';
 import 'workflow_dispatch_page.dart';
-import '../util/og_l_radius.dart';
 
 /// 取 `repo` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(

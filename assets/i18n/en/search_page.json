@@ -4,6 +4,7 @@
   "actionOpenRepo": "Open repository",
   "catHot": "Trending",
   "categoryFilter": "Recommendation category",
+  "categoryRetry": "Retry",
   "cloneCopied": "Clone URL copied to clipboard",
   "codeResults": "\"{q}\" code results: {count}",
   "codeSearch": "Code Search",

@@ -4,6 +4,7 @@
   "actionOpenRepo": "Repository öffnen",
   "catHot": "Beliebt",
   "categoryFilter": "Empfehlungskategorie",
+  "categoryRetry": "Erneut versuchen",
   "cloneCopied": "Clone-URL in die Zwischenablage kopiert",
   "codeResults": "\"{q}\" Code-Ergebnisse: {count}",
   "codeSearch": "Code-Suche",

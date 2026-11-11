@@ -119,11 +119,14 @@ class IxDownloadSpec {
   /// 附带请求头（鉴权 / accept）。
   final Map<String, String> headers;
 
-  /// 复制并覆盖源地址（分片探测失败后**静默降级**到其它候选地址时使用）。
-  IxDownloadSpec copyWith({String? url}) => IxDownloadSpec(
+  /// 复制并覆盖部分字段（分片探测失败后**静默降级**到其它候选地址时使用）。
+  ///
+  /// ★ 重名处理也会改写 [fileName]（入队时目标路径已被占用 → `name (1).ext`）：
+  ///   只增不改既有调用面（原 `copyWith(url:)` 用法照常编译）。
+  IxDownloadSpec copyWith({String? url, String? fileName}) => IxDownloadSpec(
         id: id,
         url: url ?? this.url,
-        fileName: fileName,
+        fileName: fileName ?? this.fileName,
         folder: folder,
         headers: headers,
       );

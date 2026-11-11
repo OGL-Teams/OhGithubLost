@@ -33,36 +33,48 @@ def sort_file(path, apply_changes):
     if not idx:
         return 0
     start, end = idx[0], idx[-1]
-    # 块内若夹着非指令、非空行（注释等），跳过，避免误删。
+    # ★ 批 10：块内夹着**注释行**此前直接跳过整个文件（return 0）——
+    #   但注释必须跟随它说明的那条 import（如 `// TOKEN-EXIT-01` 贴在
+    #   token_exit_warning 的 import 上），文件于是永远不被整理，
+    #   analyzer 的 directives_ordering 在 CI 报红而本地门禁报 0
+    #   （CI 实证 5 处）。现在把注释**归属到其后第一条指令**一起排序。
+    block: list[tuple[int, str]] = []  # (排序键顺序号, 行)
+    comment: list[str] = []
     for i in range(start, end + 1):
         stripped = lines[i].strip()
-        if stripped and not DIRECTIVE.match(stripped):
-            return 0
-    block = [lines[i] for i in range(start, end + 1)
-             if DIRECTIVE.match(lines[i].strip())]
+        if not stripped:
+            continue  # 块内空行丢弃（重排后由分组规则重建）
+        if DIRECTIVE.match(stripped):
+            block.append((len(block), stripped, list(comment)))
+            comment = []
+        elif stripped.startswith('//'):
+            comment.append(lines[i])  # 原样保留缩进
+        else:
+            return 0  # 其它语句混进块内：不整理，保守跳过
     if not block:
         return 0
 
     entries = []
-    for line in block:
-        match = DIRECTIVE.match(line.strip())
+    for order, line, attached in block:
+        match = DIRECTIVE.match(line)
         kind, uri = match.group(1), match.group(2)
-        entries.append((group_of(uri), 0 if kind == 'import' else 1, uri,
-                        line.strip()))
+        entries.append((group_of(uri), uri, 0 if kind == 'import' else 1,
+                        order, line, attached))
 
-    seen = set()
+    seen: set[str] = set()
     unique = []
     for entry in sorted(entries):
-        if entry[3] in seen:
+        if entry[4] in seen:
             continue
-        seen.add(entry[3])
+        seen.add(entry[4])
         unique.append(entry)
 
-    out = []
+    out: list[str] = []
     last_group = None
-    for group, _, _, line in unique:
+    for group, _uri, _kind, _order, line, attached in unique:
         if last_group is not None and group != last_group:
             out.append('')
+        out.extend(attached)  # 注释先于它说明的 import
         out.append(line)
         last_group = group
 

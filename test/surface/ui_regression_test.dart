@@ -38,20 +38,78 @@ void main() {
   group('页面接线（组件必须真的被页面使用）', () {
     test('发现页接入 OgLFeedRow 与 OgLIssuesFilterChips', () {
       final String source = _readSource('search_page.dart');
-      expect(source, contains('OgLFeedRow('),
-          reason: '发现页动态 tab 必须复用 OgLFeedRow');
-      expect(source, contains('OgLIssuesFilterChips('),
-          reason: '发现页 Issues tab 必须复用 OgLIssuesFilterChips');
-      expect(source, contains('crossAxisAlignment: CrossAxisAlignment.stretch'),
-          reason: 'Issues 筛选行满宽契约');
+      expect(
+        source,
+        contains('OgLFeedRow('),
+        reason: '发现页动态 tab 必须复用 OgLFeedRow',
+      );
+      expect(
+        source,
+        contains('OgLIssuesFilterChips('),
+        reason: '发现页 Issues tab 必须复用 OgLIssuesFilterChips',
+      );
+      expect(
+        source,
+        contains('crossAxisAlignment: CrossAxisAlignment.stretch'),
+        reason: 'Issues 筛选行满宽契约',
+      );
+    });
+
+    test('发现页打磨契约（LTS 前打磨项，2026-11）', () {
+      final String source = _readSource('search_page.dart');
+
+      // ① 骨架与数据态行节奏一致：骨架列表也用 separated + Divider(height:1)，
+      //    否则加载完成瞬间每行多出 1px、整列累计闪跳。
+      final String skeleton = source.substring(
+        source.indexOf('class _SkeletonList'),
+        source.indexOf('class _SearchHit'),
+      );
+      expect(
+        skeleton,
+        contains('ListView.separated'),
+        reason: '骨架列表必须与数据态同为 separated 节奏',
+      );
+      expect(
+        skeleton,
+        contains('const Divider(height: 1)'),
+        reason: '骨架分隔符必须与数据态等高',
+      );
+      // ② 推荐 tab 错误重试文案必须来自本页分片（_t('retry') 会兜底成
+      //    字面键名「retry」——search_page.json 里没有这个键）。
+      expect(
+        source,
+        isNot(contains("_t('retry')")),
+        reason: 'search_page 分片没有 retry 键，错误重试文案必须用本分片键',
+      );
+      expect(
+        source,
+        contains("_t('categoryRetry')"),
+        reason: '推荐 tab 的重试按钮必须用 search_page 分片的 categoryRetry',
+      );
+      // ③ 推荐卡 README 切片：展开后必须能再点收起（InkWell 恒可用）。
+      final String card = source.substring(
+        source.indexOf('class _RepoCard'),
+        source.indexOf('/// 发现页。'),
+      );
+      expect(
+        card,
+        contains('_readmeExpanded = !_readmeExpanded'),
+        reason: 'README 切片必须可展开也可收起（tap 不得在展开后置 null）',
+      );
     });
 
     test('代码编辑器页接入 OgLCodeEditorToolbar 且 body 满宽', () {
       final String source = _readSource('code_editor_page.dart');
-      expect(source, contains('OgLCodeEditorToolbar('),
-          reason: '编辑器页必须复用 OgLCodeEditorToolbar');
-      expect(source, contains('crossAxisAlignment: CrossAxisAlignment.stretch'),
-          reason: '工具栏与代码区同宽契约');
+      expect(
+        source,
+        contains('OgLCodeEditorToolbar('),
+        reason: '编辑器页必须复用 OgLCodeEditorToolbar',
+      );
+      expect(
+        source,
+        contains('crossAxisAlignment: CrossAxisAlignment.stretch'),
+        reason: '工具栏与代码区同宽契约',
+      );
     });
 
     test('下拉刷新统一走 OgLRefreshIndicator（不留裸 RefreshIndicator）', () {
@@ -67,8 +125,11 @@ void main() {
         wrapped += 'OgLRefreshIndicator('.allMatches(text).length;
         // 允许包装器自身文件与注释里出现，但页面源码不许裸用。
         final String stripped = text.replaceAll('OgLRefreshIndicator(', '');
-        expect(stripped, isNot(contains('RefreshIndicator(')),
-            reason: '${f.path} 仍有裸 RefreshIndicator');
+        expect(
+          stripped,
+          isNot(contains('RefreshIndicator(')),
+          reason: '${f.path} 仍有裸 RefreshIndicator',
+        );
       }
       expect(wrapped, greaterThan(0), reason: '包装器没有被任何页面使用');
     });
@@ -76,16 +137,26 @@ void main() {
 
   group('异步 Sliver 四态（批 9 · B1）', () {
     test('空/错误/加载三态统一走 OgLSurfaceSwitch，data 态保持懒加载', () {
-      final String source =
-          File('lib/surface/app/async.dart').readAsStringSync();
-      final String sliver =
-          source.substring(source.indexOf('class OgLAsyncSliver'));
-      expect(sliver, contains('OgLSurfaceSwitch('),
-          reason: 'AsyncSliver 三态不能是硬切');
-      expect(sliver, contains('ValueKey<String>(state)'),
-          reason: '状态切换必须带 Key，AnimatedSwitcher 才能识别');
-      expect(sliver, contains('SliverList.builder'),
-          reason: '数据态必须保留按需构建，不能套动画容器一次建全表');
+      final String source = File('lib/surface/app/async.dart')
+          .readAsStringSync();
+      final String sliver = source.substring(
+        source.indexOf('class OgLAsyncSliver'),
+      );
+      expect(
+        sliver,
+        contains('OgLSurfaceSwitch('),
+        reason: 'AsyncSliver 三态不能是硬切',
+      );
+      expect(
+        sliver,
+        contains('ValueKey<String>(state)'),
+        reason: '状态切换必须带 Key，AnimatedSwitcher 才能识别',
+      );
+      expect(
+        sliver,
+        contains('SliverList.builder'),
+        reason: '数据态必须保留按需构建，不能套动画容器一次建全表',
+      );
     });
   });
 
@@ -117,15 +188,10 @@ void main() {
 
     testWidgets('未读与已读都有状态竖条（宽度恒定，行不跳动）', (WidgetTester tester) async {
       Widget build(bool unread) => MaterialApp(
-            home: Scaffold(
-              body: OgLFeedRow(
-                unread: unread,
-                title: 'T',
-                meta: 'M',
-                onTap: () {},
-              ),
-            ),
-          );
+        home: Scaffold(
+          body: OgLFeedRow(unread: unread, title: 'T', meta: 'M', onTap: () {}),
+        ),
+      );
 
       await tester.pumpWidget(build(true));
       final DecoratedBox box = tester.widget<DecoratedBox>(
@@ -244,8 +310,9 @@ void main() {
 
       // ★ 工具栏背景条必须与下方代码区**同宽**（真机上曾窄一截、两端露白缝）。
       final double screen = tester.getSize(find.byType(Scaffold)).width;
-      final double toolbar =
-          tester.getSize(find.byType(OgLCodeEditorToolbar)).width;
+      final double toolbar = tester
+          .getSize(find.byType(OgLCodeEditorToolbar))
+          .width;
       expect(toolbar, screen, reason: '工具栏没有铺满宽度，两端会露白缝');
       expect(tester.takeException(), isNull);
     });
