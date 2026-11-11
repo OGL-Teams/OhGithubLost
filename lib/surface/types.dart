@@ -25,7 +25,10 @@ export '../domain/gh/gh_oauth.dart'
     show
         GhOAuthDeviceFlow,
         GhOAuthCode,
-        GhOAuthStatus; // 显式白名单（A-09）：其余符号不得自动进入页面可见面
+        GhOAuthStatus,
+        // 登录页用 `const String clientId = kOgLGitHubClientId;`
+        // 必须是编译期常量（String.fromEnvironment），故必须显式导出。
+        kOgLGitHubClientId; // 显式白名单（A-09）：其余符号不得自动进入页面可见面
 
 /// 仓库文件操作：暴露结果 / 进度 / 阶段 / 逐项明细，**隐藏**服务实现。
 export '../domain/gh/repo_file_service.dart' hide RepoFileService;
