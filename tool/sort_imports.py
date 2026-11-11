@@ -58,7 +58,15 @@ def sort_file(path, apply_changes):
     for order, line, attached in block:
         match = DIRECTIVE.match(line)
         kind, uri = match.group(1), match.group(2)
-        entries.append((group_of(uri), uri, 0 if kind == 'import' else 1,
+        # ★ analyzer 的 directives_ordering：export 必须独立段、排在全部
+        #   import 之后（CI 实证 desktop_window.dart）。排序键把 export 的
+        #   组号抬到"相对路径组之后"，自然形成独立尾段。
+        #   ⚠ 此修复曾随 105f7ed 提交但被后续 git add -A 覆盖丢失，
+        #     属多代理并行期的第二次覆盖事故——现重加并以本测试守卫。
+        group_rank = group_of(uri)
+        if kind == 'export':
+            group_rank = 3
+        entries.append((group_rank, uri, 0,
                         order, line, attached))
 
     seen: set[str] = set()
