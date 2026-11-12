@@ -98,11 +98,18 @@ void main() {
       );
       // ④ 分类筛选与 Issues 统一为 FilterChip 横滑行（SegmentedButton
       //    五档窄屏临界溢出，audit_spec_b B17）；语言档此前硬编码英文。
+      //    （搜索结果页的两档 SegmentedButton 是合法用途，不在本断言内。）
+      final String recommended = source.substring(
+        source.indexOf('Widget _buildRecommendedTab()'),
+        source.indexOf('// ── tab 3：Issues'),
+      );
       expect(
-        source,
+        recommended,
         isNot(contains('SegmentedButton<int>')),
         reason: '推荐分类不得退回 SegmentedButton（窄屏溢出）',
       );
+      expect(recommended, contains('OgLIssuesFilterChips('),
+          reason: '推荐分类必须用与 Issues 一致的统一筛选行');
       expect(source, contains("_t('catType')"), reason: '分类文案走 i18n 键');
       expect(
         source,
