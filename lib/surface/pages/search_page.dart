@@ -185,6 +185,20 @@ class _RepoCard extends StatefulWidget {
 class _RepoCardState extends State<_RepoCard> {
   bool _readmeExpanded = false;
 
+  /// ★ 数紧凑记法：12345 → 12.3k；1234567 → 1.2M。不足 1 万原样。
+  /// 星标数是推荐卡最重的信号，裸数字在双列网格里会把 meta 行挤满。
+  static String _compactCount(int n) {
+    if (n >= 1000000) {
+      final double v = n / 1000000;
+      return '${v.toStringAsFixed(v < 10 ? 1 : 0)}M';
+    }
+    if (n >= 10000) {
+      final double v = n / 1000;
+      return '${v.toStringAsFixed(v < 100 ? 1 : 0)}k';
+    }
+    return '$n';
+  }
+
   String get _subtitle {
     final String? desc = widget.repo.description;
     return (desc == null || desc.isEmpty) ? (widget.repo.language ?? '') : desc;
@@ -262,6 +276,9 @@ class _RepoCardState extends State<_RepoCard> {
                 ),
               const SizedBox(height: OgLSpace.sm),
               // meta 行：★数 · 语言 · 版本号。
+              // ★ 批 11 信息密度：★ 数用紧凑记法（12.3k），语言与版本
+              //   都折叠省略——此前语言占 Expanded、版本不折叠，长版本号
+              //   （如 v1.2.3-beta.1+build）会把语言挤没。
               Row(
                 children: <Widget>[
                   Icon(
@@ -270,25 +287,35 @@ class _RepoCardState extends State<_RepoCard> {
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: OgLSpace.xxs),
-                  Text('${repo.stars}', style: theme.textTheme.bodySmall),
+                  Text(_compactCount(repo.stars),
+                      style: theme.textTheme.bodySmall),
                   if (repo.language != null && repo.language!.isNotEmpty)
-                    Expanded(
-                      child: Text(
-                        ' · ${repo.language!}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: OgLSpace.xxs),
+                        child: Text(
+                          ' · ${repo.language!}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ),
                   if (widget.version != null && widget.version!.isNotEmpty)
-                    Text(
-                      widget.version!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: OgLSpace.xxs),
+                        child: Text(
+                          widget.version!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -774,46 +801,41 @@ class _DiscoverPageState extends State<DiscoverPage>
     return Column(
       children: <Widget>[
         // 分类筛选行：切换时重置分页状态并重新加载（换数据维度）。
+        // ★ 批 11：改用 FilterChip 横滑行（复用 OgLIssuesFilterChips）——
+        //   SegmentedButton 五档在窄屏接近临界溢出（audit_spec_b B17），
+        //   且语言档此前是硬编码英文字面量（i18n 缺口）。两个 tab 的
+        //   筛选控件统一为同一种行型，视觉语言一致、宽度永远自适应。
         Padding(
-          padding: const EdgeInsets.fromLTRB(
-            OgLSpace.lg,
-            OgLSpace.md,
-            OgLSpace.lg,
-            OgLSpace.sm,
-          ),
-          child: Semantics(
-            label: _t('categoryFilter'),
-            child: SegmentedButton<int>(
-              segments: <ButtonSegment<int>>[
-                ButtonSegment<int>(value: 0, label: Text(_t('catHot'))),
-                ButtonSegment<int>(value: 1, label: const Text('TypeScript')),
-                ButtonSegment<int>(value: 2, label: const Text('Dart')),
-                ButtonSegment<int>(value: 3, label: const Text('Flutter')),
-                ButtonSegment<int>(value: 4, label: const Text('Rust')),
-              ],
-              selected: <int>{_repoCategory},
-              showSelectedIcon: false,
-              onSelectionChanged: (Set<int> selection) {
-                if (selection.isNotEmpty && selection.first != _repoCategory) {
-                  setState(() {
-                    _repoCategory = selection.first;
-                    _repoGeneration++; // ★ B6-A-01：作废在途旧分类请求
-                    _repos.clear();
-                    _readmeOf.clear();
-                    _versionOf.clear();
-                    _repoPage = 1;
-                    _repoDone = false;
-                    _repoError = null;
-                    // ★ 修复「选语言后永远空」：在途旧请求仍占着 _repoLoading，
-                    //   新分类的 _loadMoreRepos 会被防重入闸门直接 return，
-                    //   列表已清空 → 永远「暂无推荐」。旧请求已被世代作废，
-                    //   它的 finally 只复位自己的标志，这里同步解锁。
-                    _repoLoading = false;
-                  });
-                  unawaited(_loadMoreRepos());
-                }
-              },
-            ),
+          padding: const EdgeInsets.symmetric(vertical: OgLSpace.sm),
+          child: OgLIssuesFilterChips(
+            selected: _repoCategory,
+            labels: <String>[
+              _t('catHot'),
+              _t('catType'),
+              _t('catDart'),
+              _t('catFlutter'),
+              _t('catRust'),
+            ],
+            onSelect: (int category) {
+              if (category != _repoCategory) {
+                setState(() {
+                  _repoCategory = category;
+                  _repoGeneration++; // ★ B6-A-01：作废在途旧分类请求
+                  _repos.clear();
+                  _readmeOf.clear();
+                  _versionOf.clear();
+                  _repoPage = 1;
+                  _repoDone = false;
+                  _repoError = null;
+                  // ★ 修复「选语言后永远空」：在途旧请求仍占着 _repoLoading，
+                  //   新分类的 _loadMoreRepos 会被防重入闸门直接 return，
+                  //   列表已清空 → 永远「暂无推荐」。旧请求已被世代作废，
+                  //   它的 finally 只复位自己的标志，这里同步解锁。
+                  _repoLoading = false;
+                });
+                unawaited(_loadMoreRepos());
+              }
+            },
           ),
         ),
         Expanded(
@@ -1010,7 +1032,17 @@ class _DiscoverPageState extends State<DiscoverPage>
                           final bool mine = _mineUrls.contains(
                             ghStr(item, 'html_url'),
                           );
+                          final bool mine = _mineUrls.contains(
+                            ghStr(item, 'html_url'),
+                          );
                           final ThemeData theme = Theme.of(context);
+                          // ★ 批 11 信息密度：行首加状态色点（open=主色 /
+                          //   closed=次色），一眼区分议题状态；"我提出的"
+                          //   用 meta 前缀标注（原 person 图标语义不清）。
+                          final String state = ghStr(item, 'state');
+                          final Color stateColor = state == 'closed'
+                              ? theme.colorScheme.secondary
+                              : theme.colorScheme.primary;
                           return InkWell(
                             key: ValueKey<String>(
                               'issue-${ghStr(item, 'html_url')}',
@@ -1023,12 +1055,13 @@ class _DiscoverPageState extends State<DiscoverPage>
                               ),
                               child: Row(
                                 children: <Widget>[
-                                  Icon(
-                                    mine
-                                        ? Icons.person_outline
-                                        : Icons.star_border,
-                                    size: OgLIconSize.sm,
-                                    color: theme.colorScheme.onSurfaceVariant,
+                                  Container(
+                                    width: OgLSpace.xxs,
+                                    height: OgLSpace.xxs,
+                                    decoration: BoxDecoration(
+                                      color: stateColor,
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
                                   const SizedBox(width: OgLSpace.sm),
                                   Expanded(
@@ -1044,6 +1077,7 @@ class _DiscoverPageState extends State<DiscoverPage>
                                         ),
                                         const SizedBox(height: OgLSpace.xxs),
                                         Text(
+                                          '${mine ? '@me · ' : ''}'
                                           '${_repoFullOf(item)} '
                                           '#${ghInt(item, 'number')} · '
                                           '${ghLogin(item)} · '

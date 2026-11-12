@@ -96,6 +96,32 @@ void main() {
         contains('_readmeExpanded = !_readmeExpanded'),
         reason: 'README 切片必须可展开也可收起（tap 不得在展开后置 null）',
       );
+      // ④ 分类筛选与 Issues 统一为 FilterChip 横滑行（SegmentedButton
+      //    五档窄屏临界溢出，audit_spec_b B17）；语言档此前硬编码英文。
+      expect(
+        source,
+        isNot(contains('SegmentedButton<int>')),
+        reason: '推荐分类不得退回 SegmentedButton（窄屏溢出）',
+      );
+      expect(source, contains("_t('catType')"), reason: '分类文案走 i18n 键');
+      expect(
+        source,
+        isNot(contains("label: const Text('TypeScript')")),
+        reason: '分类语言档不得硬编码英文字面量',
+      );
+      // ⑤ 星标数紧凑记法：双列网格 meta 行不被裸数字挤满。
+      expect(source, contains('_compactCount(repo.stars)'),
+          reason: '星标数用紧凑记法（12.3k）');
+      // ⑥ Issues 行首状态色点（open/closed 一眼区分）。
+      expect(source, contains('final Color stateColor'),
+          reason: 'Issues 行首状态色点必须存在');
+      // ⑦ 设置页「存储与网络」折叠摘要含下载线程数（不展开即见并发档）。
+      final String settings = _readSource('settings_page.dart');
+      expect(
+        settings,
+        contains("_t('downloadConnections')"),
+        reason: '存储与网络摘要必须含下载线程档位',
+      );
     });
 
     test('代码编辑器页接入 OgLCodeEditorToolbar 且 body 满宽', () {

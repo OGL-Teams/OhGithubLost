@@ -192,10 +192,16 @@ class _SettingsPageState extends State<SettingsPage> {
       '${ogLCodePresetLabel(value.codeThemePreset)} · '
       '${_t('codeFontSize')} ${value.codeFontSize.round()}';
 
-  /// 折叠摘要：存储与网络（解析方式）。
-  String _storageSummary(OgLSettings value) => value.dnsMode == 'custom'
-      ? '${_t('customDns')} · ${widget.surface.dnsServerChoices[value.dnsServerId] ?? value.dnsServerId}'
-      : _tc('systemResolve');
+  /// 折叠摘要：存储与网络（DNS 方式 · 下载线程）。
+  ///
+  /// ★ 批 11 信息密度：摘要原只显示 DNS 方式；补上下载并发档位，
+  ///   不展开就能看到"现在几条线程在下载"——这是该组用户最常改的两项。
+  String _storageSummary(OgLSettings value) {
+    final String dns = value.dnsMode == 'custom'
+        ? '${_t('customDns')} · ${widget.surface.dnsServerChoices[value.dnsServerId] ?? value.dnsServerId}'
+        : _tc('systemResolve');
+    return '$dns · ${_t('downloadConnections')} ${value.downloadConnections}';
+  }
 
   /// 折叠摘要：关于与帮助（项目名 · 版本）。
   ///
