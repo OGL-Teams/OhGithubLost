@@ -556,11 +556,13 @@ class IxDownloadManager extends ChangeNotifier {
   /// 每个任务的执行描述（重试 / 分片降级时复用）。
   final Map<String, IxDownloadSpec> _specs = <String, IxDownloadSpec>{};
 
-  /// ★ 重名裁决的「同 id 重试」豁免（批 10）：`remove()` 移除一条**已有落盘
-  ///   路径**的任务时登记其 id —— 同一条任务再次入队时保持原文件名
-  ///   （覆盖自己上一轮的成品是正确语义）；别的任务撞上该路径仍会被
-  ///   后端自动改名。消费一次即删（`remove` 或下一次 `enqueue`）。
-  final Set<String> _retrySavePaths = <String>{};
+  /// ★ 重名裁决的「同 id 重试豁免」：**记住上一轮裁决后的落盘路径**。
+  /// `remove()` 移除任务时登记 `id → savePath`；同一条任务再次入队时
+  /// 直接复用该路径（覆盖自己上一轮的成品是正确语义），不再从原始
+  /// 文件名重新推导 —— 否则「a.zip 已存在 → 裁决 a (1).zip → 移除 →
+  /// 再下载」会退回 a.zip 覆盖用户原文件（数据无价，P0）。
+  /// 别的任务撞上该路径仍会被后端自动改名。消费一次即删。
+  final Map<String, String> _retrySavePaths = <String, String>{};
 
   /// 已请求「暂停」的分片任务（取消令牌后据此标记 paused 而非 canceled）。
   final Set<String> _pausedIds = <String>{};
@@ -748,8 +750,12 @@ class IxDownloadManager extends ChangeNotifier {
     //   文件写进 a.zip —— 直接覆盖用户既有文件（数据无价）。
     String finalName = safeName;
     String finalPath = savePath;
-    final bool keepName = _retrySavePaths.remove(id);
-    if (!keepName) {
+    // 同 id 重试：直接沿用上一轮裁决后的路径与文件名，不再从原名推导。
+    final String? retryPath = _retrySavePaths.remove(id);
+    if (retryPath != null && retryPath.isNotEmpty) {
+      finalPath = retryPath;
+      finalName = _lastSegmentOf(retryPath);
+    } else {
       final String unique = await _backend.resolveUniqueSavePath(
         spec,
         intendedPath: savePath,
@@ -758,10 +764,10 @@ class IxDownloadManager extends ChangeNotifier {
       if (uniqueName.isNotEmpty && uniqueName != safeName) {
         finalName = uniqueName;
         finalPath = unique;
-        _specs[id] = _specs[id]!.copyWith(fileName: finalName);
       }
     }
-    final IxDownloadSpec finalSpec = _specs[id] ?? spec;
+    _specs[id] = (_specs[id] ?? spec).copyWith(fileName: finalName);
+    final IxDownloadSpec finalSpec = _specs[id]!;
     _snapshots[id] = queued.copyWith(savePath: finalPath, fileName: finalName);
     _touchTasksCache();
     _safeNotify();
@@ -1145,10 +1151,16 @@ class IxDownloadManager extends ChangeNotifier {
   /// 分片任务没有"库队列"可恢复：重新起一次分片拉取（分片临时文件已在失败时清理，
   /// 因此是**从头发起**；换来的是不出现"假装在续传"的错位文件）。
   Future<void> resume(String id) async {
-    // E-1：优先用**当前设置**的连接数——设置里改了并发，重试/继续就该按
-    // 新值跑（此前沿用入队时快照的旧值，改设置对失败重试的大文件不生效）。
-    final int connections = preferredConnections ?? _rangeConnections[id] ?? 1;
-    if (_specs.containsKey(id) && _engine != null) {
+    // ★ 只有**本来就在跑分片**的任务才重启分片引擎。
+    //   普通单连接库任务（_rangeConnections 里没有记录）必须走
+    //   _backend.resume() 续传；此前只要 _specs 里有记录就抢跑
+    //   _runRanged，会把库任务取消并从 0 重下（P1，发布后复查 C-06）。
+    final bool wasRanged = _rangeConnections.containsKey(id);
+    if (wasRanged && _specs.containsKey(id) && _engine != null) {
+      // E-1：优先用当前设置的连接数——设置里改了并发，重试/继续就该按
+      // 新值跑（此前沿用入队时快照的旧值）。
+      final int connections =
+          preferredConnections ?? _rangeConnections[id] ?? 1;
       _rangeConnections[id] = connections;
       _pausedIds.remove(id);
       _applyStatus(id, IxDownloadStatus.running);
@@ -1234,7 +1246,7 @@ class IxDownloadManager extends ChangeNotifier {
     //   成品是正确语义）；别的任务撞上该路径仍会被自动改名。
     final String? knownPath = _snapshots[id]?.savePath;
     if (knownPath != null && knownPath.isNotEmpty) {
-      _retrySavePaths.add(id);
+      _retrySavePaths[id] = knownPath;
     }
     await _backend.cancel(id);
     _specs.remove(id);

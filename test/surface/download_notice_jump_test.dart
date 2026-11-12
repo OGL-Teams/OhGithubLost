@@ -43,9 +43,18 @@ void main() {
         reason: '裁决改名后快照与 spec 必须同步新名字');
     expect(source, contains('finalPath = unique'),
         reason: '后端返回完整新路径，snapshot.savePath 必须同步更新');
+    expect(source, contains('_retrySavePaths[id] = knownPath'),
+        reason: '同 id 重试必须记住上一轮裁决后的路径（只记 id 会退回原名覆盖用户文件）');
+    expect(source, contains('retryPath = _retrySavePaths.remove(id)'),
+        reason: '再入队时消费并复用上一轮路径');
     expect(source, contains('await _backend.enqueue(finalSpec)'),
         reason: '单连接入队必须用改名后的 spec（旧局部变量会覆盖用户文件）');
     expect(source, contains('finalPath.isNotEmpty'), reason: '分片分支必须用裁决后的路径判定');
+    // resume 不得抢跑分片（普通库任务断点续传应走 _backend.resume）
+    expect(source, contains('final bool wasRanged'),
+        reason: 'resume 必须区分分片任务与库任务');
+    expect(source, contains('if (wasRanged && _specs.containsKey(id)'),
+        reason: '只有原分片任务才重启分片引擎');
     // 数据无价：不允许任何「直接覆盖既有文件」的旁路
     expect(source, isNot(contains('// motion-allow: overwrite')),
         reason: '重名覆盖不得以任何豁免注释形式潜入');
