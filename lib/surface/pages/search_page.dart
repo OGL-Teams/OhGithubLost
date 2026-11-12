@@ -1032,9 +1032,6 @@ class _DiscoverPageState extends State<DiscoverPage>
                           final bool mine = _mineUrls.contains(
                             ghStr(item, 'html_url'),
                           );
-                          final bool mine = _mineUrls.contains(
-                            ghStr(item, 'html_url'),
-                          );
                           final ThemeData theme = Theme.of(context);
                           // ★ 批 11 信息密度：行首加状态色点（open=主色 /
                           //   closed=次色），一眼区分议题状态；"我提出的"
