@@ -41,6 +41,11 @@ void main() {
     expect(source, contains('_lastSegmentOf'), reason: '后端返回完整路径，中枢取最后一段文件名');
     expect(source, contains('copyWith(fileName: finalName)'),
         reason: '裁决改名后快照与 spec 必须同步新名字');
+    expect(source, contains('finalPath = unique'),
+        reason: '后端返回完整新路径，snapshot.savePath 必须同步更新');
+    expect(source, contains('await _backend.enqueue(finalSpec)'),
+        reason: '单连接入队必须用改名后的 spec（旧局部变量会覆盖用户文件）');
+    expect(source, contains('finalPath.isNotEmpty'), reason: '分片分支必须用裁决后的路径判定');
     // 数据无价：不允许任何「直接覆盖既有文件」的旁路
     expect(source, isNot(contains('// motion-allow: overwrite')),
         reason: '重名覆盖不得以任何豁免注释形式潜入');

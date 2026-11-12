@@ -60,6 +60,48 @@ const Set<String> _kSensitiveHeaders = <String>{
   'x-api-key',
 };
 
+/// 字面量 IP 是否为**禁止直连**的地址（私网 / 回环 / 链路本地 /
+/// 运营商级 NAT / 云元数据 / 未指定）。
+///
+/// 重定向守卫与 DNS 结果过滤共用同一份判定：DNS 应答即便来自可信服务器、
+/// 事务 ID 正确，也不能把带凭证的连接引向内网或 `169.254.169.254`。
+/// 域名形式的目标由 TLS 证书校验兜底，这里只判**字面量**（不额外解析）。
+bool ogLIsBlockedLiteralIp(String host) {
+  final String lower =
+      host.toLowerCase().replaceAll('[', '').replaceAll(']', '');
+  final RegExpMatch? ipv4 =
+      RegExp(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$').firstMatch(lower);
+  if (ipv4 != null) {
+    final List<int> parts = <int>[
+      for (int i = 1; i <= 4; i++) int.tryParse(ipv4.group(i)!) ?? 256,
+    ];
+    if (parts.any((int p) => p > 255)) {
+      return true;
+    }
+    final int a = parts[0], b = parts[1];
+    return a == 10 ||
+        a == 127 ||
+        a == 0 ||
+        (a == 172 && b >= 16 && b <= 31) ||
+        (a == 192 && b == 168) ||
+        (a == 169 && b == 254) ||
+        (a == 100 && b >= 64 && b <= 127);
+  }
+  // IPv6 字面量：回环 / 未指定 / 链路本地 / 唯一本地 / IPv4 映射私网。
+  if (lower.contains(':')) {
+    return lower == '::1' ||
+        lower == '::' ||
+        lower.startsWith('fe80') ||
+        lower.startsWith('fc') ||
+        lower.startsWith('fd') ||
+        lower.startsWith('::ffff:10.') ||
+        lower.startsWith('::ffff:127.') ||
+        lower.startsWith('::ffff:192.168.') ||
+        lower.startsWith('::ffff:169.254.');
+  }
+  return false;
+}
+
 /// 重定向目标安全判定（base 层自足，不向上依赖 domain 的 IxPresign）。
 ///
 /// 交叉审计 B1-A-23/B1-B-04：此前无凭证请求由 dart:io 自动跟随任意
@@ -78,38 +120,7 @@ bool _ogLIsSafeRedirectTarget(Uri target) {
   if (host.isEmpty || host == 'localhost' || host.endsWith('.localhost')) {
     return false;
   }
-  final RegExpMatch? ipv4 =
-      RegExp(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$').firstMatch(host);
-  if (ipv4 != null) {
-    final List<int> parts = <int>[
-      for (int i = 1; i <= 4; i++) int.tryParse(ipv4.group(i)!) ?? 256,
-    ];
-    if (parts.any((int p) => p > 255)) {
-      return false;
-    }
-    final int a = parts[0], b = parts[1];
-    if (a == 10 ||
-        a == 127 ||
-        a == 0 ||
-        (a == 172 && b >= 16 && b <= 31) ||
-        (a == 192 && b == 168) ||
-        (a == 169 && b == 254) ||
-        (a == 100 && b >= 64 && b <= 127)) {
-      return false;
-    }
-  }
-  // IPv6 字面量：回环 / 未指定 / 链路本地 / 唯一本地一律拒绝。
-  if (host.startsWith('[') || host.contains(':')) {
-    final String lower = host.replaceAll('[', '').replaceAll(']', '');
-    if (lower == '::1' ||
-        lower == '::' ||
-        lower.startsWith('fe80') ||
-        lower.startsWith('fc') ||
-        lower.startsWith('fd')) {
-      return false;
-    }
-  }
-  return true;
+  return !ogLIsBlockedLiteralIp(host);
 }
 
 /// 基于 `dart:io HttpClient` 的传输实现（Android / Windows / Linux 共用）。
@@ -185,11 +196,22 @@ class IoNetTransport implements NetTransport {
           ? uri.port
           : (uri.scheme == 'https' ? 443 : 80);
       final List<String> resolved = await dns.resolve(uri.host);
+      // ★ 发布后复查 P1：DNS 应答即便来自可信服务器、事务 ID 正确，
+      //   也可能把带凭证的连接引向私网 / 云元数据（DNS rebinding）。
+      //   连接前过滤字面量 IP；全部被拦时如实抛错，绝不静默回落系统 DNS。
+      final List<String> safe =
+          resolved.where((String ip) => !ogLIsBlockedLiteralIp(ip)).toList();
+      if (safe.isEmpty && resolved.isNotEmpty) {
+        throw SocketException(
+          'DNS 解析结果全部为禁止直连的地址（私网/回环/元数据）：'
+          '${uri.host} → ${resolved.join('、')}',
+        );
+      }
       // IPv4 优先（半死 IPv6 通道场景下先走可达地址）。
       final List<String> v4 =
-          resolved.where((String ip) => !ip.contains(':')).toList();
+          safe.where((String ip) => !ip.contains(':')).toList();
       final List<String> v6 =
-          resolved.where((String ip) => ip.contains(':')).toList();
+          safe.where((String ip) => ip.contains(':')).toList();
       final List<String> addresses = <String>[...v4, ...v6];
       Object? lastError;
       for (final String address in addresses) {

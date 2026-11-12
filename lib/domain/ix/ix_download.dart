@@ -742,9 +742,12 @@ class IxDownloadManager extends ChangeNotifier {
       return _snapshots[id] ?? queued;
     }
     // ★ 重名裁决（批 10）：同 id 重试保持原文件名（豁免已在 remove 时登记）；
-    //   不同任务撞名 → 后端返回 `name (1).ext`，同步改 spec 与快照，
-    //   页面与落盘从此用同一个名字。数据无价：绝不覆盖用户既有文件。
+    //   不同任务撞名 → 后端返回**完整的新路径**（`.../a (1).zip`）。
+    //   页面、spec、快照、实际落盘必须用同一个名字和同一条路径：
+    //   只改 fileName 而留着旧 savePath，会显示「a (1).zip」却把
+    //   文件写进 a.zip —— 直接覆盖用户既有文件（数据无价）。
     String finalName = safeName;
+    String finalPath = savePath;
     final bool keepName = _retrySavePaths.remove(id);
     if (!keepName) {
       final String unique = await _backend.resolveUniqueSavePath(
@@ -754,10 +757,12 @@ class IxDownloadManager extends ChangeNotifier {
       final String uniqueName = _lastSegmentOf(unique);
       if (uniqueName.isNotEmpty && uniqueName != safeName) {
         finalName = uniqueName;
+        finalPath = unique;
         _specs[id] = _specs[id]!.copyWith(fileName: finalName);
       }
     }
-    _snapshots[id] = queued.copyWith(savePath: savePath, fileName: finalName);
+    final IxDownloadSpec finalSpec = _specs[id] ?? spec;
+    _snapshots[id] = queued.copyWith(savePath: finalPath, fileName: finalName);
     _touchTasksCache();
     _safeNotify();
 
@@ -767,7 +772,7 @@ class IxDownloadManager extends ChangeNotifier {
     if (connections > 1 &&
         _engine != null &&
         _backend.supportsRanged &&
-        savePath.isNotEmpty) {
+        finalPath.isNotEmpty) {
       _rangeConnections[id] = connections;
       unawaited(_runRanged(id: id, connections: connections));
       return _snapshots[id] ?? queued;
@@ -775,7 +780,9 @@ class IxDownloadManager extends ChangeNotifier {
     // ★ 下载可用性 P0：后端入队失败（库未初始化 / 权限 / 磁盘）
     //   不能让任务永远挂在 queued —— 置 failed + 留痕，页面如实可见。
     try {
-      await _backend.enqueue(spec);
+      // ★ 必须用裁决后的 spec（finalSpec）：旧局部变量 spec 还是原名，
+      //   传进去会写 a.zip 覆盖用户文件，而页面显示 a (1).zip。
+      await _backend.enqueue(finalSpec);
     } catch (error) {
       final IxDownloadTask? cur = _snapshots[id];
       if (cur != null && !_disposed) {
