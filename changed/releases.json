@@ -3996,6 +3996,130 @@
     "prerelease": false,
     "published_at": "2026-10-02T18:11:28Z"
   },
+  "v12.6.3": {
+    "tag": "v12.6.3",
+    "name": "v12.6.3",
+    "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v12.6.3",
+    "published_at": "2026-11-12T22:46:40Z",
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "OGL-v12.6.3-Android.AAB.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Android.AAB.7z",
+        "size": 60135309
+      },
+      {
+        "name": "OGL-v12.6.3-Android.AAB.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Android.AAB.zip",
+        "size": 62181804
+      },
+      {
+        "name": "OGL-v12.6.3-Android.arm64-v8a.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Android.arm64-v8a.7z",
+        "size": 8243692
+      },
+      {
+        "name": "OGL-v12.6.3-Android.arm64-v8a.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Android.arm64-v8a.zip",
+        "size": 10837701
+      },
+      {
+        "name": "OGL-v12.6.3-Android.armeabi-v7a.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Android.armeabi-v7a.7z",
+        "size": 8214525
+      },
+      {
+        "name": "OGL-v12.6.3-Android.armeabi-v7a.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Android.armeabi-v7a.zip",
+        "size": 10511362
+      },
+      {
+        "name": "OGL-v12.6.3-Android.universal-APK.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Android.universal-APK.7z",
+        "size": 19818576
+      },
+      {
+        "name": "OGL-v12.6.3-Android.universal-APK.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Android.universal-APK.zip",
+        "size": 29140953
+      },
+      {
+        "name": "OGL-v12.6.3-Android.x86_64.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Android.x86_64.7z",
+        "size": 8746663
+      },
+      {
+        "name": "OGL-v12.6.3-Android.x86_64.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Android.x86_64.zip",
+        "size": 10999611
+      },
+      {
+        "name": "OGL-v12.6.3-boot-manifest.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-boot-manifest.7z",
+        "size": 596
+      },
+      {
+        "name": "OGL-v12.6.3-boot-manifest.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-boot-manifest.zip",
+        "size": 955
+      },
+      {
+        "name": "OGL-v12.6.3-Linux.arm64.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Linux.arm64.7z",
+        "size": 8033830
+      },
+      {
+        "name": "OGL-v12.6.3-Linux.arm64.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Linux.arm64.zip",
+        "size": 12552328
+      },
+      {
+        "name": "OGL-v12.6.3-Linux.x64.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Linux.x64.7z",
+        "size": 8815788
+      },
+      {
+        "name": "OGL-v12.6.3-Linux.x64.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Linux.x64.zip",
+        "size": 12989692
+      },
+      {
+        "name": "OGL-v12.6.3-Windows.arm64.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Windows.arm64.7z",
+        "size": 8427575
+      },
+      {
+        "name": "OGL-v12.6.3-Windows.arm64.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Windows.arm64.zip",
+        "size": 13320367
+      },
+      {
+        "name": "OGL-v12.6.3-Windows.x64.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Windows.x64.7z",
+        "size": 9633694
+      },
+      {
+        "name": "OGL-v12.6.3-Windows.x64.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/OGL-v12.6.3-Windows.x64.zip",
+        "size": 14246578
+      },
+      {
+        "name": "ohgithublost-12.6.3-1.x86_64.rpm",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/ohgithublost-12.6.3-1.x86_64.rpm",
+        "size": 9578173
+      },
+      {
+        "name": "ohgithublost_12.6.3_amd64.deb",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/ohgithublost_12.6.3_amd64.deb",
+        "size": 9645688
+      },
+      {
+        "name": "ohgithublost_12.6.3_arm64.deb",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v12.6.3/ohgithublost_12.6.3_arm64.deb",
+        "size": 8782844
+      }
+    ]
+  },
   "v12.6.2": {
     "tag": "v12.6.2",
     "name": "v12.6.2",
