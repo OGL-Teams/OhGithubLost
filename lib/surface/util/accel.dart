@@ -192,6 +192,12 @@ class OgLAccelChannel {
     if (id is! String || id.isEmpty || base is! String || base.isEmpty) {
       return null;
     }
+    // ★ F-09：持久化的通道地址必须过同一套 URL 校验——
+    //   旧实现只查"非空"，被篡改/旧配置里的 `https://`（无主机）、
+    //   明文 http、含空格地址都会绕过前端校验进入加速候选。
+    if (ogLValidateAccelBaseUrl(base) != null) {
+      return null;
+    }
     return OgLAccelChannel(
       id: id,
       name: name is String && name.isNotEmpty ? name : id,
@@ -219,8 +225,14 @@ class OgLAccelChannel {
 /// 曾经这里返回的是"链"（内置多前缀按优先级逐个试）。链本身就是静默降级的
 /// 一种：前一个失败就换下一个，用户无从知道走了哪条。现在一个通道就是一个
 /// 前缀，没有第二个。
-List<String> ogLAccelPrefixesFor(OgLAccelChannel channel) =>
-    <String>[ogLNormalizeAccelBase(channel.baseUrl)];
+List<String> ogLAccelPrefixesFor(OgLAccelChannel channel) {
+  // ★ F-09 纵深防御：即便有人绕过 fromJson 直接构造了非法通道，
+  //   也不让它进入候选（返回空列表 = 不加速，绝不静默直连伪装成加速）。
+  if (ogLValidateAccelBaseUrl(channel.baseUrl) != null) {
+    return const <String>[];
+  }
+  return <String>[ogLNormalizeAccelBase(channel.baseUrl)];
+}
 
 /// 校验自定义通道地址（返回 `null` = 通过）。
 String? ogLValidateAccelBaseUrl(String raw) {

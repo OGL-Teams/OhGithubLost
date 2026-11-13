@@ -41,6 +41,7 @@ GATES: list[tuple[str, list[str], str]] = [
     ('perf_audit', ['--fatal'], '审计'),
     ('ci_config_audit', ['--fatal'], 'workflow'),
     ('i18n_scan', ['--check'], '语言清单一致'),
+    ('facade_audit', ['--fatal'], '门面类型面审计'),
 ]
 
 # 期望「扫描对象数 > 0」的关键字。layer/i18n/motion 的输出里带数量，

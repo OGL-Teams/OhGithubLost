@@ -15,7 +15,7 @@
 | A-06 platform 文件头 | ⚠️ 规范决策未定 | `platform/` 6 文件用「平台实现层」中文前缀（无 L 编号）；`layer_of` 返回 None 不检查。要不要定 P 前缀属规范决策 |
 | A-11 platform 统计口径 | ✅ 已如实说明 | 154 = 四层文件数，163 = 含 platform 的全扫描口径；`docs/5layer-audit-todo.md` 已写明差异 |
 | **platform 死规则** | ✅ **已修（批 11）** | 原 `lay is None → continue` 让「platform 只许依赖 kernel」永不执行；现显式识别 `platform/` 并纳入 `total` + 单边检查，反向注入 base import 可拦 |
-| **门面类型面零覆盖** | ⚠️ 仍存在 | `docs/audit_layering_principles.md` §8 给出 4 个反例注入全绿：types/桥的类型面不受检；路线图第 2 步待做 |
+| **门面类型面零覆盖** | ✅ 已补门禁（批 11） | 新增 `tool/facade_audit.py`（export 必须 show/hide、服务类不得经门面导出、桥字段类型面基线锁定），接进 ci.yml + gate_of_gates（8 支）；反向注入服务类 export 可拦。既有 4 项以基线锁定，删除属路线图第 1 步 |
 | **能力体系无消费侧 / DI 无层命名空间 / 可变实现类直给页面** | ⚠️ 仍存在 | 详见 `docs/audit_layering_principles.md` §9，属高风险专项（需逐小步 PR + 全链回归），不在本轮 |
 
 ## 二、门禁自身（批 8 / 批 9 遗留）
@@ -60,23 +60,23 @@
 | C-06 resume 抢跑分片 P1 | ✅ 已修（12.6.2） | `wasRanged` 守卫 |
 | C-03 探测异常 fail-open P1 | ✅ **已修（批 11）** | `resolveUniqueSavePath` 用 `FileMode.writeExclusive` 原子占位，创建成功即删（交还下载器）；失败/999 占用一律抛 `FileSystemException`，中枢 catch 后置 `failed` + 留痕并抛错，绝不返回可覆盖路径 |
 | C-04 TOCTOU 无原子占位 P1 | ✅ **已修（批 11）** | 同 C-03：`writeExclusive` 让并发两任务只有一个拿到 `a (1).zip`，另一个顺延 `a (2).zip` |
-| C-05 撤销移除遗留豁免 | ⚠️ 仍存在 | 下次专项 |
+| C-05 撤销移除遗留豁免 | ✅ 已修（批 11） | `restoreTask()` 从快照重建 spec/快照并消费豁免；页面 `_undoRemove` 改调 `restoreDownload`，不再死路 |
 | C-07 await 窗口被 remove P1 | ✅ **已修（批 11）** | 裁决 await 后二次判 `_disposed || !identical(_snapshots[id], queued)`，失效即返回、不写回、不复活、不空指针 |
-| C-08 fallback 异步重入 | ⚠️ 仍存在 | 下次专项（需 `_roundOf` 贯穿 fallback） |
+| C-08 fallback 异步重入 | ✅ 已修（批 11） | `_fallbackToSingle` 加 `round` 参数 + 回合守卫，旧回合不得覆盖新回合 savePath / 重复入队 |
 | C-09 暂停速率负/进度回跳 P1 | ✅ **已修（批 11）** | `_applyRangeProgress` 按回合对齐采样基准、负值归零；`progress` 不再 clamp，超量字节如实 >100% |
 | C-10 total=0 谎称浏览器 P2 | ✅ **已修（批 11）** | 原生端显示 `sizeUnknown`（六语言新键），仅 Web 显示 `handedToBrowser` |
 | C-11 Tween begin:0 重跑 P2 | ✅ **已修（批 11）** | 改 `Tween<double>(end: task.progress)`，由 `TweenAnimationBuilder` 自动从上一次 value 插值 |
 | C-12 超量字节裁 100% P2 | ✅ **已修（批 11）** | `progress` 保留真实比例，进度条 UI 仍 clamp 显示但数字不掩盖异常 |
-| C-13 单连接失败无通知 | ⚠️ 仍存在 | 下次专项 |
-| C-14 完整性失败文案误导 | ⚠️ 仍存在 | 下次专项 |
+| C-13 单连接失败无通知 | ✅ 已修（批 11） | `_notifyFailure` 统一出口：入队失败 / 库 failed 事件 / 分片失败都投通知中心，离页可见 |
+| C-14 完整性失败文案误导 | ✅ 已修（批 11） | `deleteFile` try/catch，按删除成功/失败分别表述，不再无条件宣称「坏文件已删除」 |
 | C-15 retry 入队无兜底 P2 | ✅ **已修（批 11）** | `retry` 单连接路径 try/catch → 置 `failed` + 留痕 + rethrow，不再永久挂 queued |
 | C-16 clearFinished 不清辅助表 P2 | ✅ **已修（批 11）** | 补 `_roundOf.remove(id)` / `_retrySavePaths.remove(id)`，与 `remove()` 逐表对齐 |
-| C-17 Gist 无统一通知 | ⚠️ 仍存在 | 「查看下载」动作缺席 |
-| C-18 降级依赖旧页 context | ⚠️ 仍存在 | 第三级降级仍用发起页 context |
+| C-17 Gist 无统一通知 | ✅ 已修（批 11） | Gist 入队改 `OgLDownloadNotice.show`（queued + 根 context），自带「查看下载」动作 |
+| C-18 降级依赖旧页 context | ✅ 已修（批 11） | 降级只用 rootContext / navigatorKey.currentContext；都无则纯剪贴板 + 日志，不碰旧页 context |
 | S-01 Web 分支契约漂移 | ⚠️ 推测 | 需 Web 分支实编验证 |
 | S-02 库同名覆盖行为未知 | ⚠️ 推测 | 需真机放同名文件实测 |
 | S-03 取消后 .partN 撞车 | ⚠️ 推测 | 回合间文件名冲突 |
-| S-04 expectedSha256 只 Release | ⚠️ 仍存在 | 其它下载类型无校验 |
+| S-04 expectedSha256 只 Release | ✅ 校准为设计限制 | `enqueue` 已有 `expectedSha256` 参数；仓库文件只给 Git blob sha1，无可靠 sha256 源，**不编造摘要**（编造比不校验更坏）。登记为限制，不改 |
 
 ## 五、发布后复查：DNS / 网络（F 系列）
 
@@ -89,11 +89,11 @@
 | **F-03 owner 校验可绕过** | ⚠️ **仍存在** | 「省略 name」可绕过 |
 | **F-05 自检未覆盖三路** | ⚠️ **仍存在** | DNS/直连/镜像 + 结果未接页面 |
 | **F-06 DoH 端点校验/跨主机重定向** | ⚠️ **仍存在** | 自定义端点校验不完整 |
-| F-07 清空 DNS IP 旧解析器生效 | ⚠️ 仍存在 | 配置变更窗口 |
-| F-09 加速候选绕过 URL 校验 | ⚠️ 仍存在 | 字符串前缀白名单 |
+| F-07 清空 DNS IP 旧解析器生效 | ✅ 已修（批 11） | `applySelection` 拒绝空/非法自定义地址与无效 id（不保留旧服务器），写 `OGL-DNS-409` 诊断；`NetBridge` 先规格化并拒绝私网 IP |
+| F-09 加速候选绕过 URL 校验 | ✅ 已修（批 11） | `OgLAccelChannel.fromJson` 与 `ogLAccelPrefixesFor` 都过 `ogLValidateAccelBaseUrl`，非法地址不入库、不进候选 |
 | F-10 Retry-After 无 jitter/asctime | ✅ **已修（批 11）** | `net_transport.dart` 补 asctime 解析 + 服务端值抖动，换跳分支改用注入 `_sleep` |
-| F-11 DNS 缓存不按 TTL/无 in-flight | ⚠️ 仍存在 | P2 |
-| F-12 私有仓库图片必然 404 | ⚠️ 仍存在 | P2 |
+| F-11 DNS 缓存不按 TTL/无 in-flight | ✅ 已修（批 11） | `DnsCache` 原已按 `expiresAt` 失效；`DnsService.resolve` 加 `_inFlight` 同域合并，策略变更清在途 |
+| F-12 私有仓库图片必然 404 | ✅ 校准为不成立 | `readme_view.dart` 的 `imageBuilder` ② 分支对相对路径走 `imageLoader`（Contents API 带令牌），`repo_page` 两处都传了 `imageLoader`；代理只看了代理分支 |
 | F-13 自定义 DNS IP 未校验 P2 | ✅ **已修（批 11）** | `ogLNormalizeDnsAddress` 复用 `ogLIsBlockedLiteralIp`（单一事实源已上提到 `net_transport.dart`），私网/回环/元数据/IPv4 映射私网一律规格化返回 null |
 | 批 1 的 8 组 P0/P1 | ✅ 全部仍成立 | 逐条代码核对无回归 |
 

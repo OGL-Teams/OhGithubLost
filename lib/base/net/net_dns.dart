@@ -750,6 +750,10 @@ class DnsService {
   KernelDiagnostics? _diagnostics;
   bool _warnedCustomUnsupported = false;
 
+  /// ★ F-11：同域 in-flight 解析 Future（策略变更时清空）。
+  final Map<String, Future<List<String>>> _inFlight =
+      <String, Future<List<String>>>{};
+
   /// 最近一次解析**实际由谁完成**（服务商 id，或 `system` /
   /// `system(fallback)`）。
   ///
@@ -792,25 +796,42 @@ class DnsService {
     final NetDnsMode mode = custom ? NetDnsMode.custom : NetDnsMode.system;
     // ★ 自定义服务器优先：用户在设置里填了 IP → 用它（`serverId == 'custom'`
     //   或 `customServer != null` 均走这条）。内置五家仍可按 id 选中。
+    // ★ F-07：用户**清空/写错**自定义 DNS 地址时，不得悄悄保留上一家
+    //   服务器继续解析（表现为"设置改了却毫无变化"）。
+    //   自定义模式且没给出合法 customServer → 明确拒绝这次选择，
+    //   由调用方如实报错；内置服务商 id 拼错同样不套用旧列表。
+    if (custom && customServer == null && serverId == 'custom') {
+      _diagnostics?.warn(
+        'DNS',
+        '自定义 DNS 地址为空或非法，维持原策略（不静默套用旧服务器）',
+        code: 'OGL-DNS-409',
+      );
+      return false;
+    }
     final List<DnsServer> picked = customServer != null
         ? <DnsServer>[customServer]
         : builtinDnsServers
             .where((DnsServer server) => server.id == serverId)
             .toList();
-    // 没选到内置服务商（id 拼错 / 已下线）→ 保留原列表，**不静默清空**：
-    // 清空会让"自定义 DNS"变成一句空话（`_resolveCustom` 直接抛"未配置"）。
+    if (picked.isEmpty) {
+      _diagnostics?.warn(
+        'DNS',
+        'DNS 服务商 id 无效，维持原策略（不静默套用旧服务器）',
+        code: 'OGL-DNS-409',
+      );
+      return false;
+    }
     final bool changed = policy.mode != mode ||
         policy.preferDoh != preferDoh ||
-        (picked.isNotEmpty && !_sameServers(policy.servers, picked));
+        !_sameServers(policy.servers, picked);
     policy.mode = mode;
     policy.preferDoh = preferDoh;
-    if (picked.isNotEmpty) {
-      policy.servers
-        ..clear()
-        ..addAll(picked);
-    }
+    policy.servers
+      ..clear()
+      ..addAll(picked);
     if (changed) {
       cache.clear();
+      _inFlight.clear(); // 策略变了，在途的旧策略解析结果不再可信
       _lastVia = null;
       _diagnostics?.info(
         'DNS',
@@ -904,6 +925,24 @@ class DnsService {
       return cached.addresses;
     }
 
+    // ★ F-11：同域并发解析合并为一次（in-flight 去重）。
+    //   页面里多个组件同时请求同一个 host 时，旧实现会各发一份 UDP/DoH，
+    //   既浪费又可能让竞速结果互相覆盖。后到者复用同一个 Future。
+    final Future<List<String>>? pending = _inFlight[host];
+    if (pending != null) {
+      return pending;
+    }
+    final Future<List<String>> task = _resolveUncached(host);
+    _inFlight[host] = task;
+    try {
+      return await task;
+    } finally {
+      _inFlight.remove(host);
+    }
+  }
+
+  /// 实际的解析路径（缓存未命中时）；由 [resolve] 用 in-flight 表包裹。
+  Future<List<String>> _resolveUncached(String host) async {
     if (policy.mode == NetDnsMode.system || !supportsCustomDns) {
       // Web：自定义 DNS 入口不在本平台生效（浏览器不给裸 socket）。
       // 若用户确实选了自定义，这里**一次性留痕**并如实走系统解析——

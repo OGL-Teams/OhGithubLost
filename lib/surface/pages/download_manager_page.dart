@@ -158,16 +158,23 @@ class OgLDownloadNotice {
       return;
     }
     // 降级：根 Navigator 未就绪（极端时序）。给用户一条明确出路。
+    // ★ C-18：不得再用发起页 context 弹提示——SnackBar 常驻 8s，
+    //   此时该页可能已 dispose，用旧 context 会抛错。改为纯剪贴板 +
+    //   只在根 context 可用时给一条明确提示；根也没有就仅复制并留日志。
     unawaited(ogLCopyText('/download', tag: '下载管理页'));
-    OgLDownloadNotice.instance.show(
-      context,
-      surface,
-      message: _t('viewDownloadsFallback'),
-      kind: DownloadNoticeKind.info,
-      actionLabel: null,
-      onAction: null,
-      force: true,
-    );
+    final BuildContext? fallbackCtx =
+        rootContext ?? OgLApp.navigatorKey.currentContext;
+    if (fallbackCtx != null) {
+      OgLDownloadNotice.instance.show(
+        fallbackCtx,
+        surface,
+        message: _t('viewDownloadsFallback'),
+        kind: DownloadNoticeKind.info,
+        actionLabel: null,
+        onAction: null,
+        force: true,
+      );
+    }
   }
 }
 
@@ -340,7 +347,9 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
       return;
     }
     setState(() => _lastRemoved = null);
-    await widget.surface.retryDownload(task.id);
+    // ★ C-05：撤销移除必须真正把任务放回列表（旧实现调 retry(id)，
+    //   但 remove 已清 spec/快照 → 死路）。
+    await widget.surface.restoreDownload(task);
   }
 
   Widget _taskCard(BuildContext context, ThemeData theme, IxDownloadTask task) {

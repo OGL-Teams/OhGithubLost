@@ -827,10 +827,24 @@ class IxDownloadManager extends ChangeNotifier {
         );
         _touchTasksCache();
         _safeNotify();
+        _notifyFailure(id, cur, error);
       }
       rethrow;
     }
     return _snapshots[id] ?? queued;
+  }
+
+  /// ★ C-13：失败必须投递通知中心（离开下载页仍可见）。
+  /// 集中一处，避免入队失败 / 库失败 / 分片失败三条路径各写一份。
+  void _notifyFailure(String id, IxDownloadTask task, Object error) {
+    notifications?.push(
+      level: IxNotificationLevel.warning,
+      title: '下载失败',
+      message: '${_fileNameOf(task)}：$error',
+      code: 'OGL-DL-202',
+      source: 'download',
+      subject: id,
+    );
   }
 
   /// 用分片引擎跑一个任务；不支持 / 失败则回退单连接。
@@ -907,6 +921,7 @@ class IxDownloadManager extends ChangeNotifier {
         url: reachable ?? candidates.first,
         reason: '无可分片通道（探测结果 $probe）',
         code: 'OGL-DL-201',
+        round: myRound,
       );
       return;
     }
@@ -980,6 +995,7 @@ class IxDownloadManager extends ChangeNotifier {
         url: uri.toString(),
         reason: '分片不可用（${error.reason}）',
         code: 'OGL-DL-203',
+        round: myRound,
       );
     } catch (error) {
       // 回合校验（A-2 同款）：旧一轮 fetch 的迟到失败绝不能把新一轮
@@ -996,6 +1012,7 @@ class IxDownloadManager extends ChangeNotifier {
           url: uri.toString(),
           reason: '服务端忽略 Range（HTTP 200 而非 206）',
           code: 'OGL-DL-204',
+          round: myRound,
         );
       } else {
         // 分片失败**不静默**：记事件码并置失败（可重试）。
@@ -1050,7 +1067,13 @@ class IxDownloadManager extends ChangeNotifier {
     required String url,
     required String reason,
     required String code,
+    required int round,
   }) async {
+    // ★ C-08：旧回合的 fallback 不得覆盖新回合的 savePath，
+    //   也不得为一个已经重启的任务重复入队。
+    if (_disposed || _roundOf[id] != round || _snapshots[id] == null) {
+      return;
+    }
     // 从分片路径上摘下来：此后 pause / resume / retry 都走库的那条路。
     _rangeTokens.remove(id);
     _rangeConnections.remove(id);
@@ -1231,6 +1254,33 @@ class IxDownloadManager extends ChangeNotifier {
   ///
   /// 展示层据此显示「N 线程」；只读派生值，不引入新的可变状态。
   int connectionsOf(String id) => _rangeConnections[id] ?? 1;
+
+  /// ★ C-05：撤销「移除」——把 `_lastRemoved` 快照原样放回列表。
+  ///
+  /// `remove()` 已清 spec/快照，`retry(id)` 找不到记录是死路；
+  /// 这里重建最小 spec 与快照（**不自动重新下载**，由用户显式点重试），
+  /// 并消费该 id 的重名重试豁免，避免它被后续任意同 id 入队误消费。
+  void restoreTask(IxDownloadTask task) {
+    if (_disposed) {
+      return;
+    }
+    _retrySavePaths.remove(task.id);
+    _specs[task.id] = IxDownloadSpec(
+      id: task.id,
+      url: task.url,
+      fileName: task.fileName,
+      folder: task.category.folder,
+    );
+    _snapshots[task.id] = task.copyWith(
+      status: IxDownloadStatus.paused,
+      received: 0,
+      total: 0,
+      bytesPerSecond: 0,
+      error: null,
+    );
+    _touchTasksCache();
+    _safeNotify();
+  }
 
   /// 重试（重新入队）。
   Future<void> retry(String id) async {
@@ -1477,12 +1527,21 @@ class IxDownloadManager extends ChangeNotifier {
     if (!ok) {
       final IxDownloadTask? snap = _snapshots[id];
       if (snap != null) {
-        // ★ 校验不匹配的成品必须**删掉**：留着它，用户点「重试」只会把同一份
-        //   坏字节再校验一遍，永远失败。删掉后重试才会真正重新下载。
-        await _backend.deleteFile(id, path: snap.savePath);
+        // ★ C-14：校验不匹配的成品必须删，但删除**可能失败**（读不到文件 /
+        //   权限 / Web 无本地成品）。旧文案无条件宣称「已删除」是误导——
+        //   按实际结果分别表述，绝不谎称。
+        bool deleted = false;
+        try {
+          await _backend.deleteFile(id, path: snap.savePath);
+          deleted = true;
+        } catch (_) {
+          deleted = false;
+        }
+        final String detail =
+            deleted ? '完整性校验未通过，坏文件已删除，可重试' : '完整性校验未通过，坏文件未能删除，请先检查存储后重试';
         _snapshots[id] = snap.copyWith(
           status: IxDownloadStatus.failed,
-          error: const IxDownloadError(
+          error: IxDownloadError(
             IxDownloadErrorKind.integrity,
             'integrityMismatch',
             code: 'OGL-DL-403',
@@ -1493,7 +1552,7 @@ class IxDownloadManager extends ChangeNotifier {
         notifications?.push(
           level: IxNotificationLevel.danger,
           title: '下载失败',
-          message: '${_fileNameOf(snap)}：完整性校验未通过，坏文件已删除，可重试',
+          message: '${_fileNameOf(snap)}：$detail',
           code: 'OGL-DL-403',
           source: 'download',
           subject: id,
@@ -1595,14 +1654,16 @@ class IxDownloadManager extends ChangeNotifier {
         unawaited(_finishTask(id));
         return;
       }
-      _snapshots[id] = snap.copyWith(
-        status: status,
-        // 失败事件带描述（结构化）；其余状态没有错误 → 显式清空，
-        // 免得旧错误挂在新状态上（进度事件不走这里，不会误清）。
-        error: _errorOfDescription(event.error),
-      );
+      final IxDownloadError? err = _errorOfDescription(event.error);
+      _snapshots[id] = snap.copyWith(status: status, error: err);
       _touchTasksCache();
       _safeNotify();
+      // ★ C-13：库单连接任务失败只改状态、不投通知 → 离开下载页
+      //   用户完全看不到。这里补上（与分片/入队失败同一出口）。
+      if (status == IxDownloadStatus.failed) {
+        _notifyFailure(
+            id, _snapshots[id]!, err?.message ?? event.error ?? '下载失败');
+      }
       return;
     }
     // 进度事件。

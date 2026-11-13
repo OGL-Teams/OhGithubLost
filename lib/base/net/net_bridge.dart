@@ -88,13 +88,15 @@ class NetBridge implements NetTransport {
     // ★ 自定义 DNS：用户在设置里填了 IP 就构造一个临时 DnsServer 传下去。
     //   DoH 端点必须是 `https://`（明文 HTTP 的 DoH 等于不设防），
     //   不合法就只走明文 UDP（`ogLIsUsableDohEndpoint` 做同一套判定）。
-    final String ip = customIp.trim();
-    final DnsServer? customServer = ip.isEmpty
+    // ★ F-13：自定义 IP 必须先规格化并拒绝私网/回环/元数据地址；
+    //   不合法就不要构造 customServer（applySelection 会拒绝并留痕）。
+    final String? normalizedIp = ip.isEmpty ? null : ogLNormalizeDnsAddress(ip);
+    final DnsServer? customServer = normalizedIp == null
         ? null
         : DnsServer(
             id: 'custom',
             label: '自定义',
-            ip: ip,
+            ip: normalizedIp,
             dohUrl: ogLIsUsableDohEndpoint(customDohUrl)
                 ? customDohUrl.trim()
                 : null,
@@ -105,6 +107,8 @@ class NetBridge implements NetTransport {
       preferDoh: preferDoh,
       customServer: customServer,
     );
+    // ★ F-07：applySelection 返回 false = 策略未生效（自定义地址为空/非法、
+    //   或服务商 id 无效）。它内部已写 OGL-DNS-409 诊断，不静默。
   }
 
   /// 发送请求。

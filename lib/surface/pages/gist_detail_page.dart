@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
@@ -25,6 +26,7 @@ import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
+import 'download_manager_page.dart';
 import '../widgets/code_editor_field.dart';
 
 /// 取 `gist_detail_page` 分片文案。
@@ -316,7 +318,16 @@ class _GistDetailPageState extends State<GistDetailPage> {
       if (!context.mounted) {
         return;
       }
-      OgLNotifier.of(context).info(_t('downloadQueued', {'name': file.name}));
+      // ★ C-17：与 Release / 仓库文件 / Action 产物统一——用
+      //   OgLDownloadNotice 发「已入队」提示，自带「查看下载」动作。
+      //   旧实现只用 OgLNotifier.info，用户没有一键进入下载管理页的入口。
+      OgLDownloadNotice.instance.show(
+        context,
+        widget.surface,
+        message: _t('downloadQueued', {'name': file.name}),
+        kind: DownloadNoticeKind.queued,
+        rootContext: OgLApp.navigatorKey.currentContext,
+      );
     } catch (error) {
       if (!context.mounted) {
         return;

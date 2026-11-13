@@ -83,6 +83,11 @@ jobs:
           python3 tool/gate_of_gates.py --fatal || echo "FAIL: gate_of_gates" >> /tmp/strict_failures.txt
         if: always()
 
+      - name: 门面类型面审计（export / 桥字段不得扩散实现类）
+        run: >-
+          python3 tool/facade_audit.py --fatal || echo "FAIL: facade_audit" >> /tmp/strict_failures.txt
+        if: always()
+
       - name: CI 配置自检（缓存键 / 路径 / 并行压缩）
         # ★ 自检依赖 PyYAML：runner 通常预装，但不作假设 —— 缺则显式补装，
         #   避免「新加的门禁自己因为环境缺包而误红」。
