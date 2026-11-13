@@ -14,8 +14,6 @@ library;
 import 'dart:async';
 import 'dart:convert';
 
-import '../../base/net/net_bridge.dart';
-import '../../kernel/contract/disk_types.dart';
 import '../../kernel/contract/net_types.dart';
 import '../../kernel/diagnostics.dart';
 import '../../kernel/log/og_l_log_file.dart';
@@ -430,7 +428,7 @@ class _Semaphore {
 class GhClient {
   /// 创建客户端。
   GhClient({
-    required NetBridge net,
+    required NetTransport net,
     required GhAuthService auth,
     this.baseUrl = 'https://api.github.com',
     int maxConcurrent = 4,
@@ -443,7 +441,7 @@ class GhClient {
   /// 默认 API 根。
   final String baseUrl;
 
-  final NetBridge _net;
+  final NetTransport _net;
   final GhAuthService _auth;
   final _Semaphore _semaphore;
   KernelDiagnostics? _diagnostics;

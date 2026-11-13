@@ -377,14 +377,15 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
               ],
             ),
             const SizedBox(height: OgLSpace.sm),
-            // `total > 0` 才画进度条：Web 上总大小恒为 `0`（浏览器下载不向
-            // 页面回报大小），无值进度条只会一直空转；此时照实写明
-            // 「已交给浏览器下载」，不假装量得出进度。
+            // ★ C-11：`begin` 锚定**当前进度**而非 0 —— 库的进度事件
+            //   每 200ms 一跳，旧写法每次 build 都从 0 重新插值，
+            //   看到的是"进度条反复从头涨"，不是连续推进。
             if (task.total > 0)
-              // 5.0：进度条**平滑插值**（库的进度事件 200ms 一跳，
-              // 直接绑值会出现"跳格子"；这里补间 220ms，观感连续）。
               TweenAnimationBuilder<double>(
-                tween: Tween<double>(begin: 0, end: task.progress),
+                key: ValueKey<String>('progress-${task.id}'),
+                // TweenAnimationBuilder 会自动从**上一次的 value** 插值到
+                // 新的 end；显式 begin:0 才会强制每次从头重跑（C-11）。
+                tween: Tween<double>(end: task.progress),
                 duration: OgLAnim.fast(context),
                 curve: OgLAnim.curve(context),
                 builder: (BuildContext context, double value, Widget? child) =>
@@ -394,7 +395,12 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                 ),
               )
             else
-              Text(_t('handedToBrowser'), style: theme.textTheme.bodySmall),
+              // ★ C-10：原生端也可能拿不到 Content-Length（服务端未给）；
+              //   此时是"总大小未知"，不是"已交给浏览器"（那是 Web 专属）。
+              Text(
+                kIsWeb ? _t('handedToBrowser') : _t('sizeUnknown'),
+                style: theme.textTheme.bodySmall,
+              ),
             const SizedBox(height: OgLSpace.sm),
             Row(
               children: <Widget>[

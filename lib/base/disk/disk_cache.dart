@@ -26,13 +26,16 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show ChangeNotifier, Listenable, kIsWeb;
 
+import '../../kernel/contract/consistency_cache.dart';
 import '../../kernel/diagnostics.dart';
 import 'disk_draft.dart';
 import 'disk_journal.dart';
 import 'disk_store.dart';
 import 'disk_types.dart';
+import 'draft_adapter.dart';
 
 /// 远端读写抽象（真实实现由 API 中枢通过底座桥注入）。
 ///
@@ -131,7 +134,7 @@ class _KeyedMutex {
 typedef _LocalMeta = ({String encoded, DateTime fetchedAt});
 
 /// 仓库缓存（一致性引擎）。
-class RepositoryCache {
+class RepositoryCache implements ConsistencyCache {
   /// 创建缓存。
   ///
   /// [defaultMaxAge] 为条目存活时长（`<= Duration.zero` 表示不设 TTL）；
@@ -193,6 +196,7 @@ class RepositoryCache {
   /// 绑定草稿仓库（D9：提交成功后自动清草稿）。
   void attachDrafts(DraftStore drafts) {
     _drafts = drafts;
+    _draftsAdapter = null;
   }
 
   /// 当前提交日志（未绑定为 `null`）。
@@ -210,7 +214,25 @@ class RepositoryCache {
   }
 
   /// 当前草稿仓库（未绑定为 `null`）。
-  DraftStore? get drafts => _drafts;
+  ///
+  /// ★ 批 11：对外只暴露 L0 契约 `DraftRepository`，L2 不再认识
+  ///   `DraftStore` / `DraftRecord` 等底座实现类型。
+  @override
+  DraftRepository? get drafts {
+    final DraftStore? store = _drafts;
+    if (store == null) {
+      return null;
+    }
+    return _draftsAdapter ??= DraftRepositoryAdapter(store);
+  }
+
+  DraftRepositoryAdapter? _draftsAdapter;
+
+  /// 草稿变更通知（未接线时返回永不通知的占位）。
+  @override
+  Listenable get draftsChanged => _drafts ?? _neverNotifier;
+
+  static final ChangeNotifier _neverNotifier = ChangeNotifier();
 
   /// 绑定诊断中枢（装配阶段调用）。
   ///

@@ -9,11 +9,14 @@
 
 | 条 | 现状 | 说明 |
 |---|---|---|
-| `layer_audit.KNOWN` 2 项 | ⚠️ **仍未收敛** | `gh_api.dart → base/disk/disk_cache.dart`、`gh_client.dart → base/net/net_bridge.dart` 实测仍在。正解：在 `kernel/contract/` 定义 `ConsistencyCache`/`NetClient` 抽象，实现类下移。属独立批次，AGENTS.md 已如实登记 |
+| `layer_audit.KNOWN` **2 项** | ✅ **全部收敛（批 11）** | #2 `gh_client → net_bridge`：`GhClient` 改依赖 L0 契约 `NetTransport`（`kernel/contract/net_types.dart`），`NetBridge implements NetTransport`；#1 `gh_api → disk_cache`：`GhApi` 改依赖 L0 契约 `ConsistencyCache`（新建 `kernel/contract/consistency_cache.dart`），`RepositoryCache implements ConsistencyCache` + `DraftRepositoryAdapter` 把 D9 草稿适配为只读视图。D1–D9 实现逻辑未动；`KNOWN` 现为空字典，反向注入两处旧 import 均被门禁拦下 |
 | `layer_audit.ALLOW` 3 项 | ✅ 合法例外 | 两个装配根 + `surface/types.dart` 类型门面，制度要求 |
 | `contract_audit.HEADER_EXEMPT` 4 项 | ✅ 合法例外 | 转发导出/契约文件，已有说明 |
 | A-06 platform 文件头 | ⚠️ 规范决策未定 | `platform/` 6 文件用「平台实现层」中文前缀（无 L 编号）；`layer_of` 返回 None 不检查。要不要定 P 前缀属规范决策 |
-| A-11 platform 统计口径 | ✅ 已如实说明 | 154 = 四层文件数，161 = 全 lib；`docs/5layer-audit-todo.md` 已写明两者都对 |
+| A-11 platform 统计口径 | ✅ 已如实说明 | 154 = 四层文件数，163 = 含 platform 的全扫描口径；`docs/5layer-audit-todo.md` 已写明差异 |
+| **platform 死规则** | ✅ **已修（批 11）** | 原 `lay is None → continue` 让「platform 只许依赖 kernel」永不执行；现显式识别 `platform/` 并纳入 `total` + 单边检查，反向注入 base import 可拦 |
+| **门面类型面零覆盖** | ⚠️ 仍存在 | `docs/audit_layering_principles.md` §8 给出 4 个反例注入全绿：types/桥的类型面不受检；路线图第 2 步待做 |
+| **能力体系无消费侧 / DI 无层命名空间 / 可变实现类直给页面** | ⚠️ 仍存在 | 详见 `docs/audit_layering_principles.md` §9，属高风险专项（需逐小步 PR + 全链回归），不在本轮 |
 
 ## 二、门禁自身（批 8 / 批 9 遗留）
 
@@ -55,19 +58,19 @@
 | C-01 重名落盘不一致 P0 | ✅ 已修（12.6.1） | `finalPath/finalSpec`，快照/单连接/分片三处一致 |
 | C-02 重试退回原名覆盖 P0 | ✅ 已修（12.6.2） | `_retrySavePaths` 由 Set 改 Map，记住上一轮裁决路径 |
 | C-06 resume 抢跑分片 P1 | ✅ 已修（12.6.2） | `wasRanged` 守卫 |
-| **C-03 探测异常 fail-open** | ⚠️ **仍存在** | `resolveUniqueSavePath` 的 `catch` 与 999 个占用时 `return base` = 返回已存在路径。应失败闭合或 `writeExclusive` 占位 |
-| **C-04 TOCTOU 无原子占位** | ⚠️ **仍存在** | 并发两任务可拿到同一个 `a (1).zip` |
-| **C-05 撤销移除遗留豁免** | ⚠️ **仍存在** | `_lastRemoved` 恢复路径不消费 `_retrySavePaths` |
-| **C-07 await 窗口 remove** | ⚠️ **仍存在** | 第二个 await 后 `_specs[id]!` 可能空指针 / 已删任务复活 |
-| **C-08 fallback 异步重入** | ⚠️ **仍存在** | `_fallbackToSingle` 旧回合可覆盖新回合 savePath |
-| **C-09 暂停速率负/进度回跳** | ⚠️ **仍存在** | 采样窗口未重置 |
-| **C-10 total=0 谎称浏览器** | ⚠️ **仍存在** | 原生端也会显示该文案 |
-| **C-11 Tween begin:0 重跑** | ⚠️ **仍存在** | 每次 build 从 0 重新插值，进度不连续 |
-| C-12 超量字节裁剪 100% | ⚠️ 仍存在 | 掩盖数据错误 |
-| C-13 单连接失败离页不可见 | ⚠️ 仍存在 | 不投递通知中心 |
-| C-14 完整性失败文案误导 | ⚠️ 仍存在 | 无条件宣称「坏文件已删除」 |
-| **C-15 retry 入队无兜底** | ⚠️ **仍存在** | `await _backend.enqueue(spec)` 异常会永久挂 queued |
-| C-16 clearFinished 不清辅助表 | ⚠️ 仍存在 | `_roundOf` / `_retrySavePaths` 跨任务误消费 |
+| C-03 探测异常 fail-open P1 | ✅ **已修（批 11）** | `resolveUniqueSavePath` 用 `FileMode.writeExclusive` 原子占位，创建成功即删（交还下载器）；失败/999 占用一律抛 `FileSystemException`，中枢 catch 后置 `failed` + 留痕并抛错，绝不返回可覆盖路径 |
+| C-04 TOCTOU 无原子占位 P1 | ✅ **已修（批 11）** | 同 C-03：`writeExclusive` 让并发两任务只有一个拿到 `a (1).zip`，另一个顺延 `a (2).zip` |
+| C-05 撤销移除遗留豁免 | ⚠️ 仍存在 | 下次专项 |
+| C-07 await 窗口被 remove P1 | ✅ **已修（批 11）** | 裁决 await 后二次判 `_disposed || !identical(_snapshots[id], queued)`，失效即返回、不写回、不复活、不空指针 |
+| C-08 fallback 异步重入 | ⚠️ 仍存在 | 下次专项（需 `_roundOf` 贯穿 fallback） |
+| C-09 暂停速率负/进度回跳 P1 | ✅ **已修（批 11）** | `_applyRangeProgress` 按回合对齐采样基准、负值归零；`progress` 不再 clamp，超量字节如实 >100% |
+| C-10 total=0 谎称浏览器 P2 | ✅ **已修（批 11）** | 原生端显示 `sizeUnknown`（六语言新键），仅 Web 显示 `handedToBrowser` |
+| C-11 Tween begin:0 重跑 P2 | ✅ **已修（批 11）** | 改 `Tween<double>(end: task.progress)`，由 `TweenAnimationBuilder` 自动从上一次 value 插值 |
+| C-12 超量字节裁 100% P2 | ✅ **已修（批 11）** | `progress` 保留真实比例，进度条 UI 仍 clamp 显示但数字不掩盖异常 |
+| C-13 单连接失败无通知 | ⚠️ 仍存在 | 下次专项 |
+| C-14 完整性失败文案误导 | ⚠️ 仍存在 | 下次专项 |
+| C-15 retry 入队无兜底 P2 | ✅ **已修（批 11）** | `retry` 单连接路径 try/catch → 置 `failed` + 留痕 + rethrow，不再永久挂 queued |
+| C-16 clearFinished 不清辅助表 P2 | ✅ **已修（批 11）** | 补 `_roundOf.remove(id)` / `_retrySavePaths.remove(id)`，与 `remove()` 逐表对齐 |
 | C-17 Gist 无统一通知 | ⚠️ 仍存在 | 「查看下载」动作缺席 |
 | C-18 降级依赖旧页 context | ⚠️ 仍存在 | 第三级降级仍用发起页 context |
 | S-01 Web 分支契约漂移 | ⚠️ 推测 | 需 Web 分支实编验证 |
@@ -81,17 +84,17 @@
 |---|---|---|
 | F-01 结果 IP 无白名单 P0→P1 | ✅ 已修（12.6.1） | `ogLIsBlockedLiteralIp` 与重定向守卫共用；全被拦抛 `SocketException`。代理「完全不设防」属夸大：源 IP+事务 ID+rcode 早有校验 |
 | F-08 presign 失败 PAT 外泄 | ✅ 校准为夸大 | `prefixes=[]` 时只剩直连 + TOKEN-EXIT-01 警告；库内部 302 仍是已知暴露面 |
+| F-04 两级回退不可见 P1 | ✅ **已修（批 11）** | `NetBridge.dnsSummary` 追加 `service.lastResolvedVia` 的实际通道；与配置不符时显示「⚠ 已回退到：…」。设置/网络页经 `surface_bridge.dnsSummary` 直接可见 |
 | **F-02 DoH 仅 A 记录** | ⚠️ **仍存在** | 无 AAAA/CNAME/DNS64/TTL |
 | **F-03 owner 校验可绕过** | ⚠️ **仍存在** | 「省略 name」可绕过 |
-| **F-04 两级回退不可见** | ⚠️ **仍存在** | `lastResolvedVia` 无生产 UI 消费点，违反「绝不静默降级」 |
 | **F-05 自检未覆盖三路** | ⚠️ **仍存在** | DNS/直连/镜像 + 结果未接页面 |
 | **F-06 DoH 端点校验/跨主机重定向** | ⚠️ **仍存在** | 自定义端点校验不完整 |
 | F-07 清空 DNS IP 旧解析器生效 | ⚠️ 仍存在 | 配置变更窗口 |
 | F-09 加速候选绕过 URL 校验 | ⚠️ 仍存在 | 字符串前缀白名单 |
-| F-10 Retry-After 无 jitter/asctime | ⚠️ 仍存在 | P2 |
+| F-10 Retry-After 无 jitter/asctime | ✅ **已修（批 11）** | `net_transport.dart` 补 asctime 解析 + 服务端值抖动，换跳分支改用注入 `_sleep` |
 | F-11 DNS 缓存不按 TTL/无 in-flight | ⚠️ 仍存在 | P2 |
 | F-12 私有仓库图片必然 404 | ⚠️ 仍存在 | P2 |
-| F-13 自定义 DNS IP 未校验 | ⚠️ 仍存在 | P2 |
+| F-13 自定义 DNS IP 未校验 P2 | ✅ **已修（批 11）** | `ogLNormalizeDnsAddress` 复用 `ogLIsBlockedLiteralIp`（单一事实源已上提到 `net_transport.dart`），私网/回环/元数据/IPv4 映射私网一律规格化返回 null |
 | 批 1 的 8 组 P0/P1 | ✅ 全部仍成立 | 逐条代码核对无回归 |
 
 ## 六、供应链 / 发布纪律
@@ -107,11 +110,19 @@
 
 ## 七、收敛优先级建议（若继续推进）
 
-1. **数据无价类**：C-03（fail-open）、C-04（原子占位）、C-07/C-08（异步重入）——仍是覆盖用户文件的真实窗口
-2. **功能可用性**：C-15（retry 挂 queued）、C-05（撤销移除死路）、C-09（进度回跳）
-3. **安全可见性**：F-04（回退不可见）、F-02/F-03（DoH 协议）、F-06（端点校验）
-4. **供应链**：B8-B-01/06/07 需独立发布专项
-5. **真机节奏**：B3/B6/B9 系列需采集后定档，不宜静态硬塞
+> 批 11 已把**数据无价类**与**层级桥接**的主干收敛完：
+> KNOWN 2 项、C-03/04/07/09/10/11/12/15/16、F-04/10/13、platform 死规则。
+> 剩余按风险排序：
+
+1. **下载剩余状态机**：C-05（撤销移除豁免）、C-08（fallback 回合守卫）、C-13/14（失败可见与文案）、C-17/18（Gist 通知与降级 context）
+2. **DNS 协议层**：F-02/03（AAAA/CNAME/TTL + owner）、F-05/06（自检三路与端点）、F-07/09/11/12
+3. **架构深水区**：门面类型面门禁（4 反例注入全绿）、能力体系消费侧、DI 层命名空间、可变实现类转 DTO（见 `docs/audit_layering_principles.md` §9）
+4. **UI 真机节奏**：B3/B6/B9 系列需采集后定档
+5. **供应链**：B8-B-01/06/07 需独立发布专项
 
 > 纪律：本表只登记**实测**结论。任何"修完某条"须同时给出修复提交 +
 > 回归锁 + CI 裁决结果；代理报告里的 P0 一律经主会话亲自复读后才计入。
+> ⚠ 批 11 事故记录：两个实现型代理各跑 46 分钟后超时，在工作区留下
+> 1800+ 行半成品（下载 381 行 / net_dns 460 行）；主会话**整体回退代理
+> 半成品**，只保留亲手小步改动 + 一份结构完整的 F-10 修复，
+> 并由只读审查报告 `docs/audit_layering_principles.md` 提供原则核验。

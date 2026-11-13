@@ -35,5 +35,6 @@
   "removedItem": "已移除：{name}",
   "retriedCount": "已重试 {n} 个失败任务",
   "threads": "{n} 线程",
-  "viewDownloadsFallback": "未能打开下载管理页，路径已复制：/download"
+  "viewDownloadsFallback": "未能打开下载管理页，路径已复制：/download",
+  "sizeUnknown": "总大小未知（仍可继续下载）"
 }

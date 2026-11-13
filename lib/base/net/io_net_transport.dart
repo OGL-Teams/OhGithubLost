@@ -66,42 +66,6 @@ const Set<String> _kSensitiveHeaders = <String>{
 /// 重定向守卫与 DNS 结果过滤共用同一份判定：DNS 应答即便来自可信服务器、
 /// 事务 ID 正确，也不能把带凭证的连接引向内网或 `169.254.169.254`。
 /// 域名形式的目标由 TLS 证书校验兜底，这里只判**字面量**（不额外解析）。
-bool ogLIsBlockedLiteralIp(String host) {
-  final String lower =
-      host.toLowerCase().replaceAll('[', '').replaceAll(']', '');
-  final RegExpMatch? ipv4 =
-      RegExp(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$').firstMatch(lower);
-  if (ipv4 != null) {
-    final List<int> parts = <int>[
-      for (int i = 1; i <= 4; i++) int.tryParse(ipv4.group(i)!) ?? 256,
-    ];
-    if (parts.any((int p) => p > 255)) {
-      return true;
-    }
-    final int a = parts[0], b = parts[1];
-    return a == 10 ||
-        a == 127 ||
-        a == 0 ||
-        (a == 172 && b >= 16 && b <= 31) ||
-        (a == 192 && b == 168) ||
-        (a == 169 && b == 254) ||
-        (a == 100 && b >= 64 && b <= 127);
-  }
-  // IPv6 字面量：回环 / 未指定 / 链路本地 / 唯一本地 / IPv4 映射私网。
-  if (lower.contains(':')) {
-    return lower == '::1' ||
-        lower == '::' ||
-        lower.startsWith('fe80') ||
-        lower.startsWith('fc') ||
-        lower.startsWith('fd') ||
-        lower.startsWith('::ffff:10.') ||
-        lower.startsWith('::ffff:127.') ||
-        lower.startsWith('::ffff:192.168.') ||
-        lower.startsWith('::ffff:169.254.');
-  }
-  return false;
-}
-
 /// 重定向目标安全判定（base 层自足，不向上依赖 domain 的 IxPresign）。
 ///
 /// 交叉审计 B1-A-23/B1-B-04：此前无凭证请求由 dart:io 自动跟随任意

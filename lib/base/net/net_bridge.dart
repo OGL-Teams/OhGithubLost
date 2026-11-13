@@ -13,7 +13,7 @@ import 'net_transport.dart';
 import 'net_types.dart';
 
 /// 网络连接门面。
-class NetBridge {
+class NetBridge implements NetTransport {
   /// 创建门面。
   NetBridge({required this.transport, required this.observer, this.dns});
 
@@ -41,9 +41,26 @@ class NetBridge {
     if (policy.mode == NetDnsMode.system) {
       return '系统解析';
     }
-    return '${policy.servers.length} 家 DNS · '
+    // ★ F-04：配置策略 ≠ 实际走的那条。两级回退（DoH→明文、
+    //   自定义→系统）此前只写内部日志，界面仍显示"DoH 优先"，
+    //   构成静默降级。这里把**最近一次实际解析通道**一并呈现。
+    final String configured = '${policy.servers.length} 家 DNS · '
         '${policy.preferDoh ? 'DoH 优先' : '明文'} · '
         '${policy.raceServers ? '并发竞速' : '顺序尝试'}';
+    final String? actual = service.lastResolvedVia;
+    if (actual == null || actual.isEmpty) {
+      return '$configured · 尚未解析';
+    }
+    final String via = actual.startsWith('doh')
+        ? 'DoH'
+        : actual.startsWith('udp')
+            ? '明文 UDP'
+            : actual.startsWith('system')
+                ? '系统解析'
+                : actual;
+    return via == (policy.preferDoh ? 'DoH' : '明文 UDP')
+        ? '$configured · 实际：$via'
+        : '$configured · ⚠ 已回退到：$via';
   }
 
   /// 设置页：内置 DNS 服务器（id → 展示名）。

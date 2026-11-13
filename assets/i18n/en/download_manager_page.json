@@ -35,5 +35,6 @@
   "removedItem": "Removed: {name}",
   "retriedCount": "Retried {n} failed tasks",
   "threads": "{n} threads",
-  "viewDownloadsFallback": "Could not open download manager; path copied: /download"
+  "viewDownloadsFallback": "Could not open download manager; path copied: /download",
+  "sizeUnknown": "Total size unknown (download continues)"
 }

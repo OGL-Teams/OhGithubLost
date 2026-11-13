@@ -37,6 +37,7 @@
 | [`CI_BUILD_BASELINE.md`](CI_BUILD_BASELINE.md) | CI 实测基线（各门禁在当前基线的实测结果） |
 | [`REPO_HYGIENE.md`](REPO_HYGIENE.md) | 仓库文档整理报告（2026-11，本次产出） |
 | [`CONVERGENCE_STATUS.md`](CONVERGENCE_STATUS.md) | **待收敛条权威现状总表**（分层/门禁/UI/下载/DNS/供应链，实测口径） |
+| [`audit_layering_principles.md`](audit_layering_principles.md) | 层级桥接与模块独立原则只读专项审查（2026-11，含路线图） |
 | [`LTS_1260_CHECKLIST.md`](LTS_1260_CHECKLIST.md) | LTS 发布前验收清单（真机项留用户执行） |
 
 ## 相关文档（仓库根目录）

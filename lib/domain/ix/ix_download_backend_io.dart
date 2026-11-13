@@ -113,32 +113,49 @@ class IoDownloadBackend implements IxDownloadBackend {
     } else {
       base = intendedPath;
     }
-    try {
-      final File candidate = File(base);
-      if (!await candidate.exists()) {
-        return base;
-      }
-      // 目录部分拿不到（pathFor 的降级路径只是文件名）→ 不猜，原样返回。
-      final String dir = candidate.parent.path;
-      if (dir == base || dir.isEmpty) {
-        return base;
-      }
-      final String name = candidate.uri.pathSegments.last;
-      final int dot = name.lastIndexOf('.');
-      final String stem = dot > 0 ? name.substring(0, dot) : name;
-      final String ext = dot > 0 ? name.substring(dot) : '';
-      for (int i = 1; i < 1000; i++) {
-        final String next = '$dir/$stem ($i)$ext';
-        if (!await File(next).exists()) {
-          return next;
+    // ★ 批 11 · C-03/C-04 收敛：**绝不返回已存在的路径**。
+    //   用 `FileMode.writeExclusive` 原子占位：并发两个任务抢同一个
+    //   `a (1).zip` 时只有一个能创建成功，另一个自动顺延到 `a (2)`
+    //   —— 同时解决「探测异常 fail-open 覆盖」与「TOCTOU 竞态」。
+    //   占位文件仅用于判定，创建成功后立即删除，把干净的目标路径
+    //   交还下载器（库任务 / 分片引擎各自以写模式打开，不冲突）。
+    Future<bool> claim(String path) async {
+      try {
+        final RandomAccessFile raf =
+            await File(path).open(mode: FileMode.writeExclusive);
+        await raf.close();
+        await File(path).delete();
+        return true;
+      } on FileSystemException catch (error) {
+        // 已存在 / 目录不存在 / 无权限：都视为「这个位置拿不到」，
+        // 绝不把它当成可用路径返回（数据无价，失败必须闭合）。
+        if (await File(path).exists()) {
+          return false; // 单纯撞名 → 由调用方顺延
         }
+        throw FileSystemException('无法为下载目标创建独占占位：$path（${error.message}）');
       }
-      // 999 个都已占用（理论极端）：宁可放弃改名也不静默覆盖。
-      return base;
-    } catch (_) {
-      // 探测失败（无文件系统能力等）：维持原路径。
+    }
+
+    final File candidate = File(base);
+    if (await claim(base)) {
       return base;
     }
+    final String dir = candidate.parent.path;
+    if (dir == base || dir.isEmpty) {
+      throw FileSystemException('下载目标已存在且无法确定目录：$base');
+    }
+    final String name = candidate.uri.pathSegments.last;
+    final int dot = name.lastIndexOf('.');
+    final String stem = dot > 0 ? name.substring(0, dot) : name;
+    final String ext = dot > 0 ? name.substring(dot) : '';
+    for (int i = 1; i < 1000; i++) {
+      final String next = '$dir/$stem ($i)$ext';
+      if (await claim(next)) {
+        return next;
+      }
+    }
+    // 999 个都已占用：失败闭合，绝不返回可覆盖的旧路径。
+    throw FileSystemException('下载目录已存在 1000 个同名候选，拒绝覆盖：$base');
   }
 
   @override

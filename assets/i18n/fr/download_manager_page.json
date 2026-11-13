@@ -35,5 +35,6 @@
   "verified": "Vérifié",
   "verifyFailed": "Échec de la vérification d'intégrité",
   "threads": "{n} connexions",
-  "viewDownloadsFallback": "Impossible d’ouvrir le gestionnaire de téléchargements ; chemin copié : /download"
+  "viewDownloadsFallback": "Impossible d’ouvrir le gestionnaire de téléchargements ; chemin copié : /download",
+  "sizeUnknown": "Taille totale inconnue (téléchargement en cours)"
 }

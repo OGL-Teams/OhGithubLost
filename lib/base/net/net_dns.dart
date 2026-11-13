@@ -27,6 +27,7 @@ import 'dart:math';
 import '../../kernel/diagnostics.dart';
 import '../../kernel/environment.dart';
 import 'net_dns_platform_io.dart';
+import 'net_transport.dart';
 
 /// DNS 解析模式。
 enum NetDnsMode {
@@ -123,6 +124,12 @@ String? ogLNormalizeDnsAddress(String raw) {
   }
   value = value.trim();
   if (value.isEmpty) {
+    return null;
+  }
+  // ★ F-13：自定义 DNS 服务器不得是私网 / 回环 / 链路本地 /
+  //   云元数据（169.254.169.254）等禁止直连的地址——与连接层的
+  //   `ogLIsBlockedLiteralIp` 共用同一份判定，防两处规则漂移。
+  if (ogLIsBlockedLiteralIp(value)) {
     return null;
   }
   // ③ IPv6 方括号（`[::1]`）与 `[::1]:53`。

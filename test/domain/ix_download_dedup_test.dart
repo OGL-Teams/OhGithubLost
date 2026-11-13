@@ -14,6 +14,13 @@ import 'package:ohgithublost/domain/ix/ix_download_backend_io.dart';
 late IoDownloadBackend backend;
 late Directory tmp;
 
+const IxDownloadSpec _spec = IxDownloadSpec(
+  id: 'other:a.zip#u',
+  url: 'https://example.com/a.zip',
+  fileName: 'a.zip',
+  folder: 'other',
+);
+
 void main() {
   setUpAll(() {
     backend = IoDownloadBackend();
@@ -27,66 +34,64 @@ void main() {
 
   group('IoDownloadBackend.resolveUniqueSavePath', () {
     test('目标不存在 → 原样返回', () async {
-      const IxDownloadSpec spec = IxDownloadSpec(
-        id: 'other:a.zip#u',
-        url: 'https://example.com/a.zip',
-        fileName: 'a.zip',
-        folder: 'other',
-      );
       final String path = '${tmp.path}${Platform.pathSeparator}a.zip';
       expect(
-        await backend.resolveUniqueSavePath(spec, intendedPath: path),
+        await backend.resolveUniqueSavePath(_spec, intendedPath: path),
         path,
       );
     });
 
     test('目标已存在 → 改名 a (1).zip（绝不覆盖）', () async {
-      const IxDownloadSpec spec = IxDownloadSpec(
-        id: 'other:a.zip#u',
-        url: 'https://example.com/a.zip',
-        fileName: 'a.zip',
-        folder: 'other',
-      );
-      final String path = '${tmp.path}${Platform.pathSeparator}a.zip';
+      final String path = '${tmp.path}${Platform.pathSeparator}b.zip';
       File(path).writeAsStringSync('user-data');
       final String resolved = await backend.resolveUniqueSavePath(
-        spec,
+        _spec,
         intendedPath: path,
       );
-      expect(resolved, '${tmp.path}${Platform.pathSeparator}a (1).zip');
-      // 原文件字节不动。
+      expect(resolved, '${tmp.path}${Platform.pathSeparator}b (1).zip');
       expect(File(path).readAsStringSync(), 'user-data');
     });
 
     test('a (1).zip 也被占用 → 顺延 a (2).zip', () async {
-      const IxDownloadSpec spec = IxDownloadSpec(
-        id: 'other:a.zip#u',
-        url: 'https://example.com/a.zip',
-        fileName: 'a.zip',
-        folder: 'other',
-      );
-      final String path = '${tmp.path}${Platform.pathSeparator}a.zip';
-      final String one = '${tmp.path}${Platform.pathSeparator}a (1).zip';
+      final String path = '${tmp.path}${Platform.pathSeparator}c.zip';
+      final String one = '${tmp.path}${Platform.pathSeparator}c (1).zip';
       File(path).writeAsStringSync('user-data');
       File(one).writeAsStringSync('user-data-2');
       final String resolved = await backend.resolveUniqueSavePath(
-        spec,
+        _spec,
         intendedPath: path,
       );
-      expect(resolved, '${tmp.path}${Platform.pathSeparator}a (2).zip');
+      expect(resolved, '${tmp.path}${Platform.pathSeparator}c (2).zip');
       expect(File(path).readAsStringSync(), 'user-data');
       expect(File(one).readAsStringSync(), 'user-data-2');
     });
+
+    test('探测异常 → 失败闭合（绝不返回可覆盖路径）', () async {
+      // 指向不存在的目录：writeExclusive 必失败且文件不存在。
+      // 旧实现 catch → return base（fail-open 覆盖）。
+      final String bad = '${tmp.path}${Platform.pathSeparator}no_such_dir'
+          '${Platform.pathSeparator}d.zip';
+      expect(
+        () => backend.resolveUniqueSavePath(_spec, intendedPath: bad),
+        throwsA(isA<FileSystemException>()),
+        reason: 'C-03：无法创建占位时必须抛错，不得回退到原路径',
+      );
+    });
   });
 
-  group('IxDownloadManager.enqueue 重名裁决（中枢侧）', () {
-    test('同 id 重试 → 保持原文件名（豁免登记后消费一次）', () {
-      // 豁免集合的存在与语义已由源码断言（download_notice_jump_test）
-      // 与 remove() 的登记逻辑覆盖；此处钉「消费一次即删」的纯函数行为。
-      final Set<String> retrySavePaths = <String>{'t1'};
-      // 模拟 enqueue 消费：
-      expect(retrySavePaths.remove('t1'), isTrue, reason: '豁免命中');
-      expect(retrySavePaths.remove('t1'), isFalse, reason: '消费一次即删');
+  group('IxDownloadManager 状态机契约（源码断言）', () {
+    test('裁决失败/await 窗口/retry 兜底/辅助表/速率', () {
+      final String source =
+          File('lib/domain/ix/ix_download.dart').readAsStringSync();
+      expect(source, contains("'重名裁决失败，拒绝覆盖既有文件"),
+          reason: 'C-03 裁决异常必须置 failed + 留痕');
+      expect(source,
+          contains('if (_disposed || !identical(_snapshots[id], queued))'),
+          reason: 'C-07 await 窗口后必须二次守卫');
+      expect(source, contains("'重试入队失败"), reason: 'C-15 retry 入队异常必须置 failed');
+      expect(source, contains('_retrySavePaths.remove(id);'),
+          reason: 'C-16 clearFinished 必须清豁免表');
+      expect(source, contains('speed < 0'), reason: 'C-09 速率不得为负');
     });
   });
 }

@@ -35,5 +35,6 @@
   "verified": "Verifiziert",
   "verifyFailed": "Integritätsprüfung fehlgeschlagen",
   "threads": "{n} Verbindungen",
-  "viewDownloadsFallback": "Downloadverwaltung konnte nicht geöffnet werden; Pfad kopiert: /download"
+  "viewDownloadsFallback": "Downloadverwaltung konnte nicht geöffnet werden; Pfad kopiert: /download",
+  "sizeUnknown": "Gesamtgröße unbekannt (Download läuft weiter)"
 }

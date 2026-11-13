@@ -20,9 +20,60 @@
 ///    语义性响应（4xx 如 404 / 409 / 422）仍照常返回，由上层判断。
 library;
 
+import 'dart:math';
+
 import 'net_mirror.dart';
 import 'net_retry.dart';
 import 'net_types.dart';
+
+/// 字面量 IP 是否为**禁止直连**的地址（私网 / 回环 / 链路本地 /
+/// 云元数据 `169.254.169.254` / 运营商级 NAT / 未指定）。
+///
+/// ## 为什么收在这里（单一事实源）
+/// 这份判定此前只存在于 `io_net_transport.dart`（重定向守卫 + DNS 结果过滤），
+/// 于是"自定义 DNS 服务器地址校验"（F-13）只能另写一份或反过来依赖 IO 层。
+/// 现在它是**传输层的公共契约**：
+/// - `net_dns.dart`：自定义 DNS 地址校验 + DNS 应答结果过滤；
+/// - `net_transport.dart` 自身：重定向目标校验；
+/// - `io_net_transport.dart`：由主会话改为引用本实现（行为等价）。
+///
+/// 语义保持不变：域名形式的目标**不**在此拦截（由 TLS 证书校验兜底），
+/// 这里只判**字面量**。
+bool ogLIsBlockedLiteralIp(String host) {
+  final String lower =
+      host.toLowerCase().replaceAll('[', '').replaceAll(']', '');
+  final RegExpMatch? ipv4 =
+      RegExp(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$').firstMatch(lower);
+  if (ipv4 != null) {
+    final List<int> parts = <int>[
+      for (int i = 1; i <= 4; i++) int.tryParse(ipv4.group(i)!) ?? 256,
+    ];
+    if (parts.any((int p) => p > 255)) {
+      return true;
+    }
+    final int a = parts[0], b = parts[1];
+    return a == 10 ||
+        a == 127 ||
+        a == 0 ||
+        (a == 172 && b >= 16 && b <= 31) ||
+        (a == 192 && b == 168) ||
+        (a == 169 && b == 254) ||
+        (a == 100 && b >= 64 && b <= 127);
+  }
+  // IPv6 字面量：回环 / 未指定 / 链路本地 / 唯一本地 / IPv4 映射私网。
+  if (lower.contains(':')) {
+    return lower == '::1' ||
+        lower == '::' ||
+        lower.startsWith('fe80') ||
+        lower.startsWith('fc') ||
+        lower.startsWith('fd') ||
+        lower.startsWith('::ffff:10.') ||
+        lower.startsWith('::ffff:127.') ||
+        lower.startsWith('::ffff:192.168.') ||
+        lower.startsWith('::ffff:169.254.');
+  }
+  return false;
+}
 
 /// 默认可重试的方法：具备幂等语义，重复执行不会产生额外副作用。
 ///
@@ -36,11 +87,10 @@ const Set<NetMethod> defaultRetryableMethods = <NetMethod>{
 };
 
 /// 纯发送能力：一次请求一次响应，不做重试、不做镜像。
-abstract class NetTransport {
-  /// 发送请求；传输层失败必须抛 [NetException]。
-  Future<NetResponse> send(NetRequest request);
-}
-
+///
+/// ★ 层级倒置（主会话）：契约层 `kernel/contract/net_types.dart` 定义了
+///   同名抽象；`net_types.dart` 会把它连同其它类型转发导出，
+///   因此本文件**不再重复声明**，既有引用继续编译。
 /// 韧性传输：在纯发送之外叠加**重试、镜像回落与观测**。
 class ResilientTransport implements NetTransport {
   /// 创建韧性传输。
@@ -60,6 +110,9 @@ class ResilientTransport implements NetTransport {
         _observer = observer ?? NetObserver(),
         _sleep = sleep ?? Future<void>.delayed,
         _retryableMethods = Set<NetMethod>.of(retryableMethods);
+
+  /// 服务端 `Retry-After` 抖动用的随机源（±jitterRatio/2）。
+  static final Random _random = Random();
 
   final NetTransport _inner;
   final RetryPolicy _policy;
@@ -145,7 +198,9 @@ class ResilientTransport implements NetTransport {
           );
           if (wait != null) {
             _observer.onRetry(current, attempt, error.kind.name);
-            await Future<void>.delayed(wait);
+            // ★ F-10：换跳分支此前用 `Future.delayed` 直等，绕过了注入的
+            //   `_sleep`（离线测试会真等）；且服务端给出的等待值没有抖动。
+            await _sleep(_withServerJitter(wait, error.retryAfter));
           }
           continue;
         }
@@ -159,7 +214,7 @@ class ResilientTransport implements NetTransport {
           rethrow;
         }
         _observer.onRetry(current, attempt, error.kind.name);
-        await _sleep(delay);
+        await _sleep(_withServerJitter(delay, error.retryAfter));
         attempt++;
         continue;
       }
@@ -174,26 +229,29 @@ class ResilientTransport implements NetTransport {
       // 5xx / 429 同样先换跳（镜像也可能只是"半死"），再退避重试。
       if (mayRetry && advanceHop()) {
         // ★ B1-A-06：换跳尊重退避但**不消耗预算**（attempt 不递增）。
+        final Duration? serverWait =
+            _parseRetryAfter(response.headers['retry-after']);
         final Duration? wait = _policy.delayFor(
           attempt,
           statusCode: response.statusCode,
-          retryAfter: parseRetryAfterHeader(response.headers['retry-after']),
+          retryAfter: serverWait,
         );
         if (wait != null) {
           _observer.onRetry(current, attempt, 'HTTP ${response.statusCode}');
-          await _sleep(wait);
+          await _sleep(_withServerJitter(wait, serverWait));
         }
         continue;
       }
 
       // **尊重服务端**：429 / 503 常带 `Retry-After`，优先于本地指数退避
       // （与异常路径共用同一份解析——两处不一致就是缺陷温床）。
+      final Duration? serverWait =
+          _parseRetryAfter(response.headers['retry-after']);
       final delay = mayRetry
           ? _policy.delayFor(
               attempt,
               statusCode: response.statusCode,
-              retryAfter:
-                  parseRetryAfterHeader(response.headers['retry-after']),
+              retryAfter: serverWait,
             )
           : null;
       if (delay == null) {
@@ -207,7 +265,7 @@ class ResilientTransport implements NetTransport {
         );
       }
       _observer.onRetry(current, attempt, 'HTTP ${response.statusCode}');
-      await _sleep(delay);
+      await _sleep(_withServerJitter(delay, serverWait));
       attempt++;
     }
 
@@ -216,6 +274,79 @@ class ResilientTransport implements NetTransport {
       NetErrorKind.unknown,
       '重试预算已耗尽，未取得有效响应（请检查 maxAttempts 配置）',
     );
+  }
+
+  /// 解析 `Retry-After` 头（**补 asctime 形态**）。
+  ///
+  /// 契约层（`kernel/contract/net_types.dart`）已支持 IMF-fixdate 与
+  /// RFC 850，但 **asctime**（`Sun Nov  6 08:49:37 1994`）此前直接返回
+  /// `null`——那会让服务端明确给出的等待被**静默忽略**，退避改用本地指数值，
+  /// 限流场景下等于不听话。asctime 是 HTTP/1.1 允许的三种形态之一，
+  /// 这里在传输层补齐（不改动契约层的既有签名）。
+  static Duration? _parseRetryAfter(String? raw) {
+    final Duration? parsed = parseRetryAfterHeader(raw);
+    if (parsed != null) {
+      return parsed;
+    }
+    if (raw == null) {
+      return null;
+    }
+    final RegExpMatch? match = RegExp(
+      r'^[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+'
+      r'(\d{2}):(\d{2}):(\d{2})\s+(\d{4})$',
+    ).firstMatch(raw.trim());
+    if (match == null) {
+      return null;
+    }
+    const List<String> months = <String>[
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final int month = months.indexOf(match.group(1)!);
+    if (month < 0) {
+      return null;
+    }
+    final DateTime when = DateTime.utc(
+      int.parse(match.group(6)!),
+      month + 1,
+      int.parse(match.group(2)!),
+      int.parse(match.group(3)!),
+      int.parse(match.group(4)!),
+      int.parse(match.group(5)!),
+    );
+    final Duration delta = when.difference(DateTime.now().toUtc());
+    if (delta.isNegative) {
+      return Duration.zero;
+    }
+    return delta;
+  }
+
+  /// 服务端给出的等待值加**抖动**（避免大量客户端同一秒集中重连）。
+  ///
+  /// 抖动幅度取 `jitterRatio / 2`（服务端值本身已经是"权威节奏"，
+  /// 不宜像本地指数退避那样大幅摆动）。仅在服务端确实给了
+  /// `Retry-After` 时生效；本地退避的抖动由 `RetryPolicy` 负责。
+  Duration _withServerJitter(Duration wait, Duration? serverValue) {
+    if (serverValue == null || serverValue <= Duration.zero) {
+      return wait;
+    }
+    final double ratio = _policy.jitterRatio / 2;
+    if (ratio <= 0) {
+      return wait;
+    }
+    final double factor = 1 + (_random.nextDouble() * 2 - 1) * ratio;
+    final int millis = (wait.inMilliseconds * factor).round();
+    return Duration(milliseconds: millis < 0 ? 0 : millis);
   }
 
   static NetErrorKind _kindForStatus(int statusCode) {

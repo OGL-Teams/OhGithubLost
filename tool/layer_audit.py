@@ -60,18 +60,15 @@ ALLOW = {
 #   `export '../../domain/...' show X;` 能绕过唯一类型门面纪律。
 IMPORT_RE = re.compile(r"^\s*(?:import|export)\s+'([^']+)'", re.M)
 
-# 已知的、待收敛项（下一批：为这两个**实现类**引入启动层契约接口）。
-#
-# 为什么还留着：`RepositoryCache`（D1–D7 一致性引擎）与 `NetBridge` 都是
-# 底座层的**实现**，逻辑层目前直接依赖它们的具体类型。正解是在
-# `kernel/contract/` 定义 `ConsistencyCache` / `NetClient` 抽象，
-# 由底座层实现、逻辑层只依赖抽象。属独立批次，避免与 4.9 的结构改动混在一起。
-# ★ A-05 收紧：key 与 value 都是「从 lib/ 算起的规范化目标路径」，
-#   匹配发生在解析之后 —— import 字面量怎么写都绕不开，且写错路径即违规。
-KNOWN = {
-    'domain/gh/gh_api.dart': {'base/disk/disk_cache.dart'},
-    'domain/gh/gh_client.dart': {'base/net/net_bridge.dart'},
-}
+# ★ 全部收敛（批 11）：
+#   · KNOWN #2 `gh_client.dart → net_bridge.dart`：`GhClient` 改依赖
+#     L0 契约 `NetTransport`，`NetBridge implements NetTransport`。
+#   · KNOWN #1 `gh_api.dart → disk_cache.dart`：`GhApi` 改依赖
+#     L0 契约 `ConsistencyCache`（`kernel/contract/consistency_cache.dart`），
+#     `RepositoryCache implements ConsistencyCache` + `DraftRepositoryAdapter`
+#     把 D9 草稿仓储适配为只读视图。D1–D9 实现逻辑未动。
+#   两处均由装配根注入 L1 实现，L2 不再认识任何底座实现类。
+KNOWN: dict[str, set[str]] = {}
 
 
 def layer_of(rel):
@@ -95,7 +92,11 @@ def main():
             full = os.path.join(dirpath, name)
             rel = os.path.relpath(full, args.lib).replace(os.sep, '/')
             lay = layer_of(rel)
-            if lay is None:
+            # ★ 批 11：platform/ 文件此前因 `lay is None` 被整段跳过，
+            #   "platform 只许依赖 kernel" 是**永不执行的死规则**。
+            #   现在显式识别 platform 并纳入 total + 单边依赖检查。
+            is_platform = rel.startswith('platform/')
+            if lay is None and not is_platform:
                 continue
             total += 1
             if rel in ALLOW:
@@ -108,7 +109,9 @@ def main():
                 target = os.path.normpath(
                     os.path.join(os.path.dirname(rel), imp)).replace(os.sep, '/')
                 tlay = layer_of(target)
-                if lay in PLATFORM_ONLY_KERNEL:
+                if is_platform:
+                    # platform 只许依赖 kernel 契约；连 base/domain/surface
+                    # 都不行（也不许反向被它们依赖的间接形式）。
                     if tlay is not None and tlay != 'kernel':
                         violations.append(
                             (rel, imp, 'platform 只许依赖 kernel，发现 %s' % tlay))

@@ -14,7 +14,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../base/disk/disk_cache.dart';
+import '../../kernel/contract/consistency_cache.dart';
 import '../../kernel/contract/disk_types.dart';
 import '../../kernel/contract/net_types.dart';
 import '../../kernel/log/og_l_log_file.dart';
@@ -51,7 +51,7 @@ class GhApi implements CacheRemote {
 
   // ───────────────────────── 读穿透缓存（装配期绑定）─────────────────────────
 
-  RepositoryCache? _cache;
+  ConsistencyCache? _cache;
   Future<String> Function()? _accountIdProvider;
   final Map<String, String> _defaultBranchMemo = <String, String>{};
 
@@ -61,16 +61,16 @@ class GhApi implements CacheRemote {
   /// 草稿变更通知（草稿箱 / 角标据此实时刷新）。
   ///
   /// 未绑定缓存时返回一个**永不通知**的占位，便于 UI 无条件订阅。
-  Listenable get draftsChanged => _cache?.drafts ?? _neverNotifier;
+  Listenable get draftsChanged => _cache?.draftsChanged ?? _neverNotifier;
 
   static final ChangeNotifier _neverNotifier = ChangeNotifier();
 
   /// 绑定读穿透缓存（由 `domain_bridge` 在装配阶段调用）。
   ///
-  /// 绑定后：目录列表 / 文件内容优先走底座 [RepositoryCache]（TTL + 完整性
+  /// 绑定后：目录列表 / 文件内容优先走底座 [ConsistencyCache]（TTL + 完整性
   /// 校验 + 有界淘汰），未命中再回源；写路径经 [putContentLocked] 走 D1–D7。
   void attachReadCache(
-    RepositoryCache cache, {
+    ConsistencyCache cache, {
     required Future<String> Function() accountId,
   }) {
     _cache = cache;
@@ -832,7 +832,7 @@ class GhApi implements CacheRemote {
     }
     // ★ 直接写成功后**不在此处**失效底座缓存（B2-A-01 P0）：
     //   本方法是 CacheRemote.write 的实现，被调用时正处于
-    //   RepositoryCache._writeLocked 的逐键互斥锁内；再调 cache.invalidate(key)
+    //   ConsistencyCache._writeLocked 的逐键互斥锁内；再调 cache.invalidate(key)
     //   会再获取同一把锁 → 自锁死锁，写操作永远卡住。
     //   · 引擎路径：D5 自带写后失效，无需重复；
     //   · 裸写路径（未绑定缓存）：由 putContentLocked 的回退分支负责失效。
@@ -843,7 +843,7 @@ class GhApi implements CacheRemote {
   ///
   /// 与 [putContent] 的区别：
   /// - [putContent] 是**裸网络写**（供 [CacheRemote.write] 使用，不做本地锁）；
-  /// - 本方法把写交给 [RepositoryCache]：缺基线拒绝（D1）、基线过期拒绝并
+  /// - 本方法把写交给 [ConsistencyCache]：缺基线拒绝（D1）、基线过期拒绝并
   ///   给出**三方差异**（D2 的子步骤，非独立防线）、危险/强制需二次确认（D7）、写后回读校验
   ///   （D5）、失败进入待同步队列（D8）。
   ///
@@ -859,7 +859,7 @@ class GhApi implements CacheRemote {
     bool confirmed = false,
     String Function(String latestContent, String myContent)? rebase,
   }) async {
-    final RepositoryCache? cache = _cache;
+    final ConsistencyCache? cache = _cache;
     final CacheKey? key = await _cacheKeyFor(fullName, path, branch);
     if (cache == null || key == null) {
       // 未绑定缓存 / 无法构造合法键：退化为裸写。
@@ -985,7 +985,7 @@ class GhApi implements CacheRemote {
     String? branch,
     bool confirmed = false,
   }) async {
-    final RepositoryCache? cache = _cache;
+    final ConsistencyCache? cache = _cache;
     final CacheKey? key = await _cacheKeyFor(fullName, path, branch);
     if (cache == null || key == null) {
       // ★ B2-A-03/B2-B-04/C-07 三方命中：删除是危险操作，退化裸写路径

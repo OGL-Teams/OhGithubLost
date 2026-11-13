@@ -450,9 +450,12 @@ class IxDownloadTask {
   ///   即可（内容与原先的展示文本一致）。
   String get errorText => error?.message ?? '';
 
-  /// 进度（0–1；总长未知时为 0）。
-  double get progress =>
-      total <= 0 ? 0 : (received / total).clamp(0, 1).toDouble();
+  /// 进度（总长未知时为 0）。
+  ///
+  /// ★ C-12：不再把超量字节静默裁成 1（100%）——服务端给了比声明总量
+  ///   更多的数据是**异常**，裁掉就等于掩盖。保留真实比例，UI 层显示
+  ///   >100% 时能如实提示「收到字节超出声明总量」。
+  double get progress => total <= 0 ? 0 : received / total;
 
   /// 百分比（0–100）。
   int get percent => (progress * 100).round();
@@ -756,10 +759,33 @@ class IxDownloadManager extends ChangeNotifier {
       finalPath = retryPath;
       finalName = _lastSegmentOf(retryPath);
     } else {
-      final String unique = await _backend.resolveUniqueSavePath(
-        spec,
-        intendedPath: savePath,
-      );
+      // ★ 批 11 · C-03：裁决失败必须**闭合**——置 failed + 留痕，
+      //   绝不回退到可覆盖的旧路径（数据无价）。
+      String unique;
+      try {
+        unique = await _backend.resolveUniqueSavePath(
+          spec,
+          intendedPath: savePath,
+        );
+      } catch (error) {
+        if (!_disposed) {
+          _snapshots[id] = queued.copyWith(
+            status: IxDownloadStatus.failed,
+            error: IxDownloadError(
+              IxDownloadErrorKind.disk,
+              '重名裁决失败，拒绝覆盖既有文件：$error',
+            ),
+          );
+          _touchTasksCache();
+          _safeNotify();
+        }
+        throw StateError('重名裁决失败（任务已置 failed）：$error');
+      }
+      // ★ C-07：`resolveUniqueSavePath` 是 async 的，这期间用户可能
+      //   remove / 切账号清空 —— 绝不写回、绝不复活，也不留空指针。
+      if (_disposed || !identical(_snapshots[id], queued)) {
+        return _snapshots[id] ?? queued;
+      }
       final String uniqueName = _lastSegmentOf(unique);
       if (uniqueName.isNotEmpty && uniqueName != safeName) {
         finalName = uniqueName;
@@ -1098,8 +1124,14 @@ class IxDownloadManager extends ChangeNotifier {
     double speed = snap.bytesPerSecond;
     if (last != null) {
       final int ms = now.difference(last.at).inMilliseconds;
+      // ★ C-09：新回合 received 从 0 重来，旧采样值是上一轮的较大值，
+      //   直接相减会得到**负速率**并让进度回跳。先按回合对齐采样基准。
+      final int previous = last.received <= received ? last.received : 0;
       if (ms >= 400) {
-        speed = (received - last.received) * 1000 / ms;
+        speed = (received - previous) * 1000 / ms;
+        if (speed < 0) {
+          speed = 0; // 数据无价：速率不许为负
+        }
         _lastSample[id] = (at: now, received: received);
       }
     } else {
@@ -1231,7 +1263,25 @@ class IxDownloadManager extends ChangeNotifier {
       await _runRanged(id: id, connections: connections);
       return;
     }
-    await _backend.enqueue(spec);
+    try {
+      await _backend.enqueue(spec);
+    } catch (error) {
+      // ★ C-15：重试时后端入队异常（库未初始化 / 权限 / 磁盘）不得让
+      //   任务永远停在 queued —— 置 failed + 留痕，页面如实可见。
+      final IxDownloadTask? current = _snapshots[id];
+      if (!_disposed && current != null) {
+        _snapshots[id] = current.copyWith(
+          status: IxDownloadStatus.failed,
+          error: IxDownloadError(
+            IxDownloadErrorKind.unknown,
+            '重试入队失败：$error',
+          ),
+        );
+        _touchTasksCache();
+        _safeNotify();
+      }
+      rethrow;
+    }
   }
 
   /// 从列表移除（进行中的先取消）。
@@ -1278,6 +1328,8 @@ class IxDownloadManager extends ChangeNotifier {
       _rangeTokens.remove(id);
       _rangeConnections.remove(id);
       _pausedIds.remove(id);
+      _roundOf.remove(id); // ★ C-16：与 remove() 逐表对齐
+      _retrySavePaths.remove(id); // 撤销移除遗留的豁免不得跨任务误消费
       _specs.remove(id);
       _lastSample.remove(id);
       _expectedSha256.remove(id);

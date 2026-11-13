@@ -4,6 +4,18 @@
 /// 目的是让重试、镜像、观测等核心逻辑可以完全离线单测。
 library;
 
+/// 传输抽象：发送一个请求，返回响应；失败必须抛 [NetException]。
+///
+/// ★ KNOWN #2 收敛（批 11）：此前 `GhClient`（L2）直接依赖 L1 的
+///   `NetBridge` 具体类，被 `layer_audit.KNOWN` 白名单豁免。
+///   现在逻辑层只依赖**本抽象**；`NetBridge` 在 L1 声明
+///   `implements NetTransport` 并由装配根注入 —— 依赖方向回到
+///   "上层依赖下层契约"，白名单随之摘除。
+abstract class NetTransport {
+  /// 发送请求；传输层失败必须抛 [NetException]。
+  Future<NetResponse> send(NetRequest request);
+}
+
 /// HTTP 方法（覆盖仓库管理所需）。
 ///
 /// 新增方法时必须同步 `NetMethod`、传输实现与镜像策略。
