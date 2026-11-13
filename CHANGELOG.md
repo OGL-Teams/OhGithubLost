@@ -1,5 +1,19 @@
 # 更新日志
 
+## 12.6.5（2026-11-14）
+
+### 架构
+
+- 能力体系启动期校验 + 依赖图输出 provides；KernelDi 层命名空间；facade_audit 锁定 DomainBridge 可变实现类字段基线；platform 文件头规范落地。
+
+### 域名解析
+
+- DoH 支持 AAAA/CNAME 链/TTL；owner 缺失即拒绝；端点二次校验；A/AAAA 双查询。
+
+### 发布与门禁
+
+- coreDigest 纳入平台门面与组合根；新增 action_pin_audit.py、motion_coverage_audit.py；门禁总数 10 支。
+
 ## 12.6.4（2026-11-13）
 
 ### 架构
