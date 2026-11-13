@@ -9,7 +9,6 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ohgithublost/base/disk/disk_store.dart';
 import 'package:ohgithublost/base/net/net_bridge.dart';
-import 'package:ohgithublost/base/net/net_transport.dart';
 import 'package:ohgithublost/base/net/net_types.dart';
 import 'package:ohgithublost/domain/gh/gh_api.dart';
 import 'package:ohgithublost/domain/gh/gh_auth.dart';

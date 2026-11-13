@@ -35,35 +35,12 @@ import 'disk_draft.dart';
 import 'disk_journal.dart';
 import 'disk_store.dart';
 import 'disk_types.dart';
+export '../../kernel/contract/consistency_cache.dart' show CacheRemote;
 import 'draft_adapter.dart';
 
-/// 远端读写抽象（真实实现由 API 中枢通过底座桥注入）。
-///
-/// 底座**不认识** GitHub：它只要求"给我 sha + 内容"、"按期望 sha 写"。
-abstract class CacheRemote {
-  /// 读取远端文档；不存在返回 `null`。
-  Future<RemoteDocument?> read(CacheKey key);
-
-  /// 按 [expectedSha] 写入；版本不符必须抛 [RemoteConflictException]。
-  ///
-  /// [expectedSha] 为 `null` 表示新建（远端不应存在该路径）。
-  Future<RemoteDocument> write(
-    CacheKey key,
-    String content, {
-    required String message,
-    String? expectedSha,
-  });
-
-  /// 按 [expectedSha] 删除；版本不符必须抛 [RemoteConflictException]。
-  ///
-  /// 删除同属"可能顶掉别人提交"的操作，因此同样需要基线（D1/D2）。
-  Future<void> delete(
-    CacheKey key, {
-    required String message,
-    required String expectedSha,
-  });
-}
-
+/// ★ 批 11 层级倒置：`CacheRemote` 已上提到 L0 契约
+///   （`kernel/contract/consistency_cache.dart`）。这里转发导出，
+///   底座内部与既有引用无需改动；`GhApi`（L2）直接依赖契约。
 /// 未绑定远端时的占位实现（启动早期 / 纯离线）。
 ///
 /// 有意让它**抛异常而不是静默成功**——静默成功等于把用户数据丢掉。
@@ -205,6 +182,7 @@ class RepositoryCache implements ConsistencyCache {
   /// 读取一条草稿的编辑态快照（正文 + 基线）。
   ///
   /// 逻辑层通过它拿到草稿，而不必知道底座 `DraftRecord` 的实现类型。
+  @override
   Future<DraftSnapshot?> loadDraftSnapshot(CacheKey key) async {
     final DraftRecord? record = await _drafts?.load(key);
     if (record == null) {
@@ -256,6 +234,7 @@ class RepositoryCache implements ConsistencyCache {
   ///
   /// **永不同步抛出**：失败以 Future 异常形式返回（非法键则抛
   /// [CacheScopeException] / [CacheKeyException]），调用方可统一 try/catch。
+  @override
   Future<CacheEntry?> read(
     CacheKey key, {
     bool refresh = false,
@@ -276,6 +255,7 @@ class RepositoryCache implements ConsistencyCache {
   ///
   /// [recordJournal] 为 `false` 时**不写提交日志**——仅供
   /// [replayPending] 使用（它自己负责原记录的收尾，避免重复入队）。
+  @override
   Future<WriteOutcome> write(
     WriteIntent intent, {
     bool confirmed = false,
@@ -309,6 +289,7 @@ class RepositoryCache implements ConsistencyCache {
   }
 
   /// 仅失效本地缓存（D5 的"写后失效"也可独立调用）。
+  @override
   Future<void> invalidate(CacheKey key) async {
     _ensureKey(key);
     return _mutex.run(key.encode(), () => _evictEncoded(key.encode()));
@@ -319,6 +300,7 @@ class RepositoryCache implements ConsistencyCache {
   /// 为什么**不入提交日志**：日志记录会被 [replayPending] 还原成 [WriteIntent]
   /// 重放，而删除无法用 WriteIntent 表达——强行入队，重放会把它当成"写入空内容"，
   /// 反而制造数据事故。因此删除只做**在线加锁**，失败如实返回、由用户重试。
+  @override
   Future<WriteOutcome> delete(
     CacheKey key, {
     required String message,

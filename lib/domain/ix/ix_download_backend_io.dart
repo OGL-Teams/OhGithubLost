@@ -114,16 +114,16 @@ class IoDownloadBackend implements IxDownloadBackend {
       base = intendedPath;
     }
     // ★ 批 11 · C-03/C-04 收敛：**绝不返回已存在的路径**。
-    //   用 `FileMode.writeExclusive` 原子占位：并发两个任务抢同一个
+    //   用 `File.create(exclusive: true)` 原子占位：并发两个任务抢同一个
     //   `a (1).zip` 时只有一个能创建成功，另一个自动顺延到 `a (2)`
     //   —— 同时解决「探测异常 fail-open 覆盖」与「TOCTOU 竞态」。
     //   占位文件仅用于判定，创建成功后立即删除，把干净的目标路径
     //   交还下载器（库任务 / 分片引擎各自以写模式打开，不冲突）。
     Future<bool> claim(String path) async {
       try {
-        final RandomAccessFile raf =
-            await File(path).open(mode: FileMode.writeExclusive);
-        await raf.close();
+        // `exclusive: true` 在文件已存在时抛 FileSystemException——
+        // 这正是我们要的原子互斥（Dart 的 FileMode 没有 O_EXCL）。
+        await File(path).create(exclusive: true);
         await File(path).delete();
         return true;
       } on FileSystemException catch (error) {

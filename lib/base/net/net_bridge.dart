@@ -108,6 +108,7 @@ class NetBridge implements NetTransport {
   }
 
   /// 发送请求。
+  @override
   Future<NetResponse> send(NetRequest request) => transport.send(request);
 
   /// 便捷 GET（返回响应体文本；非 2xx 由调用方自行处理）。

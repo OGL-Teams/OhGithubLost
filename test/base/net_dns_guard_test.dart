@@ -6,7 +6,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ohgithublost/base/net/io_net_transport.dart';
+import 'package:ohgithublost/base/net/net_transport.dart';
 
 void main() {
   group('ogLIsBlockedLiteralIp（私网 / 元数据 / 回环）', () {

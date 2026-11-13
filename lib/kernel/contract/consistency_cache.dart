@@ -68,6 +68,36 @@ class DraftRecordView {
   final DateTime updatedAt;
 }
 
+/// 远端读写抽象（真实实现由 API 中枢通过底座桥注入）。
+///
+/// ★ 批 11 层级倒置：此前定义在 `base/disk/disk_cache.dart`（L1），
+///   而 `GhApi`（L2）`implements CacheRemote` —— 逻辑层实现底座层接口，
+///   是比 KNOWN 白名单更隐蔽的倒置。现上提到 L0 契约：
+///   底座与逻辑层都只依赖本抽象，装配根注入实现。
+abstract class CacheRemote {
+  /// 读取远端文档；不存在返回 `null`。
+  Future<RemoteDocument?> read(CacheKey key);
+
+  /// 按 [expectedSha] 写入；版本不符必须抛 [RemoteConflictException]。
+  ///
+  /// [expectedSha] 为 `null` 表示新建（远端不应存在该路径）。
+  Future<RemoteDocument> write(
+    CacheKey key,
+    String content, {
+    required String message,
+    String? expectedSha,
+  });
+
+  /// 按 [expectedSha] 删除；版本不符必须抛 [RemoteConflictException]。
+  ///
+  /// 删除同属"可能顶掉别人提交"的操作，因此同样需要基线（D1/D2）。
+  Future<void> delete(
+    CacheKey key, {
+    required String message,
+    required String expectedSha,
+  });
+}
+
 /// 一致性缓存：读穿透 + D1–D9 写一致性 + 草稿仓储。
 ///
 /// 逻辑层（domain）只依赖本抽象；底座层实现并在装配期注入。
