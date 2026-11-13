@@ -35,8 +35,10 @@ import 'disk_draft.dart';
 import 'disk_journal.dart';
 import 'disk_store.dart';
 import 'disk_types.dart';
-export '../../kernel/contract/consistency_cache.dart' show CacheRemote;
 import 'draft_adapter.dart';
+
+// ★ 单一事实源：`CacheRemote` 已上提到 L0 契约，转发导出保持既有引用。
+export '../../kernel/contract/consistency_cache.dart' show CacheRemote;
 
 /// ★ 批 11 层级倒置：`CacheRemote` 已上提到 L0 契约
 ///   （`kernel/contract/consistency_cache.dart`）。这里转发导出，
