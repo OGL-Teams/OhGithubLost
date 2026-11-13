@@ -121,7 +121,7 @@ class KernelDi {
   }
 
   /// ★ 层命名空间（批 12）：把服务注册到指定层的私有命名空间，
-  ///   跨层不得用 resolve<T>() 意外取到——必须显式声明来源层。
+  ///   跨层不得用 `resolve<T>()` 意外取到——必须显式声明来源层。
   ///   给新代码一条正确的路，并由 describe() 如实列出作用域。
   void registerIn<T extends Object>(
     String scope,
