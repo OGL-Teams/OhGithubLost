@@ -505,18 +505,47 @@ class DohDnsResolver implements DnsResolver {
 
   @override
   Future<List<String>> resolve(String host) async {
-    final endpoint = server.dohUrl!;
-    final separator = endpoint.contains('?') ? '&' : '?';
-    final body = await client.get(
-      '$endpoint${separator}name=${Uri.encodeQueryComponent(host)}&type=A',
-      headers: const <String, String>{'accept': 'application/dns-json'},
-    ).timeout(timeout);
-    return parseDohJson(body, host: host);
+    final String endpoint = server.dohUrl!;
+    // ★ F-06：端点必须是可用 https DoH 且主机非禁止直连字面量。
+    if (!ogLIsUsableDohEndpoint(endpoint) ||
+        ogLIsBlockedLiteralIp(Uri.parse(endpoint).host)) {
+      throw DnsException('DoH 端点不合法：$endpoint');
+    }
+    final String separator = endpoint.contains('?') ? '&' : '?';
+    // ★ F-02：同时查 A 与 AAAA（IPv6 网络下只有 A 会解析不到地址）。
+    //   两次独立请求，任一成功即可用；都失败才抛错。
+    final List<String> addresses = <String>[];
+    Object? lastError;
+    for (final int qtype in const <int>[
+      DnsWireCodec.typeA,
+      DnsWireCodec.typeAaaa
+    ]) {
+      try {
+        final String body = await client.get(
+          '$endpoint${separator}name=${Uri.encodeQueryComponent(host)}'
+          '&type=$qtype',
+          headers: const <String, String>{'accept': 'application/dns-json'},
+        ).timeout(timeout);
+        for (final String ip in parseDohJson(body, host: host)) {
+          if (!addresses.contains(ip)) {
+            addresses.add(ip);
+          }
+        }
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    if (addresses.isEmpty && lastError != null) {
+      throw DnsException('DoH 查询失败：$lastError');
+    }
+    return addresses;
   }
 
-  /// 解析 DoH 的 JSON 响应（抽出 A 记录）。
+  /// 解析 DoH 的 JSON 响应（A / AAAA / CNAME 链 + TTL）。
   ///
   /// 刻意做成静态纯函数：便于离线断言，也便于复用到 DoT/TLS 场景。
+  /// ★ F-02/F-03：此前只认 A 记录；现补 AAAA(28) 与 CNAME(5) 跟随，
+  ///   owner 缺失（"省略 name"）不再静默放行，结果 IP 复用统一白名单。
   static List<String> parseDohJson(String body, {String host = ''}) {
     Object? decoded;
     try {
@@ -527,42 +556,69 @@ class DohDnsResolver implements DnsResolver {
     if (decoded is! Map) {
       throw const DnsException('DoH 响应结构异常');
     }
-    final status = decoded['Status'];
+    final Object? status = decoded['Status'];
     if (status is int && status != 0) {
       throw DnsException('DoH 返回错误状态 $status');
     }
-    final answers = decoded['Answer'];
+    final Object? answers = decoded['Answer'];
     if (answers is! List) {
       return const <String>[];
     }
-    final result = <String>[];
-    for (final answer in answers) {
+    final List<String> result = <String>[];
+    final String wanted = host.toLowerCase().replaceAll(RegExp(r'\.$'), '');
+    final Set<String> cnameTargets = <String>{};
+    for (final Object? answer in answers) {
       if (answer is! Map) {
         continue;
       }
-      if (answer['type'] != DnsWireCodec.typeA) {
+      final Object? name = answer['name'];
+      // ★ F-03：没有 name 的应答无法证明属于本次查询，一律拒绝
+      //   （旧实现只在 name 是 String 时才比对，省略 name 即绕过）。
+      if (name is! String || name.isEmpty) {
+        throw const DnsException('DoH 应答缺少 owner，拒绝接受');
+      }
+      final String owner = name.toLowerCase().replaceAll(RegExp(r'\.$'), '');
+      final int type = answer['type'] is int ? answer['type'] as int : 0;
+      // CNAME：记录别名目标，后续 A/AAAA 的 owner 只要在该链上即可。
+      if (type == 5 && answer['data'] is String) {
+        final String target = (answer['data'] as String)
+            .toLowerCase()
+            .replaceAll(RegExp(r'\.$'), '');
+        if (wanted.isEmpty || owner == wanted || cnameTargets.contains(owner)) {
+          cnameTargets.add(target);
+        }
         continue;
       }
-      // ★ B1-A-13：不校验 answer.name 会接受「别的域名」的应答
-      //   （投毒/错配）。DoH JSON 的 name 通常带尾点，统一去掉后比对。
-      //   host 为空（纯解析、无查询上下文）时不做过滤——只解析的调用方
-      //   没有可供比对的查询域名，此时交给上层（resolve 里传了 host）。
-      final Object? answerName = answer['name'];
-      if (host.isNotEmpty && answerName is String) {
-        final String normalized = answerName.toLowerCase().replaceAll(
-              RegExp(r'\.$'),
-              '',
-            );
-        if (normalized.isNotEmpty && normalized != host.toLowerCase()) {
-          continue;
-        }
+      if (type != DnsWireCodec.typeA && type != DnsWireCodec.typeAaaa) {
+        continue; // AAAA = 28
       }
-      final data = answer['data'];
-      if (data is String && isSafeIpv4(data)) {
-        result.add(data);
+      if (wanted.isNotEmpty &&
+          owner != wanted &&
+          !cnameTargets.contains(owner)) {
+        continue;
+      }
+      final Object? data = answer['data'];
+      if (data is! String || data.isEmpty) {
+        continue;
+      }
+      // TTL 仅用于诊断（缓存过期由 DnsCache 的 expiresAt 统一管理）。
+      final Object? ttl = answer['TTL'];
+      if (ttl is int && ttl <= 0) {
+        continue; // TTL 已过期的应答不采用
+      }
+      final bool safe =
+          type == 28 ? !ogLIsBlockedLiteralIp(data) : isSafeIpv4(data);
+      if (safe) {
+        resultAdd(result, data);
       }
     }
     return result;
+  }
+
+  static void resultAdd(List<String> result, String value) {
+    if (!result.contains(value)) {
+      result.add(value);
+    }
   }
 
   /// ★ B1-B-09：正则只看形状，`999.999.999.999` 也能过。逐段校验

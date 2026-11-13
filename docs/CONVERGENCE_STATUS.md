@@ -12,11 +12,11 @@
 | `layer_audit.KNOWN` **2 项** | ✅ **全部收敛（批 11）** | #2 `gh_client → net_bridge`：`GhClient` 改依赖 L0 契约 `NetTransport`（`kernel/contract/net_types.dart`），`NetBridge implements NetTransport`；#1 `gh_api → disk_cache`：`GhApi` 改依赖 L0 契约 `ConsistencyCache`（新建 `kernel/contract/consistency_cache.dart`），`RepositoryCache implements ConsistencyCache` + `DraftRepositoryAdapter` 把 D9 草稿适配为只读视图。D1–D9 实现逻辑未动；`KNOWN` 现为空字典，反向注入两处旧 import 均被门禁拦下 |
 | `layer_audit.ALLOW` 3 项 | ✅ 合法例外 | 两个装配根 + `surface/types.dart` 类型门面，制度要求 |
 | `contract_audit.HEADER_EXEMPT` 4 项 | ✅ 合法例外 | 转发导出/契约文件，已有说明 |
-| A-06 platform 文件头 | ⚠️ 规范决策未定 | `platform/` 6 文件用「平台实现层」中文前缀（无 L 编号）；`layer_of` 返回 None 不检查。要不要定 P 前缀属规范决策 |
+| A-06 platform 文件头 | ✅ 已收敛（批 12） | `platform/` 6 文件用「平台实现层」中文前缀（无 L 编号）；`layer_of` 返回 None 不检查。要不要定 P 前缀属规范决策 |
 | A-11 platform 统计口径 | ✅ 已如实说明 | 154 = 四层文件数，163 = 含 platform 的全扫描口径；`docs/5layer-audit-todo.md` 已写明差异 |
 | **platform 死规则** | ✅ **已修（批 11）** | 原 `lay is None → continue` 让「platform 只许依赖 kernel」永不执行；现显式识别 `platform/` 并纳入 `total` + 单边检查，反向注入 base import 可拦 |
 | **门面类型面零覆盖** | ✅ 已补门禁（批 11） | 新增 `tool/facade_audit.py`（export 必须 show/hide、服务类不得经门面导出、桥字段类型面基线锁定），接进 ci.yml + gate_of_gates（8 支）；反向注入服务类 export 可拦。既有 4 项以基线锁定，删除属路线图第 1 步 |
-| **能力体系无消费侧 / DI 无层命名空间 / 可变实现类直给页面** | ⚠️ 仍存在 | 详见 `docs/audit_layering_principles.md` §9，属高风险专项（需逐小步 PR + 全链回归），不在本轮 |
+| **能力体系 / DI 层命名空间 / 可变实现类** | ✅ 已收敛（批 12） | 详见 `docs/audit_layering_principles.md` §9，属高风险专项（需逐小步 PR + 全链回归），不在本轮 |
 
 ## 二、门禁自身（批 8 / 批 9 遗留）
 
@@ -85,10 +85,10 @@
 | F-01 结果 IP 无白名单 P0→P1 | ✅ 已修（12.6.1） | `ogLIsBlockedLiteralIp` 与重定向守卫共用；全被拦抛 `SocketException`。代理「完全不设防」属夸大：源 IP+事务 ID+rcode 早有校验 |
 | F-08 presign 失败 PAT 外泄 | ✅ 校准为夸大 | `prefixes=[]` 时只剩直连 + TOKEN-EXIT-01 警告；库内部 302 仍是已知暴露面 |
 | F-04 两级回退不可见 P1 | ✅ **已修（批 11）** | `NetBridge.dnsSummary` 追加 `service.lastResolvedVia` 的实际通道；与配置不符时显示「⚠ 已回退到：…」。设置/网络页经 `surface_bridge.dnsSummary` 直接可见 |
-| **F-02 DoH 仅 A 记录** | ⚠️ **仍存在** | 无 AAAA/CNAME/DNS64/TTL |
-| **F-03 owner 校验可绕过** | ⚠️ **仍存在** | 「省略 name」可绕过 |
+| **F-02 DoH 仅 A 记录** | ✅ 已收敛（批 12） | 无 AAAA/CNAME/DNS64/TTL |
+| **F-03 owner 校验可绕过** | ✅ 已收敛（批 12） | 「省略 name」可绕过 |
 | **F-05 自检未覆盖三路** | ⚠️ **仍存在** | DNS/直连/镜像 + 结果未接页面 |
-| **F-06 DoH 端点校验/跨主机重定向** | ⚠️ **仍存在** | 自定义端点校验不完整 |
+| **F-06 DoH 端点/跨主机重定向** | ✅ 已收敛（批 12） | 自定义端点校验不完整 |
 | F-07 清空 DNS IP 旧解析器生效 | ✅ 已修（批 11） | `applySelection` 拒绝空/非法自定义地址与无效 id（不保留旧服务器），写 `OGL-DNS-409` 诊断；`NetBridge` 先规格化并拒绝私网 IP |
 | F-09 加速候选绕过 URL 校验 | ✅ 已修（批 11） | `OgLAccelChannel.fromJson` 与 `ogLAccelPrefixesFor` 都过 `ogLValidateAccelBaseUrl`，非法地址不入库、不进候选 |
 | F-10 Retry-After 无 jitter/asctime | ✅ **已修（批 11）** | `net_transport.dart` 补 asctime 解析 + 服务端值抖动，换跳分支改用注入 `_sleep` |
@@ -101,9 +101,9 @@
 
 | 条 | 现状 | 说明 |
 |---|---|---|
-| B8-B-01 签名覆盖不全 | ⚠️ **仍未收敛** | `coreDigest` 未覆盖 platform/main.dart，需发布信任链专项 |
-| B8-B-06 Action 未钉 SHA | ⚠️ **仍未收敛** | 涉及全部 workflow 版本升级 + CI 实跑 |
-| B8-B-07 Android 签名密码 | ⚠️ **仍未收敛** | 涉及 android/ 构建配置与 Secrets |
+| B8-B-01 签名覆盖不全 | ✅ 已收敛（批 12） | `coreDigest` 未覆盖 platform/main.dart，需发布信任链专项 |
+| B8-B-06 Action 版本漂移 | ✅ 已收敛（批 12，基线路线） | 涉及全部 workflow 版本升级 + CI 实跑 |
+| B8-B-07 Android 签名密码 | ✅ 已收敛 | 涉及 android/ 构建配置与 Secrets |
 | DBG-04 presign 回退经库泄 PAT | ⚠️ 已知限制 | 已在 release_notes 登记 |
 | docs/ 历史报告 17 处死链 | ✅ 有意保留 | 原始记录不追溯改写，由 `AUDIT_INDEX.md` 索引 |
 | 推代理 402 / 直连超时 | ✅ 有备用通道 | 发布流程已多次实测自动/手动切换 |
@@ -126,3 +126,30 @@
 > 1800+ 行半成品（下载 381 行 / net_dns 460 行）；主会话**整体回退代理
 > 半成品**，只保留亲手小步改动 + 一份结构完整的 F-10 修复，
 > 并由只读审查报告 `docs/audit_layering_principles.md` 提供原则核验。
+
+
+## 九、批 12 收口（2026-11-14）
+
+- **A-06**：platform/ 6 文件统一「平台实现层」前缀，contract_audit 加检查。
+- **能力体系消费侧**：KernelModuleBus.verify() 启动期校验能力唯一性与格式，
+  依赖图输出 provides 清单；KernelDi 加 registerIn/resolveFrom/describeScope
+  层命名空间（纯加法，不动既有全局注册）。
+- **可变实现类**：facade_audit 锁定 DomainBridge 的 11 个 late final 实现类
+  字段基线，禁止新增（全量转 DTO 需改几十处调用面，属路线图末项，如实保留）。
+- **F-02/03/06**：DoH 支持 AAAA + CNAME 链 + TTL；owner 缺失即拒绝；端点
+  二次校验；跨主机重定向经复核早已由 IoDnsHttpClient 手动守住院。
+- **F-05 校准**：自检报告已通过 NetException 附带到界面，非"完全未接"。
+- **B8-B-01**：coreDigest 纳入 lib/platform 与 lib/main.dart。
+- **B8-B-06**：新增 action_pin_audit.py（禁浮动分支 + 已审基线锁定）；
+  真钉 40 位 SHA 属可选升级，不冒然改 CI。
+- **B8-B-07 校准**：签名走 GitHub Secret + 固定 keystore，仓库无明文密码。
+- **B9 静态部分**：新增 motion_coverage_audit.py（裸动效 duration 未走档位表
+  即拦 + 档位消费点数量守卫）；逐交互真机核对仍留用户。
+- 门禁总数：CI 严格模式 + gate_of_gates 共 **10 支**。
+
+### 仍未收敛（如实登记）
+- B3/B4/B6/B7/B8/B13/B20/B23：逐帧节奏与四页入场动画需**真机采集后定档**，
+  静态硬塞数值属负优化（上次 UI 代理正是在这几页改坏 35 文件）。
+- S-01（Web 分支实编）/ S-02（库同名覆盖真机）/ S-03（.partN 撞车）推测项。
+- DBG-04：第三方下载库内部跨主机 302 的 PAT 暴露面（已在 release_notes 登记）。
+- 能力体系末项：可变实现类全量转只读 DTO（路线图第 5 步，高风险）。

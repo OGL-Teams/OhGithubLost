@@ -20,21 +20,30 @@ class KernelDiError extends Error {
 
 /// 服务键：`Type` + 可选标签（同类型多实例场景）。
 class _ServiceKey {
-  const _ServiceKey(this.type, this.tag);
+  /// [scope] 为层命名空间（如 base / domain）；null = 全局键，
+  /// 保持既有 register/resolve 调用面完全兼容。
+  const _ServiceKey(this.type, this.tag, [this.scope]);
 
   final Type type;
   final String? tag;
+  final String? scope;
 
   @override
   bool operator ==(Object other) {
-    return other is _ServiceKey && other.type == type && other.tag == tag;
+    return other is _ServiceKey &&
+        other.type == type &&
+        other.tag == tag &&
+        other.scope == scope;
   }
 
   @override
-  int get hashCode => Object.hash(type, tag);
+  int get hashCode => Object.hash(type, tag, scope);
 
   @override
-  String toString() => tag == null ? '$type' : '$type#$tag';
+  String toString() {
+    final String base = tag == null ? '$type' : '$type#$tag';
+    return scope == null ? base : '$scope:$base';
+  }
 }
 
 /// 类型化依赖容器。
@@ -110,6 +119,40 @@ class KernelDi {
     final key = _ServiceKey(T, tag);
     return _instances.containsKey(key) || _factories.containsKey(key);
   }
+
+  /// ★ 层命名空间（批 12）：把服务注册到指定层的私有命名空间，
+  ///   跨层不得用 resolve<T>() 意外取到——必须显式声明来源层。
+  ///   给新代码一条正确的路，并由 describe() 如实列出作用域。
+  void registerIn<T extends Object>(
+    String scope,
+    T instance, {
+    String? tag,
+    bool replace = false,
+  }) {
+    _ensureMutable();
+    if (scope.isEmpty) {
+      throw KernelDiError('层命名空间不能为空');
+    }
+    final _ServiceKey key = _ServiceKey(T, tag, scope);
+    _ensureAbsent(key, replace: replace);
+    _instances[key] = instance;
+  }
+
+  /// 从指定层命名空间解析；未注册时抛错（不回落到全局键）。
+  T resolveFrom<T extends Object>(String scope, {String? tag}) {
+    final _ServiceKey key = _ServiceKey(T, tag, scope);
+    final Object? instance = _instances[key];
+    if (instance is T) {
+      return instance;
+    }
+    throw KernelDiError('层 $scope 未注册服务: $key');
+  }
+
+  /// 该层命名空间已注册的服务键清单（启动诊断用）。
+  List<String> describeScope(String scope) => <String>[
+        for (final _ServiceKey key in _instances.keys)
+          if (key.scope == scope) key.toString(),
+      ]..sort();
 
   /// 封存容器：启动完成后调用，此后任何注册都会抛出异常。
   void seal() {

@@ -98,6 +98,12 @@ def check_headers(files: dict[str, str]) -> list[str]:
     want = {'base': 'L1', 'domain': 'L2', 'surface': 'L3', 'kernel': 'L0'}
     for rel, text in files.items():
         lay = layer_of(rel)
+        # ★ A-06 规范落地：platform/ 不属四层，但必须统一「平台实现层」
+        #   前缀（此前 6 个文件已有该前缀，只是门禁不检查）。
+        if rel.startswith('platform/'):
+            if not text.lstrip().startswith('/// 平台实现层'):
+                issues.append('%s: platform 文件头须为「平台实现层」' % rel)
+            continue
         # ★ 批 9 · X-05：此前 `lay == 'kernel'` 直接跳过，
         #   于是 kernel/contract/ 下三个文件自称「L1 底座级」
         #   （实为 L0）永远不会被发现。L0 同样要有正确的层级头。

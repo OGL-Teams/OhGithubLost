@@ -42,6 +42,16 @@ LEGACY_TYPE_EXPORTS = {
 # 只防新增，不在此处强删（删除需逐调用点改造，见路线图）。
 LEGACY_BRIDGE_FIELDS = {'NetBridge', 'RepositoryCache', 'DiskKv', 'RepoFileService'}
 
+# ★ 批 12：DomainBridge 直接持有实现类（可变状态）是历史结构，
+#   全量转 DTO 需改几十处调用面，属高风险专项。这里锁定基线：
+#   禁止新增 late final 实现类字段，防止缺口继续扩大。
+DOMAIN_BRIDGE = ROOT / 'lib' / 'domain' / 'domain_bridge.dart'
+LEGACY_DOMAIN_FIELDS = {
+    'GhAuthService', 'GhClient', 'GhApi', 'SysInfoService',
+    'SysAccessGuard', 'IxSession', 'IxTaskRunner', 'IxNotificationCenter',
+    'IxDownloadManager', 'IxActionLogs', 'IxPresign',
+}
+
 
 def audit() -> list[str]:
     issues: list[str] = []
@@ -74,6 +84,15 @@ def audit() -> list[str]:
             issues.append(
                 f'surface_bridge.dart: 公开字段类型 {cls} 疑似 L1 实现，'
                 f'不得新增（基线 {sorted(LEGACY_BRIDGE_FIELDS)} 之外的类型面）')
+    # ★ 批 12：DomainBridge 的可变实现类字段基线锁定，只防新增。
+    domain_text = DOMAIN_BRIDGE.read_text(encoding='utf-8')
+    domain_re = re.compile(r'^\s*late final\s+([A-Z]\w*)\s+\w+\s*;', re.M)
+    for m in domain_re.finditer(domain_text):
+        cls = m.group(1)
+        if cls not in LEGACY_DOMAIN_FIELDS:
+            issues.append(
+                f'domain_bridge.dart: 新增 late final {cls} 直接暴露可变实现类，'
+                f'不得扩散（基线 {len(LEGACY_DOMAIN_FIELDS)} 项之外）')
     return issues
 
 

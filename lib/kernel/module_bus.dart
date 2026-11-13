@@ -115,6 +115,11 @@ class KernelModuleBus {
   void verify() {
     final missing = <String>[];
     for (final module in _modules.values) {
+      if (!module.descriptor.isWellFormed) {
+        throw KernelModuleBusError(
+          '模块描述符不合法: ${module.descriptor.id}',
+        );
+      }
       for (final dependency in module.descriptor.requires) {
         if (!_modules.containsKey(dependency)) {
           missing.add('${module.descriptor.id} -> $dependency');
@@ -124,7 +129,34 @@ class KernelModuleBus {
     if (missing.isNotEmpty) {
       throw KernelModuleBusError('依赖缺失: ${missing.join(', ')}');
     }
+    _verifyCapabilities();
     resolveOrder();
+  }
+
+  /// ★ 能力体系消费侧（批 12）：此前 `provides` 只是装饰性字符串，
+  ///   没有任何消费点。现在在启动期校验：
+  ///   1. 同一能力不得被两个模块重复提供（避免装配歧义）；
+  ///   2. 能力标识必须 `<层>.<名>` 且与所属层一致（防跨层冒名）；
+  ///   3. 能力清单进入依赖图文本，诊断报告里可见。
+  void _verifyCapabilities() {
+    final Map<String, String> owner = <String, String>{};
+    for (final OgLModule module in _modules.values) {
+      final ModuleDescriptor d = module.descriptor;
+      for (final String capability in d.provides) {
+        if (capability.isEmpty || !capability.contains('.')) {
+          throw KernelModuleBusError(
+            '能力标识格式不合法（需 <域>.<名>）: ${d.id} -> $capability',
+          );
+        }
+        final String? previous = owner[capability];
+        if (previous != null) {
+          throw KernelModuleBusError(
+            '能力重复提供: $capability（$previous 与 ${d.id}）',
+          );
+        }
+        owner[capability] = d.id;
+      }
+    }
   }
 
   /// 解析启动顺序（稳定的深度优先拓扑排序）。
@@ -168,7 +200,10 @@ class KernelModuleBus {
     for (final descriptor in descriptors()) {
       final deps =
           descriptor.requires.isEmpty ? '-' : descriptor.requires.join(', ');
-      buffer.writeln('${descriptor.id} [${descriptor.layer.key}] -> $deps');
+      final caps =
+          descriptor.provides.isEmpty ? '-' : descriptor.provides.join(', ');
+      buffer.writeln('${descriptor.id} [${descriptor.layer.key}] -> $deps'
+          ' | provides: $caps');
     }
     return buffer.toString();
   }

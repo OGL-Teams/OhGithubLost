@@ -73,6 +73,13 @@ def read_pubspec_version(repo_root: str) -> str:
 def build_payload(repo_root: str, version: str, build_id: str) -> dict:
     layer_dirs = ['lib/kernel', 'lib/base', 'lib/domain', 'lib/surface']
     core = {d: directory_fingerprint(os.path.join(repo_root, d)) for d in layer_dirs}
+    # ★ B8-B-01：平台门面与组合根也必须进签名覆盖范围——
+    #   它们决定「哪个实现被装配进内核」，被篡改时若不在 coreDigest 里，
+    #   引导清单仍会验签通过（信任链缺口）。
+    core['lib/platform'] = directory_fingerprint(
+        os.path.join(repo_root, 'lib/platform'))
+    core['lib/main.dart'] = sha256_hex(
+        open(os.path.join(repo_root, 'lib/main.dart'), 'rb').read())
     return {
         'schema': 1,
         'appVersion': version,
