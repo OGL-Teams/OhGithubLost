@@ -451,8 +451,9 @@ class SurfaceBridge {
   /// ★ C-05：撤销「移除」——把快照原样放回列表。
   /// `remove()` 已清 spec/快照，`retry(id)` 找不到记录是死路；
   /// 这里走中枢的 restoreTask（同时消费重名重试豁免）。
-  Future<void> restoreDownload(IxDownloadTask task) =>
-      domain.downloads.restoreTask(task);
+  Future<void> restoreDownload(IxDownloadTask task) async {
+    domain.downloads.restoreTask(task);
+  }
 
   /// 取消某个下载。
   Future<void> cancelDownload(String id) => domain.downloads.cancel(id);

@@ -90,6 +90,7 @@ class NetBridge implements NetTransport {
     //   不合法就只走明文 UDP（`ogLIsUsableDohEndpoint` 做同一套判定）。
     // ★ F-13：自定义 IP 必须先规格化并拒绝私网/回环/元数据地址；
     //   不合法就不要构造 customServer（applySelection 会拒绝并留痕）。
+    final String ip = customIp.trim();
     final String? normalizedIp = ip.isEmpty ? null : ogLNormalizeDnsAddress(ip);
     final DnsServer? customServer = normalizedIp == null
         ? null
