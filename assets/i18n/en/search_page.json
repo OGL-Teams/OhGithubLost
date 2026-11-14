@@ -49,5 +49,6 @@
   "timeJustNow": "just now",
   "timeMinutesAgo": "{count} min ago",
   "timeHoursAgo": "{count} h ago",
-  "timeDaysAgo": "{count} d ago"
+  "timeDaysAgo": "{count} d ago",
+  "actions": "More actions"
 }

@@ -37,5 +37,6 @@
   "type": "Type",
   "updateFailed": "Échec de la mise à jour : {error}",
   "updated": "Mis à jour",
-  "viewFileDetail": "Afficher les détails du fichier"
+  "viewFileDetail": "Afficher les détails du fichier",
+  "assetActions": "Plus d’actions"
 }

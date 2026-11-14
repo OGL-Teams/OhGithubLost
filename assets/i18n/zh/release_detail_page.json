@@ -37,5 +37,6 @@
   "type": "类型",
   "updateFailed": "更新失败：{error}",
   "updated": "已更新",
-  "viewFileDetail": "查看文件详情"
+  "viewFileDetail": "查看文件详情",
+  "assetActions": "更多操作"
 }

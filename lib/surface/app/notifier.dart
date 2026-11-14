@@ -29,6 +29,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'error_surface.dart';
 import '../util/og_l_space.dart';
 
 /// 统一用户反馈（SnackBar）。
@@ -58,7 +59,14 @@ class OgLNotifier {
 
   void _show(String message, {bool isError = false}) {
     if (!_messenger.mounted) {
-      // 页面已退出 / 组件已卸载：丢弃提示，不再向已销毁的树写状态。
+      // ★ LG-03：页面已退出 / 组件已卸载——不再向已销毁的树写状态，
+      //   但**绝不静默**：留痕后重抛给下一帧（操作结果提示丢了 = 用户
+      //   以为保存失败或没看见错误原因）。
+      OgLAppLog.instance.add(
+        'NOTIFY',
+        '提示未呈现（messenger 已卸载）：$message',
+        severity: OgLNoticeSeverity.warning,
+      );
       return;
     }
     final ColorScheme scheme = Theme.of(_messenger.context).colorScheme;

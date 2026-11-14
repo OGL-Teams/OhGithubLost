@@ -37,5 +37,6 @@
   "type": "Тип",
   "updateFailed": "Ошибка обновления: {error}",
   "updated": "Обновлено",
-  "viewFileDetail": "Просмотреть сведения о файле"
+  "viewFileDetail": "Просмотреть сведения о файле",
+  "assetActions": "Ещё действия"
 }

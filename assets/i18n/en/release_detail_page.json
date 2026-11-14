@@ -37,5 +37,6 @@
   "type": "Type",
   "updateFailed": "Update failed: {error}",
   "updated": "Updated",
-  "viewFileDetail": "View File Details"
+  "viewFileDetail": "View File Details",
+  "assetActions": "More actions"
 }

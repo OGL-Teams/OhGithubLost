@@ -221,11 +221,26 @@ class _RepoCardState extends State<_RepoCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                repo.fullName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium,
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      repo.fullName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
+                  // ★ IN-02：动作面板必须有**可见入口**——旧实现只留
+                  //   onLongPress，桌面鼠标没有长按习惯 → 事实不可达。
+                  //   双入口模式对齐 issue_page 评论操作（长按 + IconButton）。
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.more_horiz, size: OgLIconSize.md),
+                    tooltip: OgLI18n.instance.t('search_page', 'actions'),
+                    onPressed: () => unawaited(widget.onActions(context, repo)),
+                  ),
+                ],
               ),
               const SizedBox(height: OgLSpace.xxs),
               Text(

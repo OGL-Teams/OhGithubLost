@@ -37,5 +37,6 @@
   "type": "Typ",
   "updateFailed": "Aktualisierung fehlgeschlagen: {error}",
   "updated": "Aktualisiert",
-  "viewFileDetail": "Dateidetails anzeigen"
+  "viewFileDetail": "Dateidetails anzeigen",
+  "assetActions": "Mehr Aktionen"
 }

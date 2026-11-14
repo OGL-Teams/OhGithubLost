@@ -49,5 +49,6 @@
   "timeJustNow": "刚刚",
   "timeMinutesAgo": "{count} 分钟前",
   "timeHoursAgo": "{count} 小时前",
-  "timeDaysAgo": "{count} 天前"
+  "timeDaysAgo": "{count} 天前",
+  "actions": "更多操作"
 }

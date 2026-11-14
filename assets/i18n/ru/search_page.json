@@ -49,5 +49,6 @@
   "timeJustNow": "только что",
   "timeMinutesAgo": "{count} мин назад",
   "timeHoursAgo": "{count} ч назад",
-  "timeDaysAgo": "{count} дн назад"
+  "timeDaysAgo": "{count} дн назад",
+  "actions": "Ещё действия"
 }

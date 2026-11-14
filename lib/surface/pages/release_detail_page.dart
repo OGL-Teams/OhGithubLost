@@ -26,6 +26,7 @@ import '../util/clipboard_x.dart';
 import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/readme_view.dart';
 import 'download_manager_page.dart';
@@ -543,8 +544,15 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                           'count': asset.downloadCount
                         }),
                       ),
-                      trailing: const Icon(Icons.info_outline),
+                      trailing: IconButton(
+                        visualDensity: VisualDensity.compact,
+                        icon:
+                            const Icon(Icons.more_horiz, size: OgLIconSize.md),
+                        tooltip: _t('assetActions'),
+                        onPressed: () => unawaited(_showAssetActions(asset)),
+                      ),
                       // R5：点击**先看详情**（不再直接触发下载）；长按弹出快捷操作。
+                      // ★ IN-02：快捷操作另给可见按钮（桌面无长按习惯）。
                       onTap: () => unawaited(_showAssetDetail(asset)),
                       onLongPress: () => unawaited(_showAssetActions(asset)),
                     ),

@@ -37,5 +37,6 @@
   "type": "類型",
   "updateFailed": "更新失敗：{error}",
   "updated": "已更新",
-  "viewFileDetail": "檢視檔案詳細資料"
+  "viewFileDetail": "檢視檔案詳細資料",
+  "assetActions": "更多操作"
 }

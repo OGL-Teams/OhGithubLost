@@ -24,6 +24,7 @@ import '../util/og_l_space.dart';
 import 'animations.dart';
 import 'client_shell.dart';
 import 'desktop_window.dart';
+import 'shortcuts.dart';
 import 'error_surface.dart';
 import 'keyboard_guard.dart';
 import 'motion.dart';
@@ -105,10 +106,14 @@ class OgLApp extends StatelessWidget {
                   // 键盘 inset 守卫：无文本焦点时的"幽灵键盘"一律归零，
                   // 并把窗口指标写进日志（真机复现时"半屏从哪来"有第一手数据）。
                   child: OgLKeyboardGuard(
-                    // 全局错误呈现层：未捕获异常 → 弹窗；一般告警 → 横幅。
-                    child: OgLNoticeHost(
-                      navigatorKey: navigatorKey,
-                      child: child ?? const SizedBox.shrink(),
+                    // ★ IN-01：桌面快捷键骨架（Ctrl+S / Ctrl+F / Ctrl+R / Esc）。
+                    //   挂在 NoticeHost 外层：Navigator 动作需要根上下文。
+                    child: OgLShortcuts(
+                      // 全局错误呈现层：未捕获异常 → 弹窗；一般告警 → 横幅。
+                      child: OgLNoticeHost(
+                        navigatorKey: navigatorKey,
+                        child: child ?? const SizedBox.shrink(),
+                      ),
                     ),
                   ),
                 ),

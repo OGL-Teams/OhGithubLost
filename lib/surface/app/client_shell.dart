@@ -301,8 +301,7 @@ class _OgLClientShellState extends State<OgLClientShell> {
             : const SizedBox.shrink(),
     ];
     final int index = OgLShellTab.values.indexOf(_tab);
-    // R7：页面切换加**左右滑动**入场动画（保留 IndexedStack 的状态与懒挂载）。
-    // 关闭动画（档位 0 / 系统减少动效）时瞬时切换。
+    // R7：页面切换加**左右滑动**入场动画（保留 IndexedStack 的状态与懒挂载）。    // 关闭动画（档位 0 / 系统减少动效）时瞬时切换。
     final Widget body = _OgLShellSlide(
       index: index,
       child: IndexedStack(index: index, children: pages),

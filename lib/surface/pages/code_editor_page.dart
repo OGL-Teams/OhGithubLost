@@ -18,6 +18,7 @@ import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../app/overlays.dart';
+import '../app/shortcuts.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
@@ -562,72 +563,88 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
           Navigator.of(context).pop(_saved);
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.path,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.titleMedium,
-          ),
-          actions: <Widget>[
-            // 其余全部动作收进可横向滑动的工具栏：窄屏不挤压、不重叠。
-            // 保存：FilledButton.tonalIcon —— 有未提交改动时用 primaryContainer
-            // 高亮（tonal 底色在 AppBar 上明显区别于 IconButton），干净时淡显。
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: OgLSpace.sm,
-                vertical: OgLSpace.xxs,
-              ),
-              child: FilledButton.tonalIcon(
-                onPressed: _saving ? null : _save,
-                icon: _saving
-                    ? const SizedBox(
-                        width: OgLIconSize.sm,
-                        height: OgLIconSize.sm,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.save_outlined, size: OgLIconSize.md),
-                label: Text(_t('save')),
-                style: FilledButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  backgroundColor: _saveHighlighted
-                      ? theme.colorScheme.primaryContainer
-                      : theme.colorScheme.surfaceContainerHighest,
-                  foregroundColor: _saveHighlighted
-                      ? theme.colorScheme.onPrimaryContainer
-                      : theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
+      child: OgLShortcutHandler(
+        onShortcut: (OgLShortcutIntent intent) {
+          switch (intent) {
+            case OgLShortcutIntent.save:
+              unawaited(_save());
+            case OgLShortcutIntent.find:
+              _find.findMode();
+            case OgLShortcutIntent.escape:
+              if (_find.value != null) {
+                _find.close();
+              }
+            case OgLShortcutIntent.refresh:
+              break; // 编辑器无刷新语义
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(
+              widget.path,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleMedium,
             ),
-          ],
-        ),
-        body: OgLReveal(
-            delay: Duration.zero,
-            child: Column(
-              // ★ 修复「顶栏漏缝」：Column 默认 crossAxisAlignment.center，
-              //   非 Expanded 子项（工具栏 / 状态栏）会按**内容固有宽度收缩**
-              //   再居中 —— 工具栏于是比下方满宽的代码区窄一截，两端露出
-              //   surface 白边（实测 x=43..978，两侧各白 43/71px）。
-              //   stretch 让所有横向子项撑满，与代码区严格对齐。
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                // ── 紧凑工具栏：低频操作一行收纳（带 tooltip；可收起）──────
-                if (_toolbarExpanded) _buildToolbar(context),
-                Expanded(
-                  child: OgLCodeField(
-                    controller: _controller,
-                    path: widget.path,
-                    fontSize: _fontSize,
-                    wrap: _wrap,
-                    highlight: prefs.highlight,
-                    findController: _find,
-                    codeTheme: prefs.theme(context),
+            actions: <Widget>[
+              // 其余全部动作收进可横向滑动的工具栏：窄屏不挤压、不重叠。
+              // 保存：FilledButton.tonalIcon —— 有未提交改动时用 primaryContainer
+              // 高亮（tonal 底色在 AppBar 上明显区别于 IconButton），干净时淡显。
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: OgLSpace.sm,
+                  vertical: OgLSpace.xxs,
+                ),
+                child: FilledButton.tonalIcon(
+                  onPressed: _saving ? null : _save,
+                  icon: _saving
+                      ? const SizedBox(
+                          width: OgLIconSize.sm,
+                          height: OgLIconSize.sm,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.save_outlined, size: OgLIconSize.md),
+                  label: Text(_t('save')),
+                  style: FilledButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    backgroundColor: _saveHighlighted
+                        ? theme.colorScheme.primaryContainer
+                        : theme.colorScheme.surfaceContainerHighest,
+                    foregroundColor: _saveHighlighted
+                        ? theme.colorScheme.onPrimaryContainer
+                        : theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
-                _statusBar(theme),
-              ],
-            )),
+              ),
+            ],
+          ),
+          body: OgLReveal(
+              delay: Duration.zero,
+              child: Column(
+                // ★ 修复「顶栏漏缝」：Column 默认 crossAxisAlignment.center，
+                //   非 Expanded 子项（工具栏 / 状态栏）会按**内容固有宽度收缩**
+                //   再居中 —— 工具栏于是比下方满宽的代码区窄一截，两端露出
+                //   surface 白边（实测 x=43..978，两侧各白 43/71px）。
+                //   stretch 让所有横向子项撑满，与代码区严格对齐。
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  // ── 紧凑工具栏：低频操作一行收纳（带 tooltip；可收起）──────
+                  if (_toolbarExpanded) _buildToolbar(context),
+                  Expanded(
+                    child: OgLCodeField(
+                      controller: _controller,
+                      path: widget.path,
+                      fontSize: _fontSize,
+                      wrap: _wrap,
+                      highlight: prefs.highlight,
+                      findController: _find,
+                      codeTheme: prefs.theme(context),
+                    ),
+                  ),
+                  _statusBar(theme),
+                ],
+              )),
+        ),
       ),
     );
   }

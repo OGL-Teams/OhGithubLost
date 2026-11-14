@@ -49,5 +49,6 @@
   "timeJustNow": "gerade eben",
   "timeMinutesAgo": "vor {count} Min.",
   "timeHoursAgo": "vor {count} Std.",
-  "timeDaysAgo": "vor {count} T."
+  "timeDaysAgo": "vor {count} T.",
+  "actions": "Mehr Aktionen"
 }
