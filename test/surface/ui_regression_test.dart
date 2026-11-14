@@ -365,10 +365,32 @@ void main() {
           reason: '根页不得再出现可折叠分组（应移到子页）');
       expect(rootBuild.contains('SettingsSectionPage('), isFalse,
           reason: '子页构造集中在 _entry 内');
-      expect(source.contains('forceExpanded: true'), isTrue,
-          reason: '进入子页后内部分组默认展开');
       expect(child.contains('class SettingsSectionPage'), isTrue);
-      // 关于页：占位文案已删，致谢/协议/贡献者改为真实内容。
+      // ★ 批 12：设置页**单层平铺、零气泡**——不得再出现圆角卡片，
+      //   也不得再有可折叠分组头（AppBar 标题即分类名）。
+      final String group =
+          File('lib/surface/widgets/settings/settings_group.dart')
+              .readAsStringSync();
+      final String groupBuild =
+          group.substring(group.indexOf('class OgLSettingsGroup'));
+      expect(groupBuild.contains('return Card('), isFalse,
+          reason: '设置分组不得再使用卡片气泡');
+      expect(groupBuild.contains('onToggle'), isFalse, reason: '设置页不再有可折叠分组');
+      expect(source.contains('OgLSettingsGroup('), isTrue);
+      expect(source.contains('_toggleGroup('), isFalse, reason: '折叠状态机制应已移除');
+      // 法律正文：十七节齐备（含适用法律、不可抗力、第三方链接、知识产权等）
+      final String legal =
+          File('assets/i18n/zh/onboarding.json').readAsStringSync();
+      for (final String section in <String>[
+        '适用法律与争议解决',
+        '不可抗力与责任限制',
+        '第三方链接与内容',
+        '知识产权',
+        '未成年人',
+        '终止使用',
+      ]) {
+        expect(legal.contains(section), isTrue, reason: '法律正文缺少：$section');
+      } // 关于页：占位文案已删，致谢/协议/贡献者改为真实内容。
       final String about =
           File('lib/surface/pages/about_page.dart').readAsStringSync();
       for (final String key in <String>[

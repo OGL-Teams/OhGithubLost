@@ -104,36 +104,12 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  // ── 分组折叠状态（**纯界面状态**，与设置数据分开存）────────────────────
-  //
-  // 为什么落盘：设置页有 6 个分组，用户每次进来都要重新展开自己关心那一组，
-  // 是纯粹的重复劳动。状态存在 SurfaceBridge 的界面偏好 KV 里
-  // （key = [_groupsKey]，值 = 展开的分组 id 逗号串），重启后仍在。
-  // 为什么**不进** `OgLSettings`：它会被"重置设置"清掉 —— 重置不该顺带
-  // 把"我刚点开的分组"关上。
-
-  /// 界面偏好键。
-  static const String _groupsKey = 'ogl.settings.groupsOpen';
-
-  /// 已知分组 id（落盘的白名单：读到陌生 id 直接忽略，避免脏数据越滚越大）。
-  static const List<String> _groupIds = <String>[
-    'interface',
-    'code',
-    'storage',
-    'about',
-    'logs',
-  ];
-
-  /// 当前展开的分组。
-  final Set<String> _openGroups = <String>{};
-
   @override
   void initState() {
     super.initState();
     _accountFuture = widget.surface.domain.auth.activeAccount();
     // 账号增删（登录页 / 用户页）会通知：重建 Future，账户行跟上变化。
     widget.surface.domain.auth.addListener(_refreshAccount);
-    unawaited(_loadGroups());
   }
 
   /// 读取持久化的展开状态（**未持久化 = 默认展开「界面」一组**）。
@@ -142,40 +118,6 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 用户要滚很久才能找到目标，也看不出分组结构。默认只展开「界面」：
   /// 它是所有人都会碰的一组（明暗/主题/语言），其余折叠但标题即摘要。
   /// 用户展开过的分组照常持久化，下次按用户偏好。
-  Future<void> _loadGroups() async {
-    if (!mounted) {
-      return;
-    }
-    final String? raw = await widget.surface.readUiPref(_groupsKey);
-    final Set<String> open = (raw == null)
-        // 首次：只展开「界面」。
-        ? <String>{'interface'}
-        : <String>{
-            for (final String id in raw.split(','))
-              if (_groupIds.contains(id)) id,
-          };
-    setState(() {
-      _openGroups
-        ..clear()
-        ..addAll(open);
-    });
-  }
-
-  /// 展开状态是否已记录（用于区分"用户收起过"与"默认收起"）。
-  bool _isOpen(String id) => _openGroups.contains(id);
-
-  /// 切换分组展开状态并落盘。
-  void _toggleGroup(String id, bool open) {
-    setState(() {
-      if (open) {
-        _openGroups.add(id);
-      } else {
-        _openGroups.remove(id);
-      }
-    });
-    unawaited(widget.surface.writeUiPref(_groupsKey, _openGroups.join(',')));
-  }
-
   /// 折叠摘要：明暗模式（分组标题下一行，收起时也知道当前是什么）。
   String _modeLabel(OgLSettings value) => switch (value.mode) {
         OgLThemeMode.system => _t('followSystem'),
@@ -452,7 +394,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// ★ 单层进入式：根页**只有入口**，没有任何折叠组。
   /// 点分类 → SettingsSectionPage（子页内部分组可折叠）。
-  /// 分组控件仍由本 State 构造（捕获 _isOpen/_toggleGroup），
   /// 子页只是展示容器，不复制状态。
   @override
   Widget build(BuildContext context) {
@@ -467,12 +408,11 @@ class _SettingsPageState extends State<SettingsPage> {
           body: Column(
             children: <Widget>[
               if (saveError != null)
-                Card(
-                  margin: const EdgeInsets.fromLTRB(
-                      OgLSpace.lg, OgLSpace.md, OgLSpace.lg, 0),
+                ColoredBox(
                   color: theme.colorScheme.errorContainer,
                   child: Padding(
-                    padding: const EdgeInsets.all(OgLSpace.md),
+                    padding: const EdgeInsets.fromLTRB(
+                        OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.md),
                     child: Text(saveError,
                         style: TextStyle(
                             color: theme.colorScheme.onErrorContainer)),
@@ -495,45 +435,35 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: Icons.tune,
                       title: _t('groupInterface'),
                       subtitle: _interfaceSummary(value),
-                      sections: <Widget>[
-                        _interfaceGroup(theme, value, forceExpanded: true)
-                      ],
+                      sections: <Widget>[_interfaceGroup(theme, value)],
                     ),
                     _entry(
                       context,
                       icon: Icons.code,
                       title: _t('codeAndFiles'),
                       subtitle: _codeSummary(value),
-                      sections: <Widget>[
-                        _codeGroup(context, theme, value, forceExpanded: true)
-                      ],
+                      sections: <Widget>[_codeGroup(context, theme, value)],
                     ),
                     _entry(
                       context,
                       icon: Icons.storage,
                       title: _t('groupStorageNetwork'),
                       subtitle: _storageSummary(value),
-                      sections: <Widget>[
-                        _storageGroup(theme, value, forceExpanded: true)
-                      ],
+                      sections: <Widget>[_storageGroup(theme, value)],
                     ),
                     _entry(
                       context,
                       icon: Icons.help_outline,
                       title: _t('groupAboutHelp'),
                       subtitle: _aboutSummary(),
-                      sections: <Widget>[
-                        _aboutGroup(theme, forceExpanded: true)
-                      ],
+                      sections: <Widget>[_aboutGroup(theme)],
                     ),
                     _entry(
                       context,
                       icon: Icons.description_outlined,
                       title: _t('logs'),
                       subtitle: _logsSummary(),
-                      sections: <Widget>[
-                        _logsGroup(theme, forceExpanded: true)
-                      ],
+                      sections: <Widget>[_logsGroup(theme)],
                     ),
                     const Divider(height: 28),
                     _entry(
@@ -573,21 +503,27 @@ class _SettingsPageState extends State<SettingsPage> {
     final ThemeData theme = Theme.of(context);
     final Color fg =
         danger ? theme.colorScheme.error : theme.colorScheme.onSurface;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(bottom: OgLSpace.sm),
-      child: ListTile(
-        leading: Icon(icon, color: fg),
-        title: Text(title, style: TextStyle(color: fg)),
-        subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (BuildContext _) => SettingsSectionPage(
-            title: title,
-            sections: sections,
-          ),
-        )),
-      ),
+    // ★ 单层平铺（批 12）：入口行不再装进圆角卡片，
+    //   与其它列表行同一套留白与分隔线。
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        ListTile(
+          contentPadding: kOgLSettingsRowPadding,
+          leading: Icon(icon, color: fg),
+          title: Text(title, style: TextStyle(color: fg)),
+          subtitle:
+              Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+          trailing: const Icon(Icons.chevron_right, size: OgLIconSize.md),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+            builder: (BuildContext _) => SettingsSectionPage(
+              title: title,
+              sections: sections,
+            ),
+          )),
+        ),
+        Divider(height: 1, color: theme.colorScheme.outlineVariant),
+      ],
     );
   }
 
@@ -612,13 +548,6 @@ class _SettingsPageState extends State<SettingsPage> {
     final int motion =
         value.motionLevel.clamp(0, _motionShort.length - 1).toInt();
     return OgLSettingsGroup(
-      title: _t('groupInterface'),
-      subtitle: _interfaceSummary(value),
-      leading: const Icon(Icons.tune),
-      expanded: forceExpanded ?? _isOpen('interface'),
-      onToggle: (bool open) => _toggleGroup('interface', open),
-      expandLabel: _t('expandGroup'),
-      collapseLabel: _t('collapseGroup'),
       children: <Widget>[
         OgLSettingsChoiceTile<OgLThemeMode>(
           title: _t('themeMode'),
@@ -964,13 +893,6 @@ class _SettingsPageState extends State<SettingsPage> {
     bool? forceExpanded,
   }) =>
       OgLSettingsGroup(
-        title: _t('codeAndFiles'),
-        subtitle: _codeSummary(value),
-        leading: const Icon(Icons.code),
-        expanded: forceExpanded ?? _isOpen('code'),
-        onToggle: (bool open) => _toggleGroup('code', open),
-        expandLabel: _t('expandGroup'),
-        collapseLabel: _t('collapseGroup'),
         children: <Widget>[
           // 分组说明：展开后给一行解释（与日志组同一写法）。
           ListTile(
@@ -1264,11 +1186,9 @@ class _SettingsPageState extends State<SettingsPage> {
       MaterialPageRoute<void>(
         builder: (BuildContext context) => NetworkSettingsPage(
           surface: widget.surface,
-          builder: (BuildContext context, OgLSettings value) => Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: _networkTiles(context, Theme.of(context), value),
-            ),
+          builder: (BuildContext context, OgLSettings value) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: _networkTiles(context, Theme.of(context), value),
           ),
         ),
       ),
@@ -1283,13 +1203,6 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _storageGroup(ThemeData theme, OgLSettings value,
           {bool? forceExpanded}) =>
       OgLSettingsGroup(
-        title: _t('groupStorageNetwork'),
-        subtitle: _storageSummary(value),
-        leading: const Icon(Icons.storage_outlined),
-        expanded: forceExpanded ?? _isOpen('storage'),
-        onToggle: (bool open) => _toggleGroup('storage', open),
-        expandLabel: _t('expandGroup'),
-        collapseLabel: _t('collapseGroup'),
         children: <Widget>[
           _navTile(
             theme,
@@ -1544,9 +1457,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   // ── 风险警示：API 兼容性 + 易泄露（放在最前，先读再开）──
-                  Card(
-                    margin: const EdgeInsets.fromLTRB(
-                        OgLSpace.md, OgLSpace.sm, OgLSpace.md, OgLSpace.md),
+                  ColoredBox(
                     color: theme.colorScheme.errorContainer,
                     child: Padding(
                       padding: const EdgeInsets.all(OgLSpace.md),
@@ -2013,82 +1924,78 @@ class _SettingsPageState extends State<SettingsPage> {
   ///
   /// 只有一个分组却要折叠，反而多一次点击；身份信息放在设置页最上方，
   /// 一眼知道"现在是谁登录着"（退出登录在「用户页」，那里才是危险动作的归属地）。
-  Widget _accountCard(ThemeData theme) => Card(
-        clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.only(bottom: OgLSpace.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            // 卡片小标题：只有一行的卡片也把"这是什么"写出来 ——
-            // 否则那只是一个带钥匙图标的 @名字，新用户不知道它指谁。
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  OgLSpace.lg, OgLSpace.md, OgLSpace.lg, 0),
-              child: Text(
-                _t('account'),
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+  Widget _accountCard(ThemeData theme) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          // 卡片小标题：只有一行的卡片也把"这是什么"写出来 ——
+          // 否则那只是一个带钥匙图标的 @名字，新用户不知道它指谁。
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+                OgLSpace.lg, OgLSpace.md, OgLSpace.lg, 0),
+            child: Text(
+              _t('account'),
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            AnimatedSize(
-              duration: OgLAnim.medium(context),
-              curve: OgLAnim.curve(context),
-              alignment: Alignment.topCenter,
-              // 「读取中 → 已登录 / 未登录」切换的是**高度不同**的行：
-              // 用常驻 AnimatedSize 承载这次换挡（档位 0 → 零时长 = 立即跳变）。
-              child: FutureBuilder<GhAccount?>(
-                future: _accountFuture,
-                builder: (
-                  BuildContext context,
-                  AsyncSnapshot<GhAccount?> snapshot,
-                ) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return ListTile(
-                      contentPadding: kOgLSettingsRowPadding,
-                      leading: const Icon(Icons.key),
-                      title: Text(_t('readingAccount')),
-                    );
-                  }
-                  final GhAccount? account = snapshot.data;
-                  if (account == null) {
-                    return ListTile(
-                      contentPadding: kOgLSettingsRowPadding,
-                      leading: const Icon(Icons.key),
-                      title: Text(_t('notLoggedIn')),
-                      subtitle: Text(
-                        _t('notLoggedInHint'),
-                        style: theme.textTheme.bodySmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  }
+          ),
+          AnimatedSize(
+            duration: OgLAnim.medium(context),
+            curve: OgLAnim.curve(context),
+            alignment: Alignment.topCenter,
+            // 「读取中 → 已登录 / 未登录」切换的是**高度不同**的行：
+            // 用常驻 AnimatedSize 承载这次换挡（档位 0 → 零时长 = 立即跳变）。
+            child: FutureBuilder<GhAccount?>(
+              future: _accountFuture,
+              builder: (
+                BuildContext context,
+                AsyncSnapshot<GhAccount?> snapshot,
+              ) {
+                if (snapshot.connectionState != ConnectionState.done) {
                   return ListTile(
                     contentPadding: kOgLSettingsRowPadding,
                     leading: const Icon(Icons.key),
-                    title: Text('@${account.login}'),
+                    title: Text(_t('readingAccount')),
+                  );
+                }
+                final GhAccount? account = snapshot.data;
+                if (account == null) {
+                  return ListTile(
+                    contentPadding: kOgLSettingsRowPadding,
+                    leading: const Icon(Icons.key),
+                    title: Text(_t('notLoggedIn')),
                     subtitle: Text(
-                      _t('accountId', <String, Object?>{'id': account.id}),
+                      _t('notLoggedInHint'),
                       style: theme.textTheme.bodySmall,
-                    ),
-                    // 账户管理（切换 / 移除 / 退出）在「个人」页——
-                    // 此前这条不可点、也无跳转，用户找不到退出登录入口。
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => unawaited(
-                      Navigator.of(context).push(MaterialPageRoute<void>(
-                        builder: (BuildContext context) => ProfilePage(
-                          surface: widget.surface,
-                          onAccountsChanged: () async {},
-                        ),
-                      )),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   );
-                },
-              ),
+                }
+                return ListTile(
+                  contentPadding: kOgLSettingsRowPadding,
+                  leading: const Icon(Icons.key),
+                  title: Text('@${account.login}'),
+                  subtitle: Text(
+                    _t('accountId', <String, Object?>{'id': account.id}),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  // 账户管理（切换 / 移除 / 退出）在「个人」页——
+                  // 此前这条不可点、也无跳转，用户找不到退出登录入口。
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => unawaited(
+                    Navigator.of(context).push(MaterialPageRoute<void>(
+                      builder: (BuildContext context) => ProfilePage(
+                        surface: widget.surface,
+                        onAccountsChanged: () async {},
+                      ),
+                    )),
+                  ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       );
 
   /// **关于与帮助**分组：权限与引导 / 关于 / 捐赠 / 开源许可 / 法律文本。
@@ -2097,15 +2004,7 @@ class _SettingsPageState extends State<SettingsPage> {
   /// "许可"卡片）。它们同属"看说明 / 找人帮忙"，合并后根级少三个卡片；
   /// 顺带把危险动作（重置）从"维护"里摘出去 —— 它现在单独在危险区，
   /// 不再和"权限与引导"当邻居。
-  Widget _aboutGroup(ThemeData theme, {bool? forceExpanded}) =>
-      OgLSettingsGroup(
-        title: _t('groupAboutHelp'),
-        subtitle: _aboutSummary(),
-        leading: const Icon(Icons.help_outline),
-        expanded: forceExpanded ?? _isOpen('about'),
-        onToggle: (bool open) => _toggleGroup('about', open),
-        expandLabel: _t('expandGroup'),
-        collapseLabel: _t('collapseGroup'),
+  Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
         children: <Widget>[
           _navTile(
             theme,
@@ -2278,22 +2177,13 @@ class _SettingsPageState extends State<SettingsPage> {
   ///
   /// 外层再订阅一次日志：收起态的**摘要**要显示"写没写、写了多少行"，
   /// 它随日志增长变化；正文仍由内层 `ListenableBuilder` 承载（收起不构建）。
-  Widget _logsGroup(ThemeData theme, {bool? forceExpanded}) =>
-      ListenableBuilder(
+  Widget _logsGroup(ThemeData theme) => ListenableBuilder(
         listenable: OgLAppLog.instance,
-        builder: (BuildContext context, Widget? _) =>
-            _logsCard(theme, forceExpanded: forceExpanded),
+        builder: (BuildContext context, Widget? _) => _logsCard(theme),
       );
 
   /// 日志分组卡片本体。
-  Widget _logsCard(ThemeData theme, {bool? forceExpanded}) => OgLSettingsGroup(
-        title: _t('logs'),
-        subtitle: _logsSummary(),
-        leading: const Icon(Icons.description_outlined),
-        expanded: forceExpanded ?? _isOpen('logs'),
-        onToggle: (bool open) => _toggleGroup('logs', open),
-        expandLabel: _t('expandGroup'),
-        collapseLabel: _t('collapseGroup'),
+  Widget _logsCard(ThemeData theme) => OgLSettingsGroup(
         children: <Widget>[
           // 分组说明：收起时标题下是**当前值**摘要，展开后才给这段解释。
           ListTile(

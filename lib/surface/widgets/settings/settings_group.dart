@@ -115,142 +115,28 @@ Future<T?> ogLShowSettingsChoice<T>({
       ),
     );
 
-/// 可折叠分组卡片：一行"标题 + 摘要 + 箭头"，展开后才显示组内条目。
+/// 设置项分组：**平铺的条目列表**。
 ///
-/// ## 收起时不构建内容
-/// 收起态 children 不参与构建（与旧日志组同一取舍）：日志正文很长，
-/// 让它在收起态参与布局会拖累首帧。
+/// ★ 单层平铺（批 12）：本类不再提供卡片气泡，也不再有可折叠的头部。
+/// 子页的 AppBar 标题即分类名，组内条目自带分隔线；根页只列分类入口。
 class OgLSettingsGroup extends StatelessWidget {
   /// 创建。
   const OgLSettingsGroup({
-    required this.title,
-    required this.expanded,
-    required this.onToggle,
     required this.children,
-    this.subtitle = '',
-    this.leading,
-    this.expandLabel = '',
-    this.collapseLabel = '',
     super.key,
   });
 
-  /// 分组标题。
-  final String title;
-
-  /// 折叠状态下可见的摘要（当前值的一句话概括；空则整行不占位）。
-  final String subtitle;
-
-  /// 前置图标。
-  final Widget? leading;
-
-  /// 是否展开。
-  final bool expanded;
-
-  /// 展开 / 收起回调。
-  final ValueChanged<bool> onToggle;
-
-  /// 组内条目。
+  /// 组内条目（自带分隔线）。
   final List<Widget> children;
 
-  /// 无障碍标签：展开动作名。
-  final String expandLabel;
-
-  /// 无障碍标签：收起动作名。
-  final String collapseLabel;
-
   @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(bottom: OgLSpace.md),
-      child: Column(
+  Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          // 整行可点（不是只有文字可点）：一屏 6 个分组标题都变成 48dp 以上的
-          // 触控目标，手指不用瞄准。
-          InkWell(
-            onTap: () => onToggle(!expanded),
-            child: Semantics(
-              button: true,
-              // 一行一个语义节点：标题 + 当前动作（"界面, 展开"）。
-              // `excludeSemantics` 让内部的标题 / 摘要 / 箭头不再各报一次 ——
-              // 屏幕阅读器滑过一个分组只停顿一次。
-              excludeSemantics: true,
-              label: '$title, ${expanded ? collapseLabel : expandLabel}',
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    OgLSpace.lg, OgLSpace.md, OgLSpace.sm, OgLSpace.md),
-                child: Row(
-                  children: <Widget>[
-                    if (leading != null) ...<Widget>[
-                      IconTheme.merge(
-                        data: IconThemeData(color: theme.colorScheme.primary),
-                        child: leading!,
-                      ),
-                      const SizedBox(width: OgLSpace.md),
-                    ],
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Semantics(
-                            header: true,
-                            child:
-                                Text(title, style: theme.textTheme.titleMedium),
-                          ),
-                          if (subtitle.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: OgLSpace.xxs),
-                              child: Text(
-                                subtitle,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                                // ★ 批 9 · B21：系统字号 1.3× 时单行会把
-                                //   副标题整句截断；给两行余量，仍以省略号收尾。
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    // 箭头即状态：收起 → 右指；展开 → 下指（旋转 90°，无额外图标）。
-                    AnimatedRotation(
-                      turns: expanded ? 0.25 : 0,
-                      duration: OgLAnim.fast(context),
-                      curve: OgLAnim.curve(context),
-                      child: const Icon(Icons.chevron_right),
-                    ),
-                    const SizedBox(width: OgLSpace.xxs),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // 展开动画接动效档位（档位 0 → 零时长 = 立即展开），
-          // 与页面里其它"条件内容"（DNS 子项 / 加速分节）同一套写法。
-          AnimatedSize(
-            duration: OgLAnim.medium(context),
-            curve: OgLAnim.curve(context),
-            alignment: Alignment.topCenter,
-            child: !expanded
-                ? const SizedBox(width: double.infinity)
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      const Divider(height: 1),
-                      ...children,
-                      const SizedBox(height: OgLSpace.xxs),
-                    ],
-                  ),
-          ),
+          ...children,
+          const SizedBox(height: OgLSpace.xxs),
         ],
-      ),
-    );
-  }
+      );
 }
 
 /// 选择行：标题 + （可选）说明 + 当前值 + 箭头；点开 [ogLShowSettingsChoice]。
@@ -594,9 +480,7 @@ class OgLSettingsDangerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.zero,
+    return ColoredBox(
       color: theme.colorScheme.errorContainer,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
