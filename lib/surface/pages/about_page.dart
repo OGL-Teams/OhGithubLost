@@ -26,8 +26,8 @@ import '../theme.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_font.dart';
 import '../util/og_l_radius.dart';
-import '../widgets/flat_list.dart';
 import '../util/og_l_space.dart';
+import '../widgets/flat_list.dart';
 
 /// 取 `about_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
