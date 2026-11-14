@@ -14,9 +14,9 @@ import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
 import '../util/gh_format.dart';
+import '../util/og_l_font.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
-import '../util/og_l_font.dart';
 
 /// 取 `commit_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
