@@ -368,6 +368,21 @@ void main() {
       expect(source.contains('forceExpanded: true'), isTrue,
           reason: '进入子页后内部分组默认展开');
       expect(child.contains('class SettingsSectionPage'), isTrue);
+      // 关于页不得再有「未来扩展 / 贡献者 / 致谢」占位卡片
+      final String about =
+          File('lib/surface/pages/about_page.dart').readAsStringSync();
+      for (final String key in <String>[
+        'futureExt',
+        'contributors',
+        'thanks'
+      ]) {
+        expect(about.contains("_t('$key')"), isFalse,
+            reason: '关于页不得再出现 $key 占位文案');
+      }
+      final String aboutI18n =
+          File('assets/i18n/zh/about_page.json').readAsStringSync();
+      expect(aboutI18n.contains('"futureExt"'), isFalse,
+          reason: '占位 i18n 键应一并删除');
       // 文案精简：新摘要键六语言齐全
       for (final String loc in <String>[
         'zh',

@@ -2,11 +2,11 @@
 ///
 /// ## 它展示什么
 /// - 项目名称、主要开发者、版本、仓库地址（事实来自 [OgLProjectInfo]）；
-/// - 未来扩展位（贡献者名单、致谢等预留，后续追加不必改布局）；
 /// - 启动诊断（启动报告 / 信任告警 / 依赖图 / 启动阶段），来自 [KernelReport]。
 ///
 /// ## 它不展示什么
-/// 日志与开源许可已归入设置页，便于集中查看；关于页保持"一个身份页"的定位。
+/// 日志、开源许可与捐赠入口都在设置页；关于页保持"一个身份页"的定位。
+/// 不放任何预留位：没有内容的东西不占屏幕。
 library;
 
 import 'package:flutter/material.dart';
@@ -172,31 +172,6 @@ class AboutPage extends StatelessWidget {
               ),
               trailing: const Icon(Icons.open_in_new, size: OgLIconSize.md),
               onTap: () => _openSponsor(context),
-            ),
-          ),
-          const SizedBox(height: OgLSpace.lg),
-          Card(
-            child: Column(
-              children: <Widget>[
-                ListTile(
-                  leading: const Icon(Icons.auto_awesome_outlined),
-                  title: Text(_t('futureExt')),
-                  subtitle: Text(_t('futureExtDesc')),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  dense: true,
-                  leading: Icon(Icons.people_outline),
-                  title: Text(_t('contributors')),
-                  subtitle: Text(_t('contributorsDesc')),
-                ),
-                ListTile(
-                  dense: true,
-                  leading: Icon(Icons.favorite_outline),
-                  title: Text(_t('thanks')),
-                  subtitle: Text(_t('thanksDesc')),
-                ),
-              ],
             ),
           ),
           if (snapshot != null) ...<Widget>[
