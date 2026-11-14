@@ -15,7 +15,9 @@
 | 6 | UI 层与状态管理 | [`audit_b6_a.md`](audit_b6_a.md) / [`b`](audit_b6_b.md) / [`c`](audit_b6_c.md) | [`audit_b6_cross.md`](audit_b6_cross.md) | 已收口（切号失效链路 P1 记录） |
 | 7 | 主题 / 字体 / 令牌警告 | [`audit_b7_a.md`](audit_b7_a.md) / [`b`](audit_b7_b.md) / [`c`](audit_b7_c.md) | [`audit_b7_cross.md`](audit_b7_cross.md) | 已收口 |
 | 8 | i18n 与门禁体系 | [`audit_b8_a.md`](audit_b8_a.md) / [`b`](audit_b8_b.md) / [`c`](audit_b8_c.md) | [`audit_b8_cross.md`](audit_b8_cross.md)（事后补写） | 部分（批 9 修 7 项，余 8 项按 P2 排队） |
-| 9 | 规范专项审查（分层桥接 / UI 动效 / 门禁契约） | [`audit_spec_a.md`](audit_spec_a.md) / [`b`](audit_spec_b.md) / [`c`](audit_spec_c.md) | [`audit_spec_cross.md`](audit_spec_cross.md) | 已交叉（修复按 `audit_spec_cross.md` 第五节队列推进） |
+| 9 | 规范专项审查（分层桥接 / UI 动效 / 门禁契约） | [`audit_spec_a.md`](audit_spec_a.md) / [`b`](audit_spec_b.md) / [`c`](audit_spec_c.md) | [`audit_spec_cross.md`](audit_spec_cross.md) | 已收口（修复记录 `audit_spec_a_c_fixed.md` / `audit_spec_b_fixed.md`；剩余见收敛总表） |
+| 10 | 发布后复查（下载 / DNS 功能） | [`postrelease_download_audit.md`](postrelease_download_audit.md) / [`postrelease_dns_audit.md`](postrelease_dns_audit.md) | 主会话交叉 | 已收口（12.6.1 / 12.6.2 修复） |
+| 11 | UI 全面审查（控件语义 / 动效 / 操作逻辑 / 屏幕尺寸 / 输入方式） | [`audit_ui_full.md`](audit_ui_full.md) | 主会话交叉 | 部分（P1/P2 已修，真机专项按报告排期） |
 
 ## 各批 P0 / P1 口径
 
@@ -46,6 +48,13 @@ P0/P1 计数取自各交叉报告**确证并裁决后**的口径（原始发现�
 | [`audit_net_data.md`](audit_net_data.md) | 网络 + 数据层专项 |
 | [`audit_debug_empty_fail.md`](audit_debug_empty_fail.md) | 启动空白排查 |
 | [`5layer-audit-todo.md`](5layer-audit-todo.md) | 五层审计遗留待办 |
+| [`audit_layering_principles.md`](audit_layering_principles.md) | 层级桥接与模块独立原则只读专项 |
+| [`audit_spec_a_c_fixed.md`](audit_spec_a_c_fixed.md) | 批 9 规范 / 契约修复记录 |
+| [`audit_spec_b_fixed.md`](audit_spec_b_fixed.md) | 批 9 UI 动效 / 细节修复与未修理由 |
+| [`download_fix_notes.md`](download_fix_notes.md) | 下载三件套修复笔记（LTS 前） |
+| [`discover_polish_notes.md`](discover_polish_notes.md) | 发现页打磨逐项记录 |
+| [`CONVERGENCE_STATUS.md`](CONVERGENCE_STATUS.md) | **待收敛条权威现状总表**（实测口径，含第九节批 12 结论） |
+| [`PERF.md`](PERF.md) | 性能预算与实测 |
 
 ## 纪律
 

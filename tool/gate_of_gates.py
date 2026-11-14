@@ -44,11 +44,17 @@ GATES: list[tuple[str, list[str], str]] = [
     ('facade_audit', ['--fatal'], '门面类型面审计'),
     ('action_pin_audit', ['--fatal'], 'Action 版本守卫'),
     ('motion_coverage_audit', ['--fatal'], '动效档位覆盖守卫'),
+    # ★ 整理仓库时补：version_sync 曾依赖 CWD 且未被纳入元验证；
+    #   现已 __file__ 定根，并要求输出带真实版本号证据。
+    ('version_sync', [], '[version_sync] 一致：'),
 ]
 
 # 期望「扫描对象数 > 0」的关键字。layer/i18n/motion 的输出里带数量，
 # 其余至少要有「通过」以外的实质报告行。
-POSITIVE_HINTS = ('文件总数：', '扫描', '审计', '合计', 'workflow', '语言清单一致')
+POSITIVE_HINTS = (
+    '文件总数：', '扫描', '审计', '合计', 'workflow', '语言清单一致',
+    '[version_sync] 一致：',
+)
 
 
 def run_gate(name: str, extra: list[str], cwd: str) -> tuple[int, str]:

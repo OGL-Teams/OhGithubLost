@@ -1,8 +1,9 @@
 # AGENTS.md — OhGithubLost 工程规范与代码地图
 
-> 面向 AI 助手与贡献者的项目导读。项目：Flutter 多平台 GitHub 客户端（v12.5.2，Apache-2.0），
-> Android / Windows / Linux / Web。文件 / 行数 / 测试数量等计量数字一律以
-> `find`/`wc` 实测或 `tool/version_sync.py` 校验为准，本文不维护具体计数快照
+> 面向 AI 助手与贡献者的项目导读。项目：Flutter 多平台 GitHub 客户端（Apache-2.0），
+> Android / Windows / Linux / Web。版本号以 `pubspec.yaml` 与
+> `tool/version_sync.py` 为准，文件 / 行数 / 测试数量等计量数字一律以
+> `find`/`wc` 实测为准；本文不维护任何计数或版本快照
 > （避免「文档数字静默腐烂」，见 docs/audit_spec_c.md C-01）。
 > 工程底线：**数据可靠性 + 失败如实可见** —— 不静默降级、不预置加速通道、不掩盖版本冲突。
 

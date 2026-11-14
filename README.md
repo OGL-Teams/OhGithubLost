@@ -2,7 +2,7 @@
 
 # OhGithubLost
 
-**GitHub 仓库管理客户端 · v12.5.2**
+**GitHub 仓库管理客户端 · 当前版本见 [Releases](https://github.com/OGL-Teams/OhGithubLost/releases)**
 
 Android · Windows · Linux · Web
 
