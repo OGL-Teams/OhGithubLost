@@ -9,6 +9,8 @@
 /// 不放任何预留位：没有内容的东西不占屏幕。
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
