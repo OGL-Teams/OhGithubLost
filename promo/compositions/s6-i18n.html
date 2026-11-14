@@ -57,24 +57,24 @@
       color: var(--md-on-surface);
     }
     #s6-track {
-      position: absolute; left: 96px; top: 776px; width: 1280px; height: 2px;
+      position: absolute; left: 96px; top: 776px; width: 1200px; height: 2px;
       background: var(--md-outline-variant);
       transform-origin: left center;
     }
     /* 把手：12x12、圆角 4、primary 方块（中心对齐轨道；初始在第 1 档 x=90） */
     #s6-handle {
-      position: absolute; left: 90px; top: 770px; width: 12px; height: 12px;
+      position: absolute; left: 90px; top: 770px; width: 12px; height: 12px; z-index: 6;
       border-radius: 4px; background: var(--md-primary);
     }
     .s6-tick {
-      position: absolute; top: 804px; width: 200px;
+      position: absolute; top: 804px; width: 160px; z-index: 6;
       font-family: var(--md-mono); font-size: 20px; font-weight: 500;
       letter-spacing: 0.5px; color: var(--md-on-surface-variant);
     }
     #s6-tick-1 { left: 96px; }
-    #s6-tick-2 { left: 512px; }
-    #s6-tick-3 { left: 928px; }
-    #s6-tick-4 { left: 1344px; }
+    #s6-tick-2 { left: 464px; }
+    #s6-tick-3 { left: 832px; }
+    #s6-tick-4 { left: 1200px; }
     #s6-stage { position: absolute; inset: 0; }
   </style>
 
@@ -141,7 +141,7 @@
     tl.fromTo("#s6-handle", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "power2.out" }, 1.8);
 
     /* 3.2s 把手从第 1 档移到第 4 档（x 位移 480 * 3 = 1440px，1.4s power2.inOut） */
-    tl.fromTo("#s6-handle", { x: 0 }, { x: 1248, duration: 1.4, ease: "power2.inOut", immediateRender: false }, 3.2);
+    tl.fromTo("#s6-handle", { x: 0 }, { x: 1104, duration: 1.4, ease: "power2.inOut", immediateRender: false }, 3.2);
 
     /* 静止段填充：截图 4.9s 起 1→1.02 微推 */
     tl.fromTo("#s6-shot", { scale: 1 }, { scale: 1.02, duration: 1.0, ease: "power2.inOut", immediateRender: false }, 4.9);
