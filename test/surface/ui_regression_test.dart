@@ -342,12 +342,45 @@ void main() {
       );
       await tester.pump();
 
-      // ★ 工具栏背景条必须与下方代码区**同宽**（真机上曾窄一截、两端露白缝）。
       final double screen = tester.getSize(find.byType(Scaffold)).width;
       final double toolbar =
           tester.getSize(find.byType(OgLCodeEditorToolbar)).width;
       expect(toolbar, screen, reason: '工具栏没有铺满宽度，两端会露白缝');
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('设置页（单层进入式）', () {
+    test('根页只有入口，内部分组在子页', () {
+      final String source = _readSource('settings_page.dart');
+      final String child = _readSource('settings_section_page.dart');
+      // 根 build 内不得直接把 OgLSettingsGroup 平铺进 ListView
+      final int buildStart =
+          source.indexOf('Widget build(BuildContext context)');
+      final int entryStart = source.indexOf('Widget _entry(', buildStart);
+      final String rootBuild = source.substring(buildStart, entryStart);
+      expect(rootBuild.contains('_entry('), isTrue,
+          reason: '根页必须全部分类走 _entry 入口');
+      expect(rootBuild.contains('OgLSettingsGroup('), isFalse,
+          reason: '根页不得再出现可折叠分组（应移到子页）');
+      expect(rootBuild.contains('SettingsSectionPage('), isFalse,
+          reason: '子页构造集中在 _entry 内');
+      expect(source.contains('forceExpanded: true'), reason: '进入子页后内部分组默认展开');
+      expect(child.contains('class SettingsSectionPage'), isTrue);
+      // 文案精简：新摘要键六语言齐全
+      for (final String loc in <String>[
+        'zh',
+        'zh_Hant',
+        'en',
+        'de',
+        'fr',
+        'ru'
+      ]) {
+        final String json =
+            File('assets/i18n/$loc/settings.json').readAsStringSync();
+        expect(json.contains('"accountSummary"'), isTrue, reason: loc);
+        expect(json.contains('"aboutSummary"'), isTrue, reason: loc);
+      }
     });
   });
 }

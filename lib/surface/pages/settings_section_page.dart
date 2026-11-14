@@ -1,44 +1,42 @@
-/// L3 · 设置分区页（第二层 · 折叠式）。
+/// L3 展示级 · 设置子页（单层进入式的第二层）。
 ///
-/// 设置主页面是「分类入口」（第一层 · 进入式）：每个分类一个可点条目，
-/// push 到本页；本页里的**可折叠分组**（第二层 · 折叠式）由 [builders] 现建。
-///
-/// 折叠状态用 [collapseState]（一个 `ValueNotifier`）与主页面共享：切换展开
-/// 时这里重建、重新执行 builder，`OgLSettingsGroup` 的 `expanded` 随之更新。
+/// 根页只放分类入口；进入本页后才展开各个可折叠分组。
+/// 本页不持有任何设置状态：分组控件由 `settings_page.dart` 的状态构造后
+/// 传入，避免把控制器复制一份导致两边不同步。
 library;
 
 import 'package:flutter/material.dart';
 
+import '../app/animations.dart';
+import '../app/og_l_app_bar.dart';
 import '../util/og_l_space.dart';
 
-/// 设置分区页。
+/// 设置子页。
 class SettingsSectionPage extends StatelessWidget {
+  /// 创建。
   const SettingsSectionPage({
     required this.title,
-    required this.collapseState,
-    required this.builders,
+    required this.sections,
     super.key,
   });
 
+  /// 标题（简短）。
   final String title;
 
-  /// 与主页面共享的折叠状态。
-  final ValueNotifier<Set<String>> collapseState;
-
-  /// 每个 builder 返回一个 `OgLSettingsGroup`（现建，读到最新 `expanded`）。
-  final List<Widget Function()> builders;
+  /// 本分类下的可折叠分组。
+  final List<Widget> sections;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: ValueListenableBuilder<Set<String>>(
-        valueListenable: collapseState,
-        builder: (BuildContext context, Set<String> _, Widget? __) => ListView(
-          padding: const EdgeInsets.all(OgLSpace.lg),
-          children: <Widget>[for (final Widget Function() b in builders) b()],
+  Widget build(BuildContext context) => Scaffold(
+        appBar: OgLAppBar(title: title),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            OgLSpace.lg,
+            OgLSpace.md,
+            OgLSpace.lg,
+            OgLSpace.xl,
+          ),
+          children: OgLRevealList.of(context, sections),
         ),
-      ),
-    );
-  }
+      );
 }

@@ -54,6 +54,7 @@ import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
+import 'settings_section_page.dart';
 import 'onboarding_page.dart';
 import 'profile_page.dart';
 
@@ -449,86 +450,149 @@ class _SettingsPageState extends State<SettingsPage> {
     _notifier.success(_t('copiedLogLines', {'count': lines.length}));
   }
 
+  /// ★ 单层进入式：根页**只有入口**，没有任何折叠组。
+  /// 点分类 → SettingsSectionPage（子页内部分组可折叠）。
+  /// 分组控件仍由本 State 构造（捕获 _isOpen/_toggleGroup），
+  /// 子页只是展示容器，不复制状态。
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return Scaffold(
-      appBar: OgLAppBar(title: _t('title')),
-      // 根级子项逐个挂入场动画（[OgLRevealList] 自动错峰）；不再整页包一层
-      // `OgLReveal` —— 那会与路由过渡叠加成双重动画。
-      //
-      // 顶部 saveError 真的"置顶"：放在 body 顶的 Column 里、ListView 之前，
-      // 而不是塞进 ListView 的第一个 child——后者仍受 ListView padding 16
-      // 影响，视觉上与分组列表有 16px 间距，看起来不像"系统级告警"。
-      // 真正置顶 = 紧贴 AppBar 下方，与下面所有内容**视觉上断开**（无 16
-      // 顶部 padding + 自己的 ErrorContainer 配色 + AnimatedSize 过渡）。
-      body: ListenableBuilder(
-        listenable: _settings,
-        builder: (BuildContext context, Widget? _) {
-          final OgLSettings value = _settings.settings;
-          final String? saveError = _settings.lastError;
-          return Column(
+    return ListenableBuilder(
+      listenable: _settings,
+      builder: (BuildContext context, Widget? _) {
+        final OgLSettings value = _settings.settings;
+        final String? saveError = _settings.lastError;
+        return Scaffold(
+          appBar: OgLAppBar(title: _t('title')),
+          body: Column(
             children: <Widget>[
-              // 保存失败提示：常驻 `AnimatedSize` 承载条件内容（带过渡；
-              // 档位 0 时 `OgLAnim` 给零时长 = 立即展开）。
-              AnimatedSize(
-                duration: OgLAnim.medium(context),
-                curve: OgLAnim.curve(context),
-                alignment: Alignment.topCenter,
-                child: saveError == null
-                    ? const SizedBox(width: double.infinity)
-                    : Card(
-                        margin: const EdgeInsets.fromLTRB(
-                            OgLSpace.lg, OgLSpace.md, OgLSpace.lg, 0),
-                        color: theme.colorScheme.errorContainer,
-                        child: Padding(
-                          padding: const EdgeInsets.all(OgLSpace.md),
-                          child: Text(
-                            saveError,
-                            style: TextStyle(
-                              color: theme.colorScheme.onErrorContainer,
-                            ),
-                          ),
-                        ),
-                      ),
-              ),
+              if (saveError != null)
+                Card(
+                  margin: const EdgeInsets.fromLTRB(
+                      OgLSpace.lg, OgLSpace.md, OgLSpace.lg, 0),
+                  color: theme.colorScheme.errorContainer,
+                  child: Padding(
+                    padding: const EdgeInsets.all(OgLSpace.md),
+                    child: Text(saveError,
+                        style: TextStyle(
+                            color: theme.colorScheme.onErrorContainer)),
+                  ),
+                ),
               Expanded(
                 child: ListView(
-                  // 顶部 padding 收紧：saveError 已经占满了顶部视觉，分组
-                  // 列表只留 8px 间距即可。
                   padding: const EdgeInsets.fromLTRB(
-                      OgLSpace.lg, OgLSpace.sm, OgLSpace.lg, OgLSpace.lg),
+                      OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xl),
                   children: OgLRevealList.of(context, <Widget>[
-                    // 根级只有「5 个可折叠分组 + 账户条 + 1 个危险区」：
-                    // 账户 → 界面 → 代码与文件 → 存储与网络 → 关于与帮助 →
-                    // 日志，危险区在最底。一屏正好 5~7 个可点条目。
-                    _accountCard(theme),
-                    _interfaceGroup(theme, value),
-                    _codeGroup(context, theme, value),
-                    _storageGroup(theme, value),
-                    _aboutGroup(theme),
-                    _logsGroup(theme),
-                    // 危险区：与上面所有分组**双重拉开**（留白 + 分隔线 + 告警配色），
-                    // 免得"收尾顺手点一下"就把设置全清了。
-                    const SizedBox(height: OgLSpace.sm),
-                    Divider(
-                        height: 28, color: theme.colorScheme.outlineVariant),
-                    OgLSettingsDangerCard(
-                      title: _t('dangerZone'),
-                      actionTitle: _t('resetSettings'),
-                      actionSubtitle: _t('restoreDefaults'),
-                      onTap: _reset,
+                    _entry(
+                      context,
+                      icon: Icons.person_outline,
+                      title: _t('account'),
+                      subtitle: _accountSummary(),
+                      sections: <Widget>[_accountCard(theme)],
                     ),
-                    const SizedBox(height: OgLSpace.xl),
+                    _entry(
+                      context,
+                      icon: Icons.tune,
+                      title: _t('groupInterface'),
+                      subtitle: _interfaceSummary(value),
+                      sections: <Widget>[
+                        _interfaceGroup(theme, value, forceExpanded: true)
+                      ],
+                    ),
+                    _entry(
+                      context,
+                      icon: Icons.code,
+                      title: _t('codeAndFiles'),
+                      subtitle: _codeSummary(value),
+                      sections: <Widget>[
+                        _codeGroup(context, theme, value, forceExpanded: true)
+                      ],
+                    ),
+                    _entry(
+                      context,
+                      icon: Icons.storage,
+                      title: _t('groupStorageNetwork'),
+                      subtitle: _storageSummary(value),
+                      sections: <Widget>[
+                        _storageGroup(theme, value, forceExpanded: true)
+                      ],
+                    ),
+                    _entry(
+                      context,
+                      icon: Icons.help_outline,
+                      title: _t('groupAboutHelp'),
+                      subtitle: _aboutSummary(),
+                      sections: <Widget>[
+                        _aboutGroup(theme, forceExpanded: true)
+                      ],
+                    ),
+                    _entry(
+                      context,
+                      icon: Icons.description_outlined,
+                      title: _t('logs'),
+                      subtitle: _logsSummary(),
+                      sections: <Widget>[
+                        _logsGroup(theme, forceExpanded: true)
+                      ],
+                    ),
+                    const Divider(height: 28),
+                    _entry(
+                      context,
+                      icon: Icons.warning_amber_outlined,
+                      title: _t('dangerZone'),
+                      subtitle: _t('resetSettings'),
+                      danger: true,
+                      sections: <Widget>[
+                        OgLSettingsDangerCard(
+                          title: _t('dangerZone'),
+                          actionTitle: _t('resetSettings'),
+                          actionSubtitle: _t('restoreDefaults'),
+                          onTap: _reset,
+                        ),
+                      ],
+                    ),
                   ]),
                 ),
               ),
             ],
-          );
-        },
+          ),
+        );
+      },
+    );
+  }
+
+  /// 单个入口行：点进子页；子页内是原来的可折叠分组。
+  Widget _entry(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Widget> sections,
+    bool danger = false,
+  }) {
+    final ThemeData theme = Theme.of(context);
+    final Color fg =
+        danger ? theme.colorScheme.error : theme.colorScheme.onSurface;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.only(bottom: OgLSpace.sm),
+      child: ListTile(
+        leading: Icon(icon, color: fg),
+        title: Text(title, style: TextStyle(color: fg)),
+        subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (BuildContext _) => SettingsSectionPage(
+            title: title,
+            sections: sections,
+          ),
+        )),
       ),
     );
   }
+
+  /// 账户入口摘要（登录状态由 _accountFuture 决定，这里只给静态兜底）。
+  String _accountSummary() => _t('accountSummary');
 
   // ───────────────────────── 各分组 ─────────────────────────
 
@@ -543,14 +607,15 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 能"选一个"的走**选择行**（右侧显示当前值，点开弹窗），只有连续量
   /// （文字缩放）留滑杆。原来平铺的色板 / 分段按钮会把一屏的可点条目从
   /// 6 个挤到 2 个，而且每换一个值都要在一整张长卡里找目标。
-  Widget _interfaceGroup(ThemeData theme, OgLSettings value) {
+  Widget _interfaceGroup(ThemeData theme, OgLSettings value,
+      {bool? forceExpanded}) {
     final int motion =
         value.motionLevel.clamp(0, _motionShort.length - 1).toInt();
     return OgLSettingsGroup(
       title: _t('groupInterface'),
       subtitle: _interfaceSummary(value),
       leading: const Icon(Icons.tune),
-      expanded: _isOpen('interface'),
+      expanded: forceExpanded ?? _isOpen('interface'),
       onToggle: (bool open) => _toggleGroup('interface', open),
       expandLabel: _t('expandGroup'),
       collapseLabel: _t('collapseGroup'),
@@ -895,13 +960,14 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _codeGroup(
     BuildContext context,
     ThemeData theme,
-    OgLSettings value,
-  ) =>
+    OgLSettings value, {
+    bool? forceExpanded,
+  }) =>
       OgLSettingsGroup(
         title: _t('codeAndFiles'),
         subtitle: _codeSummary(value),
         leading: const Icon(Icons.code),
-        expanded: _isOpen('code'),
+        expanded: forceExpanded ?? _isOpen('code'),
         onToggle: (bool open) => _toggleGroup('code', open),
         expandLabel: _t('expandGroup'),
         collapseLabel: _t('collapseGroup'),
@@ -1214,11 +1280,13 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 两项各自是"独立设置面"：一个决定文件落到哪里，一个决定请求怎么出去。
   /// 网络那页内容多（DNS / 下载并发 / 加速通道），仍是**独立子页面**，
   /// 这里只留入口，组内不再重复它的条目。
-  Widget _storageGroup(ThemeData theme, OgLSettings value) => OgLSettingsGroup(
+  Widget _storageGroup(ThemeData theme, OgLSettings value,
+          {bool? forceExpanded}) =>
+      OgLSettingsGroup(
         title: _t('groupStorageNetwork'),
         subtitle: _storageSummary(value),
         leading: const Icon(Icons.storage_outlined),
-        expanded: _isOpen('storage'),
+        expanded: forceExpanded ?? _isOpen('storage'),
         onToggle: (bool open) => _toggleGroup('storage', open),
         expandLabel: _t('expandGroup'),
         collapseLabel: _t('collapseGroup'),
@@ -2029,11 +2097,12 @@ class _SettingsPageState extends State<SettingsPage> {
   /// "许可"卡片）。它们同属"看说明 / 找人帮忙"，合并后根级少三个卡片；
   /// 顺带把危险动作（重置）从"维护"里摘出去 —— 它现在单独在危险区，
   /// 不再和"权限与引导"当邻居。
-  Widget _aboutGroup(ThemeData theme) => OgLSettingsGroup(
+  Widget _aboutGroup(ThemeData theme, {bool? forceExpanded}) =>
+      OgLSettingsGroup(
         title: _t('groupAboutHelp'),
         subtitle: _aboutSummary(),
         leading: const Icon(Icons.help_outline),
-        expanded: _isOpen('about'),
+        expanded: forceExpanded ?? _isOpen('about'),
         onToggle: (bool open) => _toggleGroup('about', open),
         expandLabel: _t('expandGroup'),
         collapseLabel: _t('collapseGroup'),
@@ -2209,17 +2278,19 @@ class _SettingsPageState extends State<SettingsPage> {
   ///
   /// 外层再订阅一次日志：收起态的**摘要**要显示"写没写、写了多少行"，
   /// 它随日志增长变化；正文仍由内层 `ListenableBuilder` 承载（收起不构建）。
-  Widget _logsGroup(ThemeData theme) => ListenableBuilder(
+  Widget _logsGroup(ThemeData theme, {bool? forceExpanded}) =>
+      ListenableBuilder(
         listenable: OgLAppLog.instance,
-        builder: (BuildContext context, Widget? _) => _logsCard(theme),
+        builder: (BuildContext context, Widget? _) =>
+            _logsCard(theme, forceExpanded: forceExpanded),
       );
 
   /// 日志分组卡片本体。
-  Widget _logsCard(ThemeData theme) => OgLSettingsGroup(
+  Widget _logsCard(ThemeData theme, {bool? forceExpanded}) => OgLSettingsGroup(
         title: _t('logs'),
         subtitle: _logsSummary(),
         leading: const Icon(Icons.description_outlined),
-        expanded: _isOpen('logs'),
+        expanded: forceExpanded ?? _isOpen('logs'),
         onToggle: (bool open) => _toggleGroup('logs', open),
         expandLabel: _t('expandGroup'),
         collapseLabel: _t('collapseGroup'),
