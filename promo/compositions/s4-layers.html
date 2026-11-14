@@ -73,14 +73,14 @@
   </style>
 
   <div id="root" data-composition-id="s4-layers" data-width="1920" data-height="1080">
-    <div id="s4-grid" class="clip" data-start="0" data-duration="9" data-track-index="0"></div>
+    <div id="s4-grid" class="clip" data-start="0" data-duration="9.2" data-track-index="0"></div>
 
-    <div id="s4-head" class="clip" data-start="0" data-duration="9" data-track-index="2">
+    <div id="s4-head" class="clip" data-start="0" data-duration="9.2" data-track-index="2">
       <div id="s4-kicker" class="kicker">03 · Architecture</div>
       <div id="s4-title" class="h2">kernel → base → domain → surface</div>
     </div>
 
-    <div id="s4-stack" class="clip" data-start="0" data-duration="9" data-track-index="3">
+    <div id="s4-stack" class="clip" data-start="0" data-duration="9.2" data-track-index="3">
       <div id="s4-layer-surface" class="s4-layer" style="top:800px">
         <span class="s4-name">surface</span>
         <span class="s4-desc">pages · i18n · anim</span>
@@ -118,7 +118,7 @@
       </g>
     </svg>
 
-    <div id="s4-side" class="clip" data-start="0" data-duration="9" data-track-index="4">
+    <div id="s4-side" class="clip" data-start="0" data-duration="9.2" data-track-index="4">
       <div class="s4-line-out">$ tool/layer_audit.py --fatal</div>
       <div class="s4-line-out"><span class="ok">ok</span> surface → base</div>
       <div class="s4-line-out"><span class="ok">ok</span> base → domain</div>
@@ -128,7 +128,7 @@
       <div id="s4-verdict">✓ 层级校验通过</div>
     </div>
 
-    <div id="s4-wipe" class="clip" data-start="0" data-duration="9" data-track-index="9"></div>
+    <div id="s4-wipe" class="clip" data-start="0" data-duration="9.2" data-track-index="9"></div>
   </div>
 
   <script>
@@ -171,7 +171,7 @@
     tl.to("#s4-violation-line, #s4-violation-head, #s4-block", { opacity: 0, duration: 0.55, ease: "power2.out" }, 6.5);
     tl.fromTo("#s4-verdict", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 6.9);
     tl.fromTo("#s4-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
-      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 8.5);
+      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 8.7);
     window.__timelines["s4-layers"] = tl;
   </script>
 </template>

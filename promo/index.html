@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
-    <title>OhGithubLost · Promo</title>
+    <title>OhGithubLost · Promo · Wordless Cut</title>
     <script src="assets/vendor/gsap.min.js"></script>
     <style>
       :root {
@@ -43,7 +43,6 @@
         position: absolute; inset: 0;
         width: 1920px; height: 1080px;
       }
-      /* 全局胶片质感：极轻的暗角，静态、确定性 */
       #vignette {
         position: absolute; inset: 0; pointer-events: none; z-index: 90;
         background: radial-gradient(ellipse 78% 68% at 50% 46%,
@@ -56,7 +55,21 @@
           0deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px,
           transparent 1px, transparent 3px);
       }
-      /* ── 共用设计令牌（子 composition 挂在同一个文档里，可直接复用） ── */
+      /* 卡点闪层：只在 7 个真实 onset 上出现，确定性 */
+      #beat-flash {
+        position: absolute; inset: 0; pointer-events: none; z-index: 89;
+        background: radial-gradient(ellipse 60% 55% at 50% 50%,
+                    rgba(88,166,255,0.34) 0%, rgba(9,105,218,0.08) 46%, rgba(0,0,0,0) 75%);
+        opacity: 0;
+      }
+      /* 实机截图共用的取景框（由各场景自行摆放） */
+      .shot {
+        position: absolute;
+        object-fit: cover;
+        border-radius: 22px;
+        border: 1px solid rgba(139,148,158,0.30);
+        box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+      }
       .mono { font-family: var(--font-mono); }
       .kicker {
         font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.22em;
@@ -97,67 +110,82 @@
          data-composition-id="main"
          data-start="0" data-duration="56"
          data-width="1920" data-height="1080"
-         data-composition-variables='[{"id":"product","type":"string","label":"Product","default":"OhGithubLost"},{"id":"tagline","type":"string","label":"Tagline","default":"GitHub 的日常 · 不必打开浏览器"}]'>
+         data-composition-variables='[{"id":"product","type":"string","label":"Product","default":"OhGithubLost"},{"id":"tagline","type":"string","label":"Tagline","default":"不折腾 · 装上就能用"},{"id":"cta","type":"string","label":"CTA","default":"搜 OhGithubLost · 下载即用"}]'>
 
-      <!-- 8 个场景：每个 host 的 id == 子 composition 的 id == timeline key -->
+      <!-- 切点来自 Wordless 真实 onset：0 / 6.8 / 14.1 / 23.0 / 32.2 / 40.2 / 46.2 / 52.3 / 56 -->
       <div id="s1-hook" class="clip scene-host"
            data-composition-id="s1-hook"
            data-composition-src="compositions/s1-hook.html"
-           data-start="0" data-duration="6" data-track-index="1"
+           data-start="0" data-duration="6.8" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
       <div id="s2-repo" class="clip scene-host"
            data-composition-id="s2-repo"
            data-composition-src="compositions/s2-repo.html"
-           data-start="6" data-duration="8" data-track-index="1"
+           data-start="6.8" data-duration="7.3" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
       <div id="s3-collab" class="clip scene-host"
            data-composition-id="s3-collab"
            data-composition-src="compositions/s3-collab.html"
-           data-start="14" data-duration="9" data-track-index="1"
+           data-start="14.1" data-duration="8.9" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
       <div id="s4-layers" class="clip scene-host"
            data-composition-id="s4-layers"
            data-composition-src="compositions/s4-layers.html"
-           data-start="23" data-duration="9" data-track-index="1"
+           data-start="23.0" data-duration="9.2" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
       <div id="s5-trust" class="clip scene-host"
            data-composition-id="s5-trust"
            data-composition-src="compositions/s5-trust.html"
-           data-start="32" data-duration="8" data-track-index="1"
+           data-start="32.2" data-duration="8.0" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
       <div id="s6-i18n" class="clip scene-host"
            data-composition-id="s6-i18n"
            data-composition-src="compositions/s6-i18n.html"
-           data-start="40" data-duration="6" data-track-index="1"
+           data-start="40.2" data-duration="6.0" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
       <div id="s7-platforms" class="clip scene-host"
            data-composition-id="s7-platforms"
            data-composition-src="compositions/s7-platforms.html"
-           data-start="46" data-duration="6" data-track-index="1"
+           data-start="46.2" data-duration="6.1" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
       <div id="s8-end" class="clip scene-host"
            data-composition-id="s8-end"
            data-composition-src="compositions/s8-end.html"
-           data-start="52" data-duration="4" data-track-index="1"
+           data-start="52.3" data-duration="3.7" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
+      <div id="beat-flash" class="clip" data-start="0" data-duration="56" data-track-index="7"></div>
       <div id="vignette" class="clip" data-start="0" data-duration="56" data-track-index="8"></div>
       <div id="grain" class="clip" data-start="0" data-duration="56" data-track-index="8"></div>
 
-      <audio id="bgm" src="assets/audio/bgm.wav"
-             data-start="0" data-duration="56" data-track-index="9" data-volume="0.85"></audio>
+      <!-- 主音轨：HOYO-MiX《子不语 Wordless》(28–84s 裁段，56s)。
+           原曲为 FLAC-in-mp3 容器，转成 44.1k AAC/MP3 供浏览器稳定解码。
+           版权归原作者所有；此文件仅随 video 分支用于本次宣传片样片。 -->
+      <audio id="bgm" src="assets/audio/wordless-56s.mp3"
+             data-start="0" data-duration="56" data-track-index="9" data-volume="0.92"></audio>
+      <!-- 合成 BGM 保留为可选备用轨，默认静音（data-volume=0），不参与混音 -->
+      <audio id="bgm-fallback" src="assets/audio/bgm.wav"
+             data-start="0" data-duration="56" data-track-index="10" data-volume="0"></audio>
     </div>
 
     <script>
       window.__timelines = window.__timelines || {};
-      window.__timelines["main"] = gsap.timeline({ paused: true });
+      // 根时间线只负责 7 个卡点闪层；子场景由 runtime 各自 seek。
+      const tl = gsap.timeline({ paused: true });
+      const cuts = [0, 6.8, 14.1, 23.0, 32.2, 40.2, 46.2, 52.3];
+      cuts.slice(1).forEach(function (t) {
+        tl.fromTo("#beat-flash", { opacity: 0 },
+          { opacity: 0.55, duration: 0.07, ease: "power2.out" }, t);
+        tl.to("#beat-flash", { opacity: 0, duration: 0.24, ease: "power2.in" }, t + 0.07);
+      });
+      window.__timelines["main"] = tl;
     </script>
   </body>
 </html>

@@ -19,10 +19,16 @@
     #s3-kicker { opacity: 0; }
     #s3-title { margin-top: 22px; opacity: 0; font-size: 66px; }
     #s3-sub { margin-top: 26px; opacity: 0; font-size: 28px; }
+    #s3-evidence {
+      position: absolute; left: 112px; top: 344px;
+      font-family: var(--font-mono); font-size: 26px; color: var(--muted);
+      opacity: 0; white-space: nowrap;
+    }
+    #s3-evidence .ver { color: var(--accent); font-weight: 700; }
 
-    #s3-row { position: absolute; left: 112px; top: 430px; display: flex; gap: 24px; }
+    #s3-row { position: absolute; left: 112px; top: 452px; display: flex; gap: 24px; }
     .s3-card {
-      width: 320px; height: 420px; padding: 30px 26px;
+      width: 320px; height: 404px; padding: 30px 26px;
       display: flex; flex-direction: column; opacity: 0;
     }
     .s3-card-head { display: flex; align-items: center; gap: 14px; }
@@ -65,16 +71,21 @@
   </style>
 
   <div id="root" data-composition-id="s3-collab" data-width="1920" data-height="1080">
-    <div id="s3-grid" class="clip" data-start="0" data-duration="9" data-track-index="0"></div>
-    <div id="s3-glow" class="clip" data-start="0" data-duration="9" data-track-index="0"></div>
+    <div id="s3-grid" class="clip" data-start="0" data-duration="8.9" data-track-index="0"></div>
+    <div id="s3-glow" class="clip" data-start="0" data-duration="8.9" data-track-index="0"></div>
 
-    <div id="s3-head" class="clip" data-start="0" data-duration="9" data-track-index="2">
+    <div id="s3-head" class="clip" data-start="0" data-duration="8.9" data-track-index="2">
       <div id="s3-kicker" class="kicker">02 · Collaboration</div>
-      <div id="s3-title" class="h2">Issues / PR / Releases / Actions / Gist</div>
-      <div id="s3-sub" class="sub">五个协作面板 · 状态条逐条扫出</div>
+      <div id="s3-title" class="h2">Issues · PR · Releases · Actions · Gist</div>
+      <div id="s3-sub" class="sub">不用来回切网页<span class="accent">，</span>五个入口都在底部导航</div>
     </div>
 
-    <div id="s3-row" class="clip" data-start="0" data-duration="9" data-track-index="3">
+    <div id="s3-evidence" class="clip" data-start="0" data-duration="8.9" data-track-index="2">
+      <span class="ver">12.6.3 → 12.6.9</span> · 7 天连续打磨<br/>
+      发现页分类筛选 · 设置页平铺 · 键盘快捷键 · 字体缓存校验 · 18 道离线门禁
+    </div>
+
+    <div id="s3-row" class="clip" data-start="0" data-duration="8.9" data-track-index="3">
       <div id="s3-card-1" class="card s3-card">
         <div class="s3-card-head"><i class="s3-dot" id="s3-dot-1"></i><span class="s3-name">ISSUES</span></div>
         <div class="s3-hair"></div>
@@ -111,12 +122,12 @@
       </div>
     </div>
 
-    <div id="s3-foot" class="clip" data-start="0" data-duration="9" data-track-index="4">
+    <div id="s3-foot" class="clip" data-start="0" data-duration="8.9" data-track-index="4">
       <span class="pill"><i class="dot"></i>issues · pull requests · releases · actions · gists</span>
       <span class="pill"><i class="dot"></i>状态实时可见</span>
     </div>
 
-    <div id="s3-wipe" class="clip" data-start="0" data-duration="9" data-track-index="9"></div>
+    <div id="s3-wipe" class="clip" data-start="0" data-duration="8.9" data-track-index="9"></div>
   </div>
 
   <script>
@@ -126,6 +137,9 @@
     tl.fromTo("#s3-kicker", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.2);
     tl.fromTo("#s3-title", { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.35);
     tl.fromTo("#s3-sub", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0.6);
+    /* 真实更新日志证据条（v12.6.3 → v12.6.9），淡入对齐 1.2s 卡点 */
+    tl.fromTo("#s3-evidence", { opacity: 0, y: 18 },
+      { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 1.2);
     /* 五张卡片横排错峰上浮 */
     tl.fromTo(".s3-card", { opacity: 0, y: 44 },
       { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, ease: "power3.out" }, 0.75);
@@ -138,13 +152,13 @@
     tl.fromTo(".s3-status", { opacity: 0, y: 14 },
       { opacity: 1, y: 0, duration: 0.45, stagger: 0.12, ease: "power2.out" }, 1.6);
     /* Releases 卡片一次 camera push 后回位 */
-    tl.to("#s3-card-3", { scale: 1.15, duration: 0.5, ease: "power3.out" }, 3.5);
-    tl.to("#s3-card-3", { scale: 1, duration: 0.5, ease: "power3.inOut" }, 4.15);
+    tl.fromTo("#s3-card-3", { scale: 1 }, { scale: 1.15, duration: 0.5, ease: "power3.out", immediateRender: false }, 3.5);
+    tl.fromTo("#s3-card-3", { scale: 1.15 }, { scale: 1, duration: 0.5, ease: "power3.inOut", immediateRender: false }, 4.15);
     /* 底部摘要条 */
     tl.fromTo(".s3-foot .pill", { opacity: 0, y: 20 },
       { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power3.out" }, 5.1);
     tl.fromTo("#s3-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
-      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 8.5);
+      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 8.4);
     window.__timelines["s3-collab"] = tl;
   </script>
 </template>

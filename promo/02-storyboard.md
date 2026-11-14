@@ -1,23 +1,36 @@
-# OGL 宣传片 · 分镜（02-storyboard）
+# OGL 宣传片 · 分镜（02-storyboard）· v2 · Wordless 卡点版
 
-片长 56s · 1920×1080 · 30fps · 无配音 · BGM 96 BPM（ beats 网格见 `assets/audio/bgm-beats.json`）
+片长 56s · 1920×1080 · 30fps · 无配音
+音轨：HOYO-MiX《子不语 Wordless》28–84s 裁段
+定位：**新手开发者 + 尝鲜极客**
+切点来自 8kHz 频谱通量 onset 分析：`0 / 6.8 / 14.1 / 23.0 / 32.2 / 40.2 / 46.2 / 52.3 / 56`
+根 composition 在每个切点有 0.07s 入 / 0.24s 出的品牌蓝 `#beat-flash`。
 
-| # | 时间 | 画面 | 文案 | 动效 / 转场 | 真实信号 |
-|---|---|---|---|---|---|
-| 1 | 0.0–6.0 | 深蓝网格地面，逐行"流式"写出仓库文件树，光标闪烁于 `lib/main.dart` | `GitHub 的日常` / `不必打开浏览器` | 网格线由中心扩散；标题 blur→clear + y 上浮 0.5s；文字逐字显现；6s impact 切 | `lib/` 真实五层目录名 |
-| 2 | 6.0–14.0 | 镜头推入窗口骨架：左侧导航、中间文件树、右侧代码区，光标点击 `repo_page.dart`，右侧面板平滑展开 | `仓库 · 目录 · 提交` | camera push 0.55s + 面板 morph（宽度/圆角过渡而非硬切）；代码行错峰上浮 | `repo_page.dart`、`code_editor_page.dart`、提交与冲突处理 |
-| 3 | 14.0–23.0 | 五个协作标签依次点亮，每个标签带一条真实状态条（Issue #、PR diff、Release tag、Action run、Gist） | `Issues / PR / Releases / Actions / Gist` | 标签 stagger 0.1s；状态条从 0 宽度扫出；23s impact | README 协作面板段落 |
-| 4 | 23.0–32.0 | 四层架构块从下往上叠放，箭头只允许向下，越界箭头被红色拦下并淡出 | `kernel → base → domain → surface` / `依赖方向，CI 强制` | 层块 spring-free 上浮；`layer_audit.py --fatal` 以终端字符打出；箭头 tracing | 真实架构与门禁脚本名 |
-| 5 | 32.0–40.0 | 网络韧性：三个请求节点 → 第一次失败如实红标 → 自动重试成功 → 令牌进保险箱图标 | `失败如实可见` / `令牌只在本机` | 节点连线绘制；失败标记不静默消失；保险箱关闭 0.4s | README 网络韧性 / 令牌安全 |
-| 6 | 40.0–46.0 | 六面语言旗 + 四档动效滑块，滑块从左到右拖动时背景粒子密度变化 | `6 语言 · 4 档动效` | 旗子错峰翻转；滑块 transform 位移；密度渐变（确定性） | `assets/i18n/` 六目录 / 动效四档 |
-| 7 | 46.0–52.0 | 四平台图标从中心向外就位，Web 窗口以 wasm 徽标收束 | `Android · Windows · Linux · Web` | 图标弧线入场；镜头轻微 pull back；52s 切 | README 平台支持表 |
-| 8 | 52.0–56.0 | End card：OGL SVG 图标填充升起 + 字标 wipe in，底部命令 `flutter pub get && flutter run` | `OhGithubLost` / `开源 · Apache-2.0` | 图标 fill-rise 0.7s，字标 wipe 0.5s，CTA 保持 2.5s | 仓库真实图标 SVG 与许可证 |
+| # | 全局时间 | 局部时长 | 画面 | 文案 | 动效 / 卡点 | 真实证据 |
+|---|---|---|---|---|---|---|
+| 1 | 0.0–6.8 | 6.8 | 深蓝网格 + 真实文件树；右侧大标题 | 「第一次用 GitHub / 也能直接上手」「装上就登录 · 仓库、议题、更新都在一个 App 里」「不用配环境，不用开浏览器」「v12.6.9 · 18 道离线门禁全通过」 | 0.9s 标题 blur→clear 错峰；6.3s wipe 起，6.8s 切点闪 | `lib/` 五层目录、v12.6.9 日志 |
+| 2 | 6.8–14.1 | 7.3 | **实机截图** 01-home + 02-discover 并排取景 | 「仓库一眼看全」「发现页：别人的项目、议题、CI 动态」「实机截图 · Android」 | 两图依次 scale 1→1.12→1 连续推入（0.55s power3.inOut），第二张晚 0.3s；6.8s 切点闪；6.8s wipe 收 | 用户提供的 Android 截图 |
+| 3 | 14.1–23.0 | 8.9 | 五张协作卡 + 顶部更新日志证据条 | 「Issues · PR · Releases · Actions · Gist」「不用来回切网页，五个入口都在底部导航」「12.6.3 → 12.6.9 · 7 天连续打磨」「发现页分类筛选 · 设置页平铺 · 键盘快捷键 · 字体缓存校验 · 18 道离线门禁」 | 证据条 1.2s 淡入；卡片 stagger 0.1；状态条 scaleX 扫出；14.1s 切点闪 | `changed/_posts` v12.6.3/8/9 |
+| 4 | 23.0–32.2 | 9.2 | 四层架构块 + 越界箭头被拦截 + 终端字符 | 「kernel → base → domain → surface」「依赖方向只能向下」「tool/layer_audit.py --fatal」 | 层块上浮 stagger 0.14；SVG 箭头 trace；23.0s 切点闪 | README 架构 + 门禁脚本名 |
+| 5 | 32.2–40.2 | 8.0 | 左：429→retry→200 全过程；右：**实机截图** 03-profile | 「出错会告诉你」「令牌只留在本机」「不用猜哪里失败了，也不怕账号留在别人设备上」「退出登录会删除本机保存的令牌」「草稿箱 · 没有未提交的草稿」 | 失败标记停留 1.2s 后才转成功；截图 32.2s 后推入；切点闪 | 截图原文 + README 网络韧性 |
+| 6 | 40.2–46.2 | 6.0 | 六语言胶囊 + 四档动效滑块 + **实机截图** 04-settings | 「6 语言 · 4 档动效」「看不懂英文？装完就是中文」「设置页 · 跟随系统 · GitHub 蓝 · 100% · 下载线程数 16」 | 胶囊 rotationY 翻转 stagger；滑块 1.4s 位移；粒子确定性密度上升；40.2s 切点闪 | 截图原文 + `assets/i18n/` |
+| 7 | 46.2–52.3 | 6.1 | 四平台卡弧线散开 | 「装上就能用 · 4 个平台」「Android / Windows / Linux / Web，挑你手边那台」「每版同时提供 .zip 与 .7z · 解压即用」 | 四卡不同 x/y 弧线就位 0.9s；连接线 trace；镜头 pull back；46.2s 切点闪 | README 平台表 |
+| 8 | 52.3–56.0 | 3.7 | End card：OGL 图标 fill-rise + 字标 wipe + **实机截图** 05-about 小样 | 「第一次用 GitHub，也能直接上手」「搜 OhGithubLost · 下载即用」「想折腾源码？仓库里有 flutter pub get && flutter run」「v12.6.9 · Apache-2.0 · 致谢 18」 | 图标 0.7s 填充升起；字标 0.5s wipe；截图 ≤2.2s 淡入；52.3s 切点闪；末 1.5s 静止 | 仓库图标 SVG + 关于页截图 |
 
-## HyperFrames 实现提示
+## 素材分配（5 张截图全部上片）
 
-- 根 `index.html` 只放 8 个 scene host + 一个 `<audio>`；每个场景一个 `compositions/sN-*.html`。
-- 所有 `.clip` 带 `data-start` / `data-duration` / `data-track-index`；`data-track-kind="graphics"` 在 scene host 上。
-- 每个子 composition 末尾 `window.__timelines["<id>"] = tl;` 且 `tl.paused()`。
-- 只 tween transform / opacity / SVG stroke-dashoffset / clip-path，不 tween left/top/width/height/display。
-- 字体：`@font-face` 指向 `assets/fonts/UbuntuMono-Regular.ttf`（已随仓库复制）。
-- BGM 通过根 `<audio id="bgm" src="assets/audio/bgm.wav">` 混入；无声画面无需 `data-has-audio`。
+| 文件 | 场景 | 用途 |
+|---|---|---|
+| `01-home.png` | s2 | 仓库列表 / 新手第一眼 |
+| `02-discover.png` | s2 | 发现页 / 议题与 CI 动态 |
+| `03-profile.png` | s5 | 令牌与草稿安全 |
+| `04-settings.png` | s6 | 中文界面与设置真实值 |
+| `05-about.png` | s8 | 版本号 / 许可证 / 致谢 |
+
+## HyperFrames 实现契约
+
+- 根 `index.html`：8 个 scene host（新 `data-start`/`data-duration`）+ `#beat-flash` + `#vignette` + `#grain` + 主音轨 `wordless-56s.mp3` + 备用轨 `bgm.wav`（volume 0）。
+- 子 composition 内部时间从 0 起；host id == `data-composition-id` == `window.__timelines` key。
+- 所有 `.clip` 带 `data-start` / `data-duration` / `data-track-index`；wipe 目标侧必须 `opacity: 1`。
+- 只 tween transform / opacity / clipPath / stroke-dashoffset；只用 `fromTo`；无随机数与定时器。
+- 图片路径 `assets/screens/...`，无前导 `/`。

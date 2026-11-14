@@ -3,9 +3,9 @@ name: Promo Render
 # ============================================================================
 # OGL 宣传片 · 代码渲染管线
 #
-# 本地（任意架构）：只写 HTML/CSS/GSAP、BGM、分镜与静态 lint。
+# 本地（任意架构）：只写 HTML/CSS/GSAP、音轨、分镜与静态 lint。
 # CI（ubuntu-latest x64）：装 Chrome Headless Shell，逐帧渲染 MP4 + 混音，
-#                          上传 artifact；可选发布到 Release。
+#                          用 7-Zip 极限压缩打进 tag / Release，并上传 artifact。
 #
 # 分支：video（宣传片工程专用分支）；main 上 promo/ 变更也会触发。
 # ============================================================================
@@ -53,7 +53,7 @@ jobs:
       - name: Install CJK fonts & FFmpeg
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji ffmpeg
+          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji ffmpeg p7zip-full
           fc-cache -f
           fc-list :lang=zh | head -3
           ffmpeg -version | head -1
@@ -70,16 +70,28 @@ jobs:
           npx -y "hyperframes@${HF_VERSION}" --version
           npx -y "hyperframes@${HF_VERSION}" browser ensure
 
-      # BGM 由代码确定性合成：仓库已带 wav，这里重算并比对，
-      # 保证「源码 → 音轨」可复现，且 CI 不依赖任何外部音频素材。
-      - name: Verify BGM reproducibility
+      # 主音轨是 Wordless 裁段（版权素材，不重算）；备用合成轨仍需可复现。
+      # 校验三件事：两轨存在、主轨 56s 可解码、备用轨与脚本逐字节一致。
+      - name: Verify audio assets
         run: |
+          set -euo pipefail
           python3 -m pip install --quiet numpy
+          test -s promo/assets/audio/wordless-56s.mp3
+          test -s promo/assets/audio/bgm.wav
+          DUR=$(ffprobe -v error -show_entries format=duration \
+                -of default=noprint_wrappers=1:nokey=1 \
+                promo/assets/audio/wordless-56s.mp3)
+          python3 - "$DUR" <<'PY'
+          import sys
+          d = float(sys.argv[1])
+          assert 55.5 <= d <= 56.5, f"主音轨时长 {d}s 不在 56s ±0.5s 内"
+          print(f"Wordless 主音轨：{d:.3f}s，OK")
+          PY
           cp promo/assets/audio/bgm.wav /tmp/bgm-committed.wav
           python3 promo/scripts/make_bgm.py
           cmp /tmp/bgm-committed.wav promo/assets/audio/bgm.wav \
-            && echo "BGM byte-identical to committed artifact" \
-            || { echo "::error::BGM 与提交产物不一致"; exit 1; }
+            && echo "备用合成 BGM 逐字节复现 OK" \
+            || { echo "::error::备用 BGM 与提交产物不一致"; exit 1; }
           ls -lh promo/assets/audio/
 
       - name: Lint composition (strict gate)
@@ -155,25 +167,60 @@ jobs:
             promo/final/contact-sheet.jpg
           ls -lh promo/final/contact-sheet.jpg
 
+      - name: Package with 7-Zip (maximum compression)
+        run: |
+          set -euo pipefail
+          mkdir -p promo/final/package
+          cp promo/final/OGL-Promo.mp4 \
+             promo/final/contact-sheet.jpg \
+             lint.json check.json \
+             promo/04-edl.md promo/05-delivery.md \
+             promo/final/package/
+          # -mx=9 极限压缩；-m0=LZMA2 -md=64m 提高字典；-mmt=on 多核
+          7z a -t7z -mx=9 -m0=LZMA2 -md=64m -mmt=on -bd \
+             promo/final/OGL-Promo.7z ./promo/final/package/*
+          ls -lh promo/final/OGL-Promo.mp4 promo/final/OGL-Promo.7z
+          7z t promo/final/OGL-Promo.7z -bd | tail -3
+          # 便于下游直接取用与对比
+          sha256sum promo/final/OGL-Promo.mp4 promo/final/OGL-Promo.7z \
+            | tee promo/final/SHA256SUMS.txt
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ogl-promo-${{ github.ref_name }}-${{ github.sha }}
           path: |
             promo/final/OGL-Promo.mp4
+            promo/final/OGL-Promo.7z
             promo/final/contact-sheet.jpg
+            promo/final/SHA256SUMS.txt
             lint.json
             check.json
           retention-days: 30
 
-      - name: Publish to Release
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_release }}
+      # 每次 video 分支成功渲染都打一个轻量 tag 并发布 Release；
+      # 手动触发时保留 publish_release 开关作为显式控制。
+      - name: Publish to Release & tag
+        if: ${{ github.ref == 'refs/heads/video' || (github.event_name == 'workflow_dispatch' && inputs.publish_release) }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           TAG="promo-${GITHUB_SHA::7}"
+          git config user.name "OGL Promo Bot"
+          git config user.email "promo@users.noreply.github.com"
+          git tag -a "$TAG" -m "OGL 宣传片 $TAG · 代码渲染 + Wordless 卡点"
+          git push origin "$TAG"
           gh release create "$TAG" \
+            promo/final/OGL-Promo.7z \
             promo/final/OGL-Promo.mp4 \
             promo/final/contact-sheet.jpg \
+            promo/final/SHA256SUMS.txt \
             --title "OGL 宣传片 $TAG" \
-            --notes "由 .github/workflows/promo-render.yml 从 promo/ 源码自动渲染，含 56s / 30fps / 1920x1080 成片与分镜联系表。"
+            --notes "由 .github/workflows/promo-render.yml 从 promo/ 源码自动渲染。
+
+          - 56s / 30fps / 1920x1080，HOYO-MiX《子不语 Wordless》卡点混音
+          - 5 张 Android 实机截图，面向新手开发者与尝鲜极客
+          - OGL-Promo.7z：7-Zip -mx=9 极限压缩包（含成片、联系表、EDL、校验）
+          - OGL-Promo.mp4：可直接播放的成片
+          - SHA256SUMS.txt：完整性校验"

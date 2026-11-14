@@ -1,163 +1,60 @@
 <template>
   <style>
     #root { position: absolute; inset: 0; overflow: hidden; background: var(--ground); }
-    #s2-cam { position: absolute; inset: 0; transform-origin: 50% 50%; }
-    #s2-head { position: absolute; left: 160px; top: 120px; }
-    #s2-window {
-      position: absolute; left: 160px; top: 236px;
-      width: 1600px; height: 700px;
-      display: flex; overflow: hidden;
+    #s2-head { position: absolute; left: 160px; top: 54px; }
+    #s2-kicker { opacity: 0; }
+    #s2-title { margin-top: 16px; opacity: 0; font-size: 66px; }
+    #s2-sub { margin-top: 18px; opacity: 0; font-size: 30px; }
+    #s2-shot-a {
+      left: 528px; top: 250px; width: 400px; height: 711px;
     }
-    #s2-nav {
-      width: 300px; flex: 0 0 300px; padding: 28px 22px;
-      background: rgba(13,17,23,0.92);
-      border-right: 1px solid rgba(139,148,158,0.2);
-      font-family: var(--font-mono); font-size: 22px; color: #8b949e;
+    #s2-shot-b {
+      left: 992px; top: 250px; width: 400px; height: 711px;
     }
-    #s2-nav .active { color: #e6edf3; }
-    #s2-nav .nav-row { padding: 13px 14px; border-radius: 10px; margin-bottom: 6px; }
-    #s2-nav .active.nav-row { background: rgba(9,105,218,0.22); }
-    #s2-nav .nav-row .ic { display: inline-block; width: 22px; color: #58a6ff; }
-    #s2-files {
-      width: 420px; flex: 0 0 420px; padding: 28px 24px;
-      background: rgba(22,27,34,0.94);
-      border-right: 1px solid rgba(139,148,158,0.2);
-      font-family: var(--font-mono); font-size: 21px; line-height: 1.9; color: #8b949e;
-    }
-    #s2-files .f { padding-left: 18px; }
-    #s2-files .sel {
-      background: rgba(9,105,218,0.24); border-left: 3px solid var(--brand);
-      color: #e6edf3; padding-left: 15px; border-radius: 4px;
-    }
-    #s2-files .dir { color: #58a6ff; }
-    #s2-code {
-      flex: 1 1 auto; padding: 28px 34px; background: #0d1117;
-      font-family: var(--font-mono); font-size: 21px; line-height: 1.85;
-      color: #c9d1d9; overflow: hidden;
-    }
-    #s2-code .kw { color: #ff7b72; }
-    #s2-code .ty { color: #79c0ff; }
-    #s2-code .st { color: #a5d6ff; }
-    #s2-code .cm { color: #6e7681; }
-    #s2-code .ln { display: block; opacity: 0; }
-    #s2-codebar {
-      height: 54px; display: flex; align-items: center; gap: 18px;
-      padding: 0 24px; border-bottom: 1px solid rgba(139,148,158,0.18);
-      font-family: var(--font-mono); font-size: 19px; color: #8b949e;
-    }
-    #s2-codebar .tab { color: #e6edf3; }
-    #s2-codewrap { position: absolute; left: 880px; top: 236px; width: 880px; height: 700px;
-      display: flex; flex-direction: column; }
-    #s2-cursor {
-      position: absolute; width: 26px; height: 26px; left: 1330px; top: 520px;
-      border-radius: 50%; border: 3px solid #e6edf3;
-      background: rgba(9,105,218,0.35); z-index: 20; opacity: 0;
-    }
-    #s2-cursor:after {
-      content: ""; position: absolute; width: 8px; height: 8px;
-      left: 6px; top: 6px; border-radius: 50%; background: var(--accent);
-    }
-    #s2-toast {
-      position: absolute; left: 1180px; top: 820px;
-      padding: 16px 26px; border-radius: 12px;
-      background: rgba(35,134,54,0.18); border: 1px solid rgba(63,185,80,0.5);
-      font-family: var(--font-mono); font-size: 22px; color: var(--ok); opacity: 0;
-    }
-    #s2-zoom {
-      position: absolute; left: 160px; top: 236px; width: 1600px; height: 700px;
-      border: 2px solid rgba(88,166,255,0.6); border-radius: 20px;
-      box-shadow: 0 0 0 9999px rgba(13,17,23,0.55); opacity: 0; pointer-events: none;
+    #s2-shot-note {
+      position: absolute; left: 0; top: 992px; width: 1920px; text-align: center;
+      font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.06em;
+      color: var(--muted); opacity: 0;
     }
     #s2-wipe { position: absolute; inset: 0; background: var(--ground); clip-path: inset(0 0 100% 0); opacity: 0; }
   </style>
 
   <div id="root" data-composition-id="s2-repo" data-width="1920" data-height="1080">
-    <div id="s2-cam" class="clip" data-start="0" data-duration="8" data-track-index="0">
-      <div id="s2-head" class="clip" data-start="0" data-duration="8" data-track-index="1">
-        <div class="kicker">01 · Repository</div>
-        <div class="h2" style="margin-top:18px">仓库 · 目录 · 提交<span class="accent">，</span>都在窗口里</div>
-      </div>
-
-      <div id="s2-window" class="card clip" data-start="0" data-duration="8" data-track-index="1">
-        <div id="s2-nav">
-          <div class="nav-row active"><span class="ic">▣</span>Dashboard</div>
-          <div class="nav-row"><span class="ic">⌕</span>Search</div>
-          <div class="nav-row active"><span class="ic">▤</span>Repositories</div>
-          <div class="nav-row"><span class="ic">◎</span>Issues</div>
-          <div class="nav-row"><span class="ic">⑂</span>Pull requests</div>
-          <div class="nav-row"><span class="ic">◈</span>Releases</div>
-          <div class="nav-row"><span class="ic">▷</span>Actions</div>
-          <div class="nav-row"><span class="ic">≡</span>Gists</div>
-          <div class="nav-row"><span class="ic">⚙</span>Settings</div>
-        </div>
-        <div id="s2-files">
-          <div class="dir">▾ lib/</div>
-          <div class="f dir">▾ surface/</div>
-          <div class="f">dashboard_page.dart</div>
-          <div class="f sel">repo_page.dart</div>
-          <div class="f">code_editor_page.dart</div>
-          <div class="f">pull_page.dart</div>
-          <div class="f">issue_page.dart</div>
-          <div class="f">release_detail_page.dart</div>
-          <div class="f">action_run_page.dart</div>
-          <div class="f">settings_page.dart</div>
-          <div class="dir" style="margin-top:18px">▾ assets/i18n/</div>
-          <div class="f">zh · zh_Hant · en</div>
-          <div class="f">de · fr · ru</div>
-        </div>
-        <div id="s2-codewrap">
-          <div id="s2-codebar"><span class="tab">repo_page.dart</span><span>·</span><span>lib/surface/pages/</span></div>
-          <div id="s2-code">
-<span class="ln"><span class="kw">class</span> <span class="ty">RepoPage</span> <span class="kw">extends</span> <span class="ty">StatefulWidget</span> {</span>
-<span class="ln">  <span class="cm">// 目录树 · 文件预览 · 提交与冲突处理</span></span>
-<span class="ln">  <span class="kw">final</span> <span class="ty">RepoRef</span> ref;</span>
-<span class="ln"></span>
-<span class="ln">  <span class="ty">Widget</span> <span class="ty">build</span>(<span class="ty">BuildContext</span> ctx) {</span>
-<span class="ln">    <span class="kw">return</span> <span class="ty">OglScaffold</span>(</span>
-<span class="ln">      title: <span class="st">ref.fullName</span>,</span>
-<span class="ln">      body: <span class="ty">FileTreeView</span>(repo: ref),</span>
-<span class="ln">      actions: [</span>
-<span class="ln">        <span class="ty">CommitAction</span>(ref),</span>
-<span class="ln">        <span class="ty">RenameAction</span>(ref),</span>
-<span class="ln">      ],</span>
-<span class="ln">    );</span>
-<span class="ln">  }</span>
-<span class="ln">}</span>
-          </div>
-        </div>
-      </div>
-
-      <div id="s2-zoom" class="clip" data-start="0" data-duration="8" data-track-index="4"></div>
-      <div id="s2-cursor" class="clip" data-start="0" data-duration="8" data-track-index="5"></div>
-      <div id="s2-toast" class="clip mono" data-start="0" data-duration="8" data-track-index="5">✓ 草稿已自动保存 · 冲突检测就绪</div>
+    <div id="s2-head" class="clip" data-start="0" data-duration="7.3" data-track-index="1">
+      <div id="s2-kicker" class="kicker">01 · Repository</div>
+      <div id="s2-title" class="h2">仓库一眼看全</div>
+      <div id="s2-sub" class="sub">发现页：别人的项目、议题、CI 动态<span class="accent">，</span>顺手就能点开</div>
     </div>
-    <div id="s2-wipe" class="clip" data-start="0" data-duration="8" data-track-index="9"></div>
+
+    <img id="s2-shot-a" class="shot clip" src="assets/screens/01-home.png" alt="OhGithubLost 首页仓库列表"
+         data-start="0" data-duration="7.3" data-track-index="3" />
+    <img id="s2-shot-b" class="shot clip" src="assets/screens/02-discover.png" alt="OhGithubLost 发现页动态与议题"
+         data-start="0" data-duration="7.3" data-track-index="3" />
+
+    <div id="s2-shot-note" class="clip" data-start="0" data-duration="7.3" data-track-index="4">实机截图 · Android</div>
+
+    <div id="s2-wipe" class="clip" data-start="0" data-duration="7.3" data-track-index="9"></div>
   </div>
 
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s2-head", { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0);
-    tl.fromTo("#s2-window", { opacity: 0, y: 60, scale: 0.965 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "power3.out" }, 0.15);
-    tl.fromTo("#s2-nav .nav-row", { opacity: 0, x: -20 },
-      { opacity: 1, x: 0, duration: 0.4, stagger: 0.045, ease: "power2.out" }, 0.5);
-    tl.fromTo("#s2-files .f, #s2-files .dir", { opacity: 0, x: -14 },
-      { opacity: 1, x: 0, duration: 0.35, stagger: 0.035, ease: "power2.out" }, 0.7);
-    /* 连续 camera push：0.55s 推进到代码区，无硬切 */
-    tl.to("#s2-cam", { scale: 1.28, x: -230, y: -90, duration: 0.55, ease: "power3.inOut" }, 2.2);
-    tl.fromTo("#s2-code .ln", { opacity: 0, y: 12 },
-      { opacity: 1, y: 0, duration: 0.32, stagger: 0.055, ease: "power2.out" }, 2.55);
-    tl.fromTo("#s2-cursor", { opacity: 0, x: 260, y: 180 },
-      { opacity: 1, x: 0, y: 0, duration: 0.5, ease: "power3.out" }, 3.0);
-    tl.to("#s2-cursor", { scale: 0.82, duration: 0.12, ease: "power2.in" }, 3.55);
-    tl.to("#s2-cursor", { scale: 1, duration: 0.18, ease: "power2.out" }, 3.67);
-    tl.fromTo("#s2-zoom", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 3.8);
-    tl.fromTo("#s2-toast", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.0);
-    /* 返回全景，携带同一窗口，避免"重组界面"的错觉 */
-    tl.to("#s2-cam", { scale: 1, x: 0, y: 0, duration: 0.6, ease: "power3.inOut" }, 5.1);
-    tl.to("#s2-zoom, #s2-cursor, #s2-toast", { opacity: 0, duration: 0.45, ease: "power2.out" }, 5.1);
+    tl.fromTo("#s2-kicker", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0);
+    tl.fromTo("#s2-title", { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.75, ease: "power3.out" }, 0.12);
+    tl.fromTo("#s2-sub", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 0.32);
+    /* 两张真机截图依次入场（第二张晚 0.3s） */
+    tl.fromTo("#s2-shot-a", { opacity: 0, scale: 0.94, y: 26 },
+      { opacity: 1, scale: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.35);
+    tl.fromTo("#s2-shot-b", { opacity: 0, scale: 0.94, y: 26 },
+      { opacity: 1, scale: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.65);
+    tl.fromTo("#s2-shot-note", { opacity: 0, y: 14 },
+      { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 1.0);
+    /* 连续 camera push：每张图推入再回位，不做 3D 倾斜 */
+    tl.fromTo("#s2-shot-a", { scale: 1 }, { scale: 1.12, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 2.2);
+    tl.fromTo("#s2-shot-a", { scale: 1.12 }, { scale: 1, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 3.0);
+    tl.fromTo("#s2-shot-b", { scale: 1 }, { scale: 1.12, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 2.5);
+    tl.fromTo("#s2-shot-b", { scale: 1.12 }, { scale: 1, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 3.3);
     tl.fromTo("#s2-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
-      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 7.5);
+      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 6.8);
     window.__timelines["s2-repo"] = tl;
   </script>
 </template>

@@ -23,7 +23,7 @@
     #s6-kicker { opacity: 0; }
     #s6-title { margin-top: 20px; opacity: 0; }
     #s6-langrow {
-      position: absolute; left: 160px; top: 322px; width: 1600px;
+      position: absolute; left: 160px; top: 322px; width: 1330px;
       display: flex; justify-content: space-between; perspective: 1200px;
     }
     #s6-langrow .lang {
@@ -35,7 +35,7 @@
     }
     #s6-langrow .lang .flag { color: var(--brand); margin-right: 10px; font-size: 20px; }
     #s6-i18nrow {
-      position: absolute; left: 160px; top: 404px; width: 1600px;
+      position: absolute; left: 160px; top: 404px; width: 1330px;
       display: flex; justify-content: space-between;
     }
     #s6-i18nrow .dir {
@@ -78,6 +78,16 @@
       font-family: var(--font-mono); font-size: 24px; color: var(--muted); opacity: 0;
     }
     #s6-caption .hl { color: var(--accent); }
+    #s6-shot {
+      left: 1560px; top: 262px; width: 320px; height: 569px;
+    }
+    #s6-shotcap {
+      position: absolute; left: 1480px; top: 118px; width: 480px; text-align: center;
+      font-family: var(--font-mono); font-size: 22px; line-height: 1.5;
+      color: var(--muted); opacity: 0;
+    }
+    #s6-shotcap .hl { color: var(--accent); }
+    #s6-sub { margin-top: 18px; opacity: 0; font-size: 30px; }
     #s6-wipe {
       position: absolute; inset: 0; background: var(--ground);
       clip-path: inset(0 0 100% 0); opacity: 0;
@@ -85,10 +95,10 @@
   </style>
 
   <div id="root" data-composition-id="s6-i18n" data-width="1920" data-height="1080">
-    <div id="s6-grid" class="clip" data-start="0" data-duration="6" data-track-index="0"></div>
-    <div id="s6-glow" class="clip" data-start="0" data-duration="6" data-track-index="0"></div>
+    <div id="s6-grid" class="clip" data-start="0" data-duration="6.0" data-track-index="0"></div>
+    <div id="s6-glow" class="clip" data-start="0" data-duration="6.0" data-track-index="0"></div>
 
-    <div id="s6-particles" class="clip" data-start="0" data-duration="6" data-track-index="1">
+    <div id="s6-particles" class="clip" data-start="0" data-duration="6.0" data-track-index="1">
       <i class="pt" id="s6-p01" style="left:120px;top:64px;width:5px;height:5px"></i>
       <i class="pt" id="s6-p02" style="left:268px;top:158px;width:8px;height:8px"></i>
       <i class="pt" id="s6-p03" style="left:412px;top:88px;width:4px;height:4px"></i>
@@ -131,12 +141,13 @@
       <i class="pt" id="s6-p40" style="left:276px;top:998px;width:7px;height:7px"></i>
     </div>
 
-    <div id="s6-head" class="clip" data-start="0" data-duration="6" data-track-index="3">
+    <div id="s6-head" class="clip" data-start="0" data-duration="6.0" data-track-index="3">
       <div id="s6-kicker" class="kicker">05 · Localization &amp; Motion</div>
       <div id="s6-title" class="h2">6 语言 · 4 档动效</div>
+      <div id="s6-sub" class="sub">看不懂英文？装完就是中文</div>
     </div>
 
-    <div id="s6-langrow" class="clip" data-start="0" data-duration="6" data-track-index="4">
+    <div id="s6-langrow" class="clip" data-start="0" data-duration="6.0" data-track-index="4">
       <div class="lang"><span class="flag">◧</span>简体中文</div>
       <div class="lang"><span class="flag">◨</span>繁體中文</div>
       <div class="lang"><span class="flag">◈</span>English</div>
@@ -145,7 +156,7 @@
       <div class="lang"><span class="flag">◑</span>Русский</div>
     </div>
 
-    <div id="s6-i18nrow" class="clip" data-start="0" data-duration="6" data-track-index="4">
+    <div id="s6-i18nrow" class="clip" data-start="0" data-duration="6.0" data-track-index="4">
       <div class="dir">assets/i18n/zh</div>
       <div class="dir">assets/i18n/zh_Hant</div>
       <div class="dir">assets/i18n/en</div>
@@ -154,11 +165,11 @@
       <div class="dir">assets/i18n/ru</div>
     </div>
 
-    <div id="s6-sliderhead" class="clip" data-start="0" data-duration="6" data-track-index="4">Motion Level · 动效档位</div>
-    <div id="s6-track" class="clip" data-start="0" data-duration="6" data-track-index="4"></div>
-    <div id="s6-fill" class="clip" data-start="0" data-duration="6" data-track-index="4"></div>
+    <div id="s6-sliderhead" class="clip" data-start="0" data-duration="6.0" data-track-index="4">Motion Level · 动效档位</div>
+    <div id="s6-track" class="clip" data-start="0" data-duration="6.0" data-track-index="4"></div>
+    <div id="s6-fill" class="clip" data-start="0" data-duration="6.0" data-track-index="4"></div>
 
-    <div id="s6-ticks" class="clip" data-start="0" data-duration="6" data-track-index="4">
+    <div id="s6-ticks" class="clip" data-start="0" data-duration="6.0" data-track-index="4">
       <div class="tick" id="s6-tick0" style="left:300px"></div>
       <div class="tick" id="s6-tick1" style="left:740px"></div>
       <div class="tick" id="s6-tick2" style="left:1180px"></div>
@@ -169,11 +180,15 @@
       <div class="tlabel" id="s6-lab3" style="left:1620px">拉满</div>
     </div>
 
-    <div id="s6-handle" class="clip" data-start="0" data-duration="6" data-track-index="5"></div>
+    <div id="s6-handle" class="clip" data-start="0" data-duration="6.0" data-track-index="5"></div>
 
-    <div id="s6-caption" class="clip" data-start="0" data-duration="6" data-track-index="5">降档降开销 · <span class="hl">不删效果</span> · 粒子密度随档位递增</div>
+    <div id="s6-caption" class="clip" data-start="0" data-duration="6.0" data-track-index="5">降档降开销 · <span class="hl">不删效果</span> · 粒子密度随档位递增</div>
 
-    <div id="s6-wipe" class="clip" data-start="0" data-duration="6" data-track-index="9"></div>
+    <img id="s6-shot" class="shot clip" src="assets/screens/04-settings.png" alt="OhGithubLost 设置页"
+         data-start="0" data-duration="6.0" data-track-index="5" />
+    <div id="s6-shotcap" class="clip" data-start="0" data-duration="6.0" data-track-index="5">设置页 · 跟随系统 · <span class="hl">GitHub 蓝</span><br/>100% · 下载线程数 16</div>
+
+    <div id="s6-wipe" class="clip" data-start="0" data-duration="6.0" data-track-index="9"></div>
   </div>
 
   <script>
@@ -182,6 +197,12 @@
     tl.fromTo("#s6-glow", { opacity: 0, scale: 0.82 }, { opacity: 1, scale: 1, duration: 1.6, ease: "power2.out" }, 0.05);
     tl.fromTo("#s6-kicker", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.3);
     tl.fromTo("#s6-title", { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.75, ease: "power3.out" }, 0.5);
+    tl.fromTo("#s6-sub", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.65);
+    /* 真实设置页截图 + 标注 */
+    tl.fromTo("#s6-shot", { opacity: 0, scale: 0.94, y: 24 },
+      { opacity: 1, scale: 1, y: 0, duration: 0.7, ease: "power3.out" }, 1.1);
+    tl.fromTo("#s6-shotcap", { opacity: 0, y: 16 },
+      { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 1.5);
     /* 六种语言错峰翻转入场 */
     tl.fromTo("#s6-langrow .lang", { opacity: 0, rotationY: -80, y: 26 },
       { opacity: 1, rotationY: 0, y: 0, duration: 0.7, stagger: 0.08, ease: "power3.out" }, 0.85);
@@ -198,9 +219,10 @@
     tl.fromTo("#s6-handle", { opacity: 0, scale: 0.6, x: 0 },
       { opacity: 1, scale: 1, duration: 0.45, ease: "power3.out" }, 3.05);
     /* 滑块把手：静默 → 拉满（x 位移 1.4s） */
-    tl.to("#s6-handle", { x: 1320, duration: 1.4, ease: "power2.inOut" }, 3.2);
+    tl.fromTo("#s6-handle", { x: 0 }, { x: 1320, duration: 1.4, ease: "power2.inOut", immediateRender: false }, 3.2);
     /* 档位拉高 → 粒子更亮更大（不删效果，只降开销） */
-    tl.to("#s6-particles .pt", { opacity: 0.92, scale: 1.2, duration: 1.4, stagger: 0.012, ease: "power2.inOut" }, 3.2);
+    tl.fromTo("#s6-particles .pt", { opacity: 0.26, scale: 0.85 },
+      { opacity: 0.92, scale: 1.2, duration: 1.4, stagger: 0.012, ease: "power2.inOut", immediateRender: false }, 3.2);
     tl.fromTo("#s6-lab3", { opacity: 1, scale: 1 }, { opacity: 1, scale: 1.14, duration: 0.5, ease: "power2.out" }, 4.35);
     tl.fromTo("#s6-caption", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 4.5);
     tl.fromTo("#s6-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },

@@ -20,46 +20,69 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
     #s8-iconmask {
-      position: absolute; left: 870px; top: 236px; width: 180px; height: 180px;
+      position: absolute; left: 870px; top: 226px; width: 180px; height: 180px;
       overflow: hidden;
     }
     #s8-iconmask img { width: 180px; height: 180px; display: block; }
     #s8-wordmark {
-      position: absolute; left: 0; top: 470px; width: 1920px; text-align: center;
+      position: absolute; left: 0; top: 452px; width: 1920px; text-align: center;
       font-size: 104px; font-weight: 650; letter-spacing: -0.045em; line-height: 1.1;
       color: var(--ink);
     }
     #s8-wordmark .brand { color: #58a6ff; }
     #s8-tagline {
-      position: absolute; left: 0; top: 626px; width: 1920px; text-align: center;
-      font-size: 34px; color: var(--muted); letter-spacing: 0.02em;
+      position: absolute; left: 0; top: 608px; width: 1920px; text-align: center;
+      font-size: 36px; color: var(--ink); letter-spacing: 0.02em;
     }
+    #s8-tagline .brand { color: #58a6ff; }
     #s8-cmd {
-      position: absolute; left: 0; top: 726px; width: 1920px; text-align: center;
-      font-family: var(--font-mono); font-size: 28px; color: var(--ink);
+      position: absolute; left: 0; top: 690px; width: 1920px; text-align: center;
+      font-size: 30px; color: var(--ink); letter-spacing: 0.04em;
     }
-    #s8-cmd .c1 { color: #79c0ff; }
-    #s8-cmd .c2 { color: #d2a8ff; }
-    #s8-cmd .c3 { color: #ffa657; }
+    #s8-cmd .brand { color: #58a6ff; }
+    #s8-cmdsub {
+      position: absolute; left: 0; top: 742px; width: 1920px; text-align: center;
+      font-family: var(--font-mono); font-size: 22px; color: var(--muted);
+    }
     #s8-lic {
-      position: absolute; left: 0; top: 800px; width: 1920px; text-align: center;
+      position: absolute; left: 0; top: 806px; width: 1920px; text-align: center;
       font-family: var(--font-mono); font-size: 24px; color: var(--muted);
     }
     #s8-lic .ok { color: var(--ok); }
+    /* 真实截图：「关于」页小卡 */
+    #s8-shotwrap {
+      position: absolute; left: 1550px; top: 250px; width: 200px;
+      text-align: center; opacity: 0;
+    }
+    #s8-shot {
+      width: 180px; height: 320px; display: block; margin: 0 auto;
+      border-radius: 16px;
+    }
+    #s8-shotcap {
+      margin-top: 12px; font-family: var(--font-mono); font-size: 18px;
+      line-height: 1.5; color: var(--muted);
+    }
+    #s8-shotcap .hl { color: #58a6ff; }
   </style>
 
   <div id="root" data-composition-id="s8-end" data-width="1920" data-height="1080">
-    <div id="s8-bg" class="clip" data-start="0" data-duration="4" data-track-index="0"></div>
-    <div id="s8-grid" class="clip" data-start="0" data-duration="4" data-track-index="0"></div>
+    <div id="s8-bg" class="clip" data-start="0" data-duration="3.7" data-track-index="0"></div>
+    <div id="s8-grid" class="clip" data-start="0" data-duration="3.7" data-track-index="0"></div>
 
-    <div id="s8-stack" class="clip" data-start="0" data-duration="4" data-track-index="3">
-      <div id="s8-iconmask" class="clip" data-start="0" data-duration="4" data-track-index="4">
+    <div id="s8-stack" class="clip" data-start="0" data-duration="3.7" data-track-index="3">
+      <div id="s8-iconmask" class="clip" data-start="0" data-duration="3.7" data-track-index="4">
         <img id="s8-icon" src="assets/ogl_icon.svg" alt="OhGithubLost" />
       </div>
-      <div id="s8-wordmark" class="clip" data-start="0" data-duration="4" data-track-index="4">Oh<span class="brand">GitHub</span>Lost</div>
-      <div id="s8-tagline" class="clip" data-start="0" data-duration="4" data-track-index="5">GitHub 的日常 · 不必打开浏览器</div>
-      <div id="s8-cmd" class="clip" data-start="0" data-duration="4" data-track-index="5"><span class="c1">flutter</span> <span class="c2">pub</span> <span class="c3">get</span> &amp;&amp; <span class="c1">flutter</span> <span class="c3">run</span></div>
-      <div id="s8-lic" class="clip" data-start="0" data-duration="4" data-track-index="5">开源 · <span class="ok">Apache-2.0</span></div>
+      <div id="s8-wordmark" class="clip" data-start="0" data-duration="3.7" data-track-index="4">Oh<span class="brand">GitHub</span>Lost</div>
+      <div id="s8-tagline" class="clip" data-start="0" data-duration="3.7" data-track-index="5">第一次用 GitHub，<span class="brand">也能直接上手</span></div>
+      <div id="s8-cmd" class="clip" data-start="0" data-duration="3.7" data-track-index="5">搜 <span class="brand">OhGithubLost</span> · 下载即用</div>
+      <div id="s8-cmdsub" class="clip" data-start="0" data-duration="3.7" data-track-index="5">想折腾源码？仓库里有 flutter pub get &amp;&amp; flutter run</div>
+      <div id="s8-lic" class="clip" data-start="0" data-duration="3.7" data-track-index="5">开源 · <span class="ok">Apache-2.0</span></div>
+    </div>
+
+    <div id="s8-shotwrap" class="clip" data-start="0" data-duration="3.7" data-track-index="6">
+      <img id="s8-shot" class="shot" src="assets/screens/05-about.png" alt="关于页截图" />
+      <div id="s8-shotcap">关于 · <span class="hl">v12.6.9</span> · Apache-2.0 · 致谢 18</div>
     </div>
   </div>
 
@@ -73,9 +96,13 @@
     /* 字标：inset wipe in */
     tl.fromTo("#s8-wordmark", { clipPath: "inset(0% 100% 0% 0%)" },
       { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power3.out" }, 1.1);
-    tl.fromTo("#s8-tagline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 1.7);
-    tl.fromTo("#s8-cmd", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 1.9);
-    tl.fromTo("#s8-lic", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 2.1);
+    tl.fromTo("#s8-tagline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 1.6);
+    tl.fromTo("#s8-cmd", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 1.75);
+    tl.fromTo("#s8-cmdsub", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 1.9);
+    tl.fromTo("#s8-lic", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 1.7);
+    /* 真实「关于」截图：2.2s 前淡入完成，最后 1.5s 全场静止 */
+    tl.fromTo("#s8-shotwrap", { opacity: 0, y: 18, scale: 0.97 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power2.out" }, 1.7);
     window.__timelines["s8-end"] = tl;
   </script>
 </template>

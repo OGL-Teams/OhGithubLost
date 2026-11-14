@@ -20,23 +20,24 @@
     }
     #s7-kicker { opacity: 0; }
     #s7-title { margin-top: 18px; opacity: 0; }
+    #s7-subtitle { margin-top: 14px; opacity: 0; }
     .s7-card {
       position: absolute; width: 340px; height: 300px;
       padding: 26px 26px 22px; display: flex; flex-direction: column;
     }
-    #s7-android { left: 250px; top: 268px; }
-    #s7-windows { left: 1330px; top: 268px; }
-    #s7-linux   { left: 250px; top: 610px; }
-    #s7-web     { left: 1330px; top: 610px; }
-    .s7-card .ic { height: 96px; display: flex; align-items: center; }
-    .s7-card .ic svg { width: 88px; height: 88px; }
+    #s7-android { left: 250px; top: 288px; }
+    #s7-windows { left: 1330px; top: 288px; }
+    #s7-linux   { left: 250px; top: 618px; }
+    #s7-web     { left: 1330px; top: 618px; }
+    .s7-card .ic { height: 84px; display: flex; align-items: center; }
+    .s7-card .ic svg { width: 80px; height: 80px; }
     .s7-card .pname {
-      margin-top: 16px; font-size: 40px; font-weight: 620; letter-spacing: -0.02em;
+      margin-top: 12px; font-size: 36px; font-weight: 620; letter-spacing: -0.02em;
       color: var(--ink);
     }
     .s7-card .pinfo {
-      margin-top: 12px; font-family: var(--font-mono); font-size: 21px;
-      line-height: 1.55; color: var(--muted);
+      margin-top: 10px; font-family: var(--font-mono); font-size: 20px;
+      line-height: 1.5; color: var(--muted);
     }
     .s7-card .pinfo .k { color: #58a6ff; }
     .s7-card .badge {
@@ -53,12 +54,16 @@
       stroke-linecap: round;
     }
     #s7-hub {
-      position: absolute; left: 936px; top: 516px; width: 48px; height: 48px;
+      position: absolute; left: 936px; top: 528px; width: 48px; height: 48px;
       border-radius: 50%; background: var(--brand);
       box-shadow: 0 0 34px rgba(9,105,218,0.8); opacity: 0;
     }
+    #s7-zipnote {
+      position: absolute; left: 0; top: 936px; width: 1920px; text-align: center;
+      font-family: var(--font-mono); font-size: 22px; color: var(--muted); opacity: 0;
+    }
     #s7-foot {
-      position: absolute; left: 0; top: 968px; width: 1920px; text-align: center;
+      position: absolute; left: 0; top: 982px; width: 1920px; text-align: center;
       font-family: var(--font-mono); font-size: 21px; color: var(--muted); opacity: 0;
     }
     #s7-wipe {
@@ -68,16 +73,17 @@
   </style>
 
   <div id="root" data-composition-id="s7-platforms" data-width="1920" data-height="1080">
-    <div id="s7-grid" class="clip" data-start="0" data-duration="6" data-track-index="0"></div>
-    <div id="s7-glow" class="clip" data-start="0" data-duration="6" data-track-index="0"></div>
+    <div id="s7-grid" class="clip" data-start="0" data-duration="6.1" data-track-index="0"></div>
+    <div id="s7-glow" class="clip" data-start="0" data-duration="6.1" data-track-index="0"></div>
 
-    <div id="s7-cam" class="clip" data-start="0" data-duration="6" data-track-index="2">
-      <div id="s7-head" class="clip" data-start="0" data-duration="6" data-track-index="3">
+    <div id="s7-cam" class="clip" data-start="0" data-duration="6.1" data-track-index="2">
+      <div id="s7-head" class="clip" data-start="0" data-duration="6.1" data-track-index="3">
         <div id="s7-kicker" class="kicker">06 · Platforms</div>
-        <div id="s7-title" class="h2">Android · Windows · Linux · Web</div>
+        <div id="s7-title" class="h2">装上就能用 · <span class="brand">4 个平台</span></div>
+        <div id="s7-subtitle" class="sub">Android / Windows / Linux / Web，挑你手边那台</div>
       </div>
 
-      <div id="s7-android" class="card s7-card clip" data-start="0" data-duration="6" data-track-index="3">
+      <div id="s7-android" class="card s7-card clip" data-start="0" data-duration="6.1" data-track-index="3">
         <div class="ic"><svg viewBox="0 0 100 100" aria-label="Android">
           <g fill="none" stroke="#58a6ff" stroke-width="4" stroke-linecap="round">
             <rect x="26" y="38" width="48" height="42" rx="8"></rect>
@@ -93,7 +99,7 @@
         <div class="pinfo"><span class="k">4 ABI</span> APK + AAB<br/>自适应图标</div>
       </div>
 
-      <div id="s7-windows" class="card s7-card clip" data-start="0" data-duration="6" data-track-index="3">
+      <div id="s7-windows" class="card s7-card clip" data-start="0" data-duration="6.1" data-track-index="3">
         <div class="ic"><svg viewBox="0 0 100 100" aria-label="Windows">
           <g fill="#58a6ff">
             <rect x="16" y="18" width="31" height="31"></rect>
@@ -106,7 +112,7 @@
         <div class="pinfo"><span class="k">x64 / arm64</span><br/>单帧 256 ICO</div>
       </div>
 
-      <div id="s7-linux" class="card s7-card clip" data-start="0" data-duration="6" data-track-index="3">
+      <div id="s7-linux" class="card s7-card clip" data-start="0" data-duration="6.1" data-track-index="3">
         <div class="ic"><svg viewBox="0 0 100 100" aria-label="Linux">
           <g fill="none" stroke="#58a6ff" stroke-width="4" stroke-linecap="round">
             <ellipse cx="50" cy="62" rx="22" ry="30"></ellipse>
@@ -122,7 +128,7 @@
         <div class="pinfo"><span class="k">deb / rpm / AppImage</span><br/>glibc ≥ 2.35</div>
       </div>
 
-      <div id="s7-web" class="card s7-card clip" data-start="0" data-duration="6" data-track-index="3">
+      <div id="s7-web" class="card s7-card clip" data-start="0" data-duration="6.1" data-track-index="3">
         <div class="badge">
           <svg viewBox="0 0 24 24" aria-label="wasm">
             <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="none" stroke="#e3b341" stroke-width="2"></polygon>
@@ -142,16 +148,17 @@
       </div>
 
       <svg id="s7-lines" viewBox="0 0 1920 1080">
-        <line id="s7-l1" x1="960" y1="540" x2="420" y2="420"></line>
-        <line id="s7-l2" x1="960" y1="540" x2="1500" y2="420"></line>
-        <line id="s7-l3" x1="960" y1="540" x2="420" y2="760"></line>
-        <line id="s7-l4" x1="960" y1="540" x2="1500" y2="760"></line>
+        <line id="s7-l1" x1="960" y1="552" x2="420" y2="440"></line>
+        <line id="s7-l2" x1="960" y1="552" x2="1500" y2="440"></line>
+        <line id="s7-l3" x1="960" y1="552" x2="420" y2="770"></line>
+        <line id="s7-l4" x1="960" y1="552" x2="1500" y2="770"></line>
       </svg>
-      <div id="s7-hub" class="clip" data-start="0" data-duration="6" data-track-index="4"></div>
+      <div id="s7-hub" class="clip" data-start="0" data-duration="6.1" data-track-index="4"></div>
     </div>
 
-    <div id="s7-foot" class="clip" data-start="0" data-duration="6" data-track-index="4">macOS / iOS 弃用 · 最后支持 v5.3.0</div>
-    <div id="s7-wipe" class="clip" data-start="0" data-duration="6" data-track-index="9"></div>
+    <div id="s7-zipnote" class="clip" data-start="0" data-duration="6.1" data-track-index="4">每版同时提供 .zip 与 .7z · 解压即用</div>
+    <div id="s7-foot" class="clip" data-start="0" data-duration="6.1" data-track-index="4">macOS / iOS 弃用 · 最后支持 v5.3.0</div>
+    <div id="s7-wipe" class="clip" data-start="0" data-duration="6.1" data-track-index="9"></div>
   </div>
 
   <script>
@@ -160,30 +167,32 @@
     tl.fromTo("#s7-glow", { opacity: 0, scale: 0.84 }, { opacity: 1, scale: 1, duration: 1.6, ease: "power2.out" }, 0.05);
     tl.fromTo("#s7-kicker", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.25);
     tl.fromTo("#s7-title", { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.75, ease: "power3.out" }, 0.45);
+    tl.fromTo("#s7-subtitle", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.62);
     /* 四张平台卡从中心向四方位弧形就位（各自不同 x/y） */
     tl.fromTo("#s7-android", { opacity: 0, scale: 0.86, x: 540, y: 120 },
-      { opacity: 1, scale: 1, x: 0, y: 0, duration: 0.9, ease: "power3.out" }, 0.7);
+      { opacity: 1, scale: 1, x: 0, y: 0, duration: 0.9, ease: "power3.out" }, 0.8);
     tl.fromTo("#s7-windows", { opacity: 0, scale: 0.86, x: -540, y: 120 },
-      { opacity: 1, scale: 1, x: 0, y: 0, duration: 0.9, ease: "power3.out" }, 0.78);
+      { opacity: 1, scale: 1, x: 0, y: 0, duration: 0.9, ease: "power3.out" }, 0.88);
     tl.fromTo("#s7-linux", { opacity: 0, scale: 0.86, x: 540, y: -220 },
-      { opacity: 1, scale: 1, x: 0, y: 0, duration: 0.9, ease: "power3.out" }, 0.86);
+      { opacity: 1, scale: 1, x: 0, y: 0, duration: 0.9, ease: "power3.out" }, 0.96);
     tl.fromTo("#s7-web", { opacity: 0, scale: 0.86, x: -540, y: -220 },
-      { opacity: 1, scale: 1, x: 0, y: 0, duration: 0.9, ease: "power3.out" }, 0.94);
+      { opacity: 1, scale: 1, x: 0, y: 0, duration: 0.9, ease: "power3.out" }, 1.04);
     /* 连接线：stroke-dashoffset 绘制 */
     tl.fromTo("#s7-l1", { strokeDasharray: 553, strokeDashoffset: 551 },
-      { strokeDashoffset: 0, duration: 0.8, ease: "power2.out" }, 1.7);
+      { strokeDashoffset: 0, duration: 0.8, ease: "power2.out" }, 1.8);
     tl.fromTo("#s7-l2", { strokeDasharray: 553, strokeDashoffset: 551 },
-      { strokeDashoffset: 0, duration: 0.8, ease: "power2.out" }, 1.78);
+      { strokeDashoffset: 0, duration: 0.8, ease: "power2.out" }, 1.88);
     tl.fromTo("#s7-l3", { strokeDasharray: 553, strokeDashoffset: 551 },
-      { strokeDashoffset: 0, duration: 0.8, ease: "power2.out" }, 1.86);
+      { strokeDashoffset: 0, duration: 0.8, ease: "power2.out" }, 1.96);
     tl.fromTo("#s7-l4", { strokeDasharray: 553, strokeDashoffset: 551 },
-      { strokeDashoffset: 0, duration: 0.8, ease: "power2.out" }, 1.94);
-    tl.fromTo("#s7-hub", { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 1.9);
+      { strokeDashoffset: 0, duration: 0.8, ease: "power2.out" }, 2.04);
+    tl.fromTo("#s7-hub", { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 2.0);
     /* 镜头轻微 pull back */
     tl.fromTo("#s7-cam", { scale: 1.045 }, { scale: 1, duration: 1.2, ease: "power3.inOut" }, 3.1);
-    tl.fromTo("#s7-foot", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 4.2);
+    tl.fromTo("#s7-zipnote", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 4.0);
+    tl.fromTo("#s7-foot", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 4.3);
     tl.fromTo("#s7-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
-      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 5.5);
+      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 5.6);
     window.__timelines["s7-platforms"] = tl;
   </script>
 </template>
