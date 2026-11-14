@@ -19,7 +19,7 @@
       position: absolute; left: 0; top: 92px; width: 1920px; text-align: center;
     }
     #s7-kicker { opacity: 0; }
-    #s7-title { margin-top: 18px; opacity: 0; }
+    #s7-title { margin-top: 18px; opacity: 0; font-size: 72px; }
     #s7-subtitle { margin-top: 14px; opacity: 0; }
     .s7-card {
       position: absolute; width: 340px; height: 300px;
@@ -50,7 +50,7 @@
     .s7-card .badge svg { width: 16px; height: 16px; }
     #s7-lines { position: absolute; inset: 0; width: 1920px; height: 1080px; opacity: 1; }
     #s7-lines line {
-      stroke: rgba(88,166,255,0.55); stroke-width: 3; fill: none;
+      stroke: rgba(88,166,255,0.35); stroke-width: 3; fill: none;
       stroke-linecap: round;
     }
     #s7-hub {
@@ -62,10 +62,7 @@
       position: absolute; left: 0; top: 936px; width: 1920px; text-align: center;
       font-family: var(--font-mono); font-size: 22px; color: var(--muted); opacity: 0;
     }
-    #s7-foot {
-      position: absolute; left: 0; top: 982px; width: 1920px; text-align: center;
-      font-family: var(--font-mono); font-size: 21px; color: var(--muted); opacity: 0;
-    }
+    /* s7-foot 样式已随上屏文案一起删除（挪至注释）：macOS / iOS 弃用 · 最后支持 v5.3.0 */
     #s7-wipe {
       position: absolute; inset: 0; background: var(--ground);
       clip-path: inset(0 0 100% 0); opacity: 0;
@@ -96,7 +93,7 @@
           <circle cx="58" cy="52" r="3.4" fill="#58a6ff"></circle>
         </svg></div>
         <div class="pname">Android</div>
-        <div class="pinfo"><span class="k">4 ABI</span> APK + AAB<br/>自适应图标</div>
+        <div class="pinfo"><span class="k">APK + AAB</span><br/>装完就能登录</div>
       </div>
 
       <div id="s7-windows" class="card s7-card clip" data-start="0" data-duration="6.1" data-track-index="3">
@@ -109,7 +106,7 @@
           </g>
         </svg></div>
         <div class="pname">Windows</div>
-        <div class="pinfo"><span class="k">x64 / arm64</span><br/>单帧 256 ICO</div>
+        <div class="pinfo"><span class="k">x64 / arm64</span><br/>双架构安装包</div>
       </div>
 
       <div id="s7-linux" class="card s7-card clip" data-start="0" data-duration="6.1" data-track-index="3">
@@ -125,7 +122,7 @@
           </g>
         </svg></div>
         <div class="pname">Linux</div>
-        <div class="pinfo"><span class="k">deb / rpm / AppImage</span><br/>glibc ≥ 2.35</div>
+        <div class="pinfo"><span class="k">deb / rpm / AppImage</span><br/>三种包随便挑</div>
       </div>
 
       <div id="s7-web" class="card s7-card clip" data-start="0" data-duration="6.1" data-track-index="3">
@@ -144,7 +141,7 @@
           </g>
         </svg></div>
         <div class="pname">Web</div>
-        <div class="pinfo"><span class="k">dart2wasm</span> · dart2js 兜底</div>
+        <div class="pinfo"><span class="k">浏览器直接打开</span><br/>不用安装</div>
       </div>
 
       <svg id="s7-lines" viewBox="0 0 1920 1080">
@@ -156,8 +153,8 @@
       <div id="s7-hub" class="clip" data-start="0" data-duration="6.1" data-track-index="4"></div>
     </div>
 
-    <div id="s7-zipnote" class="clip" data-start="0" data-duration="6.1" data-track-index="4">每版同时提供 .zip 与 .7z · 解压即用</div>
-    <div id="s7-foot" class="clip" data-start="0" data-duration="6.1" data-track-index="4">macOS / iOS 弃用 · 最后支持 v5.3.0</div>
+    <div id="s7-zipnote" class="clip" data-start="0" data-duration="6.1" data-track-index="4">zip + 7z 双格式 · 同版同步发布</div>
+    <!-- s7-foot 已按审稿意见删除上屏：「macOS / iOS 弃用 · 最后支持 v5.3.0」 -->
     <div id="s7-wipe" class="clip" data-start="0" data-duration="6.1" data-track-index="9"></div>
   </div>
 
@@ -188,9 +185,10 @@
       { strokeDashoffset: 0, duration: 0.8, ease: "power2.out" }, 2.04);
     tl.fromTo("#s7-hub", { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 2.0);
     /* 镜头轻微 pull back */
-    tl.fromTo("#s7-cam", { scale: 1.045 }, { scale: 1, duration: 1.2, ease: "power3.inOut" }, 3.1);
+    tl.fromTo("#s7-cam", { scale: 1.045 },
+      { scale: 1, duration: 1.2, ease: "power3.inOut", immediateRender: false }, 3.1);
     tl.fromTo("#s7-zipnote", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 4.0);
-    tl.fromTo("#s7-foot", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 4.3);
+    /* s7-foot tween 已随上屏文案一起删除 */
     tl.fromTo("#s7-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
       { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 5.6);
     window.__timelines["s7-platforms"] = tl;

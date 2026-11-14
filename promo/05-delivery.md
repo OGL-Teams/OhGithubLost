@@ -9,8 +9,9 @@
 | 触发 | push 到 video / main / promo\/**（限 `promo/**` 与 workflow 变更）、手动 dispatch |
 | tag | `promo-<sha7>`，每次 video 分支渲染成功自动创建并推送 |
 | Release | 同 tag，附带 4 个文件 |
-| 成片 | `OGL-Promo.mp4`（56s / 1920×1080 / 30fps / H.264 + Wordless 混音） |
-| 压缩包 | `OGL-Promo.7z` — **7-Zip `-mx=9 -m0=LZMA2 -md=64m -mmt=on` 极限压缩**，含成片、联系表、lint/check、EDL、交付文档 |
+| 成片 | `OGL-Promo.mp4`（56s / 1920×1080 / 30fps / H.264 CRF16 + Wordless 混音，约 11.9 MB） |
+| 轻量版 | `OGL-Promo-720p.mp4`（1280×720 / CRF23 / preset slow / faststart，体积约为 1080p 的 30–40%，用于移动端与聊天分发） |
+| 压缩包 | `OGL-Promo.7z` — **7-Zip `-mx=9 -m0=LZMA2 -md=64m -mmt=on` 极限压缩**，含两个成片、联系表、lint/check、EDL、交付文档 |
 | 联系表 | `contact-sheet.jpg`（每 6 秒一帧，3×3） |
 | 校验 | `SHA256SUMS.txt` |
 | 诊断 | `lint.json`（硬门禁，0 error）、`check.json`（运行时/布局诊断） |
@@ -57,3 +58,4 @@ npm --prefix promo run render            # 本地出片（ARM64 需 HYPERFRAMES_
 7. **无配音**：全片只有音乐与画面，无旁白与字幕。
 8. **`timeline_track_too_dense` 警告**：单文件同轨道元素较多的可维护性建议，不影响渲染。
 9. **BGM 复现性**：CI 重算 `bgm.wav` 并与提交产物逐字节比对；升级 numpy / 改算法时须同时提交新 wav。
+10. **压缩边界**：1080p 源片已是 H.264 CRF16，7-Zip 对视频流几乎无收益（实测 11.86 MB → 11.76 MB）；要显著减体积请用 `OGL-Promo-720p.mp4`。

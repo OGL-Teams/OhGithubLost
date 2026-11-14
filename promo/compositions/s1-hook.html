@@ -12,7 +12,7 @@
     #s1-glow {
       position: absolute; width: 1100px; height: 1100px; left: 410px; top: -10px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(9,105,218,0.28) 0%, rgba(9,105,218,0) 68%);
+      background: radial-gradient(circle, rgba(9,105,218,0.19) 0%, rgba(9,105,218,0) 68%);
       opacity: 0;
     }
     #s1-tree {
@@ -51,29 +51,22 @@
     <div id="s1-scan" class="clip" data-start="0" data-duration="6.8" data-track-index="2"></div>
 
     <div id="s1-tree" class="clip mono" data-start="0" data-duration="6.8" data-track-index="1"><span class="hi">lib/</span>
-├── <span class="hi">kernel/</span>      boot · Ed25519 · trust root
-├── <span class="hi">base/</span>        net · disk · log
-├── <span class="hi">domain/</span>      gh · ix · sys
-├── <span class="hi">platform/</span>    window · capability
-└── <span class="hi">surface/</span>     pages · i18n · anim
-    ├── dashboard_page.dart
-    ├── <span class="amber">repo_page.dart</span>  ◂
-    ├── code_editor_page.dart
-    └── settings_page.dart
-
-<span class="hi">assets/i18n/</span>  de · en · fr · ru · zh · zh_Hant
-<span class="hi">tool/</span>        layer_audit.py --fatal</div>
+├── <span class="hi">pages/</span>         仓库 · 议题 · 设置
+├── <span class="hi">net/</span>           自动重试 · 失败可见
+├── <span class="hi">disk/</span>          草稿 · 缓存
+└── <span class="amber">i18n/</span>          6 种语言
+<span class="hi">assets/</span></div>
     <div id="s1-cursor" class="clip" data-start="0" data-duration="6.8" data-track-index="2"></div>
 
     <div id="s1-right" class="clip" data-start="0" data-duration="6.8" data-track-index="3">
-      <div id="s1-kicker" class="kicker">v12.6.9 · 18 道离线门禁全通过</div>
+      <div id="s1-kicker" class="kicker">v12.6.9 · 装上就登录</div>
       <div id="s1-title" class="h1">
         <span class="line">第一次用 GitHub</span>
         <span class="line brand">也能直接上手</span>
       </div>
-      <div id="s1-sub" class="sub">装上就登录 · 仓库、议题、更新都在一个 App 里<br/>不用配环境，不用开浏览器</div>
+      <div id="s1-sub" class="sub">仓库、议题、更新，都在一个 App 里<br/>不用配环境，也不用开浏览器</div>
       <div id="s1-pills">
-        <span class="pill"><i class="dot"></i>4 平台 · 开箱即用</span>
+        <span class="pill"><i class="dot"></i>Android · Windows · Linux · Web</span>
         <span class="pill"><i class="dot"></i>6 语言 · 中文优先</span>
         <span class="pill"><i class="dot"></i>Apache-2.0</span>
       </div>
@@ -93,14 +86,19 @@
     tl.fromTo("#s1-sub", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 1.5);
     tl.fromTo("#s1-pills .pill", { opacity: 0, y: 20 },
       { opacity: 1, y: 0, duration: 0.55, stagger: 0.09, ease: "power3.out" }, 1.9);
-    tl.fromTo("#s1-cursor", { opacity: 0, y: 292 },
-      { opacity: 1, y: 292, duration: 0.25, ease: "none" }, 2.5);
-    tl.to("#s1-cursor", { y: 508, duration: 0.7, ease: "power2.inOut" }, 2.8);
+    tl.fromTo("#s1-cursor", { opacity: 0, y: 92 },
+      { opacity: 1, y: 92, duration: 0.25, ease: "none", immediateRender: false }, 1.5);
+    tl.fromTo("#s1-cursor", { y: 92, opacity: 1 },
+      { y: 210, opacity: 1, duration: 0.7, ease: "power2.inOut", immediateRender: false }, 1.8);
     tl.fromTo("#s1-scan", { y: 180, opacity: 0 },
-      { y: 940, opacity: 1, duration: 1.1, ease: "power2.inOut" }, 3.2);
-    tl.to("#s1-scan", { opacity: 0, duration: 0.3 }, 4.3);
-    tl.fromTo("#s1-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
-      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 6.3);
+      { y: 940, opacity: 1, duration: 1.1, ease: "power2.inOut" }, 2.6);
+    tl.fromTo("#s1-scan", { opacity: 1 },
+      { opacity: 0, duration: 0.3, ease: "power2.out", immediateRender: false }, 3.7);
+    /* 4.4–6.3 缓慢反向微移：填补 wipe 前的静止段 */
+    tl.fromTo("#s1-grid", { scale: 1, y: 0 },
+      { scale: 1.03, y: -10, duration: 1.9, ease: "power2.inOut", immediateRender: false }, 4.4);
+    tl.fromTo("#s1-wipe", { opacity: 1, clipPath: "inset(0% 0 100% 0)" },
+      { opacity: 1, clipPath: "inset(0% 0 0% 0)", duration: 0.5, ease: "power3.in" }, 6.3);
     window.__timelines["s1-hook"] = tl;
   </script>
 </template>

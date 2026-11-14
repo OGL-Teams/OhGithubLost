@@ -3,13 +3,32 @@
     #root { position: absolute; inset: 0; overflow: hidden; background: var(--ground); }
     #s2-head { position: absolute; left: 160px; top: 54px; }
     #s2-kicker { opacity: 0; }
-    #s2-title { margin-top: 16px; opacity: 0; font-size: 66px; }
+    #s2-title { margin-top: 16px; opacity: 0; font-size: 72px; }
     #s2-sub { margin-top: 18px; opacity: 0; font-size: 30px; }
     #s2-shot-a {
-      left: 528px; top: 250px; width: 400px; height: 711px;
+      left: 408px; top: 210px; width: 440px; height: 782px;
     }
     #s2-shot-b {
-      left: 992px; top: 250px; width: 400px; height: 711px;
+      left: 1072px; top: 210px; width: 440px; height: 782px;
+    }
+    /* punch-in：01-home 放大 3.2×，只露出 OGL-Teams/OhGithubLost 那一行 */
+    #s2-punch {
+      position: absolute; left: 580px; top: 810px;
+      width: 760px; height: 260px;
+      overflow: hidden; border-radius: 14px;
+      border: 1px solid rgba(139,148,158,0.30);
+      box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+      opacity: 0;
+    }
+    #s2-punch img {
+      position: absolute; width: 1408px; height: 2503px;
+      object-fit: cover; left: -333px; top: -1220px;
+    }
+    #s2-punch-note {
+      position: absolute; left: 1364px; top: 900px;
+      width: 356px;
+      font-family: var(--font-mono); font-size: 20px;
+      letter-spacing: 0.04em; color: var(--muted); opacity: 0;
     }
     #s2-shot-note {
       position: absolute; left: 0; top: 992px; width: 1920px; text-align: center;
@@ -23,7 +42,7 @@
     <div id="s2-head" class="clip" data-start="0" data-duration="7.3" data-track-index="1">
       <div id="s2-kicker" class="kicker">01 · Repository</div>
       <div id="s2-title" class="h2">仓库一眼看全</div>
-      <div id="s2-sub" class="sub">发现页：别人的项目、议题、CI 动态<span class="accent">，</span>顺手就能点开</div>
+      <div id="s2-sub" class="sub">发现页：热门项目、议题、构建动态<span class="accent">，</span>顺手就能点开</div>
     </div>
 
     <img id="s2-shot-a" class="shot clip" src="assets/screens/01-home.png" alt="OhGithubLost 首页仓库列表"
@@ -32,6 +51,11 @@
          data-start="0" data-duration="7.3" data-track-index="3" />
 
     <div id="s2-shot-note" class="clip" data-start="0" data-duration="7.3" data-track-index="4">实机截图 · Android</div>
+
+    <div id="s2-punch" class="clip" data-start="0" data-duration="7.3" data-track-index="5">
+      <img src="assets/screens/01-home.png" alt="仓库卡片特写：OGL-Teams/OhGithubLost" />
+    </div>
+    <div id="s2-punch-note" class="clip" data-start="0" data-duration="7.3" data-track-index="5">真机截图 · OGL-Teams/OhGithubLost</div>
 
     <div id="s2-wipe" class="clip" data-start="0" data-duration="7.3" data-track-index="9"></div>
   </div>
@@ -50,9 +74,23 @@
       { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 1.0);
     /* 连续 camera push：每张图推入再回位，不做 3D 倾斜 */
     tl.fromTo("#s2-shot-a", { scale: 1 }, { scale: 1.12, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 2.2);
-    tl.fromTo("#s2-shot-a", { scale: 1.12 }, { scale: 1, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 3.0);
+    tl.fromTo("#s2-shot-a", { scale: 1.12 }, { scale: 1.015, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 3.0);
     tl.fromTo("#s2-shot-b", { scale: 1 }, { scale: 1.12, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 2.5);
-    tl.fromTo("#s2-shot-b", { scale: 1.12 }, { scale: 1, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 3.3);
+    tl.fromTo("#s2-shot-b", { scale: 1.12 }, { scale: 1.015, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 3.3);
+    /* punch-in 推入：3.0s 起，3.4s 到位，停留至 5.6s，5.6–5.9 淡出 */
+    tl.fromTo("#s2-punch", { opacity: 0, scale: 0.96 },
+      { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, 3.0);
+    tl.fromTo("#s2-punch", { opacity: 1 },
+      { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 5.6);
+    tl.fromTo("#s2-punch-note", { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 3.25);
+    tl.fromTo("#s2-punch-note", { opacity: 1 },
+      { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 5.6);
+    /* 3.85–6.8 呼吸：两图极缓慢 scale 往返，错开 0.8s，填补静止段 */
+    tl.fromTo("#s2-shot-a", { scale: 1.015 }, { scale: 1, duration: 1.6, ease: "power2.inOut", immediateRender: false }, 4.0);
+    tl.fromTo("#s2-shot-a", { scale: 1 }, { scale: 1.015, duration: 1.2, ease: "power2.inOut", immediateRender: false }, 5.6);
+    tl.fromTo("#s2-shot-b", { scale: 1.015 }, { scale: 1, duration: 1.6, ease: "power2.inOut", immediateRender: false }, 4.8);
+    tl.fromTo("#s2-shot-b", { scale: 1 }, { scale: 1.015, duration: 0.4, ease: "power2.inOut", immediateRender: false }, 6.4);
     tl.fromTo("#s2-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
       { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 6.8);
     window.__timelines["s2-repo"] = tl;

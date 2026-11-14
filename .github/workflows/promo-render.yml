@@ -146,7 +146,7 @@ jobs:
               print(raw[:3000])
           PY
 
-      - name: Render MP4
+      - name: Render MP4 (delivery 1080p)
         run: |
           mkdir -p promo/final
           npx -y "hyperframes@${HF_VERSION}" render promo \
@@ -156,9 +156,30 @@ jobs:
             --no-browser-gpu
           ls -lh promo/final/
           ffprobe -v error \
-            -show_entries format=duration,size \
-            -show_entries stream=width,height,r_frame_rate,codec_name \
+            -show_entries format=duration,size,bit_rate \
+            -show_entries stream=width,height,r_frame_rate,codec_name,bit_rate \
             -of default=noprint_wrappers=1 promo/final/OGL-Promo.mp4
+
+      # 1080p 源片已是 CRF16，体积压不动；真正的「小包」靠降分辨率重编码。
+      # 720p / CRF23 通常只有源片的 30–40%，适合聊天工具与移动端分发。
+      - name: Derive 720p lightweight cut
+        run: |
+          set -euo pipefail
+          ffmpeg -y -v error -i promo/final/OGL-Promo.mp4 \
+            -vf "scale=1280:720:flags=lanczos" \
+            -c:v libx264 -preset slow -crf 23 -profile:v high -level 4.0 \
+            -c:a aac -b:a 128k -movflags +faststart \
+            promo/final/OGL-Promo-720p.mp4
+          ls -lh promo/final/*.mp4
+          echo "--- 体积对比 ---"
+          python3 - <<'PY'
+          import os
+          for f in ('promo/final/OGL-Promo.mp4','promo/final/OGL-Promo-720p.mp4'):
+              print(f"{f:36s} {os.path.getsize(f)/1048576:7.2f} MB")
+          a=os.path.getsize('promo/final/OGL-Promo.mp4')
+          b=os.path.getsize('promo/final/OGL-Promo-720p.mp4')
+          print(f"720p 为源片的 {b/a*100:.1f}%")
+          PY
 
       - name: Generate contact sheet
         run: |
@@ -172,18 +193,19 @@ jobs:
           set -euo pipefail
           mkdir -p promo/final/package
           cp promo/final/OGL-Promo.mp4 \
+             promo/final/OGL-Promo-720p.mp4 \
              promo/final/contact-sheet.jpg \
              lint.json check.json \
              promo/04-edl.md promo/05-delivery.md \
              promo/final/package/
-          # -mx=9 极限压缩；-m0=LZMA2 -md=64m 提高字典；-mmt=on 多核
+          # -mx=9 极限压缩；-m0=LZMA2 -md=64m 提高字典；-mmt=on 多核。
+          # 注意：MP4 本身已是 H.264 压缩流，7z 主要收益在打包与文档，不是再压视频。
           7z a -t7z -mx=9 -m0=LZMA2 -md=64m -mmt=on -bd \
              promo/final/OGL-Promo.7z ./promo/final/package/*
-          ls -lh promo/final/OGL-Promo.mp4 promo/final/OGL-Promo.7z
+          ls -lh promo/final/OGL-Promo.mp4 promo/final/OGL-Promo-720p.mp4 promo/final/OGL-Promo.7z
           7z t promo/final/OGL-Promo.7z -bd | tail -3
-          # 便于下游直接取用与对比
-          sha256sum promo/final/OGL-Promo.mp4 promo/final/OGL-Promo.7z \
-            | tee promo/final/SHA256SUMS.txt
+          sha256sum promo/final/OGL-Promo.mp4 promo/final/OGL-Promo-720p.mp4 \
+            promo/final/OGL-Promo.7z | tee promo/final/SHA256SUMS.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -191,6 +213,7 @@ jobs:
           name: ogl-promo-${{ github.ref_name }}-${{ github.sha }}
           path: |
             promo/final/OGL-Promo.mp4
+            promo/final/OGL-Promo-720p.mp4
             promo/final/OGL-Promo.7z
             promo/final/contact-sheet.jpg
             promo/final/SHA256SUMS.txt
@@ -214,13 +237,16 @@ jobs:
           gh release create "$TAG" \
             promo/final/OGL-Promo.7z \
             promo/final/OGL-Promo.mp4 \
+            promo/final/OGL-Promo-720p.mp4 \
             promo/final/contact-sheet.jpg \
             promo/final/SHA256SUMS.txt \
             --title "OGL 宣传片 $TAG" \
             --notes "由 .github/workflows/promo-render.yml 从 promo/ 源码自动渲染。
 
-          - 56s / 30fps / 1920x1080，HOYO-MiX《子不语 Wordless》卡点混音
+          - 56s / 30fps / 1920x1080 成片，HOYO-MiX《子不语 Wordless》卡点混音
           - 5 张 Android 实机截图，面向新手开发者与尝鲜极客
-          - OGL-Promo.7z：7-Zip -mx=9 极限压缩包（含成片、联系表、EDL、校验）
-          - OGL-Promo.mp4：可直接播放的成片
-          - SHA256SUMS.txt：完整性校验"
+          - **OGL-Promo-720p.mp4**：720p / CRF23 轻量版，体积约为 1080p 的 30–40%，适合移动端与聊天分发
+          - **OGL-Promo.7z**：7-Zip -mx=9 极限压缩包（含两个成片、联系表、lint/check、EDL、交付文档）
+          - SHA256SUMS.txt：完整性校验
+
+          > 说明：1080p 源片已是 H.264 CRF16，7z 无法再显著压缩视频流；要减体积请看 720p 版本。"

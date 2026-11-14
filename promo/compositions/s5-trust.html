@@ -17,12 +17,12 @@
     }
     #s5-kicker { position: absolute; left: 140px; top: 84px; opacity: 0; }
     #s5-head-left {
-      position: absolute; left: 140px; top: 136px;
-      opacity: 0; font-size: 54px; font-weight: 650; letter-spacing: -0.03em;
+      position: absolute; left: 140px; top: 128px;
+      opacity: 0; font-size: 72px; font-weight: 650; letter-spacing: -0.035em;
     }
     #s5-head-right {
-      position: absolute; left: 140px; top: 208px;
-      opacity: 0; font-size: 54px; font-weight: 650; letter-spacing: -0.03em;
+      position: absolute; left: 140px; top: 226px;
+      opacity: 0; font-size: 72px; font-weight: 650; letter-spacing: -0.035em;
     }
     #s5-head-left .accent, #s5-head-right .accent { color: var(--accent); }
     #s5-sub {
@@ -64,11 +64,6 @@
     #s5-badge-retry { color: var(--accent); border-color: rgba(227,179,65,0.6); background: rgba(227,179,65,0.12); }
     #s5-badge-ok { color: var(--ok); border-color: rgba(63,185,80,0.6); background: rgba(63,185,80,0.12); }
 
-    #s5-netline {
-      position: absolute; left: 140px; top: 644px;
-      font-family: var(--font-mono); font-size: 24px; color: var(--muted);
-      opacity: 0;
-    }
     #s5-netsub {
       position: absolute; left: 140px; top: 692px;
       font-family: var(--font-mono); font-size: 24px; color: var(--muted);
@@ -76,14 +71,14 @@
     }
 
     /* 真实手机截图：「我的」页 */
-    #s5-shot { left: 1150px; top: 250px; width: 360px; height: 640px; opacity: 0; }
+    #s5-shot { left: 1150px; top: 220px; width: 400px; height: 711px; opacity: 0; }
     #s5-shotlabel {
-      position: absolute; left: 1150px; top: 214px;
+      position: absolute; left: 1150px; top: 184px;
       font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.14em;
       color: var(--brand); opacity: 0;
     }
     .s5-cap {
-      position: absolute; left: 1560px; width: 300px;
+      position: absolute; left: 1610px; width: 300px;
       padding: 16px 18px; border-radius: 14px;
       background: rgba(13,17,23,0.92);
       border: 1px solid rgba(139,148,158,0.28);
@@ -97,7 +92,7 @@
     }
     .s5-cap .cb { font-size: 24px; line-height: 1.5; color: var(--ink); }
     #s5-cap-note {
-      position: absolute; left: 1560px; top: 700px; width: 300px;
+      position: absolute; left: 1610px; top: 700px; width: 300px;
       font-family: var(--font-mono); font-size: 22px; line-height: 1.5;
       color: var(--muted); opacity: 0;
     }
@@ -129,7 +124,6 @@
     <div id="s5-badge-retry" class="s5-badge clip" data-start="0" data-duration="8.0" data-track-index="4">retry 2/3</div>
     <div id="s5-badge-ok" class="s5-badge clip" data-start="0" data-duration="8.0" data-track-index="4">200 OK</div>
 
-    <div id="s5-netline" class="clip" data-start="0" data-duration="8.0" data-track-index="4">DoH · retry · backoff</div>
     <div id="s5-netsub" class="clip" data-start="0" data-duration="8.0" data-track-index="4">429 · rate limited → retry 2/3 → 200 OK</div>
 
     <div id="s5-shotlabel" class="clip" data-start="0" data-duration="8.0" data-track-index="4">REAL SCREENSHOT · 我的</div>
@@ -169,23 +163,27 @@
     tl.fromTo("#s5-link-alert", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 2.1);
     tl.fromTo("#s5-badge-429", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 2.15);
     /* 停留后转重试 */
-    tl.to("#s5-badge-429", { opacity: 0, duration: 0.3, ease: "power2.in" }, 3.25);
-    tl.to("#s5-link-alert", { opacity: 0, duration: 0.3, ease: "power2.in" }, 3.25);
+    tl.fromTo("#s5-badge-429", { opacity: 1 }, { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 3.25);
+    tl.fromTo("#s5-link-alert", { opacity: 1 }, { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 3.25);
     tl.fromTo("#s5-badge-retry", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 3.55);
     /* 自动重试成功 */
-    tl.to("#s5-badge-retry", { opacity: 0, duration: 0.3, ease: "power2.in" }, 4.0);
+    tl.fromTo("#s5-badge-retry", { opacity: 1 }, { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 4.0);
     tl.fromTo("#s5-link-ok", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 4.0);
     tl.fromTo("#s5-badge-ok", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 4.05);
+    /* 真实 onset 强调：38.27s（全局）→ 本场景 6.07s，「200 OK」最终高亮脉冲 */
+    tl.fromTo("#s5-badge-ok", { scale: 1 }, { scale: 1.14, duration: 0.12, ease: "power2.out", immediateRender: false }, 6.07);
+    tl.fromTo("#s5-badge-ok", { scale: 1.14 }, { scale: 1, duration: 0.18, ease: "power2.inOut", immediateRender: false }, 6.19);
     /* 极客向彩蛋行（mono，≥22px） */
-    tl.fromTo("#s5-netline", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.45);
-    tl.fromTo("#s5-netsub", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.65);
-    /* 真实截图入场 */
-    tl.fromTo("#s5-shotlabel", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 4.9);
+    tl.fromTo("#s5-netsub", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.45);
+    /* 真实截图入场（提前：先立证据） */
+    tl.fromTo("#s5-shotlabel", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 0.95);
     tl.fromTo("#s5-shot", { opacity: 0, y: 34, scale: 0.97 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.75, ease: "power3.out" }, 4.95);
+      { opacity: 1, y: 0, scale: 1, duration: 0.75, ease: "power3.out" }, 1.0);
     tl.fromTo("#s5-cap-a", { opacity: 0, x: 22 }, { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 5.45);
     tl.fromTo("#s5-cap-b", { opacity: 0, x: 22 }, { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 5.7);
     tl.fromTo("#s5-cap-note", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 5.95);
+    /* 死段修复：6.45–7.5 截图微推 */
+    tl.fromTo("#s5-shot", { scale: 1 }, { scale: 1.03, duration: 1.0, ease: "power2.out", immediateRender: false }, 6.45);
     tl.fromTo("#s5-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
       { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 7.5);
     window.__timelines["s5-trust"] = tl;

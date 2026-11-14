@@ -19,11 +19,19 @@
       position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
+    /* 图标容器：给深色 OGL 图标一个衬底，避免熔进深蓝背景 */
     #s8-iconmask {
-      position: absolute; left: 870px; top: 226px; width: 180px; height: 180px;
+      position: absolute; left: 860px; top: 216px; width: 200px; height: 200px;
+      border-radius: 36px;
+      background: #161b22;
+      border: 1px solid rgba(139,148,158,0.35);
       overflow: hidden;
     }
-    #s8-iconmask img { width: 180px; height: 180px; display: block; }
+    /* 图标本体按原比例居中放在容器内 */
+    #s8-iconmask img {
+      width: 180px; height: 180px; display: block;
+      position: absolute; left: 10px; top: 10px;
+    }
     #s8-wordmark {
       position: absolute; left: 0; top: 452px; width: 1920px; text-align: center;
       font-size: 104px; font-weight: 650; letter-spacing: -0.045em; line-height: 1.1;
@@ -36,33 +44,20 @@
     }
     #s8-tagline .brand { color: #58a6ff; }
     #s8-cmd {
-      position: absolute; left: 0; top: 690px; width: 1920px; text-align: center;
+      position: absolute; left: 0; top: 668px; width: 1920px; text-align: center;
       font-size: 30px; color: var(--ink); letter-spacing: 0.04em;
     }
     #s8-cmd .brand { color: #58a6ff; }
     #s8-cmdsub {
-      position: absolute; left: 0; top: 742px; width: 1920px; text-align: center;
+      position: absolute; left: 0; top: 720px; width: 1920px; text-align: center;
       font-family: var(--font-mono); font-size: 22px; color: var(--muted);
     }
-    #s8-lic {
+    /* mono 彩蛋：给想折腾源码的人 */
+    #s8-egg {
       position: absolute; left: 0; top: 806px; width: 1920px; text-align: center;
-      font-family: var(--font-mono); font-size: 24px; color: var(--muted);
+      font-family: var(--font-mono); font-size: 22px; color: var(--muted);
     }
-    #s8-lic .ok { color: var(--ok); }
-    /* 真实截图：「关于」页小卡 */
-    #s8-shotwrap {
-      position: absolute; left: 1550px; top: 250px; width: 200px;
-      text-align: center; opacity: 0;
-    }
-    #s8-shot {
-      width: 180px; height: 320px; display: block; margin: 0 auto;
-      border-radius: 16px;
-    }
-    #s8-shotcap {
-      margin-top: 12px; font-family: var(--font-mono); font-size: 18px;
-      line-height: 1.5; color: var(--muted);
-    }
-    #s8-shotcap .hl { color: #58a6ff; }
+    /* 05-about.png 小截图已按审稿意见删除：end card 不放缩略图 */
   </style>
 
   <div id="root" data-composition-id="s8-end" data-width="1920" data-height="1080">
@@ -73,36 +68,31 @@
       <div id="s8-iconmask" class="clip" data-start="0" data-duration="3.7" data-track-index="4">
         <img id="s8-icon" src="assets/ogl_icon.svg" alt="OhGithubLost" />
       </div>
-      <div id="s8-wordmark" class="clip" data-start="0" data-duration="3.7" data-track-index="4">Oh<span class="brand">GitHub</span>Lost</div>
+      <div id="s8-wordmark" class="clip" data-start="0" data-duration="3.7" data-track-index="4">Oh<span class="brand">Github</span>Lost</div>
       <div id="s8-tagline" class="clip" data-start="0" data-duration="3.7" data-track-index="5">第一次用 GitHub，<span class="brand">也能直接上手</span></div>
       <div id="s8-cmd" class="clip" data-start="0" data-duration="3.7" data-track-index="5">搜 <span class="brand">OhGithubLost</span> · 下载即用</div>
-      <div id="s8-cmdsub" class="clip" data-start="0" data-duration="3.7" data-track-index="5">想折腾源码？仓库里有 flutter pub get &amp;&amp; flutter run</div>
-      <div id="s8-lic" class="clip" data-start="0" data-duration="3.7" data-track-index="5">开源 · <span class="ok">Apache-2.0</span></div>
+      <div id="s8-cmdsub" class="clip" data-start="0" data-duration="3.7" data-track-index="5">v12.6.9 · Apache-2.0</div>
+      <!-- mono 彩蛋（22px，--muted）：删除了重复的「开源 · Apache-2.0」行 -->
+      <div id="s8-egg" class="clip" data-start="0" data-duration="3.7" data-track-index="5">想折腾源码？仓库里有 flutter pub get &amp;&amp; flutter run</div>
     </div>
-
-    <div id="s8-shotwrap" class="clip" data-start="0" data-duration="3.7" data-track-index="6">
-      <img id="s8-shot" class="shot" src="assets/screens/05-about.png" alt="关于页截图" />
-      <div id="s8-shotcap">关于 · <span class="hl">v12.6.9</span> · Apache-2.0 · 致谢 18</div>
-    </div>
+    <!-- 05-about.png 截图容器与标注已删除 -->
   </div>
 
   <script>
     const tl = gsap.timeline({ paused: true });
     tl.fromTo("#s8-bg", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power2.out" }, 0);
     tl.fromTo("#s8-grid", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 1.2, ease: "power3.out" }, 0);
-    /* 图标：clipPath 从下往上的填充升起 */
+    /* 图标：fill-rise 0.7s，起于 0.1s（容器 + 图标一起升起，全部 2.2s 前完成） */
     tl.fromTo("#s8-iconmask", { opacity: 1, clipPath: "inset(100% 0% 0% 0%)" },
-      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.7, ease: "power3.out" }, 0.2);
-    /* 字标：inset wipe in */
+      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.7, ease: "power3.out" }, 0.1);
+    /* 字标 wipe：0.5s，起于 0.5s */
     tl.fromTo("#s8-wordmark", { clipPath: "inset(0% 100% 0% 0%)" },
-      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power3.out" }, 1.1);
-    tl.fromTo("#s8-tagline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 1.6);
-    tl.fromTo("#s8-cmd", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 1.75);
-    tl.fromTo("#s8-cmdsub", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 1.9);
-    tl.fromTo("#s8-lic", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 1.7);
-    /* 真实「关于」截图：2.2s 前淡入完成，最后 1.5s 全场静止 */
-    tl.fromTo("#s8-shotwrap", { opacity: 0, y: 18, scale: 0.97 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power2.out" }, 1.7);
+      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power3.out" }, 0.5);
+    tl.fromTo("#s8-tagline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.9);
+    tl.fromTo("#s8-cmd", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 1.3);
+    tl.fromTo("#s8-cmdsub", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 1.45);
+    tl.fromTo("#s8-egg", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 1.7);
+    /* 全部 2.15s 内结束；之后静止 1.5s 到 3.7s，无 fade out */
     window.__timelines["s8-end"] = tl;
   </script>
 </template>

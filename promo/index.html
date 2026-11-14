@@ -62,12 +62,19 @@
                     rgba(88,166,255,0.34) 0%, rgba(9,105,218,0.08) 46%, rgba(0,0,0,0) 75%);
         opacity: 0;
       }
+      /*
+        beat-flash 分档：弱段轻、强段重（与 06-music-plan 的能量台对应）。
+        已知偏差：实测 onset 40.25 vs 工程切点 40.2（偏差 0.05s）。为保持 s6 场景
+        内部时长 6.0s 与时间轴连续（46.2 − 40.2 = 6.0），切点保持 40.2 不动。
+      */
       /* 实机截图共用的取景框（由各场景自行摆放） */
       .shot {
         position: absolute;
         object-fit: cover;
         border-radius: 22px;
-        border: 1px solid rgba(139,148,158,0.30);
+        border: 2px solid #30363d;
+        outline: 1px solid rgba(230,237,243,0.14);
+        outline-offset: -3px;
         box-shadow: 0 30px 90px rgba(0,0,0,0.55);
       }
       .mono { font-family: var(--font-mono); }
@@ -167,7 +174,9 @@
 
       <!-- 主音轨：HOYO-MiX《子不语 Wordless》(28–84s 裁段，56s)。
            原曲为 FLAC-in-mp3 容器，转成 44.1k AAC/MP3 供浏览器稳定解码。
-           版权归原作者所有；此文件仅随 video 分支用于本次宣传片样片。 -->
+           56s 裁段覆盖「起 → 推进 → 爆发(38–52s 主副歌) → 收束」，切点对齐实测强拍。
+           版权归 HOYO-MiX 及原作者所有；此文件仅随 video 分支用于内部样片评估，
+           正式对外发布前必须确认授权，或切回下方合成 BGM（对调 data-volume 即可）。 -->
       <audio id="bgm" src="assets/audio/wordless-56s.mp3"
              data-start="0" data-duration="56" data-track-index="9" data-volume="0.92"></audio>
       <!-- 合成 BGM 保留为可选备用轨，默认静音（data-volume=0），不参与混音 -->
@@ -178,12 +187,28 @@
     <script>
       window.__timelines = window.__timelines || {};
       // 根时间线只负责 7 个卡点闪层；子场景由 runtime 各自 seek。
+      // 分档：弱段（引入/推进，能量台低）轻闪 peak 0.38 / 衰减 0.30s；
+      //       强段（38–52s 主副歌峰）重闪 peak 0.62 / 衰减 0.16s + 轻微 punch scale。
+      // 已知偏差：实测 onset 40.25 vs 工程切点 40.2（0.05s），为保持 s6 内部 6.0s 连续，切点维持 40.2。
       const tl = gsap.timeline({ paused: true });
-      const cuts = [0, 6.8, 14.1, 23.0, 32.2, 40.2, 46.2, 52.3];
-      cuts.slice(1).forEach(function (t) {
+      const cuts = [
+        { t: 6.8,  peak: 0.38, decay: 0.30 },
+        { t: 14.1, peak: 0.38, decay: 0.30 },
+        { t: 23.0, peak: 0.38, decay: 0.30 },
+        { t: 32.2, peak: 0.38, decay: 0.30 },
+        { t: 40.2, peak: 0.62, decay: 0.16, punch: true },
+        { t: 46.2, peak: 0.62, decay: 0.16, punch: true },
+        { t: 52.3, peak: 0.62, decay: 0.16, punch: true }
+      ];
+      cuts.forEach(function (c) {
         tl.fromTo("#beat-flash", { opacity: 0 },
-          { opacity: 0.55, duration: 0.07, ease: "power2.out" }, t);
-        tl.to("#beat-flash", { opacity: 0, duration: 0.24, ease: "power2.in" }, t + 0.07);
+          { opacity: c.peak, duration: 0.07, ease: "power2.out" }, c.t);
+        tl.to("#beat-flash",
+          { opacity: 0, duration: c.decay, ease: "power2.in" }, c.t + 0.07);
+        if (c.punch) {
+          tl.fromTo("#beat-flash", { scale: 0.985 },
+            { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, c.t);
+        }
       });
       window.__timelines["main"] = tl;
     </script>

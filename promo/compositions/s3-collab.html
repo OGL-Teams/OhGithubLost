@@ -17,7 +17,12 @@
     }
     #s3-head { position: absolute; left: 112px; top: 150px; }
     #s3-kicker { opacity: 0; }
-    #s3-title { margin-top: 22px; opacity: 0; font-size: 66px; }
+    #s3-title { margin-top: 22px; opacity: 0; font-size: 72px; }
+    #s3-title-en {
+      margin-top: 12px; opacity: 0;
+      font-family: var(--font-mono); font-size: 22px;
+      letter-spacing: 0.1em; color: var(--muted);
+    }
     #s3-sub { margin-top: 26px; opacity: 0; font-size: 28px; }
     #s3-evidence {
       position: absolute; left: 112px; top: 344px;
@@ -45,7 +50,7 @@
       font-family: var(--font-mono); font-size: 24px; color: var(--muted);
       line-height: 1.6; min-height: 116px;
     }
-    .s3-status .hl { color: var(--ink); }
+    .s3-status .hl { color: var(--ink); display: inline-block; }
     .s3-track {
       height: 10px; border-radius: 999px;
       background: rgba(139,148,158,0.16);
@@ -76,12 +81,13 @@
 
     <div id="s3-head" class="clip" data-start="0" data-duration="8.9" data-track-index="2">
       <div id="s3-kicker" class="kicker">02 · Collaboration</div>
-      <div id="s3-title" class="h2">Issues · PR · Releases · Actions · Gist</div>
+      <div id="s3-title" class="h2">议题 · 评审 · 发布 · 构建 · 片段</div>
+      <div id="s3-title-en">Issues · Pull requests · Releases · Actions · Gist</div>
       <div id="s3-sub" class="sub">不用来回切网页<span class="accent">，</span>五个入口都在底部导航</div>
     </div>
 
     <div id="s3-evidence" class="clip" data-start="0" data-duration="8.9" data-track-index="2">
-      <span class="ver">12.6.3 → 12.6.9</span> · 7 天连续打磨<br/>
+      议题状态 · PR 差异 · 发布附件 · 构建耗时 · 全部实时可见<br/>
       发现页分类筛选 · 设置页平铺 · 键盘快捷键 · 字体缓存校验 · 18 道离线门禁
     </div>
 
@@ -123,7 +129,6 @@
     </div>
 
     <div id="s3-foot" class="clip" data-start="0" data-duration="8.9" data-track-index="4">
-      <span class="pill"><i class="dot"></i>issues · pull requests · releases · actions · gists</span>
       <span class="pill"><i class="dot"></i>状态实时可见</span>
     </div>
 
@@ -140,23 +145,31 @@
     /* 真实更新日志证据条（v12.6.3 → v12.6.9），淡入对齐 1.2s 卡点 */
     tl.fromTo("#s3-evidence", { opacity: 0, y: 18 },
       { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 1.2);
-    /* 五张卡片横排错峰上浮 */
+    /* 五张卡片横排错峰上浮（卡片相位 0.14） */
     tl.fromTo(".s3-card", { opacity: 0, y: 44 },
-      { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, ease: "power3.out" }, 0.75);
-    /* 顶部圆点确定性错峰点亮 */
+      { opacity: 1, y: 0, duration: 0.7, stagger: 0.14, ease: "power3.out" }, 0.75);
+    /* 顶部圆点确定性错峰点亮（圆点相位 0.06） */
     tl.fromTo(".s3-dot", { opacity: 0, scale: 0.2 },
-      { opacity: 1, scale: 1, duration: 0.4, stagger: 0.1, ease: "power3.out" }, 1.05);
-    /* 状态条从左扫出 */
+      { opacity: 1, scale: 1, duration: 0.4, stagger: 0.06, ease: "power3.out" }, 1.05);
+    /* 状态条从左扫出（状态条相位 0.08） */
     tl.fromTo(".s3-fill", { scaleX: 0 },
-      { scaleX: 1, duration: 0.85, stagger: 0.12, ease: "power3.out" }, 1.35);
+      { scaleX: 1, duration: 0.85, stagger: 0.08, ease: "power3.out" }, 1.35);
     tl.fromTo(".s3-status", { opacity: 0, y: 14 },
-      { opacity: 1, y: 0, duration: 0.45, stagger: 0.12, ease: "power2.out" }, 1.6);
+      { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: "power2.out" }, 1.6);
     /* Releases 卡片一次 camera push 后回位 */
     tl.fromTo("#s3-card-3", { scale: 1 }, { scale: 1.15, duration: 0.5, ease: "power3.out", immediateRender: false }, 3.5);
     tl.fromTo("#s3-card-3", { scale: 1.15 }, { scale: 1, duration: 0.5, ease: "power3.inOut", immediateRender: false }, 4.15);
     /* 底部摘要条 */
     tl.fromTo(".s3-foot .pill", { opacity: 0, y: 20 },
       { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power3.out" }, 5.1);
+    /* 死段修复：状态条第二段扫动（6.0s 起） */
+    tl.fromTo(".s3-fill", { scaleX: 0.6 },
+      { scaleX: 0.92, duration: 1.2, stagger: 0.08, ease: "power2.inOut", immediateRender: false }, 6.0);
+    /* 卡内小数字轻浮回落后再落回（6.6s） */
+    tl.fromTo(".s3-status .hl", { y: 0 },
+      { y: -6, duration: 0.175, stagger: 0.05, ease: "power2.out", immediateRender: false }, 6.6);
+    tl.fromTo(".s3-status .hl", { y: -6 },
+      { y: 0, duration: 0.175, stagger: 0.05, ease: "power2.in", immediateRender: false }, 6.775);
     tl.fromTo("#s3-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
       { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 8.4);
     window.__timelines["s3-collab"] = tl;
