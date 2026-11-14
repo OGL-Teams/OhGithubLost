@@ -543,8 +543,7 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 能"选一个"的走**选择行**（右侧显示当前值，点开弹窗），只有连续量
   /// （文字缩放）留滑杆。原来平铺的色板 / 分段按钮会把一屏的可点条目从
   /// 6 个挤到 2 个，而且每换一个值都要在一整张长卡里找目标。
-  Widget _interfaceGroup(ThemeData theme, OgLSettings value,
-      {bool? forceExpanded}) {
+  Widget _interfaceGroup(ThemeData theme, OgLSettings value) {
     final int motion =
         value.motionLevel.clamp(0, _motionShort.length - 1).toInt();
     return OgLSettingsGroup(
@@ -889,9 +888,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _codeGroup(
     BuildContext context,
     ThemeData theme,
-    OgLSettings value, {
-    bool? forceExpanded,
-  }) =>
+    OgLSettings value,
+  ) =>
       OgLSettingsGroup(
         children: <Widget>[
           // 分组说明：展开后给一行解释（与日志组同一写法）。
@@ -1200,9 +1198,7 @@ class _SettingsPageState extends State<SettingsPage> {
   /// 两项各自是"独立设置面"：一个决定文件落到哪里，一个决定请求怎么出去。
   /// 网络那页内容多（DNS / 下载并发 / 加速通道），仍是**独立子页面**，
   /// 这里只留入口，组内不再重复它的条目。
-  Widget _storageGroup(ThemeData theme, OgLSettings value,
-          {bool? forceExpanded}) =>
-      OgLSettingsGroup(
+  Widget _storageGroup(ThemeData theme, OgLSettings value) => OgLSettingsGroup(
         children: <Widget>[
           _navTile(
             theme,
