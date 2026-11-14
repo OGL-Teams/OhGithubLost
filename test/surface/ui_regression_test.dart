@@ -365,7 +365,8 @@ void main() {
           reason: '根页不得再出现可折叠分组（应移到子页）');
       expect(rootBuild.contains('SettingsSectionPage('), isFalse,
           reason: '子页构造集中在 _entry 内');
-      expect(source.contains('forceExpanded: true'), reason: '进入子页后内部分组默认展开');
+      expect(source.contains('forceExpanded: true'), isTrue,
+          reason: '进入子页后内部分组默认展开');
       expect(child.contains('class SettingsSectionPage'), isTrue);
       // 文案精简：新摘要键六语言齐全
       for (final String loc in <String>[

@@ -54,9 +54,9 @@ import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
 import 'legal_text_page.dart';
 import 'network_page.dart';
-import 'settings_section_page.dart';
 import 'onboarding_page.dart';
 import 'profile_page.dart';
+import 'settings_section_page.dart';
 
 /// 设置页。
 class SettingsPage extends StatefulWidget {
