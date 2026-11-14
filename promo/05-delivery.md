@@ -44,7 +44,7 @@ npm --prefix promo run render            # 本地出片（ARM64 需 HYPERFRAMES_
 ## 已知限制
 
 1. **示意重绘，非应用截图**：仓库无应用截图/录屏，`s2-repo` 的窗口骨架是依据真实页面文件名与 README 功能描述用 HTML 重绘的。所有标签、文件名、目录名、门禁脚本名均取自代码，未虚构控件功能；若日后补到真实截图，应替换该场景。
-2. **本地 ARM64 渲染环境**：HyperFrames 0.9.46 的 `browser ensure` 误判 linux-arm64 无 Chrome 构建（实际 Chrome for Testing Stable 157 已提供 `chrome-headless-shell-linux-arm64.zip`）；本地可装 Alpine `chromium` 并设 `HYPERFRAMES_BROWSER_PATH=/usr/bin/chromium`。正式出片统一在 CI 的 ubuntu-latest 上完成，避免跨环境字体/编码差异。
+2. **本地 ARM64 渲染环境**：HyperFrames 0.9.46 的 `browser ensure` 误判 linux-arm64 无 Chrome 构建（实际 Chrome for Testing Stable 157 已提供 `chrome-headless-shell-linux-arm64.zip`）；本地可装 Alpine `chromium` 并设 `HYPERFRAMES_BROWSER_PATH=/usr/bin/chromium`。正式出片统一在 CI 的 ubuntu-latest 上完成，避免跨环境字体/编码差异。CI 需显式安装 `ffmpeg`（含 ffprobe）与 `fonts-noto-cjk`。
 3. **中文字体**：CI 已安装 `fonts-noto-cjk`；本地若缺 CJK 字体会出现豆腐块，需自行安装。
 4. **无配音**：需求未要求，全片只有 BGM 与画面，无旁白与字幕。
 5. **BGM 可复现性受 numpy 版本影响**：CI 会重算 wav 并与提交产物逐字节比对；升级 numpy / 改算法时须同时提交新 wav。

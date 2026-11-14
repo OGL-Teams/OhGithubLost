@@ -48,13 +48,16 @@ jobs:
           node-version: '22'
 
       # 片中大量中文/俄文/德文文案；GitHub runner 默认无 CJK 字体，
-      # 不装会渲染成豆腐块。
-      - name: Install CJK fonts
+      # 不装会渲染成豆腐块。ffmpeg/ffprobe 供 HyperFrames 编码与探测使用
+      # （ubuntu-latest 镜像不保证预装，首轮渲染即因缺它失败）。
+      - name: Install CJK fonts & FFmpeg
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji
+          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji ffmpeg
           fc-cache -f
           fc-list :lang=zh | head -3
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
 
       - name: Cache HyperFrames CLI
         uses: actions/cache@v4
@@ -115,8 +118,18 @@ jobs:
           try:
               d = json.loads(raw[raw.index('{'): raw.rindex('}') + 1])
               print('check ok =', d.get('ok'))
-              for k in ('errorCount', 'warningCount', 'issueCount'):
+              for k in ('errorCount', 'warningCount', 'issueCount', 'status', 'summary'):
                   if k in d: print(k, '=', d[k])
+              for key in ('errors', 'violations', 'issues', 'findings'):
+                  items = d.get(key) or []
+                  if isinstance(items, list) and items:
+                      print(f'-- {key}: {len(items)}')
+                      for it in items[:15]:
+                          if isinstance(it, dict):
+                              print('  ', it.get('severity'), it.get('code'),
+                                    it.get('selector') or '', str(it.get('message',''))[:160])
+                          else:
+                              print('  ', str(it)[:160])
           except Exception:
               print(raw[:3000])
           PY
