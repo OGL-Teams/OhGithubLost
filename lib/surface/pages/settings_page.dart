@@ -47,6 +47,7 @@ import '../types.dart';
 import '../util/accel.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_code_palette.dart';
+import '../util/og_l_font.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
@@ -57,7 +58,6 @@ import 'network_page.dart';
 import 'onboarding_page.dart';
 import 'profile_page.dart';
 import 'settings_section_page.dart';
-import '../util/og_l_font.dart';
 
 /// 设置页。
 class SettingsPage extends StatefulWidget {
