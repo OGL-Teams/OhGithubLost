@@ -22,10 +22,10 @@ import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../theme.dart';
 import '../util/clipboard_x.dart';
+import '../util/og_l_font.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
-import '../util/og_l_font.dart';
 
 /// 取 `notifications_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
