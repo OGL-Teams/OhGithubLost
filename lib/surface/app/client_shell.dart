@@ -301,13 +301,23 @@ class _OgLClientShellState extends State<OgLClientShell> {
             : const SizedBox.shrink(),
     ];
     final int index = OgLShellTab.values.indexOf(_tab);
-    // R7：页面切换加**左右滑动**入场动画（保留 IndexedStack 的状态与懒挂载）。    // 关闭动画（档位 0 / 系统减少动效）时瞬时切换。
-    final Widget body = _OgLShellSlide(
+    final double width = MediaQuery.sizeOf(context).width;
+    // R7：页面切换加**左右滑动**入场动画（保留 IndexedStack 的状态与懒挂载）。
+    // 关闭动画（档位 0 / 系统减少动效）时瞬时切换。
+    final Widget slide = _OgLShellSlide(
       index: index,
       child: IndexedStack(index: index, children: pages),
     );
-
-    final double width = MediaQuery.sizeOf(context).width;
+    // ★ SZ-02：宽屏一级页内容限宽——桌面拖到 2560 时列表行不再被
+    //   拉成全屏长条。手机（<600）保持全宽，不改触控与滚动语义。
+    final Widget body = width < 600
+        ? slide
+        : Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: slide,
+            ),
+          );
 
     // ── 手机：底栏 ──
     if (width < 600) {

@@ -18,6 +18,7 @@ import '../util/link_opener.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/readme_view.dart';
+import '../util/og_l_font.dart';
 
 /// 取 `pull_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -204,7 +205,8 @@ class _PullPageState extends State<PullPage> {
           ),
           child: SelectableText(
             patch,
-            style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 12),
+            style: const TextStyle(
+                fontFamily: kOglMonoFamily, fontSize: OgLFont.monoSm),
           ),
         ),
       ],

@@ -390,6 +390,24 @@ void main() {
         '终止使用',
       ]) {
         expect(legal.contains(section), isTrue, reason: '法律正文缺少：$section');
+        // ★ UI 审查 P3 收敛：等宽字号令牌 / 宽屏限宽 / Enter 防重。
+        for (final String f in <String>[
+          'lib/surface/pages/commit_page.dart',
+          'lib/surface/widgets/code_editor_field.dart',
+        ]) {
+          final String src = File(f).readAsStringSync();
+          expect(src.contains('fontSize: 12') || src.contains('fontSize: 13'),
+              isFalse,
+              reason: '$f 仍有裸等宽字号');
+        }
+        final String shell =
+            File('lib/surface/app/client_shell.dart').readAsStringSync();
+        expect(shell.contains('maxWidth: 720'), isTrue, reason: '宽屏一级页内容限宽应在位');
+        final String login =
+            File('lib/surface/pages/login_page.dart').readAsStringSync();
+        final int submit = login.indexOf('onSubmitted:');
+        expect(login.substring(submit, submit + 160).contains('_busy'), isTrue,
+            reason: 'Enter 提交必须与按钮共用防重闸');
       } // 关于页：占位文案已删，致谢/协议/贡献者改为真实内容。
       final String about =
           File('lib/surface/pages/about_page.dart').readAsStringSync();

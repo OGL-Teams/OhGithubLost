@@ -26,6 +26,7 @@ import '../theme.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
+import '../util/og_l_font.dart';
 
 /// 取 `about_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -232,8 +233,8 @@ class AboutPage extends StatelessWidget {
               children: <Widget>[
                 SelectableText(
                   snapshot.moduleGraph,
-                  style:
-                      const TextStyle(fontFamily: kOglMonoFamily, fontSize: 12),
+                  style: const TextStyle(
+                      fontFamily: kOglMonoFamily, fontSize: OgLFont.monoSm),
                 ),
               ],
             ),
@@ -246,7 +247,7 @@ class AboutPage extends StatelessWidget {
                     stage.toString(),
                     style: const TextStyle(
                       fontFamily: kOglMonoFamily,
-                      fontSize: 12,
+                      fontSize: OgLFont.monoSm,
                     ),
                   ),
               ],
@@ -461,7 +462,8 @@ class _KeyValueRow extends StatelessWidget {
           Expanded(
             child: SelectableText(
               value,
-              style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 12),
+              style: const TextStyle(
+                  fontFamily: kOglMonoFamily, fontSize: OgLFont.monoSm),
             ),
           ),
         ],

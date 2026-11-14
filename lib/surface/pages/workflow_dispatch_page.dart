@@ -20,6 +20,7 @@ import '../surface_bridge.dart';
 import '../theme.dart';
 import '../util/gh_format.dart';
 import '../util/og_l_space.dart';
+import '../util/og_l_font.dart';
 
 /// 取 `workflow_dispatch_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -502,7 +503,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
                       maxLines: 8,
                       style: const TextStyle(
                         fontFamily: kOglMonoFamily,
-                        fontSize: 13,
+                        fontSize: OgLFont.monoMd,
                       ),
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),

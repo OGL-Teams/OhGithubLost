@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 
 import '../app/animations.dart';
 import '../theme.dart';
+import '../util/og_l_font.dart';
 
 /// 分块日志体。
 class OgLLogBody extends StatefulWidget {
@@ -169,7 +170,7 @@ class _OgLLogBodyState extends State<OgLLogBody> {
         chunk,
         style: const TextStyle(
           fontFamily: kOglMonoFamily,
-          fontSize: 12,
+          fontSize: OgLFont.monoSm,
           height: 1.4,
         ),
       );
@@ -182,7 +183,7 @@ class _OgLLogBodyState extends State<OgLLogBody> {
     final int blockEnd = blockStart + chunk.length;
     final TextStyle base = const TextStyle(
       fontFamily: kOglMonoFamily,
-      fontSize: 12,
+      fontSize: OgLFont.monoSm,
       height: 1.4,
     );
     final TextStyle hlStyle = base.copyWith(backgroundColor: hl);

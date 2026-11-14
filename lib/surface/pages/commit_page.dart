@@ -16,6 +16,7 @@ import '../types.dart';
 import '../util/gh_format.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
+import '../util/og_l_font.dart';
 
 /// 取 `commit_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -119,7 +120,7 @@ class _CommitPageState extends State<CommitPage> {
                                 commit.sha,
                                 style: const TextStyle(
                                   fontFamily: kOglMonoFamily,
-                                  fontSize: 12,
+                                  fontSize: OgLFont.monoSm,
                                 ),
                               ),
                               const SizedBox(height: OgLSpace.sm),
@@ -210,7 +211,8 @@ class _PatchView extends StatelessWidget {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final OgLSemanticColors sem =
         Theme.of(context).extension<OgLSemanticColors>()!;
-    const TextStyle base = TextStyle(fontFamily: kOglMonoFamily, fontSize: 12);
+    const TextStyle base =
+        TextStyle(fontFamily: kOglMonoFamily, fontSize: OgLFont.monoSm);
     final List<TextSpan> spans = <TextSpan>[];
     for (final String line in patch.split('\n')) {
       Color color = scheme.onSurface;

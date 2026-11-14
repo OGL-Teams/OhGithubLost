@@ -57,6 +57,7 @@ import 'network_page.dart';
 import 'onboarding_page.dart';
 import 'profile_page.dart';
 import 'settings_section_page.dart';
+import '../util/og_l_font.dart';
 
 /// 设置页。
 class SettingsPage extends StatefulWidget {
@@ -193,8 +194,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 minWidth: _dialogWidth(dialogContext, max: 280),
               ),
               child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
+                spacing: OgLSpace.sm,
+                runSpacing: OgLSpace.sm,
                 children: <Widget>[
                   for (final int argb in kOgLCodePalette)
                     Semantics(
@@ -2096,7 +2097,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     text,
                     style: const TextStyle(
                       fontFamily: kOglMonoFamily,
-                      fontSize: 12,
+                      fontSize: OgLFont.monoSm,
                       height: 1.5,
                     ),
                   ),
@@ -2250,7 +2251,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               tail.join('\n'),
                               style: const TextStyle(
                                 fontFamily: kOglMonoFamily,
-                                fontSize: 12,
+                                fontSize: OgLFont.monoSm,
                               ),
                             ),
                           ),

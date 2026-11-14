@@ -322,6 +322,11 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 onSubmitted: (String _) async {
+                  // ★ LG-05：按钮禁用不等于键盘提交也被拦——连按 Enter
+                  //   会重复发起登录。与按钮同一把闸。
+                  if (_busy) {
+                    return;
+                  }
                   await _login();
                 },
                 onChanged: (String _) {

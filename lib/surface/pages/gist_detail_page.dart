@@ -28,6 +28,7 @@ import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
 import 'download_manager_page.dart';
+import '../util/og_l_font.dart';
 
 /// 取 `gist_detail_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -187,7 +188,8 @@ class _GistDetailPageState extends State<GistDetailPage> {
             controller: controller,
             minLines: 10,
             maxLines: 20,
-            style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 13),
+            style: const TextStyle(
+                fontFamily: kOglMonoFamily, fontSize: OgLFont.monoMd),
             decoration: const InputDecoration(border: OutlineInputBorder()),
           ),
         ),

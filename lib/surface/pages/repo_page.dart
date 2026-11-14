@@ -60,6 +60,7 @@ import 'pull_page.dart';
 import 'release_detail_page.dart';
 import 'search_page.dart';
 import 'workflow_dispatch_page.dart';
+import '../util/og_l_font.dart';
 
 /// 取 `repo` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -1476,7 +1477,7 @@ class _CodeTabState extends State<_CodeTab> {
                       maxLines: 8,
                       style: const TextStyle(
                         fontFamily: kOglMonoFamily,
-                        fontSize: 13,
+                        fontSize: OgLFont.monoMd,
                       ),
                       decoration: InputDecoration(
                         labelText: _t('contentRequired'),
@@ -1486,7 +1487,7 @@ class _CodeTabState extends State<_CodeTab> {
                   const SizedBox(height: OgLSpace.sm),
                   Text(
                     _t('pathCharsetHint'),
-                    style: TextStyle(fontSize: 12),
+                    style: TextStyle(fontSize: OgLFont.monoSm),
                   ),
                 ],
               ),
@@ -1959,7 +1960,8 @@ class _CodeTabState extends State<_CodeTab> {
             Text(label, style: theme.textTheme.labelSmall),
             SelectableText(
               value,
-              style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 12),
+              style: const TextStyle(
+                  fontFamily: kOglMonoFamily, fontSize: OgLFont.monoSm),
             ),
           ],
         ),
@@ -2268,7 +2270,8 @@ class _CodeTabState extends State<_CodeTab> {
               file.path,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 13),
+              style: const TextStyle(
+                  fontFamily: kOglMonoFamily, fontSize: OgLFont.monoMd),
             ),
           ),
           if (!file.isTooLarge && widget.canWrite)
@@ -2450,7 +2453,8 @@ class _CodeTabState extends State<_CodeTab> {
           Expanded(
             child: _buildViewer(
               file,
-              const TextStyle(fontFamily: kOglMonoFamily, fontSize: 13),
+              const TextStyle(
+                  fontFamily: kOglMonoFamily, fontSize: OgLFont.monoMd),
               OgLCodeTheme.fromScheme(theme.colorScheme),
             ),
           ),

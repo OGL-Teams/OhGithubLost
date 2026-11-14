@@ -22,6 +22,7 @@ import '../theme.dart';
 import '../types.dart';
 import '../util/clipboard_x.dart';
 import 'code_editor_page.dart';
+import '../util/og_l_font.dart';
 
 /// 取 `drafts_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -171,7 +172,8 @@ class _DraftsPageState extends State<DraftsPage> {
           child: SingleChildScrollView(
             child: SelectableText(
               draft.content,
-              style: const TextStyle(fontFamily: kOglMonoFamily, fontSize: 12),
+              style: const TextStyle(
+                  fontFamily: kOglMonoFamily, fontSize: OgLFont.monoSm),
             ),
           ),
         ),
