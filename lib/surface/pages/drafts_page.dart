@@ -21,8 +21,8 @@ import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
 import '../util/clipboard_x.dart';
-import 'code_editor_page.dart';
 import '../util/og_l_font.dart';
+import 'code_editor_page.dart';
 
 /// 取 `drafts_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
