@@ -23,8 +23,9 @@
     #s02-title  { position: absolute; left: 128px; top: 196px; width: 900px; color: var(--md-on-surface); opacity: 0; }
     #s02-body   { position: absolute; left: 128px; top: 300px; width: 820px; opacity: 0; }
     #s02-chips  { position: absolute; left: 128px; top: 780px; display: flex; gap: var(--md-space-2); opacity: 0; }
-    #s02-chips .chip { position: relative; overflow: hidden; }
+    #s02-chips .chip { position: relative; overflow: hidden; z-index: 0; }
     .s02-chip-fill {
+      z-index: -1;
       position: absolute; inset: 0;
       background: var(--md-surface-container-high); opacity: 0;
     }

@@ -33,7 +33,7 @@
     #s01-spec {
       position: absolute; left: 0; top: 596px; width: 1920px; text-align: center;
       font-family: var(--md-mono); font-size: 20px; font-weight: 500;
-      letter-spacing: 0.14em; color: var(--md-on-surface-variant); opacity: 0;
+      letter-spacing: 0.14em; color: var(--md-on-surface-variant);
     }
     #s01-spec .sep { color: var(--md-outline); margin: 0 12px; }
 
@@ -74,8 +74,6 @@
       { clipPath: "inset(0 0% 0 0)", duration: 0.5, ease: "power3.out" }, 1.0);
     tl.fromTo("#s01-claim", { opacity: 0, y: 14 },
       { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 1.5);
-    tl.fromTo("#s01-spec", { opacity: 0 },
-      { opacity: 1, duration: 0.5, ease: "power2.out" }, 1.9);
 
     /* 4.2s 起：标尺式进度线，暗示这是 12 个功能的入口 */
     tl.fromTo("#s01-spec", { y: 0 }, { y: -6, duration: 1.8, ease: "power2.inOut", immediateRender: false }, 4.2);
@@ -83,7 +81,7 @@
 
     /* 10.8s：整幅收成一条线；12.0s 完成，下一场从这条线展开 */
     tl.fromTo("#s01-curtain", { opacity: 1, clipPath: "inset(0 0 0 0)" },
-      { opacity: 1, clipPath: "inset(49.9% 0 49.9% 0)", duration: 0.55, ease: "power3.in" }, 11.15);
+      { opacity: 1, clipPath: "inset(49.9% 0 49.9% 0)", duration: 0.55, ease: "power3.in", immediateRender: false }, 11.15);
     tl.fromTo("#s01-brand", { opacity: 1 }, { opacity: 0, duration: 0.25, ease: "power2.in" }, 10.9);
 
     window.__timelines["s01"] = tl;

@@ -9,10 +9,10 @@
 | 触发 | push 到 video / main / promo\/**（限 `promo/**` 与 workflow 变更）、手动 dispatch |
 | tag | `promo-<sha7>`，每次 video 分支渲染成功自动创建并推送 |
 | Release | 同 tag，附带 4 个文件 |
-| 成片 | `OGL-Promo.mp4`（56s / 1920×1080 / 30fps / H.264 CRF16 + Wordless 混音，约 11.9 MB） |
-| 轻量版 | `OGL-Promo-720p.mp4`（1280×720 / CRF23 / preset slow / faststart，体积约为 1080p 的 30–40%，用于移动端与聊天分发） |
+| 成片 | `OGL-Promo.mp4`（180s / 1920×1080 / 30fps / H.264 CRF16 + 180s 编排音轨） |
+| 轻量版 | `OGL-Promo-720p.mp4`（1280×720 / CRF23 / preset slow / faststart） |
 | 压缩包 | `OGL-Promo.7z` — **7-Zip `-mx=9 -m0=LZMA2 -md=64m -mmt=on` 极限压缩**，含两个成片、联系表、lint/check、EDL、交付文档 |
-| 联系表 | `contact-sheet.jpg`（每 6 秒一帧，3×3） |
+| 联系表 | `contact-sheet.jpg`（每 20 秒一帧，3×3，覆盖全片 180s） |
 | 校验 | `SHA256SUMS.txt` |
 | 诊断 | `lint.json`（硬门禁，0 error）、`check.json`（运行时/布局诊断） |
 
@@ -20,13 +20,13 @@
 
 ```
 promo/
-├── index.html                 # 根：8 场景 + 7 卡点闪层 + 主/备音轨 + 暗角
-├── compositions/s1-hook.html … s8-end.html
-├── assets/screens/01-home.png … 05-about.png   # 5 张 Android 实机截图
+├── index.html                 # 根：11 场景 + 180s 音轨 + 暗角
+├── compositions/s01-intro.html … s11-outro.html
+├── assets/screens/01-home.png … 12-legal.png   # 12 张 Android 实机截图
 ├── assets/fonts/              # UbuntuMono-Regular/Bold.ttf
 ├── assets/ogl_icon.svg        # 仓库原图标
 ├── assets/vendor/gsap.min.js  # GSAP 3.14.2 本地副本
-├── assets/audio/wordless-56s.mp3  # HOYO-MiX《子不语 Wordless》28–84s 裁段
+├── assets/audio/score-180s.mp3    # 180s 编排：40s 静默 + 132s 原曲 + 8s 收
 ├── assets/audio/bgm.wav       # 96 BPM 合成备用轨
 ├── assets/audio/bgm-beats.json
 ├── scripts/make_bgm.py        # 确定性 BGM 生成器（seed 20261114）

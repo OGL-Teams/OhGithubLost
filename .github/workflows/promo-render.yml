@@ -182,7 +182,7 @@ jobs:
       - name: Generate contact sheet
         run: |
           ffmpeg -y -i promo/final/OGL-Promo.mp4 -vf \
-            "fps=1/6,scale=480:-1,tile=3x3" -frames:v 1 \
+            "fps=1/20,scale=480:-1,tile=3x3" -frames:v 1 \
             promo/final/contact-sheet.jpg
           ls -lh promo/final/contact-sheet.jpg
 
