@@ -9,6 +9,7 @@
 | 1 | graphics | 8 个 scene host，见下表 |
 | 7 | graphics | `#beat-flash` — 7 个真实 onset 上的品牌蓝脉冲 |
 | 8 | graphics | `#vignette` 暗角 + `#grain` 扫描线（全片静态） |
+| — | 转场 | 每场景 `#sN-stage` 的 M3 shared axis X：入场 x:+80→0（0.42s power4.out），出场 x:0→-80（0.26s power3.in） |
 | 9 | audio | `#bgm` ← `assets/audio/wordless-56s.mp3`，volume 0.92 |
 | 10 | audio | `#bgm-fallback` ← `assets/audio/bgm.wav`，volume 0（备用，不参与混音） |
 
@@ -31,8 +32,8 @@
 
 每个切点 `t`：
 
-1. `t - 0.5s`：上一场景 wipe 开始收画面（clipPath inset 100%→0%，0.5s power3.in）。
-2. `t`：根 `#beat-flash` 0.07s 淡入到 0.55，随后 0.24s 淡出；新场景 host 起。
+1. `t - 0.42s`：上一场景 `#sN-stage` 向左退出（x 0→-80，opacity 1→0，0.26s power3.in）。
+2. `t`：根 `#beat-flash` 按弱/强拍叠加 primary 8% / 16% 状态层；新场景 host 起。
 3. `t + 0.1~0.9s`：新场景主体 stagger 入场。
 
 根 timeline 只驱动 `#beat-flash`，从不 add 子场景 timeline；runtime 按 host 的 `data-start` 各自 seek。

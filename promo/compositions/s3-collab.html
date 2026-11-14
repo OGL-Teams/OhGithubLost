@@ -1,177 +1,186 @@
 <template>
   <style>
-    #root { position: absolute; inset: 0; overflow: hidden; background: var(--ground); }
-    #s3-grid {
-      position: absolute; inset: 0;
-      background-image:
-        linear-gradient(rgba(88,166,255,0.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(88,166,255,0.055) 1px, transparent 1px);
-      background-size: 64px 64px;
+    /* ==========================================================================
+       s3 · Collaboration — M3 dark scheme, surface-container 分级 + outline-variant
+       圆角：卡片 12 / 图标位与 Chip 8 / 分隔 0 ；8dp 网格；无投影。
+       ========================================================================== */
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+
+    #s3-head { position: absolute; left: 96px; top: 128px; }
+    #s3-kicker { font-size: var(--md-label-large); font-weight: 500; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--md-primary); opacity: 0; }
+    #s3-title { margin-top: 16px; font-size: var(--md-headline-large); font-weight: 400;
+      line-height: 1.14; color: var(--md-on-surface); opacity: 0; }
+    #s3-sub { margin-top: 24px; font-size: var(--md-body-large); line-height: 1.5;
+      color: var(--md-on-surface-variant); max-width: 1280px; opacity: 0; }
+
+    #s3-row {
+      position: absolute; left: 96px; top: 456px;
+      width: 1600px; display: flex; gap: 24px;
+    }
+    .s3-card {
+      flex: 1 1 0; height: 376px; padding: 24px;
+      background: var(--md-surface-container);
+      border: 1px solid var(--md-outline-variant);
+      border-radius: var(--md-shape-md); /* 12 */
+      display: flex; flex-direction: column;
       opacity: 0;
     }
-    #s3-glow {
-      position: absolute; width: 1400px; height: 900px; left: 260px; top: 140px;
-      border-radius: 50%;
-      background: radial-gradient(ellipse at center, rgba(9,105,218,0.22) 0%, rgba(9,105,218,0) 70%);
-      opacity: 0;
+    .s3-icon {
+      width: 24px; height: 24px;
+      background: var(--md-primary-container);
+      border-radius: var(--md-shape-xs); /* 4 */
+      display: flex; align-items: center; justify-content: center;
     }
-    #s3-head { position: absolute; left: 112px; top: 150px; }
-    #s3-kicker { opacity: 0; }
-    #s3-title { margin-top: 22px; opacity: 0; font-size: 72px; }
-    #s3-title-en {
-      margin-top: 12px; opacity: 0;
-      font-family: var(--font-mono); font-size: 22px;
-      letter-spacing: 0.1em; color: var(--muted);
+    .s3-icon svg { width: 16px; height: 16px; stroke: var(--md-on-primary-container); fill: none; stroke-width: 2; }
+    .s3-name {
+      margin-top: 16px;
+      font-family: var(--md-mono); font-size: var(--md-title-medium); /* 26 */
+      font-weight: 700; letter-spacing: 1px; color: var(--md-on-surface);
     }
-    #s3-sub { margin-top: 26px; opacity: 0; font-size: 28px; }
-    #s3-evidence {
-      position: absolute; left: 112px; top: 396px;
-      font-family: var(--font-mono); font-size: 26px; color: var(--muted);
+    .s3-data { margin-top: 16px; }
+    .s3-data div {
+      font-family: var(--md-mono); font-size: var(--md-label-medium); /* 20 */
+      line-height: 1.6; color: var(--md-on-surface-variant);
+      white-space: nowrap;
+    }
+    .s3-hair { height: 1px; background: var(--md-outline-variant); margin: 16px 0; border-radius: 0; }
+    .s3-status {
+      margin-top: auto; display: flex; align-items: center; gap: 8px;
+      font-family: var(--md-mono); font-size: var(--md-label-medium); /* 20 */
+      color: var(--md-on-surface); opacity: 0;
+    }
+    .s3-status i {
+      width: 8px; height: 8px; border-radius: var(--md-shape-full);
+      background: var(--md-primary); display: inline-block;
+    }
+    .s3-status.warn i { background: var(--md-tertiary); }
+
+    #s3-foot { position: absolute; left: 96px; top: 896px; width: 1600px; }
+    #s3-foot .divider { width: 1600px; opacity: 0; }
+    #s3-footline {
+      margin-top: 24px;
+      font-family: var(--md-mono); font-size: var(--md-label-large); /* 22 */
+      letter-spacing: 0.5px; color: var(--md-on-surface-variant);
       opacity: 0; white-space: nowrap;
     }
-    #s3-evidence .ver { color: var(--accent); font-weight: 700; }
-
-    #s3-row { position: absolute; left: 112px; top: 486px; display: flex; gap: 24px; }
-    .s3-card {
-      width: 320px; height: 372px; padding: 28px 24px;
-      display: flex; flex-direction: column; opacity: 0;
-    }
-    .s3-card-head { display: flex; align-items: center; gap: 14px; }
-    .s3-dot {
-      width: 14px; height: 14px; border-radius: 50%;
-      background: var(--brand); opacity: 0;
-    }
-    .s3-name {
-      font-family: var(--font-mono); font-size: 30px; font-weight: 700;
-      letter-spacing: 0.06em; color: var(--ink);
-    }
-    .s3-hair { height: 1px; background: rgba(139,148,158,0.22); margin: 22px 0 26px; }
-    .s3-status {
-      font-family: var(--font-mono); font-size: 24px; color: var(--muted);
-      line-height: 1.6; min-height: 116px;
-    }
-    .s3-status .hl { color: var(--ink); display: inline-block; }
-    .s3-track {
-      height: 10px; border-radius: 999px;
-      background: rgba(139,148,158,0.16);
-      overflow: hidden; margin-top: auto;
-    }
-    .s3-fill {
-      height: 100%; width: 100%; border-radius: 999px;
-      background: var(--brand);
-      transform-origin: 0% 50%;
-    }
-    #s3-card-2 .s3-fill { background: var(--accent); }
-    #s3-card-3 .s3-fill { background: var(--ok); }
-    #s3-card-4 .s3-fill { background: var(--ok); }
-    #s3-card-5 .s3-fill { background: var(--brand); }
-    #s3-dot-2 { background: var(--accent); }
-    #s3-dot-4 { background: var(--ok); }
-    #s3-dot-5 { background: #58a6ff; }
-
-    #s3-foot { position: absolute; left: 112px; top: 900px; display: flex; gap: 16px; }
-    #s3-foot .pill { opacity: 0; font-size: 24px; }
-
-    #s3-wipe { position: absolute; inset: 0; background: var(--ground); clip-path: inset(0 0 100% 0); opacity: 0; }
+    #s3-footline .hl { color: var(--md-primary); }
+    #s3-stage { position: absolute; inset: 0; }
   </style>
 
   <div id="root" data-composition-id="s3-collab" data-width="1920" data-height="1080">
-    <div id="s3-grid" class="clip" data-start="0" data-duration="8.9" data-track-index="0"></div>
-    <div id="s3-glow" class="clip" data-start="0" data-duration="8.9" data-track-index="0"></div>
-
+    <div id="s3-stage">
     <div id="s3-head" class="clip" data-start="0" data-duration="8.9" data-track-index="2">
-      <div id="s3-kicker" class="kicker">02 · Collaboration</div>
-      <div id="s3-title" class="h2">议题 · 评审 · 发布 · 构建 · 片段</div>
-      <div id="s3-title-en">Issues · Pull requests · Releases · Actions · Gist</div>
-      <div id="s3-sub" class="sub">不用来回切网页<span class="accent">，</span>五个入口都在底部导航</div>
-    </div>
-
-    <div id="s3-evidence" class="clip" data-start="0" data-duration="8.9" data-track-index="2">
-      议题状态 · PR 差异 · 发布附件 · 构建耗时 · 全部实时可见<br/>
-      发现页分类筛选 · 设置页平铺 · 键盘快捷键 · 字体缓存校验 · 18 道离线门禁
+      <div id="s3-kicker">02 · Collaboration</div>
+      <div id="s3-title">五条工作流，一套状态模型</div>
+      <div id="s3-sub">Issues、Pull Requests、Releases、Actions、Gist 共用导航与状态层；跨页面不丢上下文。</div>
     </div>
 
     <div id="s3-row" class="clip" data-start="0" data-duration="8.9" data-track-index="3">
-      <div id="s3-card-1" class="card s3-card">
-        <div class="s3-card-head"><i class="s3-dot" id="s3-dot-1"></i><span class="s3-name">ISSUES</span></div>
+      <div class="s3-card" id="s3-card-issues">
+        <div class="s3-icon"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"></circle><circle cx="8" cy="8" r="2"></circle></svg></div>
+        <div class="s3-name">ISSUES</div>
+        <div class="s3-data">
+          <div>#1284 · bug · open</div>
+          <div>标签 3</div>
+          <div>评论 12</div>
+        </div>
         <div class="s3-hair"></div>
-        <div class="s3-status"><span class="hl">#1284</span> · bug · open</div>
-        <div class="s3-track"><div class="s3-fill" id="s3-fill-1"></div></div>
+        <div class="s3-status"><i></i>open</div>
       </div>
 
-      <div id="s3-card-2" class="card s3-card">
-        <div class="s3-card-head"><i class="s3-dot" id="s3-dot-2"></i><span class="s3-name">PULL REQUEST</span></div>
+      <div class="s3-card" id="s3-card-prs">
+        <div class="s3-icon"><svg viewBox="0 0 16 16"><circle cx="4" cy="4" r="2"></circle><circle cx="4" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><path d="M4 6v4M12 10V6a3 3 0 0 0-3-3H7"></path></svg></div>
+        <div class="s3-name">PULL REQUESTS</div>
+        <div class="s3-data">
+          <div>diff +342 −87</div>
+          <div>审查 2 通过</div>
+          <div>冲突 0</div>
+        </div>
         <div class="s3-hair"></div>
-        <div class="s3-status">diff <span class="hl">+342</span> <span class="hl">−87</span></div>
-        <div class="s3-track"><div class="s3-fill" id="s3-fill-2"></div></div>
+        <div class="s3-status"><i></i>reviewable</div>
       </div>
 
-      <div id="s3-card-3" class="card s3-card">
-        <div class="s3-card-head"><i class="s3-dot" id="s3-dot-3"></i><span class="s3-name">RELEASES</span></div>
+      <div class="s3-card" id="s3-card-releases">
+        <div class="s3-icon"><svg viewBox="0 0 16 16"><path d="M2 8h12M9 4l4 4-4 4"></path></svg></div>
+        <div class="s3-name">RELEASES</div>
+        <div class="s3-data">
+          <div>v12.6.9</div>
+          <div>产物 23</div>
+          <div>zip + 7z</div>
+        </div>
         <div class="s3-hair"></div>
-        <div class="s3-status"><span class="hl">v12.6.9</span> · 4 assets</div>
-        <div class="s3-track"><div class="s3-fill" id="s3-fill-3"></div></div>
+        <div class="s3-status warn"><i></i>latest</div>
       </div>
 
-      <div id="s3-card-4" class="card s3-card">
-        <div class="s3-card-head"><i class="s3-dot" id="s3-dot-4"></i><span class="s3-name">ACTIONS</span></div>
+      <div class="s3-card" id="s3-card-actions">
+        <div class="s3-icon"><svg viewBox="0 0 16 16"><path d="M5 3l8 5-8 5z"></path></svg></div>
+        <div class="s3-name">ACTIONS</div>
+        <div class="s3-data">
+          <div>run #892</div>
+          <div>1m42s</div>
+          <div>✓ success</div>
+        </div>
         <div class="s3-hair"></div>
-        <div class="s3-status">run <span class="hl">#892</span> ✓ 1m42s</div>
-        <div class="s3-track"><div class="s3-fill" id="s3-fill-4"></div></div>
+        <div class="s3-status"><i></i>passing</div>
       </div>
 
-      <div id="s3-card-5" class="card s3-card">
-        <div class="s3-card-head"><i class="s3-dot" id="s3-dot-5"></i><span class="s3-name">GIST</span></div>
+      <div class="s3-card" id="s3-card-gist">
+        <div class="s3-icon"><svg viewBox="0 0 16 16"><path d="M3 3h10M3 8h10M3 13h6"></path></svg></div>
+        <div class="s3-name">GIST</div>
+        <div class="s3-data">
+          <div>6 片段</div>
+          <div>语言 Dart</div>
+          <div>可见性 private</div>
+        </div>
         <div class="s3-hair"></div>
-        <div class="s3-status"><span class="hl">6 snippets</span></div>
-        <div class="s3-track"><div class="s3-fill" id="s3-fill-5"></div></div>
+        <div class="s3-status"><i></i>synced</div>
       </div>
     </div>
 
     <div id="s3-foot" class="clip" data-start="0" data-duration="8.9" data-track-index="4">
-      <span class="pill"><i class="dot"></i>状态实时可见</span>
+      <div class="divider" id="s3-foot-divider"></div>
+      <div id="s3-footline"><span class="hl">12.6.3 → 12.6.9</span> · 7 天 7 个版本 · 18 道离线门禁</div>
     </div>
-
-    <div id="s3-wipe" class="clip" data-start="0" data-duration="8.9" data-track-index="9"></div>
+    </div>
   </div>
 
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s3-grid", { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1, duration: 1.3, ease: "power3.out" }, 0);
-    tl.fromTo("#s3-glow", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1.5, ease: "power2.out" }, 0.1);
-    tl.fromTo("#s3-kicker", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.2);
-    tl.fromTo("#s3-title", { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.35);
-    tl.fromTo("#s3-sub", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 0.6);
-    /* 真实更新日志证据条（v12.6.3 → v12.6.9），淡入对齐 1.2s 卡点 */
-    tl.fromTo("#s3-evidence", { opacity: 0, y: 18 },
-      { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 1.2);
-    /* 五张卡片横排错峰上浮（卡片相位 0.14） */
-    tl.fromTo(".s3-card", { opacity: 0, y: 44 },
-      { opacity: 1, y: 0, duration: 0.7, stagger: 0.14, ease: "power3.out" }, 0.75);
-    /* 顶部圆点确定性错峰点亮（圆点相位 0.06） */
-    tl.fromTo(".s3-dot", { opacity: 0, scale: 0.2 },
-      { opacity: 1, scale: 1, duration: 0.4, stagger: 0.06, ease: "power3.out" }, 1.05);
-    /* 状态条从左扫出（状态条相位 0.08） */
-    tl.fromTo(".s3-fill", { scaleX: 0 },
-      { scaleX: 1, duration: 0.85, stagger: 0.08, ease: "power3.out" }, 1.35);
-    tl.fromTo(".s3-status", { opacity: 0, y: 14 },
-      { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: "power2.out" }, 1.6);
-    /* Releases 卡片一次 camera push 后回位 */
-    tl.fromTo("#s3-card-3", { scale: 1 }, { scale: 1.15, duration: 0.5, ease: "power3.out", immediateRender: false }, 3.5);
-    tl.fromTo("#s3-card-3", { scale: 1.15 }, { scale: 1, duration: 0.5, ease: "power3.inOut", immediateRender: false }, 4.15);
-    /* 底部摘要条 */
-    tl.fromTo(".s3-foot .pill", { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power3.out" }, 5.1);
-    /* 死段修复：状态条第二段扫动（6.0s 起） */
-    tl.fromTo(".s3-fill", { scaleX: 0.6 },
-      { scaleX: 0.92, duration: 1.2, stagger: 0.08, ease: "power2.inOut", immediateRender: false }, 6.0);
-    /* 卡内小数字轻浮回落后再落回（6.6s） */
-    tl.fromTo(".s3-status .hl", { y: 0 },
-      { y: -6, duration: 0.175, stagger: 0.05, ease: "power2.out", immediateRender: false }, 6.6);
-    tl.fromTo(".s3-status .hl", { y: -6 },
-      { y: 0, duration: 0.175, stagger: 0.05, ease: "power2.in", immediateRender: false }, 6.775);
-    tl.fromTo("#s3-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
-      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 8.4);
+
+    /* 头部：kicker 0.2s → 标题 0.32s → 正文 0.5s */
+    tl.fromTo("#s3-kicker", { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.2);
+    tl.fromTo("#s3-title", { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.32);
+    tl.fromTo("#s3-sub", { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.5);
+
+    /* 五张卡：0.8s 起 stagger 0.1，y 24→0 */
+    tl.fromTo(".s3-card", { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "power3.out" }, 0.8);
+
+    /* 每卡底部状态：1.6s 起 stagger 0.08 */
+    tl.fromTo(".s3-status", { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, ease: "power2.out" }, 1.6);
+
+    /* 底部证据行：divider + mono 2.4s */
+    tl.fromTo("#s3-foot-divider", { opacity: 0, scaleX: 0 },
+      { opacity: 1, scaleX: 1, duration: 0.5, ease: "power2.inOut" }, 2.4);
+    tl.fromTo("#s3-footline", { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 2.4);
+
+    /* 5.9s 起极缓慢呼吸填静止段（immediateRender:false） */
+    tl.fromTo(".s3-card", { scale: 1 },
+      { scale: 1.008, duration: 2.5, stagger: 0.05, ease: "power1.inOut", immediateRender: false }, 5.9);
+
+    /* 8.4s wipe（目标侧 opacity: 1） */
+    /* M3 shared axis X：+80 推入 / -80 退出 */
+    tl.fromTo("#s3-stage", { x: 80, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.42, ease: "power4.out" }, 0);
+    tl.fromTo("#s3-stage", { x: 0, opacity: 1 },
+      { x: -80, opacity: 0, duration: 0.26, ease: "power3.in", immediateRender: false }, 8.48);
+
     window.__timelines["s3-collab"] = tl;
   </script>
 </template>

@@ -3,113 +3,168 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
-    <title>OhGithubLost · Promo · Wordless Cut</title>
+    <title>OhGithubLost · Promo · M3 Cut</title>
     <script src="assets/vendor/gsap.min.js"></script>
     <style>
+      /* ==========================================================================
+         Material Design 3 · 设计令牌（单一来源）
+         - 色彩：M3 角色（surface container 五级 / primary / tertiary / outline）
+         - 字型：M3 15 档 type scale 中实际用到的 8 档，Roboto 为主，数据用等宽
+         - 形状：M3 corner scale（none 0 / xs 4 / sm 8 / md 12 / lg 16 / xl 28 / full）
+         - 高度：M3 tonal elevation（surface-container 分级，不用阴影堆叠）
+         - 间距：8dp 网格
+         ========================================================================== */
       :root {
-        --ground: #0d1117;
-        --panel: #161b22;
-        --ink: #e6edf3;
-        --muted: #8b949e;
-        --brand: #0969da;
-        --accent: #e3b341;
-        --ok: #3fb950;
-        --bad: #f85149;
-        --font-display: "Inter", sans-serif;
-        --font-mono: "OGL-Mono", monospace;
+        /* --- color roles (dark scheme, seed #0969DA) --- */
+        --md-surface: #10141a;
+        --md-surface-dim: #0b0e12;
+        --md-surface-bright: #363a40;
+        --md-surface-container-lowest: #0b0e12;
+        --md-surface-container-low: #181c22;
+        --md-surface-container: #1c2026;
+        --md-surface-container-high: #262a30;
+        --md-surface-container-highest: #31353b;
+        --md-on-surface: #e3e2e6;
+        --md-on-surface-variant: #c3c7cf;
+        --md-outline: #8d9199;
+        --md-outline-variant: #44474e;
+        --md-primary: #a9c7ff;
+        --md-on-primary: #00325a;
+        --md-primary-container: #0b4a87;
+        --md-on-primary-container: #d6e3ff;
+        --md-secondary: #bdc7dc;
+        --md-on-secondary: #273141;
+        --md-secondary-container: #3e4759;
+        --md-tertiary: #e3b341;
+        --md-on-tertiary: #402d00;
+        --md-error: #ffb4ab;
+        --md-on-error: #690005;
+
+        /* --- shape scale --- */
+        --md-shape-none: 0px;
+        --md-shape-xs: 4px;
+        --md-shape-sm: 8px;
+        --md-shape-md: 12px;
+        --md-shape-lg: 16px;
+        --md-shape-xl: 28px;
+        --md-shape-full: 9999px;
+
+        /* --- type scale（1920x1080 舞台按 1.7x 放大，比例不变） --- */
+        --md-display-large: 96px;
+        --md-headline-large: 56px;
+        --md-headline-medium: 44px;
+        --md-title-large: 32px;
+        --md-title-medium: 26px;
+        --md-body-large: 24px;
+        --md-body-medium: 22px;
+        --md-label-large: 22px;
+        --md-label-medium: 20px;
+
+        /* --- 8dp 网格 --- */
+        --md-space-1: 8px;
+        --md-space-2: 16px;
+        --md-space-3: 24px;
+        --md-space-4: 32px;
+        --md-space-6: 48px;
+        --md-space-8: 64px;
+        --md-space-12: 96px;
+
+        --md-font: "Roboto", sans-serif;
+        --md-mono: "OGL-Mono", ui-monospace, monospace;
       }
+
       @font-face {
         font-family: "OGL-Mono";
         src: url("assets/fonts/UbuntuMono-Regular.ttf") format("truetype");
         font-weight: 400;
+        font-display: block;
       }
       @font-face {
         font-family: "OGL-Mono";
         src: url("assets/fonts/UbuntuMono-Bold.ttf") format("truetype");
         font-weight: 700;
+        font-display: block;
       }
+
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body {
         width: 1920px; height: 1080px; margin: 0;
-        overflow: hidden; background: var(--ground);
-        color: var(--ink); font-family: var(--font-display);
+        overflow: hidden; background: var(--md-surface);
+        color: var(--md-on-surface); font-family: var(--md-font);
+        -webkit-font-smoothing: antialiased;
       }
-      #root {
-        position: relative; width: 100%; height: 100%;
-        overflow: hidden; background: var(--ground);
-      }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--md-surface); }
       .clip { position: absolute; }
-      .scene-host {
-        position: absolute; inset: 0;
-        width: 1920px; height: 1080px;
+      .scene-host { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+
+      /* --- M3 type styles --- */
+      .type-display { font-size: var(--md-display-large); font-weight: 400; line-height: 1.08; letter-spacing: -0.25px; }
+      .type-headline { font-size: var(--md-headline-large); font-weight: 400; line-height: 1.14; letter-spacing: 0; }
+      .type-title { font-size: var(--md-title-large); font-weight: 400; line-height: 1.25; letter-spacing: 0; }
+      .type-title-m { font-size: var(--md-title-medium); font-weight: 500; line-height: 1.3; letter-spacing: 0.15px; }
+      .type-body { font-size: var(--md-body-large); font-weight: 400; line-height: 1.5; letter-spacing: 0.5px; }
+      .type-body-m { font-size: var(--md-body-medium); font-weight: 400; line-height: 1.45; letter-spacing: 0.25px; }
+      .type-label { font-size: var(--md-label-large); font-weight: 500; line-height: 1.27; letter-spacing: 0.1px; }
+      .type-label-m { font-size: var(--md-label-medium); font-weight: 500; line-height: 1.33; letter-spacing: 0.5px; }
+
+      .on-variant { color: var(--md-on-surface-variant); }
+      .primary { color: var(--md-primary); }
+      .tertiary { color: var(--md-tertiary); }
+      .error { color: var(--md-error); }
+
+      /* --- M3 surfaces --- */
+      .surface-1 { background: var(--md-surface-container-low); }
+      .surface-2 { background: var(--md-surface-container); }
+      .surface-3 { background: var(--md-surface-container-high); }
+      .surface-4 { background: var(--md-surface-container-highest); }
+      .outlined { border: 1px solid var(--md-outline-variant); }
+      .filled-card { background: var(--md-surface-container-high); border-radius: var(--md-shape-md); }
+      .elevated-card {
+        background: var(--md-surface-container-low);
+        border-radius: var(--md-shape-md);
+        border: 1px solid var(--md-outline-variant);
       }
-      #vignette {
-        position: absolute; inset: 0; pointer-events: none; z-index: 90;
-        background: radial-gradient(ellipse 78% 68% at 50% 46%,
-                    rgba(0,0,0,0) 55%, rgba(0,0,0,0.42) 100%);
+      .divider { height: 1px; background: var(--md-outline-variant); }
+
+      /* --- M3 chips（小圆角 8，不用胶囊化一切） --- */
+      .chip {
+        display: inline-flex; align-items: center; gap: 8px;
+        height: 40px; padding: 0 16px;
+        border-radius: var(--md-shape-sm);
+        border: 1px solid var(--md-outline-variant);
+        background: transparent;
+        color: var(--md-on-surface-variant);
+        font-size: var(--md-label-large); font-weight: 500; letter-spacing: 0.1px;
       }
-      #grain {
-        position: absolute; inset: 0; pointer-events: none; z-index: 91;
-        opacity: 0.045;
-        background-image: repeating-linear-gradient(
-          0deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px,
-          transparent 1px, transparent 3px);
-      }
-      /* 卡点闪层：只在 7 个真实 onset 上出现，确定性 */
-      #beat-flash {
-        position: absolute; inset: 0; pointer-events: none; z-index: 89;
-        background: radial-gradient(ellipse 60% 55% at 50% 50%,
-                    rgba(88,166,255,0.34) 0%, rgba(9,105,218,0.08) 46%, rgba(0,0,0,0) 75%);
-        opacity: 0;
-      }
-      /*
-        beat-flash 分档：弱段轻、强段重（与 06-music-plan 的能量台对应）。
-        已知偏差：实测 onset 40.25 vs 工程切点 40.2（偏差 0.05s）。为保持 s6 场景
-        内部时长 6.0s 与时间轴连续（46.2 − 40.2 = 6.0），切点保持 40.2 不动。
-      */
-      /* 实机截图共用的取景框（由各场景自行摆放） */
+      .chip.assist { background: var(--md-surface-container-high); border-color: transparent; color: var(--md-on-surface); }
+      .status-dot { width: 8px; height: 8px; border-radius: var(--md-shape-full); background: var(--md-primary); }
+
+      /* --- 实机截图取景框：M3 small(8) + outline-variant --- */
       .shot {
         position: absolute;
         object-fit: cover;
-        border-radius: 22px;
-        border: 2px solid #30363d;
-        outline: 1px solid rgba(230,237,243,0.14);
-        outline-offset: -3px;
-        box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+        border-radius: var(--md-shape-sm);
+        border: 1px solid var(--md-outline-variant);
+        background: var(--md-surface-container-lowest);
       }
-      .mono { font-family: var(--font-mono); }
-      .kicker {
-        font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.22em;
-        color: var(--brand); text-transform: uppercase;
+
+      /* --- 全片覆盖层 --- */
+      #beat-flash {
+        position: absolute; inset: 0; pointer-events: none; z-index: 89;
+        background: var(--md-primary);
+        opacity: 0;
       }
-      .h1 { font-size: 108px; font-weight: 650; letter-spacing: -0.045em; line-height: 1.06; }
-      .h2 { font-size: 72px; font-weight: 650; letter-spacing: -0.035em; line-height: 1.1; }
-      .sub { font-size: 30px; color: var(--muted); letter-spacing: 0.01em; }
-      .accent { color: var(--accent); }
-      .brand { color: #58a6ff; }
-      .ok { color: var(--ok); }
-      .bad { color: var(--bad); }
-      .card {
-        background: linear-gradient(160deg, rgba(28,35,46,0.96), rgba(19,25,34,0.96));
-        border: 1px solid rgba(139,148,158,0.22);
-        border-radius: 20px;
-        box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+      #vignette {
+        position: absolute; inset: 0; pointer-events: none; z-index: 90;
+        background: radial-gradient(ellipse 82% 74% at 50% 46%, rgba(0,0,0,0) 62%, rgba(0,0,0,0.30) 100%);
       }
-      .pill {
-        display: inline-flex; align-items: center; gap: 12px;
-        padding: 10px 20px; border-radius: 999px;
-        border: 1px solid rgba(139,148,158,0.28);
-        background: rgba(22,27,34,0.9);
-        font-family: var(--font-mono); font-size: 22px; color: var(--ink);
+      #grain {
+        position: absolute; inset: 0; pointer-events: none; z-index: 91;
+        opacity: 0.03;
+        background-image: repeating-linear-gradient(0deg,
+          rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 1px,
+          transparent 1px, transparent 3px);
       }
-      .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--brand); }
-      .grid-bg {
-        background-image:
-          linear-gradient(rgba(88,166,255,0.055) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(88,166,255,0.055) 1px, transparent 1px);
-        background-size: 64px 64px;
-      }
-      .hair { height: 1px; background: rgba(139,148,158,0.22); }
     </style>
   </head>
   <body>
@@ -117,9 +172,9 @@
          data-composition-id="main"
          data-start="0" data-duration="56"
          data-width="1920" data-height="1080"
-         data-composition-variables='[{"id":"product","type":"string","label":"Product","default":"OhGithubLost"},{"id":"tagline","type":"string","label":"Tagline","default":"不折腾 · 装上就能用"},{"id":"cta","type":"string","label":"CTA","default":"搜 OhGithubLost · 下载即用"}]'>
+         data-composition-variables='[{"id":"product","type":"string","label":"Product","default":"OhGithubLost"},{"id":"tagline","type":"string","label":"Tagline","default":"GitHub 工作流，本地完成"},{"id":"cta","type":"string","label":"CTA","default":"github.com/OGL-Teams/OhGithubLost"}]'>
 
-      <!-- 切点来自 Wordless 真实 onset：0 / 6.8 / 14.1 / 23.0 / 32.2 / 40.2 / 46.2 / 52.3 / 56 -->
+      <!-- 切点来自 Wordless 实测 onset：0 / 6.8 / 14.1 / 23.0 / 32.2 / 40.2 / 46.2 / 52.3 / 56 -->
       <div id="s1-hook" class="clip scene-host"
            data-composition-id="s1-hook"
            data-composition-src="compositions/s1-hook.html"
@@ -172,43 +227,30 @@
       <div id="vignette" class="clip" data-start="0" data-duration="56" data-track-index="8"></div>
       <div id="grain" class="clip" data-start="0" data-duration="56" data-track-index="8"></div>
 
-      <!-- 主音轨：HOYO-MiX《子不语 Wordless》(28–84s 裁段，56s)。
-           原曲为 FLAC-in-mp3 容器，转成 44.1k AAC/MP3 供浏览器稳定解码。
-           56s 裁段覆盖「起 → 推进 → 爆发(38–52s 主副歌) → 收束」，切点对齐实测强拍。
-           版权归 HOYO-MiX 及原作者所有；此文件仅随 video 分支用于内部样片评估，
-           正式对外发布前必须确认授权，或切回下方合成 BGM（对调 data-volume 即可）。 -->
+      <!-- 主音轨：HOYO-MiX《子不语 Wordless》28–84s 裁段（56s，44.1k AAC/MP3）。
+           版权归原权利人；仅随 video 分支用于本次内部样片评估，正式发布前须确认授权或切回合成轨。 -->
       <audio id="bgm" src="assets/audio/wordless-56s.mp3"
              data-start="0" data-duration="56" data-track-index="9" data-volume="0.92"></audio>
-      <!-- 合成 BGM 保留为可选备用轨，默认静音（data-volume=0），不参与混音 -->
+      <!-- 合成 BGM 备用轨（volume 0，不参与混音） -->
       <audio id="bgm-fallback" src="assets/audio/bgm.wav"
              data-start="0" data-duration="56" data-track-index="10" data-volume="0"></audio>
     </div>
 
     <script>
       window.__timelines = window.__timelines || {};
-      // 根时间线只负责 7 个卡点闪层；子场景由 runtime 各自 seek。
-      // 分档：弱段（引入/推进，能量台低）轻闪 peak 0.38 / 衰减 0.30s；
-      //       强段（38–52s 主副歌峰）重闪 peak 0.62 / 衰减 0.16s + 轻微 punch scale。
-      // 已知偏差：实测 onset 40.25 vs 工程切点 40.2（0.05s），为保持 s6 内部 6.0s 连续，切点维持 40.2。
       const tl = gsap.timeline({ paused: true });
-      const cuts = [
-        { t: 6.8,  peak: 0.38, decay: 0.30 },
-        { t: 14.1, peak: 0.38, decay: 0.30 },
-        { t: 23.0, peak: 0.38, decay: 0.30 },
-        { t: 32.2, peak: 0.38, decay: 0.30 },
-        { t: 40.2, peak: 0.62, decay: 0.16, punch: true },
-        { t: 46.2, peak: 0.62, decay: 0.16, punch: true },
-        { t: 52.3, peak: 0.62, decay: 0.16, punch: true }
-      ];
-      cuts.forEach(function (c) {
+      /* M3 状态层式卡点：弱拍用 8% primary 覆盖，强拍 16%，无缩放抖动 */
+      const weak = [6.8, 14.1, 23.0, 32.2];
+      const strong = [40.2, 46.2, 52.3];
+      weak.forEach(function (t) {
         tl.fromTo("#beat-flash", { opacity: 0 },
-          { opacity: c.peak, duration: 0.07, ease: "power2.out" }, c.t);
-        tl.to("#beat-flash",
-          { opacity: 0, duration: c.decay, ease: "power2.in" }, c.t + 0.07);
-        if (c.punch) {
-          tl.fromTo("#beat-flash", { scale: 0.985 },
-            { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, c.t);
-        }
+          { opacity: 0.08, duration: 0.08, ease: "power2.out", immediateRender: false }, t);
+        tl.to("#beat-flash", { opacity: 0, duration: 0.30, ease: "power2.in" }, t + 0.08);
+      });
+      strong.forEach(function (t) {
+        tl.fromTo("#beat-flash", { opacity: 0 },
+          { opacity: 0.16, duration: 0.06, ease: "power2.out", immediateRender: false }, t);
+        tl.to("#beat-flash", { opacity: 0, duration: 0.22, ease: "power2.in" }, t + 0.06);
       });
       window.__timelines["main"] = tl;
     </script>

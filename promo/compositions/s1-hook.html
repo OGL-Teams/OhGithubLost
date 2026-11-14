@@ -1,104 +1,142 @@
 <template>
   <style>
-    #root { position: absolute; inset: 0; overflow: hidden; }
-    #s1-grid {
-      position: absolute; inset: -20%;
-      background-image:
-        linear-gradient(rgba(88,166,255,0.09) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(88,166,255,0.09) 1px, transparent 1px);
-      background-size: 72px 72px;
+    /* s1-hook · M3 surface 层级构成，8dp 网格，无网格铺底 / 无扫描线 / 无 glow */
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+
+    #s1-left { position: absolute; left: 96px; top: 96px; width: 960px; }
+    #s1-kicker {
+      font-family: var(--md-mono); font-size: var(--md-label-medium); font-weight: 500;
+      letter-spacing: 0.16em; color: var(--md-on-surface-variant);
+      display: flex; align-items: center; gap: var(--md-space-2); opacity: 0;
+    }
+    #s1-title { margin-top: var(--md-space-6); }
+    #s1-title .line { display: block; opacity: 0; }
+    #s1-title .line.brand { color: var(--md-primary); }
+    #s1-def {
+      margin-top: var(--md-space-4); max-width: 864px;
+      color: var(--md-on-surface-variant); opacity: 0;
+    }
+    #s1-stats { margin-top: var(--md-space-4); }
+    #s1-stats .divider { width: 864px; opacity: 0; }
+    #s1-cols { display: flex; margin-top: var(--md-space-4); }
+    #s1-cols .col { width: 288px; opacity: 0; }
+    #s1-cols .col .val {
+      font-family: var(--md-mono); font-size: var(--md-title-large); font-weight: 700;
+      color: var(--md-tertiary);
+    }
+    #s1-cols .col .lab {
+      margin-top: var(--md-space-1); font-size: 22px; line-height: 1.45; color: var(--md-on-surface-variant);
+      max-width: 264px;
+    }
+    #s1-cols .sep {
+      width: 1px; height: 88px; background: var(--md-outline-variant);
+      margin: 0 var(--md-space-4); align-self: center;
+    }
+
+    /* 右侧产品面板：M3 surface-container-low + outline-variant，圆角 12 */
+    #s1-panel {
+      position: absolute; left: 1152px; top: 152px; width: 672px; height: 640px;
+      padding: var(--md-space-4);
+      background: var(--md-surface-container-low);
+      border: 1px solid var(--md-outline-variant);
+      border-radius: var(--md-shape-md);
       opacity: 0;
     }
-    #s1-glow {
-      position: absolute; width: 1100px; height: 1100px; left: 410px; top: -10px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(9,105,218,0.19) 0%, rgba(9,105,218,0) 68%);
-      opacity: 0;
+    #s1-panel-head {
+      display: flex; align-items: center; gap: var(--md-space-2);
+      padding-bottom: var(--md-space-3); border-bottom: 1px solid var(--md-outline-variant);
     }
-    #s1-tree {
-      position: absolute; left: 150px; top: 210px;
-      font-family: var(--font-mono); font-size: 30px; line-height: 1.75;
-      color: #6e7681; white-space: pre; opacity: 0;
+    #s1-panel-title {
+      font-family: var(--md-mono); font-size: var(--md-label-medium); font-weight: 500;
+      color: var(--md-on-surface); letter-spacing: 0.08em;
     }
-    #s1-tree .hi { color: #58a6ff; }
-    #s1-tree .amber { color: var(--accent); }
-    #s1-right { position: absolute; left: 1010px; top: 268px; width: 780px; }
-    #s1-kicker { opacity: 0; }
-    #s1-title { margin-top: 34px; }
-    #s1-title .line { display: block; }
-    #s1-sub { margin-top: 40px; opacity: 0; }
-    #s1-pills { margin-top: 56px; display: flex; gap: 16px; }
-    #s1-pills .pill { opacity: 0; }
-    #s1-cursor {
-      position: absolute; left: 150px; top: 210px;
-      width: 16px; height: 36px; background: var(--accent);
-      border-radius: 3px; opacity: 0;
+    #s1-audit {
+      margin-left: auto; font-family: var(--md-mono); font-size: var(--md-label-medium);
+      color: var(--md-tertiary); letter-spacing: 0.04em;
     }
-    #s1-scan {
-      position: absolute; left: 0; top: 0; width: 1920px; height: 3px;
-      background: linear-gradient(90deg, transparent, rgba(88,166,255,0.7), transparent);
-      opacity: 0;
+    #s1-panel-rows { margin-top: var(--md-space-4); }
+    #s1-panel-rows .row {
+      display: flex; align-items: center; height: 88px;
+      padding: 0 var(--md-space-3);
+      border-radius: var(--md-shape-sm);
+      margin-bottom: var(--md-space-2);
     }
-    #s1-wipe {
-      position: absolute; inset: 0; background: var(--ground);
-      clip-path: inset(0 0 100% 0); opacity: 0;
+    #s1-panel-rows .row:nth-child(odd) { background: var(--md-surface-container); }
+    #s1-panel-rows .dir {
+      font-family: var(--md-mono); font-size: 24px; font-weight: 500; color: var(--md-primary);
     }
+    #s1-panel-rows .desc {
+      margin-left: auto; font-size: 20px; color: var(--md-on-surface-variant);
+    }
+
+    #s1-stage { position: absolute; inset: 0; }
   </style>
 
   <div id="root" data-composition-id="s1-hook" data-width="1920" data-height="1080">
-    <div id="s1-grid" class="clip" data-start="0" data-duration="6.8" data-track-index="0"></div>
-    <div id="s1-glow" class="clip" data-start="0" data-duration="6.8" data-track-index="0"></div>
-    <div id="s1-scan" class="clip" data-start="0" data-duration="6.8" data-track-index="2"></div>
-
-    <div id="s1-tree" class="clip mono" data-start="0" data-duration="6.8" data-track-index="1"><span class="hi">lib/</span>
-├── <span class="hi">pages/</span>         仓库 · 议题 · 设置
-├── <span class="hi">net/</span>           自动重试 · 失败可见
-├── <span class="hi">disk/</span>          草稿 · 缓存
-└── <span class="amber">i18n/</span>          6 种语言
-<span class="hi">assets/</span></div>
-    <div id="s1-cursor" class="clip" data-start="0" data-duration="6.8" data-track-index="2"></div>
-
-    <div id="s1-right" class="clip" data-start="0" data-duration="6.8" data-track-index="3">
-      <div id="s1-kicker" class="kicker">v12.6.9 · 装上就登录</div>
-      <div id="s1-title" class="h1">
-        <span class="line">第一次用 GitHub</span>
-        <span class="line brand">也能直接上手</span>
+    <div id="s1-stage">
+    <div id="s1-left" class="clip" data-start="0" data-duration="6.8" data-track-index="1">
+      <div id="s1-kicker"><span class="status-dot"></span>OhGithubLost · v12.6.9</div>
+      <div id="s1-title" class="type-headline">
+        <span class="line">GitHub 工作流</span>
+        <span class="line brand">在本地完成</span>
       </div>
-      <div id="s1-sub" class="sub">仓库、议题、更新，都在一个 App 里<br/>不用配环境，也不用开浏览器</div>
-      <div id="s1-pills">
-        <span class="pill"><i class="dot"></i>Android · Windows · Linux · Web</span>
-        <span class="pill"><i class="dot"></i>6 语言 · 中文优先</span>
-        <span class="pill"><i class="dot"></i>Apache-2.0</span>
+      <div id="s1-def" class="type-body">仓库、议题、Pull Request、Release、Actions、Gist —— 单一客户端内的完整协作链路。</div>
+      <div id="s1-stats">
+        <div class="divider"></div>
+        <div id="s1-cols">
+          <div class="col">
+            <div class="val">4</div>
+            <div class="lab">平台：Android · Windows · Linux · Web</div>
+          </div>
+          <div class="sep"></div>
+          <div class="col">
+            <div class="val">6</div>
+            <div class="lab">语言：zh · zh_Hant · en · de · fr · ru</div>
+          </div>
+          <div class="sep"></div>
+          <div class="col">
+            <div class="val">0</div>
+            <div class="lab">跨层依赖越级（CI 强制）</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div id="s1-wipe" class="clip" data-start="0" data-duration="6.8" data-track-index="9"></div>
+    <div id="s1-panel" class="clip" data-start="0" data-duration="6.8" data-track-index="2">
+      <div id="s1-panel-head">
+        <span class="status-dot"></span>
+        <span id="s1-panel-title">lib/</span>
+        <span id="s1-audit">layer_audit.py --fatal</span>
+      </div>
+      <div id="s1-panel-rows">
+        <div class="row"><span class="dir">lib/kernel</span><span class="desc">内核 · 状态与调度</span></div>
+        <div class="row"><span class="dir">lib/base</span><span class="desc">基础设施 · 网络 / 存储</span></div>
+        <div class="row"><span class="dir">lib/domain</span><span class="desc">领域模型</span></div>
+        <div class="row"><span class="dir">lib/platform</span><span class="desc">平台适配</span></div>
+        <div class="row"><span class="dir">lib/surface</span><span class="desc">界面层 · 29 页面模块</span></div>
+      </div>
+    </div>
+
+    </div>
   </div>
 
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s1-grid", { opacity: 0, scale: 1.14 }, { opacity: 1, scale: 1, duration: 1.4, ease: "power3.out" }, 0);
-    tl.fromTo("#s1-glow", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1.05, duration: 1.6, ease: "power2.out" }, 0.1);
-    tl.fromTo("#s1-tree", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" }, 0.35);
-    tl.fromTo("#s1-kicker", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.7);
-    tl.fromTo("#s1-title .line", { opacity: 0, y: 46, filter: "blur(10px)" },
-      { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.85, stagger: 0.12, ease: "power4.out" }, 0.9);
-    tl.fromTo("#s1-sub", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 1.5);
-    tl.fromTo("#s1-pills .pill", { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.55, stagger: 0.09, ease: "power3.out" }, 1.9);
-    tl.fromTo("#s1-cursor", { opacity: 0, y: 92 },
-      { opacity: 1, y: 92, duration: 0.25, ease: "none", immediateRender: false }, 1.5);
-    tl.fromTo("#s1-cursor", { y: 92, opacity: 1 },
-      { y: 210, opacity: 1, duration: 0.7, ease: "power2.inOut", immediateRender: false }, 1.8);
-    tl.fromTo("#s1-scan", { y: 180, opacity: 0 },
-      { y: 940, opacity: 1, duration: 1.1, ease: "power2.inOut" }, 2.6);
-    tl.fromTo("#s1-scan", { opacity: 1 },
-      { opacity: 0, duration: 0.3, ease: "power2.out", immediateRender: false }, 3.7);
-    /* 4.4–6.3 缓慢反向微移：填补 wipe 前的静止段 */
-    tl.fromTo("#s1-grid", { scale: 1, y: 0 },
-      { scale: 1.03, y: -10, duration: 1.9, ease: "power2.inOut", immediateRender: false }, 4.4);
-    tl.fromTo("#s1-wipe", { opacity: 1, clipPath: "inset(0% 0 100% 0)" },
-      { opacity: 1, clipPath: "inset(0% 0 0% 0)", duration: 0.5, ease: "power3.in" }, 6.3);
+    tl.fromTo("#s1-kicker", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" }, 0.2);
+    tl.fromTo("#s1-title .line", { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.35, stagger: 0.1, ease: "power3.out" }, 0.35);
+    tl.fromTo("#s1-def", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.7);
+    tl.fromTo("#s1-stats .divider", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out", immediateRender: false }, 0.9);
+    tl.fromTo("#s1-cols .col", { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power3.out" }, 0.95);
+    tl.fromTo("#s1-panel", { opacity: 0, x: -32 }, { opacity: 1, x: 0, duration: 0.9, ease: "power3.out" }, 0.4);
+    /* 静止段：面板极缓慢呼吸 */
+    tl.fromTo("#s1-panel", { scale: 1 }, { scale: 1.01, duration: 1.7, ease: "power2.inOut", immediateRender: false }, 4.6);
+    /* M3 shared axis X：入场从 +80 推入，出场向左退出（替代全屏黑场 wipe） */
+    tl.fromTo("#s1-stage", { x: 80, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.42, ease: "power4.out" }, 0);
+    tl.fromTo("#s1-stage", { x: 0, opacity: 1 },
+      { x: -80, opacity: 0, duration: 0.26, ease: "power3.in", immediateRender: false }, 6.38);
     window.__timelines["s1-hook"] = tl;
   </script>
 </template>

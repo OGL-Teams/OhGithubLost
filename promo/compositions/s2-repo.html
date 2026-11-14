@@ -1,100 +1,88 @@
 <template>
   <style>
-    #root { position: absolute; inset: 0; overflow: hidden; background: var(--ground); }
-    #s2-head { position: absolute; left: 160px; top: 54px; }
-    #s2-kicker { opacity: 0; }
-    #s2-title { margin-top: 16px; opacity: 0; font-size: 72px; }
-    #s2-sub { margin-top: 18px; opacity: 0; font-size: 30px; }
-    #s2-shot-a {
-      left: 430px; top: 130px; width: 400px; height: 711px;
+    /* s2-repo · 仓库与代码 · M3 令牌，8dp 网格，无投影、无大圆角 */
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+
+    #s2-head { position: absolute; left: 96px; top: 96px; width: 832px; }
+    #s2-kicker {
+      font-family: var(--md-mono); font-size: var(--md-label-medium); font-weight: 500;
+      letter-spacing: 0.16em; color: var(--md-tertiary); opacity: 0;
     }
-    #s2-shot-b {
-      left: 1090px; top: 130px; width: 400px; height: 711px;
-    }
-    /* 证据条：把截图里那行仓库名放大成可读文案（不裁切伪造特写） */
-    #s2-punch {
-      position: absolute; left: 430px; top: 884px;
-      width: 1060px; height: 126px;
-      padding: 18px 30px 18px 34px;
-      border-radius: 14px;
-      background: rgba(22,27,34,0.96);
-      border: 1px solid rgba(139,148,158,0.28);
-      border-left: 3px solid var(--brand);
-      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
-      opacity: 0;
-    }
-    #s2-punch-k {
-      font-family: var(--font-mono); font-size: 19px; letter-spacing: 0.14em;
-      color: var(--brand); text-transform: uppercase;
-    }
-    #s2-punch-t {
-      margin-top: 8px; font-family: var(--font-mono); font-size: 42px;
-      font-weight: 700; color: var(--ink); letter-spacing: -0.01em;
-    }
-    #s2-punch-s {
-      margin-top: 6px; font-size: 24px; color: var(--muted);
-    }
+    #s2-title { margin-top: var(--md-space-3); opacity: 0; }
+    #s2-sub { margin-top: var(--md-space-3); max-width: 800px; color: var(--md-on-surface-variant); opacity: 0; }
+
+    /* 两张实机截图：右侧并排，圆角 8（--md-shape-sm），outline-variant 描边 */
+    #s2-shot-a { left: 1024px; top: 96px; width: 360px; height: 640px; opacity: 0; }
+    #s2-shot-b { left: 1464px; top: 96px; width: 360px; height: 640px; opacity: 0; }
     #s2-shot-note {
-      position: absolute; left: 430px; top: 1032px; width: 1060px;
-      font-family: var(--font-mono); font-size: 20px; letter-spacing: 0.06em;
-      color: var(--muted); opacity: 0;
+      position: absolute; left: 1024px; top: 768px; width: 800px;
+      font-family: var(--md-mono); font-size: var(--md-label-medium);
+      letter-spacing: 0.08em; color: var(--md-on-surface-variant); opacity: 0;
     }
-    #s2-wipe { position: absolute; inset: 0; background: var(--ground); clip-path: inset(0 0 100% 0); opacity: 0; }
+
+    /* 数据行：非卡片，一条上下 divider 夹住的信息条，mono */
+    #s2-datarow { position: absolute; left: 96px; top: 768px; width: 832px; opacity: 0; }
+    #s2-datarow .divider { height: 1px; background: var(--md-outline-variant); }
+    #s2-datarow .row {
+      display: flex; align-items: center; height: 96px;
+      font-family: var(--md-mono); font-size: var(--md-label-large); font-weight: 500;
+      letter-spacing: 0.04em; color: var(--md-on-surface);
+    }
+    #s2-datarow .row .item + .item { margin-left: var(--md-space-4); padding-left: var(--md-space-4); border-left: 1px solid var(--md-outline-variant); }
+    #s2-datarow .row .item .hl { color: var(--md-tertiary); margin-right: var(--md-space-1); }
+
+    #s2-stage { position: absolute; inset: 0; }
   </style>
 
   <div id="root" data-composition-id="s2-repo" data-width="1920" data-height="1080">
+    <div id="s2-stage">
     <div id="s2-head" class="clip" data-start="0" data-duration="7.3" data-track-index="1">
-      <div id="s2-kicker" class="kicker">01 · Repository</div>
-      <div id="s2-title" class="h2">仓库一眼看全</div>
-      <div id="s2-sub" class="sub">发现页：热门项目、议题、构建动态<span class="accent">，</span>顺手就能点开</div>
+      <div id="s2-kicker">01 · Repository</div>
+      <div id="s2-title" class="type-headline">仓库与代码</div>
+      <div id="s2-sub" class="type-body">目录树、文件预览、行内编辑、提交与冲突处理；未提交内容自动持久化为草稿。</div>
     </div>
 
-    <img id="s2-shot-a" class="shot clip" src="assets/screens/01-home.png" alt="OhGithubLost 首页仓库列表"
+    <img id="s2-shot-a" class="shot clip" src="assets/screens/01-home.png" alt="OhGithubLost 仓库首页"
          data-start="0" data-duration="7.3" data-track-index="3" />
-    <img id="s2-shot-b" class="shot clip" src="assets/screens/02-discover.png" alt="OhGithubLost 发现页动态与议题"
+    <img id="s2-shot-b" class="shot clip" src="assets/screens/02-discover.png" alt="OhGithubLost 发现页"
          data-start="0" data-duration="7.3" data-track-index="3" />
 
-    <div id="s2-shot-note" class="clip" data-start="0" data-duration="7.3" data-track-index="4">实机截图 · Android</div>
+    <div id="s2-shot-note" class="clip" data-start="0" data-duration="7.3" data-track-index="4">实机截图 · Android · v12.6.9</div>
 
-    <div id="s2-punch" class="clip" data-start="0" data-duration="7.3" data-track-index="5">
-      <div id="s2-punch-k">真机截图 · 仓库卡片</div>
-      <div id="s2-punch-t">OGL-Teams/OhGithubLost</div>
-      <div id="s2-punch-s">Dart · 4 星标 · GitHub 仓库管理客户端 · Android / Windows / Linux / Web</div>
+    <div id="s2-datarow" class="clip" data-start="0" data-duration="7.3" data-track-index="5">
+      <div class="divider"></div>
+      <div class="row">
+        <span class="item"><span class="hl">29</span> 个页面模块</span>
+        <span class="item"><span class="hl">4</span> 层依赖</span>
+        <span class="item"><span class="hl">0</span> 越级</span>
+        <span class="item">草稿自动持久化</span>
+      </div>
+      <div class="divider"></div>
     </div>
 
-    <div id="s2-wipe" class="clip" data-start="0" data-duration="7.3" data-track-index="9"></div>
+    </div>
   </div>
 
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s2-kicker", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0);
-    tl.fromTo("#s2-title", { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.75, ease: "power3.out" }, 0.12);
-    tl.fromTo("#s2-sub", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 0.32);
-    /* 两张真机截图依次入场（第二张晚 0.3s） */
-    tl.fromTo("#s2-shot-a", { opacity: 0, scale: 0.94, y: 26 },
-      { opacity: 1, scale: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.35);
-    tl.fromTo("#s2-shot-b", { opacity: 0, scale: 0.94, y: 26 },
-      { opacity: 1, scale: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.65);
-    tl.fromTo("#s2-shot-note", { opacity: 0, y: 14 },
-      { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 1.0);
-    /* 连续 camera push：每张图推入再回位，不做 3D 倾斜 */
-    tl.fromTo("#s2-shot-a", { scale: 1 }, { scale: 1.12, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 2.2);
-    tl.fromTo("#s2-shot-a", { scale: 1.12 }, { scale: 1.015, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 3.0);
-    tl.fromTo("#s2-shot-b", { scale: 1 }, { scale: 1.12, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 2.5);
-    tl.fromTo("#s2-shot-b", { scale: 1.12 }, { scale: 1.015, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 3.3);
-    /* punch-in 推入：3.0s 起，3.4s 到位，停留至 5.6s，5.6–5.9 淡出 */
-    tl.fromTo("#s2-punch", { opacity: 0, scale: 0.96 },
-      { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, 3.0);
-    tl.fromTo("#s2-punch", { opacity: 1 },
-      { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 5.6);
-
-    /* 3.85–6.8 呼吸：两图极缓慢 scale 往返，错开 0.8s，填补静止段 */
-    tl.fromTo("#s2-shot-a", { scale: 1.015 }, { scale: 1, duration: 1.6, ease: "power2.inOut", immediateRender: false }, 4.0);
-    tl.fromTo("#s2-shot-a", { scale: 1 }, { scale: 1.015, duration: 1.2, ease: "power2.inOut", immediateRender: false }, 5.6);
-    tl.fromTo("#s2-shot-b", { scale: 1.015 }, { scale: 1, duration: 1.6, ease: "power2.inOut", immediateRender: false }, 4.8);
-    tl.fromTo("#s2-shot-b", { scale: 1 }, { scale: 1.015, duration: 0.4, ease: "power2.inOut", immediateRender: false }, 6.4);
-    tl.fromTo("#s2-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
-      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 6.8);
+    tl.fromTo("#s2-kicker", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.1);
+    tl.fromTo("#s2-title", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.25);
+    tl.fromTo("#s2-sub", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.45);
+    tl.fromTo("#s2-shot-a", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.5);
+    tl.fromTo("#s2-shot-b", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.7);
+    tl.fromTo("#s2-shot-note", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out", immediateRender: false }, 0.9);
+    tl.fromTo("#s2-datarow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 1.0);
+    /* 相机推入：shot-a 2.2s→2.75s 推到 1.06，3.0s 回落到 1.02；shot-b 错开 0.3s */
+    tl.fromTo("#s2-shot-a", { scale: 1 }, { scale: 1.06, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 2.2);
+    tl.fromTo("#s2-shot-a", { scale: 1.06 }, { scale: 1.02, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 3.0);
+    tl.fromTo("#s2-shot-b", { scale: 1 }, { scale: 1.06, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 2.5);
+    tl.fromTo("#s2-shot-b", { scale: 1.06 }, { scale: 1.02, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 3.3);
+    /* 静止段：数据行 1→1.01 极缓慢呼吸 */
+    tl.fromTo("#s2-datarow", { scale: 1 }, { scale: 1.01, duration: 2.0, ease: "power2.inOut", immediateRender: false }, 4.2);
+    tl.fromTo("#s2-stage", { x: 80, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.42, ease: "power4.out" }, 0);
+    tl.fromTo("#s2-stage", { x: 0, opacity: 1 },
+      { x: -80, opacity: 0, duration: 0.26, ease: "power3.in", immediateRender: false }, 6.88);
     window.__timelines["s2-repo"] = tl;
   </script>
 </template>

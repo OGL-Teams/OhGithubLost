@@ -1,191 +1,146 @@
 <template>
   <style>
-    #root { position: absolute; inset: 0; overflow: hidden; background: var(--ground); }
-    #s5-grid {
-      position: absolute; inset: 0;
-      background-image:
-        linear-gradient(rgba(88,166,255,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(88,166,255,0.05) 1px, transparent 1px);
-      background-size: 64px 64px;
-      opacity: 0;
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+
+    /* --- 左栏：kicker / 标题 / 正文（M3 type scale） --- */
+    #s5-kicker {
+      position: absolute; left: 96px; top: 80px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      letter-spacing: 2px; color: var(--md-on-surface-variant);
     }
-    #s5-glow {
-      position: absolute; width: 900px; height: 760px; left: 1000px; top: 190px;
-      border-radius: 50%;
-      background: radial-gradient(ellipse at center, rgba(9,105,218,0.20) 0%, rgba(9,105,218,0) 70%);
-      opacity: 0;
+    #s5-title {
+      position: absolute; left: 96px; top: 120px;
+      font-size: 56px; font-weight: 400; line-height: 1.14;
+      letter-spacing: 0; color: var(--md-on-surface);
     }
-    #s5-kicker { position: absolute; left: 140px; top: 84px; opacity: 0; }
-    #s5-head-left {
-      position: absolute; left: 140px; top: 128px;
-      opacity: 0; font-size: 72px; font-weight: 650; letter-spacing: -0.035em;
-    }
-    #s5-head-right {
-      position: absolute; left: 140px; top: 226px;
-      opacity: 0; font-size: 72px; font-weight: 650; letter-spacing: -0.035em;
-    }
-    #s5-head-left .accent, #s5-head-right .accent { color: var(--accent); }
-    #s5-sub {
-      position: absolute; left: 140px; top: 332px; width: 820px;
-      font-size: 28px; line-height: 1.5; color: var(--muted); opacity: 0;
+    #s5-body {
+      position: absolute; left: 96px; top: 212px; width: 720px;
+      font-size: 22px; font-weight: 400; line-height: 1.45;
+      letter-spacing: 0.25px; color: var(--md-on-surface-variant);
     }
 
+    /* --- 请求链：三个 96x96 方块节点（圆角 8，surface-container-high）+ 2px 连线 --- */
     .s5-node {
-      position: absolute; width: 100px; height: 100px; border-radius: 50%;
+      position: absolute; width: 96px; height: 96px;
+      border-radius: 8px;
+      background: var(--md-surface-container-high);
+      border: 1px solid var(--md-outline-variant);
       display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-mono); font-size: 36px; color: var(--ink);
-      background: rgba(22,27,34,0.95);
-      border: 2px solid rgba(139,148,158,0.35);
-      opacity: 0;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      color: var(--md-on-surface);
     }
-    #s5-node-a { left: 200px; top: 470px; }
-    #s5-node-b { left: 520px; top: 470px; }
-    #s5-node-c { left: 840px; top: 470px; }
-    #s5-node-b { border-color: rgba(88,166,255,0.6); }
-    #s5-node-c { border-color: rgba(88,166,255,0.6); }
+    #s5-node-a { left: 96px; top: 470px; }
+    #s5-node-b { left: 320px; top: 470px; }
+    #s5-node-c { left: 544px; top: 470px; }
+    .s5-link {
+      position: absolute; height: 2px; width: 128px; top: 517px;
+      background: var(--md-outline-variant);
+      transform-origin: left center;
+    }
+    #s5-link-1 { left: 192px; }
+    #s5-link-2 { left: 416px; }
 
-    #s5-links { position: absolute; left: 140px; top: 470px; width: 780px; height: 100px; }
-    #s5-links .s5-base {
-      stroke: #58a6ff; stroke-width: 3; fill: none;
-      stroke-dasharray: 220; stroke-dashoffset: 220;
+    /* --- 三行 mono 状态 --- */
+    .s5-status {
+      position: absolute; left: 96px;
+      font-family: var(--md-mono); font-size: 22px; font-weight: 400;
+      letter-spacing: 0.5px;
     }
-    #s5-link-alert { stroke: var(--bad); stroke-width: 4; fill: none; opacity: 0; stroke-dasharray: 220; stroke-dashoffset: 0; }
-    #s5-link-ok { stroke: var(--ok); stroke-width: 4; fill: none; opacity: 0; stroke-dasharray: 220; stroke-dashoffset: 0; }
+    #s5-st-429   { top: 628px; color: var(--md-error); }
+    #s5-st-retry { top: 668px; color: var(--md-tertiary); }
+    #s5-st-ok    { top: 708px; color: var(--md-primary); }
 
-    .s5-badge {
-      position: absolute; left: 190px; top: 372px; width: 340px;
-      padding: 12px 18px; border-radius: 12px; text-align: center;
-      font-family: var(--font-mono); font-size: 25px;
-      background: rgba(13,17,23,0.95);
-      border: 1px solid rgba(139,148,158,0.3);
-      opacity: 0;
-    }
-    #s5-badge-429 { color: var(--bad); border-color: rgba(248,81,73,0.6); background: rgba(248,81,73,0.14); }
-    #s5-badge-retry { color: var(--accent); border-color: rgba(227,179,65,0.6); background: rgba(227,179,65,0.12); }
-    #s5-badge-ok { color: var(--ok); border-color: rgba(63,185,80,0.6); background: rgba(63,185,80,0.12); }
-
-    #s5-netsub {
-      position: absolute; left: 140px; top: 692px;
-      font-family: var(--font-mono); font-size: 24px; color: var(--muted);
-      opacity: 0;
-    }
-
-    /* 真实手机截图：「我的」页 */
-    #s5-shot { left: 1150px; top: 220px; width: 400px; height: 711px; opacity: 0; }
-    #s5-shotlabel {
-      position: absolute; left: 1150px; top: 184px;
-      font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.14em;
-      color: var(--brand); opacity: 0;
-    }
+    /* --- 右栏：实机截图 + mono 标注 --- */
+    #s5-shot { left: 1504px; top: 176px; width: 320px; height: 569px; }
     .s5-cap {
-      position: absolute; left: 1610px; width: 300px;
-      padding: 16px 18px; border-radius: 14px;
-      background: rgba(13,17,23,0.92);
-      border: 1px solid rgba(139,148,158,0.28);
-      opacity: 0;
+      position: absolute; left: 1504px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      letter-spacing: 0.5px; color: var(--md-on-surface-variant);
     }
-    #s5-cap-a { top: 286px; }
-    #s5-cap-b { top: 512px; }
-    .s5-cap .ct {
-      font-family: var(--font-mono); font-size: 22px; color: #58a6ff;
-      letter-spacing: 0.08em; margin-bottom: 8px;
-    }
-    .s5-cap .cb { font-size: 24px; line-height: 1.5; color: var(--ink); }
-    #s5-cap-note {
-      position: absolute; left: 1610px; top: 700px; width: 300px;
-      font-family: var(--font-mono); font-size: 22px; line-height: 1.5;
-      color: var(--muted); opacity: 0;
-    }
+    #s5-cap-a { top: 761px; }
+    #s5-cap-b { top: 793px; }
 
-    #s5-wipe { position: absolute; inset: 0; background: var(--ground); clip-path: inset(0 0 100% 0); opacity: 0; }
+    /* --- 底部 divider + mono 行 --- */
+    #s5-divider { position: absolute; left: 96px; top: 952px; width: 1728px; height: 1px; background: var(--md-outline-variant); }
+    #s5-foot {
+      position: absolute; left: 96px; top: 976px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 400;
+      letter-spacing: 0.5px; color: var(--md-on-surface-variant);
+    }
+    #s5-stage { position: absolute; inset: 0; }
   </style>
 
   <div id="root" data-composition-id="s5-trust" data-width="1920" data-height="1080">
-    <div id="s5-grid" class="clip" data-start="0" data-duration="8.0" data-track-index="0"></div>
-    <div id="s5-glow" class="clip" data-start="0" data-duration="8.0" data-track-index="0"></div>
+    <div id="s5-stage">
+    <div id="s5-kicker" class="clip" data-start="0" data-duration="8.0" data-track-index="2">04 · RELIABILITY</div>
+    <div id="s5-title" class="clip" data-start="0" data-duration="8.0" data-track-index="2">失败分类可见，凭据不离本机</div>
+    <div id="s5-body" class="clip" data-start="0" data-duration="8.0" data-track-index="2">HTTP / 业务 / 解析三类错误分别上报，不做静默降级；令牌仅存系统密钥库，退出即删。</div>
 
-    <div id="s5-kicker" class="kicker clip" data-start="0" data-duration="8.0" data-track-index="2">04 · Trust</div>
-    <div id="s5-head-left" class="clip" data-start="0" data-duration="8.0" data-track-index="2">出错会<span class="accent">告诉你</span></div>
-    <div id="s5-head-right" class="clip" data-start="0" data-duration="8.0" data-track-index="2">令牌<span class="accent">只留在本机</span></div>
-    <div id="s5-sub" class="clip" data-start="0" data-duration="8.0" data-track-index="2">不用猜哪里失败了，也不怕账号留在别人设备上</div>
+    <div id="s5-node-a" class="s5-node clip" data-start="0" data-duration="8.0" data-track-index="3">REQ</div>
+    <div id="s5-node-b" class="s5-node clip" data-start="0" data-duration="8.0" data-track-index="3">RETRY</div>
+    <div id="s5-node-c" class="s5-node clip" data-start="0" data-duration="8.0" data-track-index="3">RESP</div>
+    <div id="s5-link-1" class="s5-link clip" data-start="0" data-duration="8.0" data-track-index="3"></div>
+    <div id="s5-link-2" class="s5-link clip" data-start="0" data-duration="8.0" data-track-index="3"></div>
 
-    <div id="s5-node-a" class="s5-node clip" data-start="0" data-duration="8.0" data-track-index="3">A</div>
-    <div id="s5-node-b" class="s5-node clip" data-start="0" data-duration="8.0" data-track-index="3">B</div>
-    <div id="s5-node-c" class="s5-node clip" data-start="0" data-duration="8.0" data-track-index="3">C</div>
+    <div id="s5-st-429" class="s5-status clip" data-start="0" data-duration="8.0" data-track-index="4">429 rate limited</div>
+    <div id="s5-st-retry" class="s5-status clip" data-start="0" data-duration="8.0" data-track-index="4">retry 2/3 · backoff 800ms</div>
+    <div id="s5-st-ok" class="s5-status clip" data-start="0" data-duration="8.0" data-track-index="4">200 OK · 241ms</div>
 
-    <svg id="s5-links" viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
-      <line id="s5-link-1" class="s5-base" x1="160" y1="50" x2="380" y2="50"></line>
-      <line id="s5-link-alert" x1="160" y1="50" x2="380" y2="50"></line>
-      <line id="s5-link-ok" x1="160" y1="50" x2="380" y2="50"></line>
-      <line id="s5-link-2" class="s5-base" x1="480" y1="50" x2="700" y2="50"></line>
-    </svg>
-
-    <div id="s5-badge-429" class="s5-badge clip" data-start="0" data-duration="8.0" data-track-index="4">429 · rate limited</div>
-    <div id="s5-badge-retry" class="s5-badge clip" data-start="0" data-duration="8.0" data-track-index="4">retry 2/3</div>
-    <div id="s5-badge-ok" class="s5-badge clip" data-start="0" data-duration="8.0" data-track-index="4">200 OK</div>
-
-    <div id="s5-netsub" class="clip" data-start="0" data-duration="8.0" data-track-index="4">429 · rate limited → retry 2/3 → 200 OK</div>
-
-    <div id="s5-shotlabel" class="clip" data-start="0" data-duration="8.0" data-track-index="4">REAL SCREENSHOT · 我的</div>
     <img id="s5-shot" class="clip shot" src="assets/screens/03-profile.png" alt="我的页面截图"
          data-start="0" data-duration="8.0" data-track-index="4" />
+    <div id="s5-cap-a" class="s5-cap clip" data-start="0" data-duration="8.0" data-track-index="5">我的 · 令牌「退出登录即删除」</div>
+    <div id="s5-cap-b" class="s5-cap clip" data-start="0" data-duration="8.0" data-track-index="5">草稿箱 · 0 未提交草稿</div>
 
-    <div id="s5-cap-a" class="s5-cap clip" data-start="0" data-duration="8.0" data-track-index="5">
-      <div class="ct">我的</div>
-      <div class="cb">退出登录会删除本机保存的令牌</div>
+    <div id="s5-divider" class="clip" data-start="0" data-duration="8.0" data-track-index="5"></div>
+    <div id="s5-foot" class="clip" data-start="0" data-duration="8.0" data-track-index="5">DoH · 指数退避 · 限流避让</div>
     </div>
-    <div id="s5-cap-b" class="s5-cap clip" data-start="0" data-duration="8.0" data-track-index="5">
-      <div class="ct">草稿箱</div>
-      <div class="cb">没有未提交的草稿</div>
-    </div>
-    <div id="s5-cap-note" class="clip" data-start="0" data-duration="8.0" data-track-index="5">令牌只存本机 · 退出即删</div>
-
-    <div id="s5-wipe" class="clip" data-start="0" data-duration="8.0" data-track-index="9"></div>
   </div>
 
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s5-grid", { opacity: 0, scale: 1.1 }, { opacity: 1, scale: 1, duration: 1.2, ease: "power3.out" }, 0);
-    tl.fromTo("#s5-glow", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1.4, ease: "power2.out" }, 0.1);
-    tl.fromTo("#s5-kicker", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.15);
-    tl.fromTo("#s5-head-left", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 0.28);
-    tl.fromTo("#s5-head-right", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 0.36);
-    tl.fromTo("#s5-sub", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.5);
-    /* 三个请求节点（极客向抽象图，保留） */
-    tl.fromTo(".s5-node", { opacity: 0, scale: 0.55 },
-      { opacity: 1, scale: 1, duration: 0.55, stagger: 0.15, ease: "power3.out" }, 0.7);
-    /* 连线描出 */
-    tl.fromTo("#s5-link-1", { attr: { "stroke-dashoffset": 220 } },
-      { attr: { "stroke-dashoffset": 0 }, duration: 0.5, ease: "power2.inOut" }, 1.25);
-    tl.fromTo("#s5-link-2", { attr: { "stroke-dashoffset": 220 } },
-      { attr: { "stroke-dashoffset": 0 }, duration: 0.5, ease: "power2.inOut" }, 1.5);
-    /* 第一次请求失败：如实标红，不静默消失 */
-    tl.fromTo("#s5-link-alert", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 2.1);
-    tl.fromTo("#s5-badge-429", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 2.15);
-    /* 停留后转重试 */
-    tl.fromTo("#s5-badge-429", { opacity: 1 }, { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 3.25);
-    tl.fromTo("#s5-link-alert", { opacity: 1 }, { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 3.25);
-    tl.fromTo("#s5-badge-retry", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 3.55);
-    /* 自动重试成功 */
-    tl.fromTo("#s5-badge-retry", { opacity: 1 }, { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 4.0);
-    tl.fromTo("#s5-link-ok", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 4.0);
-    tl.fromTo("#s5-badge-ok", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 4.05);
-    /* 真实 onset 强调：38.27s（全局）→ 本场景 6.07s，「200 OK」最终高亮脉冲 */
-    tl.fromTo("#s5-badge-ok", { scale: 1 }, { scale: 1.14, duration: 0.12, ease: "power2.out", immediateRender: false }, 6.07);
-    tl.fromTo("#s5-badge-ok", { scale: 1.14 }, { scale: 1, duration: 0.18, ease: "power2.inOut", immediateRender: false }, 6.19);
-    /* 极客向彩蛋行（mono，≥22px） */
-    tl.fromTo("#s5-netsub", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.45);
-    /* 真实截图入场（提前：先立证据） */
-    tl.fromTo("#s5-shotlabel", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 0.95);
-    tl.fromTo("#s5-shot", { opacity: 0, y: 34, scale: 0.97 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.75, ease: "power3.out" }, 1.0);
-    tl.fromTo("#s5-cap-a", { opacity: 0, x: 22 }, { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 5.45);
-    tl.fromTo("#s5-cap-b", { opacity: 0, x: 22 }, { opacity: 1, x: 0, duration: 0.55, ease: "power3.out" }, 5.7);
-    tl.fromTo("#s5-cap-note", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 5.95);
-    /* 死段修复：6.45–7.5 截图微推 */
-    tl.fromTo("#s5-shot", { scale: 1 }, { scale: 1.03, duration: 1.0, ease: "power2.out", immediateRender: false }, 6.45);
-    tl.fromTo("#s5-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
-      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 7.5);
+
+    /* 标题区 0.2–0.7s */
+    tl.fromTo("#s5-kicker", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.2);
+    tl.fromTo("#s5-title", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.3);
+    tl.fromTo("#s5-body", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.55);
+
+    /* 请求链节点 0.8s stagger；连线随节点 scaleX 亮出 */
+    tl.fromTo("#s5-node-a", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.8);
+    tl.fromTo("#s5-link-1", { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.4, ease: "power2.out" }, 1.0);
+    tl.fromTo("#s5-node-b", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.92);
+    tl.fromTo("#s5-link-2", { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.4, ease: "power2.out" }, 1.12);
+    tl.fromTo("#s5-node-c", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 1.04);
+
+    /* 截图 1.0s 淡入 */
+    tl.fromTo("#s5-shot", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 1.0);
+    tl.fromTo("#s5-cap-a", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 1.5);
+    tl.fromTo("#s5-cap-b", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 1.65);
+
+    /* 三行状态依次亮起：2.0 / 3.2 / 4.1 */
+    tl.fromTo("#s5-st-429", { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 2.0);
+    tl.fromTo("#s5-st-retry", { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 3.2);
+    tl.fromTo("#s5-st-ok", { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 4.1);
+
+    /* 4.1s「200 OK」0.12s scale 脉冲（对齐 38.27s 全局 onset） */
+    tl.fromTo("#s5-st-ok", { scale: 1 }, { scale: 1.06, duration: 0.12, ease: "power2.out", immediateRender: false }, 4.1);
+    tl.fromTo("#s5-st-ok", { scale: 1.06 }, { scale: 1, duration: 0.18, ease: "power2.inOut", immediateRender: false }, 4.22);
+    tl.fromTo("#s5-node-c", { scale: 1 }, { scale: 1.04, duration: 0.12, ease: "power2.out", immediateRender: false }, 4.1);
+    tl.fromTo("#s5-node-c", { scale: 1.04 }, { scale: 1, duration: 0.18, ease: "power2.inOut", immediateRender: false }, 4.22);
+
+    /* 底部行 */
+    tl.fromTo("#s5-divider", { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.6, ease: "power2.out" }, 4.6);
+    tl.fromTo("#s5-foot", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 4.8);
+
+    /* 静止段填充：6.2s 起截图 1→1.02 微推 */
+    tl.fromTo("#s5-shot", { scale: 1 }, { scale: 1.02, duration: 1.2, ease: "power2.inOut", immediateRender: false }, 6.2);
+
+    /* 7.5s wipe，0.5s */
+    /* M3 shared axis X：+80 推入 / -80 退出 */
+    tl.fromTo("#s5-stage", { x: 80, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.42, ease: "power4.out" }, 0);
+    tl.fromTo("#s5-stage", { x: 0, opacity: 1 },
+      { x: -80, opacity: 0, duration: 0.26, ease: "power3.in", immediateRender: false }, 7.58);
+
     window.__timelines["s5-trust"] = tl;
   </script>
 </template>

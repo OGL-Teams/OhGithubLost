@@ -32,7 +32,7 @@ promo/
 ├── scripts/make_bgm.py        # 确定性 BGM 生成器（seed 20261114）
 ├── package.json / meta.json
 ├── 01-brief.md · 02-storyboard.md · 03-asset-plan.md
-├── 04-edl.md · 06-music-plan.md · 05-delivery.md
+├── 04-edl.md · 06-music-plan.md · 07-motion.md · 05-delivery.md
 ```
 
 ## 本地修改方式
@@ -58,4 +58,5 @@ npm --prefix promo run render            # 本地出片（ARM64 需 HYPERFRAMES_
 7. **无配音**：全片只有音乐与画面，无旁白与字幕。
 8. **`timeline_track_too_dense` 警告**：单文件同轨道元素较多的可维护性建议，不影响渲染。
 9. **BGM 复现性**：CI 重算 `bgm.wav` 并与提交产物逐字节比对；升级 numpy / 改算法时须同时提交新 wav。
-10. **压缩边界**：1080p 源片已是 H.264 CRF16，7-Zip 对视频流几乎无收益（实测 11.86 MB → 11.76 MB）；要显著减体积请用 `OGL-Promo-720p.mp4`。
+10. **设计系统**：全片按 Material 3 令牌实现（`index.html` 第 12–120 行为唯一来源）：形状仅 0/4/8/12、M3 type scale、surface-container 分级、零投影；动效规范见 `07-motion.md`。
+11. **压缩边界**：1080p 源片已是 H.264 CRF16，7-Zip 对视频流几乎无收益（实测 11.86 MB → 11.76 MB）；要显著减体积请用 `OGL-Promo-720p.mp4`。
