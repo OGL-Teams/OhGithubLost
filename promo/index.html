@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>OhGithubLost · Promo</title>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      :root {
+        --ground: #0d1117;
+        --panel: #161b22;
+        --ink: #e6edf3;
+        --muted: #8b949e;
+        --brand: #0969da;
+        --accent: #e3b341;
+        --ok: #3fb950;
+        --bad: #f85149;
+        --font-display: "Inter", sans-serif;
+        --font-mono: "OGL-Mono", monospace;
+      }
+      @font-face {
+        font-family: "OGL-Mono";
+        src: url("assets/fonts/UbuntuMono-Regular.ttf") format("truetype");
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: "OGL-Mono";
+        src: url("assets/fonts/UbuntuMono-Bold.ttf") format("truetype");
+        font-weight: 700;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px; height: 1080px; margin: 0;
+        overflow: hidden; background: var(--ground);
+        color: var(--ink); font-family: var(--font-display);
+      }
+      #root {
+        position: relative; width: 100%; height: 100%;
+        overflow: hidden; background: var(--ground);
+      }
+      .clip { position: absolute; }
+      .scene-host {
+        position: absolute; inset: 0;
+        width: 1920px; height: 1080px;
+      }
+      /* 全局胶片质感：极轻的暗角，静态、确定性 */
+      #vignette {
+        position: absolute; inset: 0; pointer-events: none; z-index: 90;
+        background: radial-gradient(ellipse 78% 68% at 50% 46%,
+                    rgba(0,0,0,0) 55%, rgba(0,0,0,0.42) 100%);
+      }
+      #grain {
+        position: absolute; inset: 0; pointer-events: none; z-index: 91;
+        opacity: 0.045;
+        background-image: repeating-linear-gradient(
+          0deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px,
+          transparent 1px, transparent 3px);
+      }
+      /* ── 共用设计令牌（子 composition 挂在同一个文档里，可直接复用） ── */
+      .mono { font-family: var(--font-mono); }
+      .kicker {
+        font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.22em;
+        color: var(--brand); text-transform: uppercase;
+      }
+      .h1 { font-size: 108px; font-weight: 650; letter-spacing: -0.045em; line-height: 1.06; }
+      .h2 { font-size: 72px; font-weight: 650; letter-spacing: -0.035em; line-height: 1.1; }
+      .sub { font-size: 30px; color: var(--muted); letter-spacing: 0.01em; }
+      .accent { color: var(--accent); }
+      .brand { color: #58a6ff; }
+      .ok { color: var(--ok); }
+      .bad { color: var(--bad); }
+      .card {
+        background: linear-gradient(160deg, rgba(28,35,46,0.96), rgba(19,25,34,0.96));
+        border: 1px solid rgba(139,148,158,0.22);
+        border-radius: 20px;
+        box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+      }
+      .pill {
+        display: inline-flex; align-items: center; gap: 12px;
+        padding: 10px 20px; border-radius: 999px;
+        border: 1px solid rgba(139,148,158,0.28);
+        background: rgba(22,27,34,0.9);
+        font-family: var(--font-mono); font-size: 22px; color: var(--ink);
+      }
+      .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--brand); }
+      .grid-bg {
+        background-image:
+          linear-gradient(rgba(88,166,255,0.055) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(88,166,255,0.055) 1px, transparent 1px);
+        background-size: 64px 64px;
+      }
+      .hair { height: 1px; background: rgba(139,148,158,0.22); }
+    </style>
+  </head>
+  <body>
+    <div id="root"
+         data-composition-id="main"
+         data-start="0" data-duration="56"
+         data-width="1920" data-height="1080"
+         data-composition-variables='[{"id":"product","type":"string","label":"Product","default":"OhGithubLost"},{"id":"tagline","type":"string","label":"Tagline","default":"GitHub 的日常 · 不必打开浏览器"}]'>
+
+      <!-- 8 个场景：每个 host 的 id == 子 composition 的 id == timeline key -->
+      <div id="s1-hook" class="clip scene-host"
+           data-composition-id="s1-hook"
+           data-composition-src="compositions/s1-hook.html"
+           data-start="0" data-duration="6" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <div id="s2-repo" class="clip scene-host"
+           data-composition-id="s2-repo"
+           data-composition-src="compositions/s2-repo.html"
+           data-start="6" data-duration="8" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <div id="s3-collab" class="clip scene-host"
+           data-composition-id="s3-collab"
+           data-composition-src="compositions/s3-collab.html"
+           data-start="14" data-duration="9" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <div id="s4-layers" class="clip scene-host"
+           data-composition-id="s4-layers"
+           data-composition-src="compositions/s4-layers.html"
+           data-start="23" data-duration="9" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <div id="s5-trust" class="clip scene-host"
+           data-composition-id="s5-trust"
+           data-composition-src="compositions/s5-trust.html"
+           data-start="32" data-duration="8" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <div id="s6-i18n" class="clip scene-host"
+           data-composition-id="s6-i18n"
+           data-composition-src="compositions/s6-i18n.html"
+           data-start="40" data-duration="6" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <div id="s7-platforms" class="clip scene-host"
+           data-composition-id="s7-platforms"
+           data-composition-src="compositions/s7-platforms.html"
+           data-start="46" data-duration="6" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <div id="s8-end" class="clip scene-host"
+           data-composition-id="s8-end"
+           data-composition-src="compositions/s8-end.html"
+           data-start="52" data-duration="4" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <div id="vignette" class="clip" data-start="0" data-duration="56" data-track-index="8"></div>
+      <div id="grain" class="clip" data-start="0" data-duration="56" data-track-index="8"></div>
+
+      <audio id="bgm" src="assets/audio/bgm.wav"
+             data-start="0" data-duration="56" data-track-index="9" data-volume="0.85"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

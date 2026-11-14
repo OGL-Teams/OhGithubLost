@@ -1,0 +1,81 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #08111f; }
+    #s8-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(9,105,218,0.34) 0%, rgba(9,105,218,0.08) 34%, rgba(9,105,218,0) 62%),
+        linear-gradient(180deg, #0b1a30 0%, #08111f 58%, #050b16 100%);
+      opacity: 0;
+    }
+    #s8-grid {
+      position: absolute; inset: -20%;
+      background-image:
+        linear-gradient(rgba(88,166,255,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88,166,255,0.07) 1px, transparent 1px);
+      background-size: 72px 72px; opacity: 0;
+    }
+    #s8-stack {
+      position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #s8-iconmask {
+      position: absolute; left: 870px; top: 236px; width: 180px; height: 180px;
+      overflow: hidden;
+    }
+    #s8-iconmask img { width: 180px; height: 180px; display: block; }
+    #s8-wordmark {
+      position: absolute; left: 0; top: 470px; width: 1920px; text-align: center;
+      font-size: 104px; font-weight: 650; letter-spacing: -0.045em; line-height: 1.1;
+      color: var(--ink);
+    }
+    #s8-wordmark .brand { color: #58a6ff; }
+    #s8-tagline {
+      position: absolute; left: 0; top: 626px; width: 1920px; text-align: center;
+      font-size: 34px; color: var(--muted); letter-spacing: 0.02em;
+    }
+    #s8-cmd {
+      position: absolute; left: 0; top: 726px; width: 1920px; text-align: center;
+      font-family: var(--font-mono); font-size: 28px; color: var(--ink);
+    }
+    #s8-cmd .c1 { color: #79c0ff; }
+    #s8-cmd .c2 { color: #d2a8ff; }
+    #s8-cmd .c3 { color: #ffa657; }
+    #s8-lic {
+      position: absolute; left: 0; top: 800px; width: 1920px; text-align: center;
+      font-family: var(--font-mono); font-size: 24px; color: var(--muted);
+    }
+    #s8-lic .ok { color: var(--ok); }
+  </style>
+
+  <div id="root" data-composition-id="s8-end" data-width="1920" data-height="1080">
+    <div id="s8-bg" class="clip" data-start="0" data-duration="4" data-track-index="0"></div>
+    <div id="s8-grid" class="clip" data-start="0" data-duration="4" data-track-index="0"></div>
+
+    <div id="s8-stack" class="clip" data-start="0" data-duration="4" data-track-index="3">
+      <div id="s8-iconmask" class="clip" data-start="0" data-duration="4" data-track-index="4">
+        <img id="s8-icon" src="assets/ogl_icon.svg" alt="OhGithubLost" />
+      </div>
+      <div id="s8-wordmark" class="clip" data-start="0" data-duration="4" data-track-index="4">Oh<span class="brand">GitHub</span>Lost</div>
+      <div id="s8-tagline" class="clip" data-start="0" data-duration="4" data-track-index="5">GitHub 的日常 · 不必打开浏览器</div>
+      <div id="s8-cmd" class="clip" data-start="0" data-duration="4" data-track-index="5"><span class="c1">flutter</span> <span class="c2">pub</span> <span class="c3">get</span> &amp;&amp; <span class="c1">flutter</span> <span class="c3">run</span></div>
+      <div id="s8-lic" class="clip" data-start="0" data-duration="4" data-track-index="5">开源 · <span class="ok">Apache-2.0</span></div>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s8-bg", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power2.out" }, 0);
+    tl.fromTo("#s8-grid", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 1.2, ease: "power3.out" }, 0);
+    /* 图标：clipPath 从下往上的填充升起 */
+    tl.fromTo("#s8-iconmask", { opacity: 1, clipPath: "inset(100% 0% 0% 0%)" },
+      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.7, ease: "power3.out" }, 0.2);
+    /* 字标：inset wipe in */
+    tl.fromTo("#s8-wordmark", { clipPath: "inset(0% 100% 0% 0%)" },
+      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power3.out" }, 1.1);
+    tl.fromTo("#s8-tagline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 1.7);
+    tl.fromTo("#s8-cmd", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 1.9);
+    tl.fromTo("#s8-lic", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 2.1);
+    window.__timelines["s8-end"] = tl;
+  </script>
+</template>

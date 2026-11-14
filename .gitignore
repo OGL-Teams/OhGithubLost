@@ -50,3 +50,6 @@ boot_manifest.json
 .backup/
 __pycache__/
 *.pyc
+
+# HyperFrames 本地运行痕迹
+.hyperframes/

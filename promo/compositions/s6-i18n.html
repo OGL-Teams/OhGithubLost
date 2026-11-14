@@ -1,0 +1,210 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--ground); }
+    #s6-grid {
+      position: absolute; inset: -20%;
+      background-image:
+        linear-gradient(rgba(88,166,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88,166,255,0.08) 1px, transparent 1px);
+      background-size: 72px 72px; opacity: 0;
+    }
+    #s6-glow {
+      position: absolute; width: 1400px; height: 900px; left: 260px; top: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(9,105,218,0.26) 0%, rgba(9,105,218,0) 70%);
+      opacity: 0;
+    }
+    #s6-particles { position: absolute; inset: 0; opacity: 1; }
+    #s6-particles .pt {
+      position: absolute; border-radius: 50%;
+      background: rgba(88,166,255,0.85); opacity: 0;
+    }
+    #s6-head { position: absolute; left: 160px; top: 108px; }
+    #s6-kicker { opacity: 0; }
+    #s6-title { margin-top: 20px; opacity: 0; }
+    #s6-langrow {
+      position: absolute; left: 160px; top: 322px; width: 1600px;
+      display: flex; justify-content: space-between; perspective: 1200px;
+    }
+    #s6-langrow .lang {
+      width: 250px; height: 66px; display: flex; align-items: center; justify-content: center;
+      border-radius: 14px; border: 1px solid rgba(139,148,158,0.26);
+      background: rgba(22,27,34,0.92);
+      font-family: var(--font-mono); font-size: 24px; color: var(--ink);
+      opacity: 0; transform-style: preserve-3d;
+    }
+    #s6-langrow .lang .flag { color: var(--brand); margin-right: 10px; font-size: 20px; }
+    #s6-i18nrow {
+      position: absolute; left: 160px; top: 404px; width: 1600px;
+      display: flex; justify-content: space-between;
+    }
+    #s6-i18nrow .dir {
+      width: 250px; text-align: center;
+      font-family: var(--font-mono); font-size: 18px; color: var(--muted); opacity: 0;
+    }
+    #s6-sliderhead {
+      position: absolute; left: 300px; top: 596px;
+      font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.16em;
+      color: var(--muted); text-transform: uppercase; opacity: 0;
+    }
+    #s6-track {
+      position: absolute; left: 300px; top: 788px; width: 1320px; height: 8px;
+      border-radius: 999px; background: rgba(139,148,158,0.22); opacity: 0;
+    }
+    #s6-fill {
+      position: absolute; left: 300px; top: 788px; width: 1320px; height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(9,105,218,0.9), rgba(88,166,255,0.95));
+      transform-origin: 0% 50%; opacity: 0;
+    }
+    #s6-ticks { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    #s6-ticks .tick {
+      position: absolute; top: 774px; width: 4px; height: 36px; margin-left: -2px;
+      border-radius: 2px; background: rgba(139,148,158,0.42); opacity: 0;
+    }
+    #s6-ticks .tlabel {
+      position: absolute; top: 826px; width: 160px; margin-left: -80px; text-align: center;
+      font-family: var(--font-mono); font-size: 26px; color: var(--ink); opacity: 0;
+    }
+    #s6-ticks .tlabel.on { color: var(--brand); }
+    #s6-handle {
+      position: absolute; left: 268px; top: 760px; width: 64px; height: 64px;
+      margin-left: 0; border-radius: 50%;
+      background: #e6edf3; border: 6px solid var(--brand);
+      box-shadow: 0 10px 34px rgba(9,105,218,0.5); opacity: 0;
+    }
+    #s6-caption {
+      position: absolute; left: 300px; top: 900px; width: 1320px; text-align: center;
+      font-family: var(--font-mono); font-size: 24px; color: var(--muted); opacity: 0;
+    }
+    #s6-caption .hl { color: var(--accent); }
+    #s6-wipe {
+      position: absolute; inset: 0; background: var(--ground);
+      clip-path: inset(0 0 100% 0); opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="s6-i18n" data-width="1920" data-height="1080">
+    <div id="s6-grid" class="clip" data-start="0" data-duration="6" data-track-index="0"></div>
+    <div id="s6-glow" class="clip" data-start="0" data-duration="6" data-track-index="0"></div>
+
+    <div id="s6-particles" class="clip" data-start="0" data-duration="6" data-track-index="1">
+      <i class="pt" id="s6-p01" style="left:120px;top:64px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p02" style="left:268px;top:158px;width:8px;height:8px"></i>
+      <i class="pt" id="s6-p03" style="left:412px;top:88px;width:4px;height:4px"></i>
+      <i class="pt" id="s6-p04" style="left:566px;top:198px;width:7px;height:7px"></i>
+      <i class="pt" id="s6-p05" style="left:700px;top:52px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p06" style="left:846px;top:142px;width:9px;height:9px"></i>
+      <i class="pt" id="s6-p07" style="left:986px;top:76px;width:6px;height:6px"></i>
+      <i class="pt" id="s6-p08" style="left:1130px;top:186px;width:4px;height:4px"></i>
+      <i class="pt" id="s6-p09" style="left:1268px;top:96px;width:7px;height:7px"></i>
+      <i class="pt" id="s6-p10" style="left:1412px;top:162px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p11" style="left:1546px;top:66px;width:8px;height:8px"></i>
+      <i class="pt" id="s6-p12" style="left:1704px;top:176px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p13" style="left:1826px;top:104px;width:6px;height:6px"></i>
+      <i class="pt" id="s6-p14" style="left:78px;top:302px;width:6px;height:6px"></i>
+      <i class="pt" id="s6-p15" style="left:236px;top:404px;width:4px;height:4px"></i>
+      <i class="pt" id="s6-p16" style="left:388px;top:288px;width:8px;height:8px"></i>
+      <i class="pt" id="s6-p17" style="left:534px;top:392px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p18" style="left:672px;top:262px;width:7px;height:7px"></i>
+      <i class="pt" id="s6-p19" style="left:818px;top:376px;width:4px;height:4px"></i>
+      <i class="pt" id="s6-p20" style="left:962px;top:250px;width:9px;height:9px"></i>
+      <i class="pt" id="s6-p21" style="left:1096px;top:404px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p22" style="left:1244px;top:270px;width:6px;height:6px"></i>
+      <i class="pt" id="s6-p23" style="left:1388px;top:396px;width:8px;height:8px"></i>
+      <i class="pt" id="s6-p24" style="left:1532px;top:284px;width:4px;height:4px"></i>
+      <i class="pt" id="s6-p25" style="left:1678px;top:412px;width:7px;height:7px"></i>
+      <i class="pt" id="s6-p26" style="left:1838px;top:308px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p27" style="left:146px;top:520px;width:9px;height:9px"></i>
+      <i class="pt" id="s6-p28" style="left:452px;top:604px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p29" style="left:742px;top:508px;width:6px;height:6px"></i>
+      <i class="pt" id="s6-p30" style="left:1032px;top:616px;width:4px;height:4px"></i>
+      <i class="pt" id="s6-p31" style="left:1318px;top:520px;width:8px;height:8px"></i>
+      <i class="pt" id="s6-p32" style="left:1602px;top:610px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p33" style="left:1798px;top:512px;width:7px;height:7px"></i>
+      <i class="pt" id="s6-p34" style="left:196px;top:742px;width:6px;height:6px"></i>
+      <i class="pt" id="s6-p35" style="left:596px;top:706px;width:4px;height:4px"></i>
+      <i class="pt" id="s6-p36" style="left:906px;top:758px;width:9px;height:9px"></i>
+      <i class="pt" id="s6-p37" style="left:1216px;top:690px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p38" style="left:1526px;top:766px;width:8px;height:8px"></i>
+      <i class="pt" id="s6-p39" style="left:1736px;top:694px;width:5px;height:5px"></i>
+      <i class="pt" id="s6-p40" style="left:276px;top:998px;width:7px;height:7px"></i>
+    </div>
+
+    <div id="s6-head" class="clip" data-start="0" data-duration="6" data-track-index="3">
+      <div id="s6-kicker" class="kicker">05 · Localization &amp; Motion</div>
+      <div id="s6-title" class="h2">6 语言 · 4 档动效</div>
+    </div>
+
+    <div id="s6-langrow" class="clip" data-start="0" data-duration="6" data-track-index="4">
+      <div class="lang"><span class="flag">◧</span>简体中文</div>
+      <div class="lang"><span class="flag">◨</span>繁體中文</div>
+      <div class="lang"><span class="flag">◈</span>English</div>
+      <div class="lang"><span class="flag">◉</span>Deutsch</div>
+      <div class="lang"><span class="flag">◐</span>Français</div>
+      <div class="lang"><span class="flag">◑</span>Русский</div>
+    </div>
+
+    <div id="s6-i18nrow" class="clip" data-start="0" data-duration="6" data-track-index="4">
+      <div class="dir">assets/i18n/zh</div>
+      <div class="dir">assets/i18n/zh_Hant</div>
+      <div class="dir">assets/i18n/en</div>
+      <div class="dir">assets/i18n/de</div>
+      <div class="dir">assets/i18n/fr</div>
+      <div class="dir">assets/i18n/ru</div>
+    </div>
+
+    <div id="s6-sliderhead" class="clip" data-start="0" data-duration="6" data-track-index="4">Motion Level · 动效档位</div>
+    <div id="s6-track" class="clip" data-start="0" data-duration="6" data-track-index="4"></div>
+    <div id="s6-fill" class="clip" data-start="0" data-duration="6" data-track-index="4"></div>
+
+    <div id="s6-ticks" class="clip" data-start="0" data-duration="6" data-track-index="4">
+      <div class="tick" id="s6-tick0" style="left:300px"></div>
+      <div class="tick" id="s6-tick1" style="left:740px"></div>
+      <div class="tick" id="s6-tick2" style="left:1180px"></div>
+      <div class="tick" id="s6-tick3" style="left:1620px"></div>
+      <div class="tlabel" id="s6-lab0" style="left:300px">静默</div>
+      <div class="tlabel" id="s6-lab1" style="left:740px">保守</div>
+      <div class="tlabel" id="s6-lab2" style="left:1180px">标准</div>
+      <div class="tlabel" id="s6-lab3" style="left:1620px">拉满</div>
+    </div>
+
+    <div id="s6-handle" class="clip" data-start="0" data-duration="6" data-track-index="5"></div>
+
+    <div id="s6-caption" class="clip" data-start="0" data-duration="6" data-track-index="5">降档降开销 · <span class="hl">不删效果</span> · 粒子密度随档位递增</div>
+
+    <div id="s6-wipe" class="clip" data-start="0" data-duration="6" data-track-index="9"></div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s6-grid", { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1, duration: 1.4, ease: "power3.out" }, 0);
+    tl.fromTo("#s6-glow", { opacity: 0, scale: 0.82 }, { opacity: 1, scale: 1, duration: 1.6, ease: "power2.out" }, 0.05);
+    tl.fromTo("#s6-kicker", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.3);
+    tl.fromTo("#s6-title", { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.75, ease: "power3.out" }, 0.5);
+    /* 六种语言错峰翻转入场 */
+    tl.fromTo("#s6-langrow .lang", { opacity: 0, rotationY: -80, y: 26 },
+      { opacity: 1, rotationY: 0, y: 0, duration: 0.7, stagger: 0.08, ease: "power3.out" }, 0.85);
+    tl.fromTo("#s6-i18nrow .dir", { opacity: 0, y: 16 },
+      { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power2.out" }, 1.55);
+    /* 粒子先以低强度铺底 */
+    tl.fromTo("#s6-particles .pt", { opacity: 0, scale: 0.4 },
+      { opacity: 0.26, scale: 0.85, duration: 0.6, stagger: 0.02, ease: "power2.out" }, 1.9);
+    tl.fromTo("#s6-sliderhead", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 2.3);
+    tl.fromTo("#s6-track", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.4);
+    tl.fromTo("#s6-ticks .tick, #s6-ticks .tlabel", { opacity: 0, y: 14 },
+      { opacity: 1, y: 0, duration: 0.45, stagger: 0.06, ease: "power2.out" }, 2.55);
+    tl.fromTo("#s6-fill", { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 1.4, ease: "power2.inOut" }, 3.2);
+    tl.fromTo("#s6-handle", { opacity: 0, scale: 0.6, x: 0 },
+      { opacity: 1, scale: 1, duration: 0.45, ease: "power3.out" }, 3.05);
+    /* 滑块把手：静默 → 拉满（x 位移 1.4s） */
+    tl.to("#s6-handle", { x: 1320, duration: 1.4, ease: "power2.inOut" }, 3.2);
+    /* 档位拉高 → 粒子更亮更大（不删效果，只降开销） */
+    tl.to("#s6-particles .pt", { opacity: 0.92, scale: 1.2, duration: 1.4, stagger: 0.012, ease: "power2.inOut" }, 3.2);
+    tl.fromTo("#s6-lab3", { opacity: 1, scale: 1 }, { opacity: 1, scale: 1.14, duration: 0.5, ease: "power2.out" }, 4.35);
+    tl.fromTo("#s6-caption", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 4.5);
+    tl.fromTo("#s6-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
+      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 5.5);
+    window.__timelines["s6-i18n"] = tl;
+  </script>
+</template>

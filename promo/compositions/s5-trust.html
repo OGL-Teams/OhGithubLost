@@ -1,0 +1,187 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--ground); }
+    #s5-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(88,166,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88,166,255,0.05) 1px, transparent 1px);
+      background-size: 64px 64px;
+      opacity: 0;
+    }
+    #s5-glow {
+      position: absolute; width: 1200px; height: 800px; left: 900px; top: 260px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(9,105,218,0.20) 0%, rgba(9,105,218,0) 70%);
+      opacity: 0;
+    }
+    #s5-kicker { position: absolute; left: 140px; top: 84px; opacity: 0; }
+    #s5-head-left { position: absolute; left: 140px; top: 140px; opacity: 0; font-size: 54px; font-weight: 650; letter-spacing: -0.03em; }
+    #s5-head-right { position: absolute; left: 1080px; top: 140px; opacity: 0; font-size: 54px; font-weight: 650; letter-spacing: -0.03em; }
+    #s5-head-left .accent, #s5-head-right .accent { color: var(--accent); }
+
+    .s5-node {
+      position: absolute; width: 100px; height: 100px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 36px; color: var(--ink);
+      background: rgba(22,27,34,0.95);
+      border: 2px solid rgba(139,148,158,0.35);
+      opacity: 0;
+    }
+    #s5-node-a { left: 200px; top: 420px; }
+    #s5-node-b { left: 520px; top: 420px; }
+    #s5-node-c { left: 840px; top: 420px; }
+    #s5-node-b { border-color: rgba(88,166,255,0.6); }
+    #s5-node-c { border-color: rgba(88,166,255,0.6); }
+
+    #s5-links { position: absolute; left: 140px; top: 420px; width: 780px; height: 100px; }
+    #s5-links .s5-base {
+      stroke: #58a6ff; stroke-width: 3; fill: none;
+      stroke-dasharray: 220; stroke-dashoffset: 220;
+    }
+    #s5-link-alert { stroke: var(--bad); stroke-width: 4; fill: none; opacity: 0; stroke-dasharray: 220; stroke-dashoffset: 0; }
+    #s5-link-ok { stroke: var(--ok); stroke-width: 4; fill: none; opacity: 0; stroke-dasharray: 220; stroke-dashoffset: 0; }
+
+    .s5-badge {
+      position: absolute; left: 190px; top: 320px; width: 340px;
+      padding: 14px 18px; border-radius: 12px; text-align: center;
+      font-family: var(--font-mono); font-size: 26px;
+      background: rgba(13,17,23,0.95);
+      border: 1px solid rgba(139,148,158,0.3);
+      opacity: 0;
+    }
+    #s5-badge-429 { color: var(--bad); border-color: rgba(248,81,73,0.6); background: rgba(248,81,73,0.14); }
+    #s5-badge-retry { color: var(--accent); border-color: rgba(227,179,65,0.6); background: rgba(227,179,65,0.12); }
+    #s5-badge-ok { color: var(--ok); border-color: rgba(63,185,80,0.6); background: rgba(63,185,80,0.12); }
+
+    #s5-netline {
+      position: absolute; left: 140px; top: 640px;
+      font-family: var(--font-mono); font-size: 28px; color: var(--muted);
+      opacity: 0;
+    }
+    #s5-netsub { position: absolute; left: 140px; top: 690px; font-size: 27px; color: var(--muted); opacity: 0; }
+
+    #s5-vault {
+      position: absolute; left: 1080px; top: 300px; width: 720px; height: 470px;
+      padding: 34px 38px; overflow: hidden;
+    }
+    #s5-vault-head {
+      font-family: var(--font-mono); font-size: 27px; color: var(--muted);
+      letter-spacing: 0.14em; opacity: 0;
+    }
+    #s5-token {
+      margin-top: 44px; font-family: var(--font-mono); font-size: 34px;
+      color: var(--ink); letter-spacing: 0.04em; opacity: 0;
+    }
+    #s5-token .s5-tok-pre { color: var(--accent); }
+    #s5-token .s5-mask-char { opacity: 0; display: inline-block; }
+    #s5-token-note { margin-top: 34px; font-size: 27px; color: var(--muted); opacity: 0; }
+    #s5-lid {
+      position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+      background: linear-gradient(160deg, rgba(28,35,46,0.99), rgba(19,25,34,0.99));
+      border-radius: 20px; border: 2px solid rgba(88,166,255,0.55);
+      transform-origin: 50% 0%;
+    }
+    #s5-lid:after {
+      content: ""; position: absolute; left: 50%; top: 46%;
+      width: 180px; height: 60px; margin-left: -90px;
+      border-radius: 999px; border: 3px solid rgba(88,166,255,0.6);
+      border-bottom-color: transparent;
+    }
+    #s5-vault-label {
+      position: absolute; left: 1080px; top: 810px; width: 720px;
+      text-align: center; font-family: var(--font-mono); font-size: 28px;
+      color: var(--ink); opacity: 0;
+    }
+    #s5-vault-note {
+      position: absolute; left: 1080px; top: 860px; width: 720px;
+      text-align: center; font-size: 27px; color: var(--muted); opacity: 0;
+    }
+
+    #s5-wipe { position: absolute; inset: 0; background: var(--ground); clip-path: inset(0 0 100% 0); opacity: 0; }
+  </style>
+
+  <div id="root" data-composition-id="s5-trust" data-width="1920" data-height="1080">
+    <div id="s5-grid" class="clip" data-start="0" data-duration="8" data-track-index="0"></div>
+    <div id="s5-glow" class="clip" data-start="0" data-duration="8" data-track-index="0"></div>
+
+    <div id="s5-kicker" class="kicker clip" data-start="0" data-duration="8" data-track-index="2">04 · Trust</div>
+    <div id="s5-head-left" class="clip" data-start="0" data-duration="8" data-track-index="2">失败<span class="accent">如实可见</span></div>
+    <div id="s5-head-right" class="clip" data-start="0" data-duration="8" data-track-index="2">令牌<span class="accent">只在本机</span></div>
+
+    <div id="s5-node-a" class="s5-node clip" data-start="0" data-duration="8" data-track-index="3">A</div>
+    <div id="s5-node-b" class="s5-node clip" data-start="0" data-duration="8" data-track-index="3">B</div>
+    <div id="s5-node-c" class="s5-node clip" data-start="0" data-duration="8" data-track-index="3">C</div>
+
+    <svg id="s5-links" viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <line id="s5-link-1" class="s5-base" x1="160" y1="50" x2="380" y2="50"></line>
+      <line id="s5-link-alert" x1="160" y1="50" x2="380" y2="50"></line>
+      <line id="s5-link-ok" x1="160" y1="50" x2="380" y2="50"></line>
+      <line id="s5-link-2" class="s5-base" x1="480" y1="50" x2="700" y2="50"></line>
+    </svg>
+
+    <div id="s5-badge-429" class="s5-badge clip" data-start="0" data-duration="8" data-track-index="4">429 · rate limited</div>
+    <div id="s5-badge-retry" class="s5-badge clip" data-start="0" data-duration="8" data-track-index="4">retry 2/3</div>
+    <div id="s5-badge-ok" class="s5-badge clip" data-start="0" data-duration="8" data-track-index="4">200 OK</div>
+
+    <div id="s5-netline" class="clip" data-start="0" data-duration="8" data-track-index="4">DoH · retry · backoff</div>
+    <div id="s5-netsub" class="clip" data-start="0" data-duration="8" data-track-index="4">限流避让 · 失败不会静默消失</div>
+
+    <div id="s5-vault" class="card clip" data-start="0" data-duration="8" data-track-index="3">
+      <div id="s5-vault-head">KEYSTORE · LOCAL ONLY</div>
+      <div id="s5-token" class="mono"><span class="s5-tok-pre">ghp_</span><span class="s5-mask" id="s5-mask"><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span><span class="s5-mask-char">•</span></span></div>
+      <div id="s5-token-note">令牌仅以脱敏形式显示</div>
+      <div id="s5-lid"></div>
+    </div>
+
+    <div id="s5-vault-label" class="clip" data-start="0" data-duration="8" data-track-index="4">系统密钥库 · 退出即删</div>
+    <div id="s5-vault-note" class="clip" data-start="0" data-duration="8" data-track-index="4">退出登录即删除本地令牌</div>
+
+    <div id="s5-wipe" class="clip" data-start="0" data-duration="8" data-track-index="9"></div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s5-grid", { opacity: 0, scale: 1.1 }, { opacity: 1, scale: 1, duration: 1.2, ease: "power3.out" }, 0);
+    tl.fromTo("#s5-glow", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1.4, ease: "power2.out" }, 0.1);
+    tl.fromTo("#s5-kicker", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.15);
+    tl.fromTo("#s5-head-left", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 0.28);
+    tl.fromTo("#s5-head-right", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, 0.36);
+    /* 三个请求节点 */
+    tl.fromTo(".s5-node", { opacity: 0, scale: 0.55 },
+      { opacity: 1, scale: 1, duration: 0.55, stagger: 0.15, ease: "power3.out" }, 0.6);
+    /* 连线描出 */
+    tl.fromTo("#s5-link-1", { attr: { "stroke-dashoffset": 220 } },
+      { attr: { "stroke-dashoffset": 0 }, duration: 0.5, ease: "power2.inOut" }, 1.15);
+    tl.fromTo("#s5-link-2", { attr: { "stroke-dashoffset": 220 } },
+      { attr: { "stroke-dashoffset": 0 }, duration: 0.5, ease: "power2.inOut" }, 1.4);
+    /* 第一次请求失败：如实标红，不静默消失 */
+    tl.fromTo("#s5-link-alert", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 2.0);
+    tl.fromTo("#s5-badge-429", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 2.05);
+    /* 停留 1.2s 后才转重试 */
+    tl.to("#s5-badge-429", { opacity: 0, duration: 0.3, ease: "power2.in" }, 3.2);
+    tl.to("#s5-link-alert", { opacity: 0, duration: 0.3, ease: "power2.in" }, 3.2);
+    tl.fromTo("#s5-badge-retry", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 3.45);
+    /* 自动重试成功 */
+    tl.to("#s5-badge-retry", { opacity: 0, duration: 0.3, ease: "power2.in" }, 3.9);
+    tl.fromTo("#s5-link-ok", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 3.9);
+    tl.fromTo("#s5-badge-ok", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 3.95);
+    tl.fromTo("#s5-netline", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.4);
+    tl.fromTo("#s5-netsub", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.6);
+    /* 令牌脱敏进入保险箱 */
+    tl.fromTo("#s5-vault", { opacity: 0, y: 36 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 4.3);
+    tl.fromTo("#s5-vault-head", { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 4.6);
+    tl.fromTo("#s5-token", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.8);
+    tl.fromTo("#s5-token .s5-tok-pre", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 4.9);
+    tl.fromTo("#s5-token .s5-mask-char", { opacity: 0 },
+      { opacity: 1, duration: 0.3, stagger: 0.06, ease: "power2.out" }, 5.05);
+    tl.fromTo("#s5-token-note", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 5.6);
+    /* 保险箱合上 */
+    tl.fromTo("#s5-lid", { scaleY: 0 }, { scaleY: 1, duration: 0.4, ease: "power3.inOut" }, 6.1);
+    tl.fromTo("#s5-vault-label", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 6.6);
+    tl.fromTo("#s5-vault-note", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 6.8);
+    tl.fromTo("#s5-wipe", { opacity: 1, clipPath: "inset(100% 0 0 0)" },
+      { opacity: 1, clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.in" }, 7.5);
+    window.__timelines["s5-trust"] = tl;
+  </script>
+</template>

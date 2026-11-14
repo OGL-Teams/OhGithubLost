@@ -1,0 +1,166 @@
+name: Promo Render
+
+# ============================================================================
+# OGL 宣传片 · 代码渲染管线
+#
+# 本地（任意架构）：只写 HTML/CSS/GSAP、BGM、分镜与静态 lint。
+# CI（ubuntu-latest x64）：装 Chrome Headless Shell，逐帧渲染 MP4 + 混音，
+#                          上传 artifact；可选发布到 Release。
+#
+# 分支：video（宣传片工程专用分支）；main 上 promo/ 变更也会触发。
+# ============================================================================
+
+on:
+  push:
+    branches: [video, main, 'promo/**']
+    paths:
+      - 'promo/**'
+      - '.github/workflows/promo-render.yml'
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: '渲染完成后发布到 GitHub Release'
+        type: boolean
+        default: false
+
+concurrency:
+  group: promo-render-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  HYPERFRAMES_TELEMETRY: '0'
+  HF_VERSION: '0.9.46'
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # 片中大量中文/俄文/德文文案；GitHub runner 默认无 CJK 字体，
+      # 不装会渲染成豆腐块。
+      - name: Install CJK fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji
+          fc-cache -f
+          fc-list :lang=zh | head -3
+
+      - name: Cache HyperFrames CLI
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: hf-npm-${{ runner.os }}-${{ env.HF_VERSION }}-v1
+
+      - name: Install HyperFrames CLI & Chrome
+        run: |
+          npx -y "hyperframes@${HF_VERSION}" --version
+          npx -y "hyperframes@${HF_VERSION}" browser ensure
+
+      # BGM 由代码确定性合成：仓库已带 wav，这里重算并比对，
+      # 保证「源码 → 音轨」可复现，且 CI 不依赖任何外部音频素材。
+      - name: Verify BGM reproducibility
+        run: |
+          python3 -m pip install --quiet numpy
+          cp promo/assets/audio/bgm.wav /tmp/bgm-committed.wav
+          python3 promo/scripts/make_bgm.py
+          cmp /tmp/bgm-committed.wav promo/assets/audio/bgm.wav \
+            && echo "BGM byte-identical to committed artifact" \
+            || { echo "::error::BGM 与提交产物不一致"; exit 1; }
+          ls -lh promo/assets/audio/
+
+      - name: Lint composition (strict gate)
+        working-directory: promo
+        run: |
+          npx -y "hyperframes@${HF_VERSION}" lint --json . > ../lint.json 2>&1 || true
+          python3 - <<'PY'
+          import json, sys
+          raw = open('../lint.json', encoding='utf-8').read()
+          try:
+              d = json.loads(raw[raw.index('{'): raw.rindex('}') + 1])
+          except Exception:
+              print('::error::lint 输出无法解析为 JSON')
+              print(raw[:2000])
+              sys.exit(1)
+          errs = d.get('errorCount', 0)
+          warns = d.get('warningCount', 0)
+          print(f'lint: {errs} errors, {warns} warnings')
+          for f in d.get('findings', []):
+              print(' ', f.get('severity'), f.get('code'), f.get('selector') or '')
+          if errs:
+              sys.exit(1)
+          PY
+
+      # 运行时/布局/对比度检查需要起浏览器，结果作为诊断上传；
+      # 仅静态 lint 的 error 级别作为硬门禁，避免环境差异误杀渲染。
+      - name: Runtime check (advisory)
+        working-directory: promo
+        continue-on-error: true
+        run: |
+          npx -y "hyperframes@${HF_VERSION}" check --json . \
+            --budget 5m --samples 9 > ../check.json 2>&1 || true
+          python3 - <<'PY'
+          import json
+          raw = open('../check.json', encoding='utf-8').read()
+          try:
+              d = json.loads(raw[raw.index('{'): raw.rindex('}') + 1])
+              print('check ok =', d.get('ok'))
+              for k in ('errorCount', 'warningCount', 'issueCount'):
+                  if k in d: print(k, '=', d[k])
+          except Exception:
+              print(raw[:3000])
+          PY
+
+      - name: Render MP4
+        run: |
+          mkdir -p promo/final
+          npx -y "hyperframes@${HF_VERSION}" render promo \
+            --output promo/final/OGL-Promo.mp4 \
+            --fps 30 \
+            --workers 4 \
+            --no-browser-gpu
+          ls -lh promo/final/
+          ffprobe -v error \
+            -show_entries format=duration,size \
+            -show_entries stream=width,height,r_frame_rate,codec_name \
+            -of default=noprint_wrappers=1 promo/final/OGL-Promo.mp4
+
+      - name: Generate contact sheet
+        run: |
+          ffmpeg -y -i promo/final/OGL-Promo.mp4 -vf \
+            "fps=1/6,scale=480:-1,tile=3x3" -frames:v 1 \
+            promo/final/contact-sheet.jpg
+          ls -lh promo/final/contact-sheet.jpg
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ogl-promo-${{ github.ref_name }}-${{ github.sha }}
+          path: |
+            promo/final/OGL-Promo.mp4
+            promo/final/contact-sheet.jpg
+            lint.json
+            check.json
+          retention-days: 30
+
+      - name: Publish to Release
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_release }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="promo-${GITHUB_SHA::7}"
+          gh release create "$TAG" \
+            promo/final/OGL-Promo.mp4 \
+            promo/final/contact-sheet.jpg \
+            --title "OGL 宣传片 $TAG" \
+            --notes "由 .github/workflows/promo-render.yml 从 promo/ 源码自动渲染，含 56s / 30fps / 1920x1080 成片与分镜联系表。"
