@@ -6,33 +6,37 @@
     #s2-title { margin-top: 16px; opacity: 0; font-size: 72px; }
     #s2-sub { margin-top: 18px; opacity: 0; font-size: 30px; }
     #s2-shot-a {
-      left: 408px; top: 210px; width: 440px; height: 782px;
+      left: 430px; top: 130px; width: 400px; height: 711px;
     }
     #s2-shot-b {
-      left: 1072px; top: 210px; width: 440px; height: 782px;
+      left: 1090px; top: 130px; width: 400px; height: 711px;
     }
-    /* punch-in：01-home 放大 3.2×，只露出 OGL-Teams/OhGithubLost 那一行 */
+    /* 证据条：把截图里那行仓库名放大成可读文案（不裁切伪造特写） */
     #s2-punch {
-      position: absolute; left: 580px; top: 810px;
-      width: 760px; height: 260px;
-      overflow: hidden; border-radius: 14px;
-      border: 1px solid rgba(139,148,158,0.30);
-      box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+      position: absolute; left: 430px; top: 884px;
+      width: 1060px; height: 126px;
+      padding: 18px 30px 18px 34px;
+      border-radius: 14px;
+      background: rgba(22,27,34,0.96);
+      border: 1px solid rgba(139,148,158,0.28);
+      border-left: 3px solid var(--brand);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
       opacity: 0;
     }
-    #s2-punch img {
-      position: absolute; width: 1408px; height: 2503px;
-      object-fit: cover; left: -333px; top: -1220px;
+    #s2-punch-k {
+      font-family: var(--font-mono); font-size: 19px; letter-spacing: 0.14em;
+      color: var(--brand); text-transform: uppercase;
     }
-    #s2-punch-note {
-      position: absolute; left: 1364px; top: 900px;
-      width: 356px;
-      font-family: var(--font-mono); font-size: 20px;
-      letter-spacing: 0.04em; color: var(--muted); opacity: 0;
+    #s2-punch-t {
+      margin-top: 8px; font-family: var(--font-mono); font-size: 42px;
+      font-weight: 700; color: var(--ink); letter-spacing: -0.01em;
+    }
+    #s2-punch-s {
+      margin-top: 6px; font-size: 24px; color: var(--muted);
     }
     #s2-shot-note {
-      position: absolute; left: 0; top: 992px; width: 1920px; text-align: center;
-      font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.06em;
+      position: absolute; left: 430px; top: 1032px; width: 1060px;
+      font-family: var(--font-mono); font-size: 20px; letter-spacing: 0.06em;
       color: var(--muted); opacity: 0;
     }
     #s2-wipe { position: absolute; inset: 0; background: var(--ground); clip-path: inset(0 0 100% 0); opacity: 0; }
@@ -53,9 +57,10 @@
     <div id="s2-shot-note" class="clip" data-start="0" data-duration="7.3" data-track-index="4">实机截图 · Android</div>
 
     <div id="s2-punch" class="clip" data-start="0" data-duration="7.3" data-track-index="5">
-      <img src="assets/screens/01-home.png" alt="仓库卡片特写：OGL-Teams/OhGithubLost" />
+      <div id="s2-punch-k">真机截图 · 仓库卡片</div>
+      <div id="s2-punch-t">OGL-Teams/OhGithubLost</div>
+      <div id="s2-punch-s">Dart · 4 星标 · GitHub 仓库管理客户端 · Android / Windows / Linux / Web</div>
     </div>
-    <div id="s2-punch-note" class="clip" data-start="0" data-duration="7.3" data-track-index="5">真机截图 · OGL-Teams/OhGithubLost</div>
 
     <div id="s2-wipe" class="clip" data-start="0" data-duration="7.3" data-track-index="9"></div>
   </div>
@@ -82,10 +87,7 @@
       { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, 3.0);
     tl.fromTo("#s2-punch", { opacity: 1 },
       { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 5.6);
-    tl.fromTo("#s2-punch-note", { opacity: 0, y: 12 },
-      { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 3.25);
-    tl.fromTo("#s2-punch-note", { opacity: 1 },
-      { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 5.6);
+
     /* 3.85–6.8 呼吸：两图极缓慢 scale 往返，错开 0.8s，填补静止段 */
     tl.fromTo("#s2-shot-a", { scale: 1.015 }, { scale: 1, duration: 1.6, ease: "power2.inOut", immediateRender: false }, 4.0);
     tl.fromTo("#s2-shot-a", { scale: 1 }, { scale: 1.015, duration: 1.2, ease: "power2.inOut", immediateRender: false }, 5.6);
