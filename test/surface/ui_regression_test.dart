@@ -368,21 +368,27 @@ void main() {
       expect(source.contains('forceExpanded: true'), isTrue,
           reason: '进入子页后内部分组默认展开');
       expect(child.contains('class SettingsSectionPage'), isTrue);
-      // 关于页不得再有「未来扩展 / 贡献者 / 致谢」占位卡片
+      // 关于页：占位文案已删，致谢/协议/贡献者改为真实内容。
       final String about =
           File('lib/surface/pages/about_page.dart').readAsStringSync();
       for (final String key in <String>[
         'futureExt',
-        'contributors',
-        'thanks'
+        'futureExtDesc',
+        'thanksDesc'
       ]) {
         expect(about.contains("_t('$key')"), isFalse,
-            reason: '关于页不得再出现 $key 占位文案');
+            reason: '关于页不得再出现 $key 占位/旧文案');
       }
+      expect(about.contains('kOgLDependencyLicenses'), isTrue,
+          reason: '致谢必须复用依赖唯一事实源，不手写第二份名单');
+      expect(about.contains('_licenseCareCard('), isTrue,
+          reason: '协议重要性说明必须在位');
+      expect(about.contains('_contributorsCard('), isTrue, reason: '贡献者名单必须在位');
       final String aboutI18n =
           File('assets/i18n/zh/about_page.json').readAsStringSync();
       expect(aboutI18n.contains('"futureExt"'), isFalse,
           reason: '占位 i18n 键应一并删除');
+      expect(aboutI18n.contains('"licenseWhyApache"'), isTrue);
       // 文案精简：新摘要键六语言齐全
       for (final String loc in <String>[
         'zh',

@@ -20,5 +20,20 @@
   "trustCount": "共 {count} 条（需要处理）",
   "trustOk": "没有告警：引导清单签名与模块依赖都通过",
   "trustWarnings": "信任告警",
-  "version": "版本 {version}"
+  "version": "版本 {version}",
+  "credits": "致谢",
+  "creditsDesc": "以下开源项目支撑了本应用",
+  "licenseCare": "协议说明",
+  "licenseCareDesc": "本项目用 Apache-2.0；依赖均为宽松协议",
+  "licenseWhyApache": "Apache-2.0 含专利授权，并要求随分发提供许可与 NOTICE 副本。",
+  "licenseWhyOthers": "MIT 与 BSD-3-Clause 要求保留版权声明；均无 copyleft 传染。",
+  "licenseWhyNoCopyleft": "全部依赖为宽松协议，与本项目协议兼容。",
+  "contributors": "贡献者",
+  "contributorsDesc": "来自仓库提交记录",
+  "roleMaintainer": "主要开发者",
+  "roleAutomation": "自动化构建与发布",
+  "roleCommit": "代码提交",
+  "commitCount": "{count} 次提交",
+  "licenseSection": "按协议",
+  "viewLicenses": "查看全部许可"
 }

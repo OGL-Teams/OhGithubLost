@@ -20,5 +20,20 @@
   "trustCount": "{count} alertes (action requise)",
   "trustOk": "Aucune alerte : signature du manifeste de démarrage et dépendances des modules vérifiées",
   "trustWarnings": "Avertissements de confiance",
-  "version": "Version {version}"
+  "version": "Version {version}",
+  "credits": "Remerciements",
+  "creditsDesc": "Projets open-source derrière cette application",
+  "licenseCare": "À propos des licences",
+  "licenseCareDesc": "Apache-2.0 ici ; dépendances toutes permissives",
+  "licenseWhyApache": "Apache-2.0 accorde des droits de brevet et impose de fournir licence et NOTICE.",
+  "licenseWhyOthers": "MIT et BSD-3-Clause imposent de conserver les mentions ; sans copyleft.",
+  "licenseWhyNoCopyleft": "Toutes les dépendances sont permissives et compatibles.",
+  "contributors": "Contributeurs",
+  "contributorsDesc": "D'après l'historique des commits",
+  "roleMaintainer": "Développeur principal",
+  "roleAutomation": "Automatisation build et publication",
+  "roleCommit": "Contribution de code",
+  "commitCount": "{count} commits",
+  "licenseSection": "Par licence",
+  "viewLicenses": "Voir toutes les licences"
 }

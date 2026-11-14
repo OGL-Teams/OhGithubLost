@@ -20,5 +20,20 @@
   "trustCount": "{count} 個警示（需採取動作）",
   "trustOk": "無警示：已驗證開機憑證簽章與模組依賴關係",
   "trustWarnings": "信任警示",
-  "version": "版本 {version}"
+  "version": "版本 {version}",
+  "credits": "致謝",
+  "creditsDesc": "以下開源專案支撐了本應用",
+  "licenseCare": "授權說明",
+  "licenseCareDesc": "本專案用 Apache-2.0；依賴均為寬鬆授權",
+  "licenseWhyApache": "Apache-2.0 含專利授權，並要求隨散布提供授權與 NOTICE 副本。",
+  "licenseWhyOthers": "MIT 與 BSD-3-Clause 要求保留版權聲明；均無 copyleft 傳染。",
+  "licenseWhyNoCopyleft": "全部依賴為寬鬆授權，與本專案相容。",
+  "contributors": "貢獻者",
+  "contributorsDesc": "來自倉庫提交紀錄",
+  "roleMaintainer": "主要開發者",
+  "roleAutomation": "自動化建置與發布",
+  "roleCommit": "程式碼提交",
+  "commitCount": "{count} 次提交",
+  "licenseSection": "依授權",
+  "viewLicenses": "查看全部授權"
 }

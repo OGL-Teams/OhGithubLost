@@ -20,5 +20,20 @@
   "trustCount": "{count} предупреждений (требуется действие)",
   "trustOk": "Предупреждений нет: подпись манифеста загрузки и зависимости модулей проверены",
   "trustWarnings": "Предупреждения о доверии",
-  "version": "Версия {version}"
+  "version": "Версия {version}",
+  "credits": "Благодарности",
+  "creditsDesc": "Open-source проекты, на которых построено приложение",
+  "licenseCare": "О лицензиях",
+  "licenseCareDesc": "Здесь Apache-2.0; все зависимости разрешительные",
+  "licenseWhyApache": "Apache-2.0 даёт патентные права и требует поставлять лицензию и NOTICE.",
+  "licenseWhyOthers": "MIT и BSD-3-Clause требуют сохранять уведомления; без копилефта.",
+  "licenseWhyNoCopyleft": "Все зависимости разрешительные и совместимы с проектом.",
+  "contributors": "Участники",
+  "contributorsDesc": "По истории коммитов",
+  "roleMaintainer": "Основной разработчик",
+  "roleAutomation": "Автоматизация сборки и выпуска",
+  "roleCommit": "Вклад в код",
+  "commitCount": "{count} коммитов",
+  "licenseSection": "По лицензии",
+  "viewLicenses": "Все лицензии"
 }

@@ -20,5 +20,20 @@
   "trustCount": "{count} Warnungen (Aktion erforderlich)",
   "trustOk": "Keine Warnungen: Signatur des Startmanifests und Modulabhängigkeiten verifiziert",
   "trustWarnings": "Vertrauenswarnungen",
-  "version": "Version {version}"
+  "version": "Version {version}",
+  "credits": "Danksagungen",
+  "creditsDesc": "Open-Source-Projekte hinter dieser App",
+  "licenseCare": "Lizenzhinweise",
+  "licenseCareDesc": "Apache-2.0 hier; alle Abhängigkeiten permissiv",
+  "licenseWhyApache": "Apache-2.0 gewährt Patentrechte und verlangt Lizenz und NOTICE mitzuliefern.",
+  "licenseWhyOthers": "MIT und BSD-3-Clause verlangen erhaltene Hinweise; kein Copyleft.",
+  "licenseWhyNoCopyleft": "Alle Abhängigkeiten sind permissiv und kompatibel.",
+  "contributors": "Mitwirkende",
+  "contributorsDesc": "Aus der Commit-Historie",
+  "roleMaintainer": "Hauptentwickler",
+  "roleAutomation": "Build- und Release-Automatisierung",
+  "roleCommit": "Code-Beitrag",
+  "commitCount": "{count} Commits",
+  "licenseSection": "Nach Lizenz",
+  "viewLicenses": "Alle Lizenzen ansehen"
 }

@@ -174,6 +174,12 @@ class AboutPage extends StatelessWidget {
               onTap: () => _openSponsor(context),
             ),
           ),
+          // ★ 真实内容（替代此前删掉的占位卡片）：致谢 / 协议说明 / 贡献者。
+          //   依赖列表取自 project_info.dart 的 kOgLDependencyLicenses
+          //   （设置页「开源许可」同一份事实源），不手写第二份。
+          _creditsCard(theme),
+          _licenseCareCard(context),
+          _contributorsCard(),
           if (snapshot != null) ...<Widget>[
             const SizedBox(height: OgLSpace.lg),
             Text(_t('bootDiagnostics'), style: theme.textTheme.titleMedium),
@@ -255,6 +261,105 @@ class AboutPage extends StatelessWidget {
       ),
     );
   }
+
+  // ── 真实内容三块：致谢 / 协议重要性 / 贡献者 ───────────────────────
+
+  /// 致谢：按协议分组列出全部运行期依赖（唯一事实源 kOgLDependencyLicenses）。
+  Widget _creditsCard(ThemeData theme) {
+    final Map<String, List<OgLDependencyLicense>> byLicense =
+        <String, List<OgLDependencyLicense>>{};
+    for (final OgLDependencyLicense dep in kOgLDependencyLicenses) {
+      byLicense
+          .putIfAbsent(dep.license, () => <OgLDependencyLicense>[])
+          .add(dep);
+    }
+    final List<Widget> rows = <Widget>[];
+    for (final MapEntry<String, List<OgLDependencyLicense>> group
+        in byLicense.entries) {
+      rows.add(Padding(
+        padding: const EdgeInsets.only(top: OgLSpace.sm),
+        child: Text('${_t('licenseSection')} · ${group.key}',
+            style: theme.textTheme.labelLarge),
+      ));
+      for (final OgLDependencyLicense dep in group.value) {
+        rows.add(ListTile(
+          dense: true,
+          title: Text(dep.name),
+          subtitle:
+              Text(dep.purpose, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ));
+      }
+    }
+    return _diagnosticTile(
+      title: _t('credits'),
+      subtitle: '${_t('creditsDesc')} · ${kOgLDependencyLicenses.length}',
+      children: rows,
+    );
+  }
+
+  /// 协议重要性：为什么本项目选 Apache-2.0、依赖协议意味着什么。
+  Widget _licenseCareCard(BuildContext context) => _diagnosticTile(
+        title: _t('licenseCare'),
+        subtitle: _t('licenseCareDesc'),
+        children: <Widget>[
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.gavel_outlined),
+            title: Text(OgLProjectInfo.licenseName),
+            subtitle: Text(_t('licenseWhyApache')),
+          ),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.description_outlined),
+            title: const Text('MIT · BSD-3-Clause'),
+            subtitle: Text(_t('licenseWhyOthers')),
+          ),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.verified_outlined),
+            title: Text(_t('licenseWhyNoCopyleft')),
+          ),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.font_download_outlined),
+            title: const Text('Ubuntu Mono · UFL 1.0'),
+            subtitle: Text(_t('viewLicenses')),
+            trailing: const Icon(Icons.open_in_new, size: OgLIconSize.md),
+            onTap: () => unawaited(_openUrl(
+              context,
+              'https://design.ubuntu.com/font/',
+            )),
+          ),
+        ],
+      );
+
+  /// 贡献者：如实取自仓库提交记录，不编造名单。
+  Widget _contributorsCard() => _diagnosticTile(
+        title: _t('contributors'),
+        subtitle: _t('contributorsDesc'),
+        children: <Widget>[
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.groups_outlined),
+            title: Text(OgLProjectInfo.mainDeveloper),
+            subtitle: Text(_t('roleMaintainer')),
+          ),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.smart_toy_outlined),
+            title: const Text('OGL Bot'),
+            subtitle: Text('${_t('roleAutomation')} · '
+                '${_t('commitCount', {'count': 157})}'),
+          ),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.person_outline),
+            title: const Text('yingo-server'),
+            subtitle: Text('${_t('roleCommit')} · '
+                '${_t('commitCount', {'count': 1})}'),
+          ),
+        ],
+      );
 
   /// 诊断折叠组（默认收起）。
   Widget _diagnosticTile({
