@@ -26,6 +26,7 @@ import '../theme.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_font.dart';
 import '../util/og_l_radius.dart';
+import '../widgets/flat_list.dart';
 import '../util/og_l_space.dart';
 
 /// 取 `about_page` 分片文案。
@@ -107,82 +108,83 @@ class AboutPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(OgLSpace.lg),
         children: OgLRevealList.of(context, <Widget>[
-          Card(
-            child: Column(
-              children: <Widget>[
-                ListTile(
-                  leading: const Icon(Icons.apps),
-                  title: Text(
-                    '${OgLProjectInfo.name}（${OgLProjectInfo.abbreviation}）',
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  subtitle: Text(_t('version', {
-                    'version': snapshot?.appVersion ??
-                        OgLI18n.instance.t('common', 'unknown'),
-                  })),
+          Column(
+            children: <Widget>[
+              ListTile(
+                contentPadding: kOgLFlatRowPadding,
+                leading: const Icon(Icons.apps),
+                title: Text(
+                  '${OgLProjectInfo.name}（${OgLProjectInfo.abbreviation}）',
+                  style: theme.textTheme.titleMedium,
                 ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.person_outline),
-                  title: Text(_t('developer')),
-                  subtitle: Text(OgLProjectInfo.mainDeveloper),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.link),
-                  title: Text(_t('repo')),
-                  subtitle: Text(OgLProjectInfo.repositoryUrl),
-                  // 整行可点：仓库地址是"想去看一眼"的东西，只能复制太别扭。
-                  onTap: () => _openUrl(context, OgLProjectInfo.repositoryUrl),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.content_copy, size: OgLIconSize.md),
-                    tooltip: _t('copyRepoUrl'),
-                    onPressed: () => _copy(
-                      context,
-                      OgLProjectInfo.repositoryUrl,
-                      _t('repoUrl'),
-                    ),
-                  ),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.gavel_outlined),
-                  title: Text(_t('license')),
-                  subtitle: Text(
-                    '${OgLProjectInfo.licenseId} · ${OgLProjectInfo.licenseName}',
-                  ),
-                  // 许可全文有链接却没给出口：点开即看官方原文。
-                  onTap: OgLProjectInfo.licenseUrl.isEmpty
-                      ? null
-                      : () => _openUrl(context, OgLProjectInfo.licenseUrl),
-                  trailing: OgLProjectInfo.licenseUrl.isEmpty
-                      ? null
-                      : const Icon(Icons.open_in_new, size: OgLIconSize.md),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: OgLSpace.lg),
-          // 设置页另有「加星」入口，此处为赞助跳转（用户已拍板两个入口都保留）。
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: ListTile(
-              leading: Icon(Icons.favorite, color: theme.colorScheme.error),
-              title: Text(OgLI18n.instance.t('settings', 'donateHeart')),
-              subtitle: Text(
-                OgLI18n.instance
-                    .t('settings', 'donateTileDesc', args: <String, String>{
-                  'repo': OgLProjectInfo.repoFullName,
-                }),
+                subtitle: Text(_t('version', {
+                  'version': snapshot?.appVersion ??
+                      OgLI18n.instance.t('common', 'unknown'),
+                })),
               ),
-              trailing: const Icon(Icons.open_in_new, size: OgLIconSize.md),
-              onTap: () => _openSponsor(context),
-            ),
+              const Divider(height: 1),
+              ListTile(
+                contentPadding: kOgLFlatRowPadding,
+                leading: const Icon(Icons.person_outline),
+                title: Text(_t('developer')),
+                subtitle: Text(OgLProjectInfo.mainDeveloper),
+              ),
+              ListTile(
+                contentPadding: kOgLFlatRowPadding,
+                leading: const Icon(Icons.link),
+                title: Text(_t('repo')),
+                subtitle: Text(OgLProjectInfo.repositoryUrl),
+                // 整行可点：仓库地址是"想去看一眼"的东西，只能复制太别扭。
+                onTap: () => _openUrl(context, OgLProjectInfo.repositoryUrl),
+                trailing: IconButton(
+                  icon: const Icon(Icons.content_copy, size: OgLIconSize.md),
+                  tooltip: _t('copyRepoUrl'),
+                  onPressed: () => _copy(
+                    context,
+                    OgLProjectInfo.repositoryUrl,
+                    _t('repoUrl'),
+                  ),
+                ),
+              ),
+              ListTile(
+                contentPadding: kOgLFlatRowPadding,
+                leading: const Icon(Icons.gavel_outlined),
+                title: Text(_t('license')),
+                subtitle: Text(
+                  '${OgLProjectInfo.licenseId} · ${OgLProjectInfo.licenseName}',
+                ),
+                // 许可全文有链接却没给出口：点开即看官方原文。
+                onTap: OgLProjectInfo.licenseUrl.isEmpty
+                    ? null
+                    : () => _openUrl(context, OgLProjectInfo.licenseUrl),
+                trailing: OgLProjectInfo.licenseUrl.isEmpty
+                    ? null
+                    : const Icon(Icons.open_in_new, size: OgLIconSize.md),
+              ),
+            ],
           ),
+          const Divider(height: 1),
+          // 设置页另有「加星」入口，此处为赞助跳转（用户已拍板两个入口都保留）。
+          ListTile(
+            contentPadding: kOgLFlatRowPadding,
+            leading: Icon(Icons.favorite, color: theme.colorScheme.error),
+            title: Text(OgLI18n.instance.t('settings', 'donateHeart')),
+            subtitle: Text(
+              OgLI18n.instance
+                  .t('settings', 'donateTileDesc', args: <String, String>{
+                'repo': OgLProjectInfo.repoFullName,
+              }),
+            ),
+            trailing: const Icon(Icons.open_in_new, size: OgLIconSize.md),
+            onTap: () => _openSponsor(context),
+          ),
+          const Divider(height: 1),
           // ★ 真实内容（替代此前删掉的占位卡片）：致谢 / 协议说明 / 贡献者。
           //   依赖列表取自 project_info.dart 的 kOgLDependencyLicenses
           //   （设置页「开源许可」同一份事实源），不手写第二份。
-          _creditsCard(theme),
-          _licenseCareCard(context),
-          _contributorsCard(),
+          ..._creditsRows(theme),
+          ..._licenseCareRows(context),
+          ..._contributorsRows(),
           if (snapshot != null) ...<Widget>[
             const SizedBox(height: OgLSpace.lg),
             Text(_t('bootDiagnostics'), style: theme.textTheme.titleMedium),
@@ -213,12 +215,14 @@ class AboutPage extends StatelessWidget {
               children: <Widget>[
                 if (snapshot.trustWarnings.isEmpty)
                   ListTile(
+                    contentPadding: kOgLFlatRowPadding,
                     leading: Icon(Icons.verified_outlined),
                     title: Text(_t('trustChainOk')),
                   )
                 else
                   for (final Object warning in snapshot.trustWarnings)
                     ListTile(
+                      contentPadding: kOgLFlatRowPadding,
                       leading: Icon(
                         Icons.warning_amber_rounded,
                         color: theme.colorScheme.error,
@@ -267,8 +271,12 @@ class AboutPage extends StatelessWidget {
 
   // ── 真实内容三块：致谢 / 协议重要性 / 贡献者 ───────────────────────
 
-  /// 致谢：按协议分组列出全部运行期依赖（唯一事实源 kOgLDependencyLicenses）。
-  Widget _creditsCard(ThemeData theme) {
+  /// 致谢：按协议分组**直接平铺**。
+  ///
+  /// 旧实现把 18 个依赖全塞进一个 ExpansionTile，用户要先找到折叠头、
+  /// 展开、再在长列表里滚动——交互与信息密度都差。这里按协议分成三组，
+  /// 每组一个标题 + 若干行，与页面其它行同一套间距。
+  List<Widget> _creditsRows(ThemeData theme) {
     final Map<String, List<OgLDependencyLicense>> byLicense =
         <String, List<OgLDependencyLicense>>{};
     for (final OgLDependencyLicense dep in kOgLDependencyLicenses) {
@@ -276,110 +284,100 @@ class AboutPage extends StatelessWidget {
           .putIfAbsent(dep.license, () => <OgLDependencyLicense>[])
           .add(dep);
     }
-    final List<Widget> rows = <Widget>[];
+    final List<Widget> rows = <Widget>[
+      OgLFlatSectionLabel(
+          '${_t('credits')} · ${kOgLDependencyLicenses.length}'),
+    ];
     for (final MapEntry<String, List<OgLDependencyLicense>> group
         in byLicense.entries) {
       rows.add(Padding(
-        padding: const EdgeInsets.only(top: OgLSpace.sm),
+        padding: const EdgeInsets.fromLTRB(
+            OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
         child: Text('${_t('licenseSection')} · ${group.key}',
-            style: theme.textTheme.labelLarge),
+            style: theme.textTheme.labelMedium),
       ));
       for (final OgLDependencyLicense dep in group.value) {
-        rows.add(ListTile(
-          dense: true,
+        rows.add(OgLFlatTile(
           title: Text(dep.name),
-          subtitle:
-              Text(dep.purpose, maxLines: 1, overflow: TextOverflow.ellipsis),
+          subtitle: Text(dep.purpose),
         ));
+        rows.add(const Divider(height: 1));
+      }
+      if (rows.isNotEmpty) {
+        rows.removeLast(); // 组尾不留分隔线（下组标题自带间距）
       }
     }
-    return _diagnosticTile(
-      title: _t('credits'),
-      subtitle: '${_t('creditsDesc')} · ${kOgLDependencyLicenses.length}',
-      children: rows,
-    );
+    return rows;
   }
 
-  /// 协议重要性：为什么本项目选 Apache-2.0、依赖协议意味着什么。
-  Widget _licenseCareCard(BuildContext context) => _diagnosticTile(
-        title: _t('licenseCare'),
-        subtitle: _t('licenseCareDesc'),
-        children: <Widget>[
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.gavel_outlined),
-            title: Text(OgLProjectInfo.licenseName),
-            subtitle: Text(_t('licenseWhyApache')),
-          ),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.description_outlined),
-            title: const Text('MIT · BSD-3-Clause'),
-            subtitle: Text(_t('licenseWhyOthers')),
-          ),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.verified_outlined),
-            title: Text(_t('licenseWhyNoCopyleft')),
-          ),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.font_download_outlined),
-            title: const Text('Ubuntu Mono · UFL 1.0'),
-            subtitle: Text(_t('viewLicenses')),
-            trailing: const Icon(Icons.open_in_new, size: OgLIconSize.md),
-            onTap: () => unawaited(_openUrl(
-              context,
-              'https://design.ubuntu.com/font/',
-            )),
-          ),
-        ],
-      );
+  /// 协议说明：平铺行，与致谢同一套间距。
+  List<Widget> _licenseCareRows(BuildContext context) => <Widget>[
+        OgLFlatSectionLabel(_t('licenseCare')),
+        OgLFlatTile(
+          leading: const Icon(Icons.gavel_outlined),
+          title: Text(_t('licenseWhyApache')),
+        ),
+        const Divider(height: 1),
+        OgLFlatTile(
+          leading: const Icon(Icons.description_outlined),
+          title: Text(_t('licenseWhyOthers')),
+        ),
+        const Divider(height: 1),
+        OgLFlatTile(
+          leading: const Icon(Icons.verified_outlined),
+          title: Text(_t('licenseWhyNoCopyleft')),
+        ),
+        const Divider(height: 1),
+        OgLFlatTile(
+          leading: const Icon(Icons.font_download_outlined),
+          title: const Text('Ubuntu Mono · UFL 1.0'),
+          subtitle: Text(_t('viewLicenses')),
+          trailing: const Icon(Icons.open_in_new, size: OgLIconSize.md),
+          onTap: () =>
+              unawaited(_openUrl(context, 'https://design.ubuntu.com/font/')),
+        ),
+        const Divider(height: 1),
+      ];
 
-  /// 贡献者：如实取自仓库提交记录，不编造名单。
-  Widget _contributorsCard() => _diagnosticTile(
-        title: _t('contributors'),
-        subtitle: _t('contributorsDesc'),
-        children: <Widget>[
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.groups_outlined),
-            title: Text(OgLProjectInfo.mainDeveloper),
-            subtitle: Text(_t('roleMaintainer')),
-          ),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.smart_toy_outlined),
-            title: const Text('OGL Bot'),
-            subtitle: Text('${_t('roleAutomation')} · '
-                '${_t('commitCount', {'count': 157})}'),
-          ),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.person_outline),
-            title: const Text('yingo-server'),
-            subtitle: Text('${_t('roleCommit')} · '
-                '${_t('commitCount', {'count': 1})}'),
-          ),
-        ],
-      );
+  /// 贡献者：平铺行（据 git 提交记录，如实列出）。
+  List<Widget> _contributorsRows() => <Widget>[
+        OgLFlatSectionLabel(_t('contributors')),
+        OgLFlatTile(
+          leading: const Icon(Icons.manage_accounts_outlined),
+          title: const Text(OgLProjectInfo.mainDeveloper),
+          subtitle: Text(_t('developer')),
+        ),
+        const Divider(height: 1),
+        OgLFlatTile(
+          leading: const Icon(Icons.smart_toy_outlined),
+          title: const Text('OGL Bot'),
+          subtitle: Text(_t('contributorAutomation')),
+        ),
+        const Divider(height: 1),
+        OgLFlatTile(
+          leading: const Icon(Icons.person_outline),
+          title: const Text('yingo-server'),
+          subtitle: Text(_t('contributorCommit')),
+        ),
+        const Divider(height: 1),
+      ];
 
-  /// 诊断折叠组（默认收起）。
+  /// 诊断折叠组：**零气泡**——直接用 ExpansionTile，不加 Card / margin。
+  /// tilePadding 与页面 ListView 内边距一致，childrenPadding 同样用
+  /// OgLSpace.lg，避免同页两种间距。
   Widget _diagnosticTile({
     required String title,
     required String subtitle,
     required List<Widget> children,
   }) =>
-      Card(
-        clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.only(bottom: OgLSpace.md),
-        child: ExpansionTile(
-          title: Text(title),
-          subtitle: Text(subtitle),
-          childrenPadding: const EdgeInsets.fromLTRB(
-              OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.lg),
-          children: children,
-        ),
+      ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(
+            horizontal: OgLSpace.lg, vertical: OgLSpace.sm),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        childrenPadding:
+            const EdgeInsets.fromLTRB(OgLSpace.lg, 0, OgLSpace.lg, OgLSpace.lg),
+        children: children,
       );
 
   /// 权限自检折叠组（**每次启动都实测**的结果，见 `OgLPermissionSelfTestReport.last`）。
@@ -410,6 +408,7 @@ class AboutPage extends StatelessWidget {
       children: <Widget>[
         if (last == null)
           ListTile(
+            contentPadding: kOgLFlatRowPadding,
             leading: const Icon(Icons.hourglass_empty),
             title: Text(OgLI18n.instance.t('shell', 'permSelfTestPending')),
           )
@@ -419,6 +418,7 @@ class AboutPage extends StatelessWidget {
               value: last.platform),
           for (final OgLPermissionInfo info in last.infos)
             ListTile(
+              contentPadding: kOgLFlatRowPadding,
               dense: true,
               leading: Icon(
                 info.actionable

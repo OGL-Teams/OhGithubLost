@@ -421,9 +421,12 @@ void main() {
       }
       expect(about.contains('kOgLDependencyLicenses'), isTrue,
           reason: '致谢必须复用依赖唯一事实源，不手写第二份名单');
-      expect(about.contains('_licenseCareCard('), isTrue,
-          reason: '协议重要性说明必须在位');
-      expect(about.contains('_contributorsCard('), isTrue, reason: '贡献者名单必须在位');
+      expect(about.contains('_licenseCareRows('), isTrue,
+          reason: '协议说明平铺行必须在位');
+      expect(about.contains('_contributorsRows('), isTrue,
+          reason: '贡献者平铺行必须在位');
+      expect(about.contains('_creditsRows('), isTrue,
+          reason: '致谢必须平铺分组，不得再塞进折叠卡');
       final String aboutI18n =
           File('assets/i18n/zh/about_page.json').readAsStringSync();
       expect(aboutI18n.contains('"futureExt"'), isFalse,
@@ -443,6 +446,33 @@ void main() {
         expect(json.contains('"accountSummary"'), isTrue, reason: loc);
         expect(json.contains('"aboutSummary"'), isTrue, reason: loc);
       }
+      // ★ exam mode：零气泡 / 间距统一 / 字体加载无临时目录。
+      for (final String p in <String>[
+        'lib/surface/pages/about_page.dart',
+        'lib/surface/pages/profile_page.dart',
+        'lib/surface/pages/settings_page.dart',
+        'lib/surface/widgets/settings/settings_group.dart',
+      ]) {
+        final String code = File(p)
+            .readAsStringSync()
+            .replaceAll('_accountCard(', '')
+            .replaceAll('_logsCard(', '')
+            .replaceAll('OgLSettingsDangerCard(', '');
+        expect(code.contains('Card('), isFalse, reason: '$p 仍有卡片气泡');
+        expect(code.contains('ColoredBox('), isFalse, reason: '$p 仍有色块气泡');
+      }
+      final String grp =
+          File('lib/surface/widgets/settings/settings_group.dart')
+              .readAsStringSync();
+      expect(grp.contains('start: 16, end: 12'), isFalse,
+          reason: '行内左右内边距必须相等');
+      expect(grp.contains('vertical: OgLSpace.md'), isTrue,
+          reason: '行内上下间距必须统一');
+      final String font =
+          File('lib/surface/app/font_loader.dart').readAsStringSync();
+      expect(font.contains('systemTemp'), isFalse, reason: '字体缓存不得放临时目录');
+      expect(font.contains('_looksLikeFont'), isTrue, reason: '字体必须做魔数校验');
+      expect(font.contains('_inFlight'), isTrue, reason: '并发加载必须合并');
     });
   });
 }

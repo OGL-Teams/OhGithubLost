@@ -25,14 +25,15 @@ import '../../app/overlays.dart';
 import '../../util/og_l_radius.dart';
 import '../../util/og_l_space.dart';
 
-/// 行内统一内边距（左 16；缩进子项在此基础上再加 [OgLSettingsIndent.step]）。
-///
-/// 类型必须是 [EdgeInsetsDirectional]（不是 `EdgeInsets`）：两者都只是
-/// `EdgeInsetsGeometry` 的子类，`EdgeInsetsDirectional` **不是** `EdgeInsets`
-/// 的子类 —— 写成 `EdgeInsets` 既装不下这个值，也会让下面 `copyWith(start:)`
-/// 与 `.start` 全部编译不过（`EdgeInsets` 只有 left/right）。
+/// 行内统一内边距：左右**相等**（此前 start 16 / end 12 不对称，
+/// 同页看起来像歪的）。设置 / 关于 / 用户页共用这一个值。
 const EdgeInsetsDirectional kOgLSettingsRowPadding =
-    EdgeInsetsDirectional.only(start: 16, end: 12);
+    EdgeInsetsDirectional.symmetric(
+        horizontal: OgLSpace.lg, vertical: OgLSpace.md);
+
+/// 选项之间的垂直间距（行与行之间只留 1px 分隔线，不再叠 SizedBox）。
+/// 选择弹窗内每个选项的上下内边距与此同源。
+const double kOgLSettingsRowGap = OgLSpace.md;
 
 /// 子项缩进台阶（"依赖某开关才出现"的条目用）。
 abstract final class OgLSettingsIndent {
@@ -81,6 +82,8 @@ Future<T?> ogLShowSettingsChoice<T>({
           for (final OgLSettingsChoice<T> option in options)
             SimpleDialogOption(
               onPressed: () => Navigator.of(dialogContext).pop(option.value),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: OgLSpace.lg, vertical: OgLSpace.md),
               child: Row(
                 children: <Widget>[
                   if (option.leading != null) ...<Widget>[
@@ -132,10 +135,7 @@ class OgLSettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          ...children,
-          const SizedBox(height: OgLSpace.xxs),
-        ],
+        children: children,
       );
 }
 
@@ -480,43 +480,38 @@ class OgLSettingsDangerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return ColoredBox(
-      color: theme.colorScheme.errorContainer,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-                OgLSpace.lg, OgLSpace.md, OgLSpace.lg, 0),
-            child: Text(
-              title,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: theme.colorScheme.onErrorContainer,
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+              OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
+          child: Text(
+            title,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.error,
             ),
           ),
-          ListTile(
-            contentPadding: kOgLSettingsRowPadding,
-            leading: Icon(
-              actionIcon,
-              color: theme.colorScheme.onErrorContainer,
-            ),
-            title: Text(
-              actionTitle,
-              style: TextStyle(color: theme.colorScheme.onErrorContainer),
-            ),
-            subtitle: Text(
-              actionSubtitle,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onErrorContainer,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            onTap: onTap,
+        ),
+        ListTile(
+          contentPadding: kOgLSettingsRowPadding,
+          leading: Icon(
+            actionIcon,
+            color: theme.colorScheme.error,
           ),
-        ],
-      ),
+          title: Text(
+            actionTitle,
+            style: TextStyle(color: theme.colorScheme.error),
+          ),
+          subtitle: Text(
+            actionSubtitle,
+            style: theme.textTheme.bodySmall,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          onTap: onTap,
+        ),
+      ],
     );
   }
 }

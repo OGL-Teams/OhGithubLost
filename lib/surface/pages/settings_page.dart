@@ -51,6 +51,7 @@ import '../util/og_l_font.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
+import '../widgets/flat_list.dart';
 import '../widgets/settings/settings_group.dart';
 import 'about_page.dart';
 import 'legal_text_page.dart';
@@ -409,16 +410,16 @@ class _SettingsPageState extends State<SettingsPage> {
           body: Column(
             children: <Widget>[
               if (saveError != null)
-                ColoredBox(
-                  color: theme.colorScheme.errorContainer,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.md),
-                    child: Text(saveError,
-                        style: TextStyle(
-                            color: theme.colorScheme.onErrorContainer)),
+                ListTile(
+                  contentPadding: kOgLFlatRowPadding,
+                  leading:
+                      Icon(Icons.error_outline, color: theme.colorScheme.error),
+                  title: Text(
+                    saveError,
+                    style: TextStyle(color: theme.colorScheme.error),
                   ),
                 ),
+              const Divider(height: 1),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(
@@ -673,13 +674,15 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         // ★ 字体管理子项：仅当字体为思源宋体（需下载）或已添加私有字体时
         //   展开——层级跟随父项（OgLSettingsIndent.step），归属一眼可见。
-        if (value.uiFontId == OgLBuiltinFonts.notoSerifSc)
+        if (value.uiFontId == OgLBuiltinFonts.notoSerifSc) ...<Widget>[
+          const Divider(height: 1),
           OgLSettingsActionRow(
             indent: OgLSettingsIndent.step,
             title: _t('uiFontDownload'),
             icon: Icons.download,
             onTap: () => unawaited(_downloadNotoSerif(theme)),
           ),
+        ],
         if (value.customFonts.isNotEmpty) ...<Widget>[
           const Divider(height: 1),
           OgLSettingsActionRow(
@@ -1454,38 +1457,35 @@ class _SettingsPageState extends State<SettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   // ── 风险警示：API 兼容性 + 易泄露（放在最前，先读再开）──
-                  ColoredBox(
-                    color: theme.colorScheme.errorContainer,
-                    child: Padding(
-                      padding: const EdgeInsets.all(OgLSpace.md),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Icon(Icons.warning_amber_rounded,
-                                  size: OgLIconSize.md,
-                                  color: theme.colorScheme.onErrorContainer),
-                              const SizedBox(width: OgLSpace.sm),
-                              Expanded(
-                                child: Text(
-                                  _t('accelCompatWarning'),
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onErrorContainer,
-                                  ),
+                  Padding(
+                    padding: kOgLFlatRowPadding,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Icon(Icons.warning_amber_rounded,
+                                size: OgLIconSize.md,
+                                color: theme.colorScheme.onErrorContainer),
+                            const SizedBox(width: OgLSpace.sm),
+                            Expanded(
+                              child: Text(
+                                _t('accelCompatWarning'),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onErrorContainer,
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: OgLSpace.sm),
-                          Text(
-                            _t('accelLeakWarning'),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onErrorContainer,
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: OgLSpace.sm),
+                        Text(
+                          _t('accelLeakWarning'),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onErrorContainer,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                   // ── 适用范围：哪些资源允许走通道 ──────────────────────
