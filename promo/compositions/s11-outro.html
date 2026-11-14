@@ -1,0 +1,81 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+    #s11-stage {
+      position: absolute; inset: 0;
+      clip-path: inset(49.9% 0 49.9% 0);
+    }
+    #s11-line {
+      position: absolute; left: 960px; top: 540px; width: 480px; height: 2px;
+      margin-left: -240px; background: var(--md-primary); transform-origin: center center;
+    }
+    #s11-iconbox {
+      position: absolute; left: 800px; top: 150px; width: 160px; height: 160px;
+      border-radius: var(--md-shape-md); background: var(--md-surface-container-high);
+      border: 1px solid var(--md-outline); overflow: hidden;
+    }
+    #s11-icon {
+      position: absolute; left: 10px; top: 10px; width: 140px; height: 140px;
+    }
+    #s11-brand {
+      position: absolute; left: 0; top: 356px; width: 1920px; text-align: center;
+      font-size: 96px; font-weight: 400; line-height: 1.06; letter-spacing: -0.4px;
+      clip-path: inset(0 100% 0 0);
+    }
+    #s11-brand .b { color: var(--md-primary); }
+
+    #s11-claim {
+      position: absolute; left: 0; top: 492px; width: 1920px; text-align: center;
+      font-size: 30px; line-height: 1.4; color: var(--md-on-surface-variant); opacity: 0;
+    }
+    #s11-cta {
+      position: absolute; left: 0; top: 596px; width: 1920px; text-align: center;
+      font-family: var(--md-mono); font-size: 32px; font-weight: 700;
+      color: var(--md-primary); opacity: 0;
+    }
+    #s11-spec {
+      position: absolute; left: 0; top: 664px; width: 1920px; text-align: center;
+      font-family: var(--md-mono); font-size: 20px; letter-spacing: 0.12em;
+      color: var(--md-on-surface-variant); opacity: 0;
+    }
+    #s11-rule {
+      position: absolute; left: 860px; top: 740px; width: 200px; height: 1px;
+      background: var(--md-outline-variant); transform-origin: center center;
+    }
+  </style>
+
+  <div id="root" data-composition-id="s11" data-width="1920" data-height="1080">
+    <div id="s11-stage">
+      <div id="s11-iconbox" class="clip" data-start="0" data-duration="12" data-track-index="3">
+        <img id="s11-icon" src="assets/ogl_icon.svg" alt="OhGithubLost" />
+      </div>
+      <div id="s11-brand" class="clip" data-start="0" data-duration="12" data-track-index="3">Oh<span class="b">Github</span>Lost</div>
+      <div id="s11-claim" class="clip" data-start="0" data-duration="12" data-track-index="3">GitHub 的日常动作，在客户端里闭环完成。</div>
+      <div id="s11-cta" class="clip mono" data-start="0" data-duration="12" data-track-index="3">github.com/OGL-Teams/OhGithubLost</div>
+      <div id="s11-spec" class="clip mono" data-start="0" data-duration="12" data-track-index="3">v12.6.9 · Apache-2.0 · Android / Windows / Linux / Web</div>
+      <div id="s11-rule" class="clip" data-start="0" data-duration="12" data-track-index="4"></div>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    /* 从上一场收束的那条线展开——与片头首尾同构 */
+    tl.fromTo("#s11-stage", { clipPath: "inset(49.9% 0 49.9% 0)" },
+      { clipPath: "inset(0% 0 0% 0)", duration: 0.55, ease: "power3.out" }, 0);
+
+    tl.fromTo("#s11-iconbox", { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.35);
+    tl.fromTo("#s11-brand", { clipPath: "inset(0 100% 0 0)" },
+      { clipPath: "inset(0 0% 0 0)", duration: 0.5, ease: "power3.out" }, 0.65);
+    tl.fromTo("#s11-claim", { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 1.0);
+    tl.fromTo("#s11-cta", { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 1.3);
+    tl.fromTo("#s11-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, 1.5);
+    tl.fromTo("#s11-spec", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 1.7);
+
+    /* 最后 2.5s 静止：不做任何 fade，保持可读的结束帧 */
+    window.__timelines["s11"] = tl;
+  </script>
+</template>

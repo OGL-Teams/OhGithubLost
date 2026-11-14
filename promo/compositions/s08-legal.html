@@ -1,0 +1,222 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+    #s08-stage { position: absolute; inset: 0; }
+
+    /* 版式 C：解剖图。截图 0.82×（470×836），x=180 y=110；右侧文案栏 x=760 宽 900 */
+    #s08-shot-wrap {
+      position: absolute; left: 180px; top: 110px; width: 470px; height: 836px;
+    }
+    #s08-shot {
+      position: absolute; left: 0; top: 0; width: 470px; height: 836px;
+      object-fit: cover; display: block;
+      border-radius: var(--md-shape-sm); border: 1px solid var(--md-outline-variant);
+      background: var(--md-surface-container-lowest);
+    }
+
+    /* 截图上的覆盖层：语言选择行 + 下拉菜单 + LICENSE 标记 */
+    #s08-lang-row {
+      position: absolute; left: 20px; top: 400px; width: 300px; height: 44px;
+      background: var(--md-surface-container-high); border: 1px solid var(--md-outline-variant);
+      border-radius: var(--md-shape-sm); display: flex; align-items: center; padding: 0 16px;
+    }
+    #s08-lang-a, #s08-lang-b {
+      position: absolute; left: 16px; top: 0; height: 44px; line-height: 44px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      color: var(--md-on-surface);
+    }
+    #s08-lang-b { opacity: 0; }
+
+    #s08-menu {
+      position: absolute; left: 20px; top: 452px; width: 300px;
+      background: var(--md-surface-container-high); border: 1px solid var(--md-outline-variant);
+      border-radius: var(--md-shape-sm); overflow: hidden; opacity: 0;
+    }
+    .s08-menu-item {
+      height: 56px; line-height: 56px; padding: 0 16px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 400;
+      color: var(--md-on-surface); border-bottom: 1px solid var(--md-outline-variant);
+      opacity: 0;
+    }
+    .s08-menu-item.sel { color: var(--md-primary); }
+
+    #s08-license-mark {
+      position: absolute; left: 0; top: 96px; width: 2px; height: 44px;
+      background: var(--md-error); transform-origin: center top; opacity: 0;
+    }
+    #s08-license-note {
+      position: absolute; left: 12px; top: 96px; height: 44px; line-height: 44px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      color: var(--md-error); opacity: 0;
+    }
+
+    /* 光标：节拍器 */
+    #s08-cursor {
+      position: absolute; left: 0; top: 0; width: 14px; height: 14px;
+      border-radius: 50%; background: var(--md-primary); opacity: 0;
+    }
+
+    /* 右侧文案栏 */
+    #s08-copy { position: absolute; left: 760px; top: 0; width: 900px; }
+    #s08-kicker {
+      position: absolute; left: 760px; top: 148px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      letter-spacing: 0.14em; color: var(--md-primary); opacity: 0;
+    }
+    #s08-title {
+      position: absolute; left: 760px; top: 190px; width: 900px;
+      font-size: 56px; font-weight: 400; line-height: 1.14; color: var(--md-on-surface); opacity: 0;
+    }
+    #s08-body-a, #s08-body-b {
+      position: absolute; left: 760px; top: 292px; width: 900px;
+      font-size: 24px; font-weight: 400; line-height: 1.5; letter-spacing: 0.5px;
+      color: var(--md-on-surface-variant);
+    }
+    #s08-body-b { opacity: 0; }
+
+    /* 三条说明 + 引线 */
+    .s08-exp {
+      position: absolute; left: 760px; width: 900px; height: 64px;
+      border-left: 2px solid var(--md-outline-variant); padding-left: 24px;
+    }
+    #s08-exp-1 { top: 420px; }
+    #s08-exp-2 { top: 516px; }
+    #s08-exp-3 { top: 612px; }
+    .s08-exp .k {
+      font-family: var(--md-mono); font-size: 20px; font-weight: 700;
+      color: var(--md-on-surface); height: 28px; line-height: 28px;
+    }
+    .s08-exp .v {
+      font-size: 22px; font-weight: 400; color: var(--md-on-surface-variant);
+      height: 32px; line-height: 32px;
+    }
+    .s08-lead {
+      position: absolute; left: 652px; width: 100px; height: 2px;
+      background: var(--md-outline-variant); transform-origin: left center;
+    }
+    #s08-lead-1 { top: 452px; }
+    #s08-lead-2 { top: 548px; }
+    #s08-lead-3 { top: 644px; }
+
+    /* 退场幕布 */
+    #s08-exit { position: absolute; inset: 0; opacity: 0; }
+  </style>
+
+  <div id="root" data-composition-id="s08" data-width="1920" data-height="1080">
+    <div id="s08-stage">
+      <div id="s08-shot-wrap" class="clip" data-start="0" data-duration="18" data-track-index="2">
+        <img id="s08-shot" src="assets/screens/12-legal.png" alt="法律文本多语言页">
+        <div id="s08-license-mark" class="clip" data-start="0" data-duration="18" data-track-index="3"></div>
+        <div id="s08-license-note" class="clip" data-start="0" data-duration="18" data-track-index="3">LICENSE · Apache-2.0</div>
+        <div id="s08-lang-row" class="clip" data-start="0" data-duration="18" data-track-index="3">
+          <div id="s08-lang-a">English (en)</div>
+          <div id="s08-lang-b">简体中文 (zh)</div>
+        </div>
+        <div id="s08-menu" class="clip" data-start="0" data-duration="18" data-track-index="4">
+          <div class="s08-menu-item sel">简体中文 (zh)</div>
+          <div class="s08-menu-item">繁體中文 (zh_Hant)</div>
+          <div class="s08-menu-item">English (en)</div>
+          <div class="s08-menu-item">Deutsch (de)</div>
+          <div class="s08-menu-item">Français (fr)</div>
+          <div class="s08-menu-item">Русский (ru)</div>
+        </div>
+      </div>
+
+      <div id="s08-cursor" class="clip" data-start="0" data-duration="18" data-track-index="5"></div>
+
+      <div id="s08-kicker" class="clip" data-start="0" data-duration="18" data-track-index="3">07 · LEGAL</div>
+      <div id="s08-title" class="clip t-headline" data-start="0" data-duration="18" data-track-index="3">六种语言，同一份条款</div>
+      <div id="s08-body-a" class="clip t-body" data-start="0" data-duration="18" data-track-index="3">唯一有法律效力的是仓库根目录的 LICENSE；其余语言只作理解，不增减权利。</div>
+      <div id="s08-body-b" class="clip t-body" data-start="0" data-duration="18" data-track-index="3">切换语言只改措辞，不改条款——六种版本与 LICENSE 一一对应，版式一致。</div>
+
+      <div class="s08-lead clip" id="s08-lead-1" data-start="0" data-duration="18" data-track-index="3"></div>
+      <div class="s08-lead clip" id="s08-lead-2" data-start="0" data-duration="18" data-track-index="3"></div>
+      <div class="s08-lead clip" id="s08-lead-3" data-start="0" data-duration="18" data-track-index="3"></div>
+
+      <div class="s08-exp clip" id="s08-exp-1" data-start="0" data-duration="18" data-track-index="3">
+        <div class="k mono">LICENSE</div>
+        <div class="v t-body-m">Apache-2.0，唯一有效文本</div>
+      </div>
+      <div class="s08-exp clip" id="s08-exp-2" data-start="0" data-duration="18" data-track-index="3">
+        <div class="k mono">zh / zh_Hant / en / de / fr / ru</div>
+        <div class="v t-body-m">六语言，版式一致</div>
+      </div>
+      <div class="s08-exp clip" id="s08-exp-3" data-start="0" data-duration="18" data-track-index="3">
+        <div class="k mono">不收集数据</div>
+        <div class="v t-body-m">无遥测、无广告、无画像</div>
+      </div>
+
+      <div id="s08-exit" class="clip" data-start="0" data-duration="18" data-track-index="9"></div>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    /* 1. 入场：以点击点为圆心的 clip-path circle 展开；文案 0.3–0.8s */
+    tl.fromTo("#s08-stage",
+      { clipPath: "circle(0% at 760px 300px)" },
+      { clipPath: "circle(120% at 760px 300px)", duration: 0.55, ease: "power3.out" }, 0);
+    tl.fromTo("#s08-kicker", { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.3);
+    tl.fromTo("#s08-title", { opacity: 0, y: 16 },
+      { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.4);
+    tl.fromTo("#s08-body-a", { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.55);
+
+    /* 三条引线 scaleX 展开 + 说明块淡入（0.9–1.6s） */
+    tl.fromTo("#s08-lead-1", { scaleX: 0, opacity: 0 },
+      { scaleX: 1, opacity: 1, duration: 0.3, ease: "power2.out" }, 0.9);
+    tl.fromTo("#s08-lead-2", { scaleX: 0, opacity: 0 },
+      { scaleX: 1, opacity: 1, duration: 0.3, ease: "power2.out" }, 1.05);
+    tl.fromTo("#s08-lead-3", { scaleX: 0, opacity: 0 },
+      { scaleX: 1, opacity: 1, duration: 0.3, ease: "power2.out" }, 1.2);
+    tl.fromTo("#s08-exp-1", { opacity: 0, x: 16 },
+      { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 1.0);
+    tl.fromTo("#s08-exp-2", { opacity: 0, x: 16 },
+      { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 1.15);
+    tl.fromTo("#s08-exp-3", { opacity: 0, x: 16 },
+      { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 1.3);
+
+    /* 2. 2.0s：光标点开语言下拉，浮出 6 项菜单，逐项 stagger 0.04 */
+    tl.fromTo("#s08-cursor", { opacity: 0, x: 640, y: 320 },
+      { opacity: 1, x: 300, y: 422, duration: 0.5, ease: "power2.inOut" }, 1.6);
+    tl.fromTo("#s08-menu", { opacity: 0, scaleY: 0.9 },
+      { opacity: 1, scaleY: 1, duration: 0.24, ease: "power2.out", transformOrigin: "top center" }, 2.0);
+    tl.fromTo("#s08-menu .s08-menu-item", { opacity: 0, y: 8 },
+      { opacity: 1, y: 0, duration: 0.2, ease: "power2.out", stagger: 0.04 }, 2.06);
+
+    /* 3. 3.4s：光标选中 zh，菜单收起，语言行更新，正文交叉淡入 */
+    tl.fromTo("#s08-cursor", { x: 300, y: 422 },
+      { x: 170, y: 480, duration: 0.35, ease: "power2.inOut", immediateRender: false }, 3.1);
+    tl.fromTo("#s08-cursor", { opacity: 1 }, { opacity: 0, duration: 0.18, ease: "power1.out", immediateRender: false }, 3.5);
+    tl.fromTo("#s08-menu", { opacity: 1, scaleY: 1 },
+      { opacity: 0, scaleY: 0.9, duration: 0.22, ease: "power2.in", transformOrigin: "top center", immediateRender: false }, 3.4);
+    tl.fromTo("#s08-lang-a", { opacity: 1 }, { opacity: 0, duration: 0.24, ease: "power1.inOut", immediateRender: false }, 3.45);
+    tl.fromTo("#s08-lang-b", { opacity: 0 }, { opacity: 1, duration: 0.24, ease: "power1.inOut", immediateRender: false }, 3.45);
+    tl.fromTo("#s08-body-a", { opacity: 1, y: 0 }, { opacity: 0, y: 0, duration: 0.24, ease: "power1.inOut", immediateRender: false }, 3.45);
+    tl.fromTo("#s08-body-b", { opacity: 0, y: 0 }, { opacity: 1, y: 0, duration: 0.24, ease: "power1.inOut", immediateRender: false }, 3.45);
+
+    /* 4. 6.0s：红色 LICENSE 提示条 2px 左标记 scaleY 0→1 + mono 注记浮出 */
+    tl.fromTo("#s08-license-mark", { scaleY: 0, opacity: 1 },
+      { scaleY: 1, opacity: 1, duration: 0.3, ease: "power2.out" }, 6.0);
+    tl.fromTo("#s08-license-note", { opacity: 0, x: -8 },
+      { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" }, 6.1);
+
+    /* 5. 8.0–14.5s：截图向下滚（y 110→-260），三条说明 ±8px 漂移制造层次 */
+    tl.fromTo("#s08-shot-wrap", { y: 0 }, { y: -370, duration: 6.5, ease: "power1.inOut", immediateRender: false }, 8.0);
+    tl.fromTo("#s08-exp-1", { y: 0 }, { y: 8, duration: 6.5, ease: "power1.inOut", immediateRender: false }, 8.0);
+    tl.fromTo("#s08-exp-2", { y: 0 }, { y: -8, duration: 6.5, ease: "power1.inOut", immediateRender: false }, 8.15);
+    tl.fromTo("#s08-exp-3", { y: 0 }, { y: 8, duration: 6.5, ease: "power1.inOut", immediateRender: false }, 8.3);
+    tl.fromTo("#s08-lead-1", { y: 0 }, { y: 8, duration: 6.5, ease: "power1.inOut", immediateRender: false }, 8.0);
+    tl.fromTo("#s08-lead-2", { y: 0 }, { y: -8, duration: 6.5, ease: "power1.inOut", immediateRender: false }, 8.15);
+    tl.fromTo("#s08-lead-3", { y: 0 }, { y: 8, duration: 6.5, ease: "power1.inOut", immediateRender: false }, 8.3);
+
+    /* 6. 14.5–17.7s：整屏 x -80 + opacity 0（转场：shared axis X） */
+    tl.fromTo("#s08-exit", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power3.in" }, 14.85);
+    tl.fromTo("#s08-stage", { x: 0, opacity: 1 },
+      { x: -80, opacity: 0, duration: 0.35, ease: "power3.in", immediateRender: false }, 17.35);
+
+    window.__timelines["s08"] = tl;
+  </script>
+</template>

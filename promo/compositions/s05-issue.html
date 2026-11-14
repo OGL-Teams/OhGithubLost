@@ -1,0 +1,177 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+    #s05-stage { position: absolute; inset: 0; }
+
+    /* 左侧文案栏 x=128 宽 900 */
+    #s05-copy { position: absolute; left: 128px; top: 0; width: 900px; height: 1080px; }
+    #s05-kicker { position: absolute; left: 0; top: 128px; font-family: var(--md-mono); opacity: 0; }
+    #s05-title  { position: absolute; left: 0; top: 184px; color: var(--md-on-surface); opacity: 0; }
+    #s05-body   { position: absolute; left: 0; top: 296px; width: 820px; color: var(--md-on-surface-variant); opacity: 0; }
+    #s05-evidence {
+      position: absolute; left: 0; top: 440px; font-family: var(--md-mono);
+      font-size: 20px; font-weight: 500; letter-spacing: 0.5px; color: var(--md-on-surface-variant);
+      opacity: 0; display: flex; align-items: center; height: 24px;
+    }
+    /* 37→38 数字轮盘：24px 视窗，上下两行 */
+    #s05-reel { display: inline-block; height: 24px; overflow: hidden; vertical-align: top; }
+    #s05-reel-stack { display: block; }
+    #s05-reel-stack span { display: block; height: 24px; line-height: 24px; color: var(--md-primary); }
+    #s05-evidence .rest { color: var(--md-on-surface-variant); }
+    #s05-evidence .sep { color: var(--md-outline); margin: 0 12px; }
+
+    /* 主图 截图 420×747 @ x=1120 y=96 */
+    #s05-shotwrap { position: absolute; left: 1120px; top: 96px; width: 420px; height: 747px; }
+    #s05-shot { width: 420px; height: 747px; }
+
+    /* 输入区覆盖层：逐字输入 */
+    #s05-input-ghost {
+      position: absolute; left: 20px; top: 622px; width: 372px; height: 48px;
+      border-radius: var(--md-shape-sm); border: 1px solid var(--md-outline-variant);
+      background: var(--md-surface-container-lowest);
+      display: flex; align-items: center; padding: 0 16px;
+    }
+    #s05-input-line {
+      position: relative; display: flex; align-items: center; height: 22px;
+      font-family: var(--md-mono); font-size: 20px; letter-spacing: 0.3px;
+      color: var(--md-on-surface); white-space: nowrap;
+    }
+    #s05-input-line .ch { opacity: 0; }
+    #s05-caret {
+      position: absolute; left: 16px; top: 14px; width: 2px; height: 20px;
+      background: var(--md-primary); opacity: 0;
+    }
+    /* 2px primary 聚焦描边（不用 box-shadow） */
+    #s05-focus-ring {
+      position: absolute; left: -2px; top: -2px; width: 372px; height: 48px;
+      border: 2px solid var(--md-primary); border-radius: var(--md-shape-sm); opacity: 0;
+    }
+    #s05-placeholder {
+      position: absolute; left: 16px; top: 14px; font-size: 20px;
+      color: var(--md-on-surface-variant); opacity: 1;
+    }
+
+    /* 「发表评论」ghost 按钮 */
+    #s05-btn-ghost {
+      position: absolute; left: 228px; top: 690px; width: 164px; height: 44px;
+      border-radius: var(--md-shape-sm); border: 1px solid var(--md-outline-variant);
+      background: var(--md-surface-container-lowest);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--md-primary); transform-origin: center center;
+    }
+    #s05-btn-ghost .fill {
+      position: absolute; inset: 0; border-radius: var(--md-shape-sm);
+      background: var(--md-primary-container); opacity: 0;
+    }
+    #s05-btn-ghost .lbl { position: relative; }
+
+    /* 评论气泡 720×160，surface-container-high 圆角 12 */
+    #s05-bubble {
+      position: absolute; left: 1128px; top: 470px; width: 720px; height: 160px;
+      border-radius: var(--md-shape-md); background: var(--md-surface-container-high);
+      border: 1px solid var(--md-outline-variant);
+      padding: 20px 24px; opacity: 0;
+    }
+    #s05-bubble .head { display: flex; align-items: baseline; gap: 16px; height: 24px; }
+    #s05-bubble .author { font-family: var(--md-mono); font-size: 20px; font-weight: 700; color: var(--md-primary); }
+    #s05-bubble .time { font-size: 20px; color: var(--md-on-surface-variant); }
+    #s05-bubble .text { margin-top: 12px; font-size: 20px; line-height: 1.45; color: var(--md-on-surface); }
+
+    /* 光标（节拍器） */
+    #s05-cursor {
+      position: absolute; left: 0; top: 0; width: 18px; height: 18px;
+      border-radius: 50%; border: 2px solid var(--md-primary); opacity: 0;
+    }
+
+    /* 出场幕布 */
+    #s05-curtain {
+      position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+      background: var(--md-surface); opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="s05" data-width="1920" data-height="1080">
+    <div id="s05-stage">
+      <div id="s05-shotwrap" class="clip" data-start="0" data-duration="18" data-track-index="3">
+        <img id="s05-shot" class="shot" src="assets/screens/09-issue-comment.png" alt="Issue #42281 评论页" />
+        <div id="s05-input-ghost">
+          <div id="s05-input-line">
+            <span class="ch">复</span><span class="ch">现</span><span class="ch">步</span><span class="ch">骤</span><span class="ch">已</span><span class="ch">补</span><span class="ch">，</span><span class="ch">l</span><span class="ch">o</span><span class="ch">g</span><span class="ch">s</span><span class="ch">&nbsp;</span><span class="ch">见</span><span class="ch">附</span><span class="ch">件</span><span class="ch">。</span>
+          </div>
+          <div id="s05-placeholder">发表评论…</div>
+          <div id="s05-caret"></div>
+          <div id="s05-focus-ring"></div>
+        </div>
+        <div id="s05-btn-ghost">
+          <div class="fill"></div>
+          <div class="lbl t-label-m">发表评论</div>
+        </div>
+      </div>
+
+      <div id="s05-copy">
+        <div id="s05-kicker" class="clip t-label-m primary" data-start="0" data-duration="18" data-track-index="2">04 · ISSUE</div>
+        <div id="s05-title" class="clip t-headline" data-start="0" data-duration="18" data-track-index="2">评论，写在这里</div>
+        <div id="s05-body" class="clip t-body" data-start="0" data-duration="18" data-track-index="2">Markdown 渲染、附件引用、@提醒；提交后立刻出现在线程里。</div>
+        <div id="s05-evidence" class="clip mono" data-start="0" data-duration="18" data-track-index="2">
+          #42281<span class="sep">·</span><span id="s05-reel"><span id="s05-reel-stack"><span>37 条评论</span><span>38 条评论</span></span></span><span class="sep">·</span><span class="rest">支持 Markdown</span>
+        </div>
+      </div>
+
+      <div id="s05-bubble" class="clip" data-start="0" data-duration="18" data-track-index="5">
+        <div class="head"><span class="author">@yingo-server</span><span class="time">刚刚</span></div>
+        <div class="text">复现步骤已补，logs 见附件。</div>
+      </div>
+
+      <div id="s05-cursor" class="clip" data-start="0" data-duration="18" data-track-index="6"></div>
+      <div id="s05-curtain" class="clip" data-start="0" data-duration="18" data-track-index="9"></div>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    /* 1. 入场：截图 y+120 升起 0.5s power3.out；文案 0.3/0.5/0.7s */
+    tl.fromTo("#s05-shotwrap", { y: 120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0);
+    tl.fromTo("#s05-kicker", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.3);
+    tl.fromTo("#s05-title", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.5);
+    tl.fromTo("#s05-body", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.7);
+    tl.fromTo("#s05-evidence", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.9);
+
+    /* 2. 2.2s 输入框获得焦点：2px primary 描边 + placeholder 变淡 */
+    tl.fromTo("#s05-focus-ring", { opacity: 0 }, { opacity: 1, duration: 0.15, ease: "power1.out" }, 2.2);
+    tl.fromTo("#s05-placeholder", { opacity: 1 }, { opacity: 0.35, duration: 0.2, ease: "power1.out", immediateRender: false }, 2.2);
+    tl.fromTo("#s05-caret", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none", immediateRender: false }, 2.3);
+
+    /* 3. 2.6s 起逐字输入（每字 70ms，span opacity 0→1，不改 textContent） */
+    tl.fromTo("#s05-input-line .ch", { opacity: 0 }, { opacity: 1, duration: 0.05, ease: "none", stagger: 0.07 }, 2.6);
+    tl.fromTo("#s05-caret", { x: 0 }, { x: 168, duration: 1.12, ease: "none", immediateRender: false }, 2.6);
+
+    /* 4. 6.0s 光标移到「发表评论」按钮，按钮 scale 0.96→1（80+160ms） */
+    tl.fromTo("#s05-cursor", { opacity: 0, x: 1330, y: 700 },
+      { opacity: 1, duration: 0.2, ease: "power1.out", immediateRender: false }, 5.4);
+    tl.fromTo("#s05-cursor", { x: 1330, y: 700 }, { x: 1330, y: 800, duration: 0.5, ease: "power2.inOut", immediateRender: false }, 5.6);
+    tl.fromTo("#s05-btn-ghost", { scale: 1 }, { scale: 0.96, duration: 0.08, ease: "power2.in", immediateRender: false }, 6.0);
+    tl.fromTo("#s05-btn-ghost", { scale: 0.96 }, { scale: 1, duration: 0.16, ease: "power2.out", immediateRender: false }, 6.08);
+
+    /* 5. 6.6s 按钮填充 primary-container；气泡从输入框位置升到列表尾部（0.32s 出 + 0.16s 收过冲） */
+    tl.fromTo("#s05-btn-ghost .fill", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power1.out", immediateRender: false }, 6.6);
+    tl.fromTo("#s05-bubble", { opacity: 0, y: 40, scale: 0.98 },
+      { opacity: 1, y: -3, scale: 1, duration: 0.32, ease: "power3.out" }, 6.6);
+    tl.fromTo("#s05-bubble", { y: -3 }, { y: 0, duration: 0.16, ease: "power2.inOut", immediateRender: false }, 6.92);
+
+    /* 6. 7.2s 证据行 37→38 数字轮盘（translateY -24px，0.3s power2.out） */
+    tl.fromTo("#s05-reel-stack", { y: 0 }, { y: -24, duration: 0.3, ease: "power2.out" }, 7.2);
+
+    /* 7. 9.0–15.0s 气泡保持；截图缓慢上移 96→40（6s power1.inOut） */
+    tl.fromTo("#s05-shotwrap", { y: 0 }, { y: -56, duration: 6, ease: "power1.inOut", immediateRender: false }, 9.0);
+    tl.fromTo("#s05-bubble", { y: 0 }, { y: -56, duration: 6, ease: "power1.inOut", immediateRender: false }, 9.0);
+
+    /* 8. 15.0s 气泡缩回输入框方向；17.0s 整屏淡出 */
+    tl.fromTo("#s05-bubble", { opacity: 1, y: -56, scale: 1 },
+      { opacity: 0, y: 4, scale: 0.92, duration: 0.4, ease: "power2.in", immediateRender: false }, 15.0);
+    tl.fromTo("#s05-cursor", { opacity: 1 }, { opacity: 0, duration: 0.3, ease: "power1.out", immediateRender: false }, 15.0);
+    tl.fromTo("#s05-curtain", { opacity: 0 }, { opacity: 1, duration: 0.7, ease: "power2.in" }, 17.0);
+
+    window.__timelines["s05"] = tl;
+  </script>
+</template>

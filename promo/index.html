@@ -3,22 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
-    <title>OhGithubLost · Promo · M3 Cut</title>
+    <title>OhGithubLost · 180s</title>
     <script src="assets/vendor/gsap.min.js"></script>
     <style>
-      /* ==========================================================================
-         Material Design 3 · 设计令牌（单一来源）
-         - 色彩：M3 角色（surface container 五级 / primary / tertiary / outline）
-         - 字型：M3 15 档 type scale 中实际用到的 8 档，Roboto 为主，数据用等宽
-         - 形状：M3 corner scale（none 0 / xs 4 / sm 8 / md 12 / lg 16 / xl 28 / full）
-         - 高度：M3 tonal elevation（surface-container 分级，不用阴影堆叠）
-         - 间距：8dp 网格
-         ========================================================================== */
+      /* M3 令牌：单一来源，详见 08-architecture.md */
       :root {
-        /* --- color roles (dark scheme, seed #0969DA) --- */
         --md-surface: #10141a;
         --md-surface-dim: #0b0e12;
-        --md-surface-bright: #363a40;
         --md-surface-container-lowest: #0b0e12;
         --md-surface-container-low: #181c22;
         --md-surface-container: #1c2026;
@@ -31,36 +22,12 @@
         --md-primary: #a9c7ff;
         --md-on-primary: #00325a;
         --md-primary-container: #0b4a87;
-        --md-on-primary-container: #d6e3ff;
-        --md-secondary: #bdc7dc;
-        --md-on-secondary: #273141;
-        --md-secondary-container: #3e4759;
         --md-tertiary: #e3b341;
-        --md-on-tertiary: #402d00;
         --md-error: #ffb4ab;
-        --md-on-error: #690005;
-
-        /* --- shape scale --- */
         --md-shape-none: 0px;
         --md-shape-xs: 4px;
         --md-shape-sm: 8px;
         --md-shape-md: 12px;
-        --md-shape-lg: 16px;
-        --md-shape-xl: 28px;
-        --md-shape-full: 9999px;
-
-        /* --- type scale（1920x1080 舞台按 1.7x 放大，比例不变） --- */
-        --md-display-large: 96px;
-        --md-headline-large: 56px;
-        --md-headline-medium: 44px;
-        --md-title-large: 32px;
-        --md-title-medium: 26px;
-        --md-body-large: 24px;
-        --md-body-medium: 22px;
-        --md-label-large: 22px;
-        --md-label-medium: 20px;
-
-        /* --- 8dp 网格 --- */
         --md-space-1: 8px;
         --md-space-2: 16px;
         --md-space-3: 24px;
@@ -68,11 +35,9 @@
         --md-space-6: 48px;
         --md-space-8: 64px;
         --md-space-12: 96px;
-
         --md-font: "Roboto", sans-serif;
         --md-mono: "OGL-Mono", ui-monospace, monospace;
       }
-
       @font-face {
         font-family: "OGL-Mono";
         src: url("assets/fonts/UbuntuMono-Regular.ttf") format("truetype");
@@ -85,7 +50,6 @@
         font-weight: 700;
         font-display: block;
       }
-
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body {
         width: 1920px; height: 1080px; margin: 0;
@@ -97,162 +61,124 @@
       .clip { position: absolute; }
       .scene-host { position: absolute; inset: 0; width: 1920px; height: 1080px; }
 
-      /* --- M3 type styles --- */
-      .type-display { font-size: var(--md-display-large); font-weight: 400; line-height: 1.08; letter-spacing: -0.25px; }
-      .type-headline { font-size: var(--md-headline-large); font-weight: 400; line-height: 1.14; letter-spacing: 0; }
-      .type-title { font-size: var(--md-title-large); font-weight: 400; line-height: 1.25; letter-spacing: 0; }
-      .type-title-m { font-size: var(--md-title-medium); font-weight: 500; line-height: 1.3; letter-spacing: 0.15px; }
-      .type-body { font-size: var(--md-body-large); font-weight: 400; line-height: 1.5; letter-spacing: 0.5px; }
-      .type-body-m { font-size: var(--md-body-medium); font-weight: 400; line-height: 1.45; letter-spacing: 0.25px; }
-      .type-label { font-size: var(--md-label-large); font-weight: 500; line-height: 1.27; letter-spacing: 0.1px; }
-      .type-label-m { font-size: var(--md-label-medium); font-weight: 500; line-height: 1.33; letter-spacing: 0.5px; }
-
+      /* M3 type scale（1920 舞台按 1.55–1.7x） */
+      .t-display { font-size: 96px; font-weight: 400; line-height: 1.06; letter-spacing: -0.4px; }
+      .t-headline { font-size: 56px; font-weight: 400; line-height: 1.14; letter-spacing: 0; }
+      .t-title { font-size: 32px; font-weight: 400; line-height: 1.25; }
+      .t-title-m { font-size: 26px; font-weight: 500; line-height: 1.3; letter-spacing: 0.15px; }
+      .t-body { font-size: 24px; font-weight: 400; line-height: 1.5; letter-spacing: 0.5px; }
+      .t-body-m { font-size: 22px; font-weight: 400; line-height: 1.45; letter-spacing: 0.25px; }
+      .t-label { font-size: 22px; font-weight: 500; line-height: 1.27; letter-spacing: 0.1px; }
+      .t-label-m { font-size: 20px; font-weight: 500; line-height: 1.33; letter-spacing: 0.5px; }
+      .mono { font-family: var(--md-mono); }
       .on-variant { color: var(--md-on-surface-variant); }
       .primary { color: var(--md-primary); }
       .tertiary { color: var(--md-tertiary); }
-      .error { color: var(--md-error); }
 
-      /* --- M3 surfaces --- */
       .surface-1 { background: var(--md-surface-container-low); }
       .surface-2 { background: var(--md-surface-container); }
       .surface-3 { background: var(--md-surface-container-high); }
-      .surface-4 { background: var(--md-surface-container-highest); }
       .outlined { border: 1px solid var(--md-outline-variant); }
-      .filled-card { background: var(--md-surface-container-high); border-radius: var(--md-shape-md); }
-      .elevated-card {
-        background: var(--md-surface-container-low);
-        border-radius: var(--md-shape-md);
-        border: 1px solid var(--md-outline-variant);
-      }
       .divider { height: 1px; background: var(--md-outline-variant); }
-
-      /* --- M3 chips（小圆角 8，不用胶囊化一切） --- */
+      .card { background: var(--md-surface-container); border: 1px solid var(--md-outline-variant); border-radius: var(--md-shape-md); }
       .chip {
-        display: inline-flex; align-items: center; gap: 8px;
-        height: 40px; padding: 0 16px;
-        border-radius: var(--md-shape-sm);
-        border: 1px solid var(--md-outline-variant);
-        background: transparent;
-        color: var(--md-on-surface-variant);
-        font-size: var(--md-label-large); font-weight: 500; letter-spacing: 0.1px;
+        display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px;
+        border-radius: var(--md-shape-sm); border: 1px solid var(--md-outline-variant);
+        color: var(--md-on-surface-variant); font-size: var(--md-label-large, 22px); font-weight: 500;
       }
-      .chip.assist { background: var(--md-surface-container-high); border-color: transparent; color: var(--md-on-surface); }
-      .status-dot { width: 8px; height: 8px; border-radius: var(--md-shape-full); background: var(--md-primary); }
-
-      /* --- 实机截图取景框：M3 small(8) + outline-variant --- */
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--md-primary); }
       .shot {
-        position: absolute;
-        object-fit: cover;
-        border-radius: var(--md-shape-sm);
-        border: 1px solid var(--md-outline-variant);
+        position: absolute; object-fit: cover; display: block;
+        border-radius: var(--md-shape-sm); border: 1px solid var(--md-outline-variant);
         background: var(--md-surface-container-lowest);
       }
-
-      /* --- 全片覆盖层 --- */
-      #beat-flash {
-        position: absolute; inset: 0; pointer-events: none; z-index: 89;
-        background: var(--md-primary);
-        opacity: 0;
-      }
-      #vignette {
-        position: absolute; inset: 0; pointer-events: none; z-index: 90;
-        background: radial-gradient(ellipse 82% 74% at 50% 46%, rgba(0,0,0,0) 62%, rgba(0,0,0,0.30) 100%);
-      }
       #grain {
-        position: absolute; inset: 0; pointer-events: none; z-index: 91;
-        opacity: 0.03;
+        position: absolute; inset: 0; pointer-events: none; z-index: 91; opacity: 0.025;
         background-image: repeating-linear-gradient(0deg,
           rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 1px,
           transparent 1px, transparent 3px);
+      }
+      #vignette {
+        position: absolute; inset: 0; pointer-events: none; z-index: 90;
+        background: radial-gradient(ellipse 84% 76% at 50% 46%, rgba(0,0,0,0) 66%, rgba(0,0,0,0.26) 100%);
       }
     </style>
   </head>
   <body>
     <div id="root"
          data-composition-id="main"
-         data-start="0" data-duration="56"
-         data-width="1920" data-height="1080"
-         data-composition-variables='[{"id":"product","type":"string","label":"Product","default":"OhGithubLost"},{"id":"tagline","type":"string","label":"Tagline","default":"GitHub 工作流，本地完成"},{"id":"cta","type":"string","label":"CTA","default":"github.com/OGL-Teams/OhGithubLost"}]'>
+         data-start="0" data-duration="180"
+         data-width="1920" data-height="1080">
 
-      <!-- 切点来自 Wordless 实测 onset：0 / 6.8 / 14.1 / 23.0 / 32.2 / 40.2 / 46.2 / 52.3 / 56 -->
-      <div id="s1-hook" class="clip scene-host"
-           data-composition-id="s1-hook"
-           data-composition-src="compositions/s1-hook.html"
-           data-start="0" data-duration="6.8" data-track-index="1"
+      <div id="s01" class="clip scene-host" data-composition-id="s01"
+           data-composition-src="compositions/s01-intro.html"
+           data-start="0" data-duration="12" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <div id="s2-repo" class="clip scene-host"
-           data-composition-id="s2-repo"
-           data-composition-src="compositions/s2-repo.html"
-           data-start="6.8" data-duration="7.3" data-track-index="1"
+      <div id="s02" class="clip scene-host" data-composition-id="s02"
+           data-composition-src="compositions/s02-repo.html"
+           data-start="12" data-duration="18" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <div id="s3-collab" class="clip scene-host"
-           data-composition-id="s3-collab"
-           data-composition-src="compositions/s3-collab.html"
-           data-start="14.1" data-duration="8.9" data-track-index="1"
+      <div id="s03" class="clip scene-host" data-composition-id="s03"
+           data-composition-src="compositions/s03-code.html"
+           data-start="30" data-duration="16" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <div id="s4-layers" class="clip scene-host"
-           data-composition-id="s4-layers"
-           data-composition-src="compositions/s4-layers.html"
-           data-start="23.0" data-duration="9.2" data-track-index="1"
+      <div id="s04" class="clip scene-host" data-composition-id="s04"
+           data-composition-src="compositions/s04-editor.html"
+           data-start="46" data-duration="16" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <div id="s5-trust" class="clip scene-host"
-           data-composition-id="s5-trust"
-           data-composition-src="compositions/s5-trust.html"
-           data-start="32.2" data-duration="8.0" data-track-index="1"
+      <div id="s05" class="clip scene-host" data-composition-id="s05"
+           data-composition-src="compositions/s05-issue.html"
+           data-start="62" data-duration="18" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <div id="s6-i18n" class="clip scene-host"
-           data-composition-id="s6-i18n"
-           data-composition-src="compositions/s6-i18n.html"
-           data-start="40.2" data-duration="6.0" data-track-index="1"
+      <div id="s06" class="clip scene-host" data-composition-id="s06"
+           data-composition-src="compositions/s06-log.html"
+           data-start="80" data-duration="16" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <div id="s7-platforms" class="clip scene-host"
-           data-composition-id="s7-platforms"
-           data-composition-src="compositions/s7-platforms.html"
-           data-start="46.2" data-duration="6.1" data-track-index="1"
+      <div id="s07" class="clip scene-host" data-composition-id="s07"
+           data-composition-src="compositions/s07-download.html"
+           data-start="96" data-duration="20" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <div id="s8-end" class="clip scene-host"
-           data-composition-id="s8-end"
-           data-composition-src="compositions/s8-end.html"
-           data-start="52.3" data-duration="3.7" data-track-index="1"
+      <div id="s08" class="clip scene-host" data-composition-id="s08"
+           data-composition-src="compositions/s08-legal.html"
+           data-start="116" data-duration="18" data-track-index="1"
            data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <div id="beat-flash" class="clip" data-start="0" data-duration="56" data-track-index="7"></div>
-      <div id="vignette" class="clip" data-start="0" data-duration="56" data-track-index="8"></div>
-      <div id="grain" class="clip" data-start="0" data-duration="56" data-track-index="8"></div>
+      <div id="s09" class="clip scene-host" data-composition-id="s09"
+           data-composition-src="compositions/s09-accounts.html"
+           data-start="134" data-duration="16" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <!-- 主音轨：HOYO-MiX《子不语 Wordless》28–84s 裁段（56s，44.1k AAC/MP3）。
-           版权归原权利人；仅随 video 分支用于本次内部样片评估，正式发布前须确认授权或切回合成轨。 -->
-      <audio id="bgm" src="assets/audio/wordless-56s.mp3"
-             data-start="0" data-duration="56" data-track-index="9" data-volume="0.92"></audio>
-      <!-- 合成 BGM 备用轨（volume 0，不参与混音） -->
-      <audio id="bgm-fallback" src="assets/audio/bgm.wav"
-             data-start="0" data-duration="56" data-track-index="10" data-volume="0"></audio>
+      <div id="s10" class="clip scene-host" data-composition-id="s10"
+           data-composition-src="compositions/s10-artifacts.html"
+           data-start="150" data-duration="18" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <div id="s11" class="clip scene-host" data-composition-id="s11"
+           data-composition-src="compositions/s11-outro.html"
+           data-start="168" data-duration="12" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <div id="vignette" class="clip" data-start="0" data-duration="180" data-track-index="8"></div>
+      <div id="grain" class="clip" data-start="0" data-duration="180" data-track-index="8"></div>
+
+      <!-- 配乐：40s 静默 → 52s 淡入 → 120–172s 满档 → 172s 收净。
+           源曲 HOYO-MiX《子不语 Wordless》，版权归原权利人，仅内部样片。 -->
+      <audio id="bgm" src="assets/audio/score-180s.mp3"
+             data-start="0" data-duration="180" data-track-index="9" data-volume="1"></audio>
     </div>
 
     <script>
       window.__timelines = window.__timelines || {};
-      const tl = gsap.timeline({ paused: true });
-      /* M3 状态层式卡点：弱拍用 8% primary 覆盖，强拍 16%，无缩放抖动 */
-      const weak = [6.8, 14.1, 23.0, 32.2];
-      const strong = [40.2, 46.2, 52.3];
-      weak.forEach(function (t) {
-        tl.fromTo("#beat-flash", { opacity: 0 },
-          { opacity: 0.08, duration: 0.08, ease: "power2.out", immediateRender: false }, t);
-        tl.to("#beat-flash", { opacity: 0, duration: 0.30, ease: "power2.in" }, t + 0.08);
-      });
-      strong.forEach(function (t) {
-        tl.fromTo("#beat-flash", { opacity: 0 },
-          { opacity: 0.16, duration: 0.06, ease: "power2.out", immediateRender: false }, t);
-        tl.to("#beat-flash", { opacity: 0, duration: 0.22, ease: "power2.in" }, t + 0.06);
-      });
-      window.__timelines["main"] = tl;
+      /* 根时间线不做画面动作：所有场景各自 seek。
+         保留空 timeline 供 runtime 挂载。 */
+      window.__timelines["main"] = gsap.timeline({ paused: true });
     </script>
   </body>
 </html>

@@ -1,0 +1,107 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+    #s02-stage { position: absolute; inset: 0; }
+
+    #s02-shot {
+      position: absolute; left: 1152px; top: -40px;
+      width: 640px; height: 1138px; object-fit: cover; display: block;
+      border-radius: var(--md-shape-sm); border: 1px solid var(--md-outline-variant);
+      background: var(--md-surface-container-lowest);
+    }
+    #s02-cursor {
+      position: absolute; left: 1306px; top: 594px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--md-primary); opacity: 0;
+    }
+    #s02-marker {
+      position: absolute; left: 1160px; top: 560px;
+      width: 2px; height: 96px; background: var(--md-primary);
+      transform-origin: top center; opacity: 0;
+    }
+    #s02-kicker { position: absolute; left: 128px; top: 148px; opacity: 0; }
+    #s02-title  { position: absolute; left: 128px; top: 196px; width: 900px; color: var(--md-on-surface); opacity: 0; }
+    #s02-body   { position: absolute; left: 128px; top: 300px; width: 820px; opacity: 0; }
+    #s02-chips  { position: absolute; left: 128px; top: 780px; display: flex; gap: var(--md-space-2); opacity: 0; }
+    #s02-chips .chip { position: relative; overflow: hidden; }
+    .s02-chip-fill {
+      position: absolute; inset: 0;
+      background: var(--md-surface-container-high); opacity: 0;
+    }
+    #s02-evidence-div { position: absolute; left: 128px; top: 920px; width: 900px; opacity: 0; }
+    #s02-evidence { position: absolute; left: 128px; top: 940px; width: 900px; opacity: 0; }
+    .s02-ev-hl { position: relative; opacity: 0; }
+    .s02-ev-hl span { color: var(--md-tertiary); }
+  </style>
+
+  <div id="root" data-composition-id="s02" data-width="1920" data-height="1080">
+    <div id="s02-stage">
+      <!-- 版式 A · 证据台：右侧竖屏截图，顶部/底部出血 -->
+      <img id="s02-shot" class="clip" src="assets/screens/06-repo-files.png"
+           data-start="0" data-duration="18" data-track-index="1" alt="仓库 Code 页" />
+
+      <!-- 行标记 + 光标（覆盖层） -->
+      <div id="s02-marker" class="clip" data-start="0" data-duration="18" data-track-index="9"></div>
+      <div id="s02-cursor" class="clip" data-start="0" data-duration="18" data-track-index="9"></div>
+
+      <!-- 左侧文案栏 -->
+      <div id="s02-kicker" class="clip mono t-label-m tertiary" data-start="0" data-duration="18" data-track-index="2">01 · REPOSITORY</div>
+      <div id="s02-title" class="clip t-headline" data-start="0" data-duration="18" data-track-index="2">仓库，直接读到文件</div>
+      <div id="s02-body" class="clip t-body on-variant" data-start="0" data-duration="18" data-track-index="2">分支、目录、文件大小同屏；点一行就能进文件，不用等网页重排。</div>
+
+      <div id="s02-chips" class="clip" data-start="0" data-duration="18" data-track-index="3">
+        <div class="chip t-label-m"><div class="s02-chip-fill"></div>打开仓库</div>
+        <div class="chip t-label-m"><div class="s02-chip-fill"></div>切分支</div>
+        <div class="chip t-label-m"><div class="s02-chip-fill"></div>点文件</div>
+      </div>
+
+      <div id="s02-evidence-div" class="clip divider" data-start="0" data-duration="18" data-track-index="3"></div>
+      <div id="s02-evidence" class="clip mono t-label-m on-variant" data-start="0" data-duration="18" data-track-index="3">org/repo · branch main · <span class="s02-ev-hl"><span>index.html 1.2 KB</span></span> · <span class="s02-ev-hl"><span>README.md 22 B</span></span></div>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    /* 1) 0–0.5s：截图从纵向合拢展开（承接 s01 收成一条线的裂口） */
+    tl.fromTo("#s02-shot", { clipPath: "inset(50% 0 50% 0)" },
+      { clipPath: "inset(0% 0 0% 0)", duration: 0.5, ease: "power3.out" }, 0);
+
+    /* 文案栏元素依次 y+16 淡入 */
+    tl.fromTo("#s02-kicker", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.25);
+    tl.fromTo("#s02-title", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.45);
+    tl.fromTo("#s02-body", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.65);
+    tl.fromTo("#s02-chips", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.85);
+    tl.fromTo("#s02-evidence-div", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 1.0);
+    tl.fromTo("#s02-evidence", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 1.05);
+
+    /* 2) 3.0s：光标从截图右侧滑到 index.html 行（截图内 y≈1090 → 舞台 y≈606） */
+    tl.fromTo("#s02-cursor", { opacity: 0, x: 420, y: -80 },
+      { opacity: 1, x: 0, y: 0, duration: 0.6, ease: "power3.inOut" }, 3.0);
+    tl.fromTo("#s02-cursor", { scale: 0.88 }, { scale: 1, duration: 0.08, ease: "power2.out", immediateRender: false }, 3.6);
+
+    /* 3) 3.9s：index.html 行 2px primary 左标记 + 证据行高亮 */
+    tl.fromTo("#s02-marker", { opacity: 1, scaleY: 0 }, { opacity: 1, scaleY: 1, duration: 0.2, ease: "power3.out" }, 3.9);
+    tl.fromTo("#s02-evidence .s02-ev-hl:nth-of-type(1)", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 3.9);
+
+    /* 4) 5.0s：光标与行标记移到 README.md 行（舞台 y≈690） */
+    tl.fromTo("#s02-cursor", { y: 0 }, { y: 136, duration: 0.28, ease: "power2.inOut", immediateRender: false }, 5.0);
+    tl.fromTo("#s02-marker", { y: 0 }, { y: 130, duration: 0.28, ease: "power2.inOut", immediateRender: false }, 5.0);
+    tl.fromTo("#s02-evidence .s02-ev-hl:nth-of-type(2)", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 5.15);
+    tl.fromTo("#s02-cursor", { opacity: 1 }, { opacity: 0, duration: 0.25, ease: "power2.in", immediateRender: false }, 5.8);
+    tl.fromTo("#s02-marker", { opacity: 1 }, { opacity: 0, duration: 0.25, ease: "power2.in", immediateRender: false }, 6.0);
+
+    /* 5) 6.0–8.0s：三个步骤 chip 依次点亮（surface-container-high 填充） */
+    tl.fromTo("#s02-chips .chip:nth-child(1) .s02-chip-fill", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 6.0);
+    tl.fromTo("#s02-chips .chip:nth-child(2) .s02-chip-fill", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 6.7);
+    tl.fromTo("#s02-chips .chip:nth-child(3) .s02-chip-fill", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 7.4);
+
+    /* 6) 8.0–15.0s：截图画内缓慢上移，露出列表下半部分 */
+    tl.fromTo("#s02-shot", { y: 0 }, { y: -50, duration: 7.0, ease: "power1.inOut", immediateRender: false }, 8.0);
+
+    /* 7) 15.0s：整屏左移让位（下一场 s03 从 30s 起，此处 17.7–18.0 保持空白） */
+    tl.fromTo("#s02-stage", { x: 0, opacity: 1 }, { x: -120, opacity: 0, duration: 0.3, ease: "power3.in", immediateRender: false }, 15.0);
+
+    window.__timelines["s02"] = tl;
+  </script>
+</template>

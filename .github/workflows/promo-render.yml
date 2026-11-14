@@ -37,7 +37,7 @@ env:
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 75
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,29 +70,27 @@ jobs:
           npx -y "hyperframes@${HF_VERSION}" --version
           npx -y "hyperframes@${HF_VERSION}" browser ensure
 
-      # 主音轨是 Wordless 裁段（版权素材，不重算）；备用合成轨仍需可复现。
-      # 校验三件事：两轨存在、主轨 56s 可解码、备用轨与脚本逐字节一致。
-      - name: Verify audio assets
+      # 主音轨是 180s 编排（源曲不在仓库，不可复现）；校验时长与可解码性即可。
+      # 同时确认所有场景引用的截图都在仓库里，避免 CI 渲染出破图。
+      - name: Verify audio & screenshot assets
         run: |
           set -euo pipefail
-          python3 -m pip install --quiet numpy
-          test -s promo/assets/audio/wordless-56s.mp3
-          test -s promo/assets/audio/bgm.wav
+          test -s promo/assets/audio/score-180s.mp3
           DUR=$(ffprobe -v error -show_entries format=duration \
                 -of default=noprint_wrappers=1:nokey=1 \
-                promo/assets/audio/wordless-56s.mp3)
+                promo/assets/audio/score-180s.mp3)
           python3 - "$DUR" <<'PY'
           import sys
           d = float(sys.argv[1])
-          assert 55.5 <= d <= 56.5, f"主音轨时长 {d}s 不在 56s ±0.5s 内"
-          print(f"Wordless 主音轨：{d:.3f}s，OK")
+          assert 179.0 <= d <= 181.0, f"配乐时长 {d}s 不是 180s ±1s"
+          print(f"score-180s.mp3: {d:.3f}s OK")
           PY
-          cp promo/assets/audio/bgm.wav /tmp/bgm-committed.wav
-          python3 promo/scripts/make_bgm.py
-          cmp /tmp/bgm-committed.wav promo/assets/audio/bgm.wav \
-            && echo "备用合成 BGM 逐字节复现 OK" \
-            || { echo "::error::备用 BGM 与提交产物不一致"; exit 1; }
-          ls -lh promo/assets/audio/
+          missing=0
+          for f in $(grep -rhoE 'assets/screens/[0-9a-z-]+\.png' promo/compositions | sort -u); do
+            if [ ! -s "promo/$f" ]; then echo "::error::缺素材 promo/$f"; missing=1; fi
+          done
+          [ "$missing" = "0" ] && echo "所有截图引用均存在"
+          ls -lh promo/assets/audio/ promo/assets/screens/ | tail -20
 
       - name: Lint composition (strict gate)
         working-directory: promo
@@ -152,7 +150,7 @@ jobs:
           npx -y "hyperframes@${HF_VERSION}" render promo \
             --output promo/final/OGL-Promo.mp4 \
             --fps 30 \
-            --workers 4 \
+            --workers 6 \
             --no-browser-gpu
           ls -lh promo/final/
           ffprobe -v error \

@@ -1,0 +1,96 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+    #s03-stage { position: absolute; inset: 0; }
+
+    /* 版式 B · 全幅裁切：860×1530（1080:1920），x=980 y=-180 上下出血，只显示中段 */
+    #s03-shot {
+      position: absolute; left: 980px; top: -180px;
+      width: 860px; height: 1530px; object-fit: cover; display: block;
+      border-radius: var(--md-shape-sm); border: 1px solid var(--md-outline-variant);
+      background: var(--md-surface-container-lowest);
+    }
+
+    #s03-kicker { position: absolute; left: 128px; top: 148px; opacity: 0; }
+    #s03-title  { position: absolute; left: 128px; top: 196px; width: 760px; color: var(--md-on-surface); opacity: 0; }
+    #s03-body   { position: absolute; left: 128px; top: 300px; width: 760px; opacity: 0; }
+
+    /* 两条注解：mono 注释 + 2px 引线（scaleX 展开，origin 左） */
+    .s03-note  { position: absolute; left: 128px; width: 700px; opacity: 0; }
+    .s03-leader {
+      position: absolute; left: 850px; width: 120px; height: 2px;
+      background: var(--md-primary); transform-origin: left center; opacity: 0;
+    }
+    #s03-note-1 { top: 470px; }
+    #s03-note-2 { top: 620px; }
+    #s03-leader-1 { top: 496px; }
+    #s03-leader-2 { top: 646px; }
+    .s03-note .code { color: var(--md-primary); }
+    .s03-note .hint { color: var(--md-on-surface-variant); }
+
+    #s03-evidence { position: absolute; left: 128px; top: 940px; width: 760px; opacity: 0; }
+    #s03-evidence-div { position: absolute; left: 128px; top: 920px; width: 760px; opacity: 0; }
+
+    /* 右侧滚动条：4px primary，origin top */
+    #s03-scrollbar {
+      position: absolute; left: 1832px; top: 480px;
+      width: 4px; height: 120px; border-radius: 2px;
+      background: var(--md-primary); transform-origin: top center; opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="s03" data-width="1920" data-height="1080">
+    <div id="s03-stage">
+      <img id="s03-shot" class="clip" src="assets/screens/07-code-view.png"
+           data-start="0" data-duration="16" data-track-index="1" alt="文件查看：语法高亮与行号" />
+
+      <div id="s03-leader-1" class="clip" data-start="0" data-duration="16" data-track-index="9"></div>
+      <div id="s03-leader-2" class="clip" data-start="0" data-duration="16" data-track-index="9"></div>
+      <div id="s03-scrollbar" class="clip" data-start="0" data-duration="16" data-track-index="9"></div>
+
+      <div id="s03-kicker" class="clip mono t-label-m tertiary" data-start="0" data-duration="16" data-track-index="2">02 · CODE</div>
+      <div id="s03-title" class="clip t-headline" data-start="0" data-duration="16" data-track-index="2">长文件，照样读</div>
+      <div id="s03-body" class="clip t-body on-variant" data-start="0" data-duration="16" data-track-index="2">行号、语法高亮、横向不折行；滚动位置留在原处，回来接着读。</div>
+
+      <div id="s03-note-1" class="clip s03-note mono t-label-m" data-start="0" data-duration="16" data-track-index="3"><span class="code">&lt;meta charset="utf-8"&gt;</span> <span class="hint">· 第 4 行，编码声明</span></div>
+      <div id="s03-note-2" class="clip s03-note mono t-label-m" data-start="0" data-duration="16" data-track-index="3"><span class="code">font-family: -apple-system…</span> <span class="hint">· 第 15 行，正文字体</span></div>
+
+      <div id="s03-evidence-div" class="clip divider" data-start="0" data-duration="16" data-track-index="3"></div>
+      <div id="s03-evidence" class="clip mono t-label-m on-variant" data-start="0" data-duration="16" data-track-index="3">HTML · 55 行 · 1243 字符 · UTF-8</div>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    /* 1) 入场：截图从顶部向下揭开（承接 s02 "点开文件"），文案 0.3–0.8s 淡入 */
+    tl.fromTo("#s03-shot", { clipPath: "inset(0 0 100% 0)" },
+      { clipPath: "inset(0 0 0% 0)", duration: 0.55, ease: "power3.out" }, 0);
+    tl.fromTo("#s03-kicker", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.3);
+    tl.fromTo("#s03-title", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.45);
+    tl.fromTo("#s03-body", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.6);
+    tl.fromTo("#s03-evidence-div", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0.75);
+    tl.fromTo("#s03-evidence", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0.8);
+
+    /* 2) 2.0–9.0s：截图整体向上滚 y -180 → -760（浏览第 1 → 55 行，行号列随之） */
+    tl.fromTo("#s03-shot", { y: -180 }, { y: -760, duration: 7.0, ease: "power1.inOut" }, 2.0);
+
+    /* 3) 4.2s / 7.0s：两条注解 + 2px 引线 */
+    tl.fromTo("#s03-leader-1", { opacity: 1, scaleX: 0 }, { scaleX: 1, duration: 0.25, ease: "power2.out" }, 4.2);
+    tl.fromTo("#s03-note-1", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 4.3);
+    tl.fromTo("#s03-leader-2", { opacity: 1, scaleX: 0 }, { scaleX: 1, duration: 0.25, ease: "power2.out" }, 7.0);
+    tl.fromTo("#s03-note-2", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 7.1);
+
+    /* 4) 10.5s：右缘 4px primary 滚动条出现，高 120 → 36 并下移（scaleY 0.3 + y） */
+    tl.fromTo("#s03-scrollbar", { opacity: 0, scaleY: 1, y: 0 },
+      { opacity: 1, duration: 0.15, ease: "power2.out" }, 10.5);
+    tl.fromTo("#s03-scrollbar", { scaleY: 1, y: 0 },
+      { scaleY: 0.3, y: 240, duration: 0.8, ease: "power2.inOut", immediateRender: false }, 10.6);
+
+    /* 5) 12.0–15.4s：整屏放大 1→1.04（进入编辑器），15.0–15.4 淡出 */
+    tl.fromTo("#s03-stage", { scale: 1 }, { scale: 1.04, duration: 3.4, ease: "power1.inOut", immediateRender: false }, 12.0);
+    tl.fromTo("#s03-stage", { opacity: 1 }, { opacity: 0, duration: 0.4, ease: "power2.in", immediateRender: false }, 15.0);
+
+    window.__timelines["s03"] = tl;
+  </script>
+</template>

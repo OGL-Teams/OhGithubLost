@@ -1,0 +1,200 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+    #s09-stage { position: absolute; inset: 0; }
+
+    /* 版式 D：序列条。标题 x=128 y=96；三张 0.5×（300×533）y=420，x=180/810/1440 */
+    #s09-kicker {
+      position: absolute; left: 128px; top: 96px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      letter-spacing: 0.14em; color: var(--md-primary); opacity: 0;
+    }
+    #s09-title {
+      position: absolute; left: 128px; top: 140px;
+      font-size: 56px; font-weight: 400; line-height: 1.14; color: var(--md-on-surface); opacity: 0;
+    }
+    #s09-body {
+      position: absolute; left: 128px; top: 244px; width: 1000px;
+      font-size: 24px; font-weight: 400; line-height: 1.5; letter-spacing: 0.5px;
+      color: var(--md-on-surface-variant); opacity: 0;
+    }
+
+    .s09-card {
+      position: absolute; top: 420px; width: 300px; height: 533px;
+      transform-origin: center center;
+    }
+    #s09-card-1 { left: 180px; }
+    #s09-card-2 { left: 810px; }
+    #s09-card-3 { left: 1440px; }
+    .s09-shot {
+      position: absolute; left: 0; top: 0; width: 300px; height: 533px;
+      object-fit: cover; display: block;
+      border-radius: var(--md-shape-sm); border: 1px solid var(--md-outline-variant);
+      background: var(--md-surface-container-lowest);
+    }
+    /* 非焦点上的 8% surface 压暗层 */
+    .s09-dim {
+      position: absolute; left: 0; top: 0; width: 300px; height: 533px;
+      background: var(--md-surface); opacity: 0; border-radius: var(--md-shape-sm);
+    }
+    #s09-dim-1, #s09-dim-3 { opacity: 0.08; }
+
+    .s09-cap {
+      position: absolute; left: 0; top: 553px; width: 300px; text-align: center;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      color: var(--md-on-surface-variant);
+    }
+
+    /* 我的页上的「退出登录会删除本机保存的令牌」标注 */
+    #s09-token-zone {
+      position: absolute; left: 16px; top: 372px; width: 268px; height: 48px;
+    }
+    #s09-token-line {
+      position: absolute; left: 0; top: 46px; width: 268px; height: 2px;
+      background: var(--md-tertiary); transform-origin: left center; opacity: 0;
+    }
+    #s09-token-note {
+      position: absolute; left: 0; top: 56px; width: 320px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      color: var(--md-tertiary); opacity: 0;
+    }
+
+    /* 账号高亮 */
+    #s09-account {
+      position: absolute; left: 180px; top: 8px; width: 300px; text-align: center;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 700;
+      color: var(--md-primary); opacity: 0;
+    }
+
+    /* tab 指示条：三卡下方 */
+    #s09-tabs { position: absolute; left: 180px; top: 990px; width: 1560px; height: 2px; background: var(--md-outline-variant); }
+    #s09-tab-ind {
+      position: absolute; left: 0; top: -1px; width: 300px; height: 2px;
+      background: var(--md-primary); transform-origin: left center;
+    }
+
+    /* 底部证据行 */
+    #s09-evidence {
+      position: absolute; left: 128px; top: 1000px; width: 1664px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      color: var(--md-on-surface-variant); opacity: 0;
+    }
+    #s09-evidence .hl { color: var(--md-primary); }
+    #s09-ev-drafts, #s09-ev-gist { color: var(--md-primary); opacity: 0; }
+
+    #s09-exit { position: absolute; inset: 0; opacity: 0; }
+  </style>
+
+  <div id="root" data-composition-id="s09" data-width="1920" data-height="1080">
+    <div id="s09-stage">
+      <div id="s09-kicker" class="clip" data-start="0" data-duration="16" data-track-index="3">08 · ACCOUNT</div>
+      <div id="s09-title" class="clip t-headline" data-start="0" data-duration="16" data-track-index="3">一个账号，三个入口</div>
+      <div id="s09-body" class="clip t-body" data-start="0" data-duration="16" data-track-index="3">仓库、发现、我的各自独立滚动；切换账号不清缓存，退出才删令牌。</div>
+
+      <div id="s09-card-1" class="clip s09-card" data-start="0" data-duration="16" data-track-index="2">
+        <img class="s09-shot" src="assets/screens/01-home.png" alt="首页仓库列表">
+        <div class="s09-dim clip" id="s09-dim-1" data-start="0" data-duration="16" data-track-index="3"></div>
+        <div class="s09-cap">仓库</div>
+      </div>
+      <div id="s09-card-2" class="clip s09-card" data-start="0" data-duration="16" data-track-index="2">
+        <img class="s09-shot" src="assets/screens/02-discover.png" alt="发现页">
+        <div class="s09-dim clip" id="s09-dim-2" data-start="0" data-duration="16" data-track-index="3"></div>
+        <div class="s09-cap">发现</div>
+      </div>
+      <div id="s09-card-3" class="clip s09-card" data-start="0" data-duration="16" data-track-index="2">
+        <img class="s09-shot" src="assets/screens/03-profile.png" alt="我的页">
+        <div class="s09-dim clip" id="s09-dim-3" data-start="0" data-duration="16" data-track-index="3"></div>
+        <div id="s09-account" class="clip mono" data-start="0" data-duration="16" data-track-index="4">@yingo-server</div>
+        <div id="s09-token-zone" class="clip" data-start="0" data-duration="16" data-track-index="4">
+          <div id="s09-token-line" class="clip" data-start="0" data-duration="16" data-track-index="5"></div>
+          <div id="s09-token-note" class="clip mono" data-start="0" data-duration="16" data-track-index="5">令牌仅存系统密钥库</div>
+        </div>
+        <div class="s09-cap">我的</div>
+      </div>
+
+      <div id="s09-tabs" class="clip" data-start="0" data-duration="16" data-track-index="3"></div>
+      <div id="s09-tab-ind" class="clip" data-start="0" data-duration="16" data-track-index="4"></div>
+
+      <div id="s09-evidence" class="clip" data-start="0" data-duration="16" data-track-index="3">@yingo-server<span class="hl"> · </span><span id="s09-ev-drafts">草稿 0</span> · <span id="s09-ev-gist">Gist 6</span> · 令牌仅存系统密钥库</div>
+
+      <div id="s09-exit" class="clip" data-start="0" data-duration="16" data-track-index="9"></div>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    /* 1. 入场：三张截图从 y+40 依次升起（stagger 0.1），文案 0.25/0.5s */
+    tl.fromTo("#s09-kicker", { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.25);
+    tl.fromTo("#s09-title", { opacity: 0, y: 16 },
+      { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.5);
+    tl.fromTo("#s09-body", { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.7);
+    tl.fromTo("#s09-card-1", { opacity: 0, y: 40 },
+      { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.3);
+    tl.fromTo("#s09-card-2", { opacity: 0, y: 40 },
+      { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.4);
+    tl.fromTo("#s09-card-3", { opacity: 0, y: 40 },
+      { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.5);
+    tl.fromTo("#s09-tabs", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power1.out" }, 0.8);
+    tl.fromTo("#s09-tab-ind", { scaleX: 1, opacity: 1 },
+      { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.85);
+
+    /* 2. 2.4s：发现页成为焦点 scale 1.04，其余 0.94；tab 指示条平移；证据行淡入 */
+    tl.fromTo("#s09-card-2", { scale: 1 }, { scale: 1.04, duration: 0.4, ease: "power3.out", immediateRender: false }, 2.4);
+    tl.fromTo("#s09-card-1", { scale: 1 }, { scale: 0.94, duration: 0.4, ease: "power2.out", immediateRender: false }, 2.4);
+    tl.fromTo("#s09-card-3", { scale: 1 }, { scale: 0.94, duration: 0.4, ease: "power2.out", immediateRender: false }, 2.4);
+    tl.fromTo("#s09-dim-2", { opacity: 0 }, { opacity: 0.08, duration: 0.4, ease: "power1.out", immediateRender: false }, 2.4);
+    tl.fromTo("#s09-dim-1", { opacity: 0.08 }, { opacity: 0, duration: 0.4, ease: "power1.out", immediateRender: false }, 2.4);
+    tl.fromTo("#s09-tab-ind", { x: 0 }, { x: 630, duration: 0.4, ease: "power3.inOut", immediateRender: false }, 2.4);
+    tl.fromTo("#s09-evidence", { opacity: 0, y: 10 },
+      { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 2.5);
+
+    /* 3. 4.5s：焦点移到第三张（我的），@yingo-server 高亮 */
+    tl.fromTo("#s09-card-3", { scale: 0.94 }, { scale: 1.04, duration: 0.4, ease: "power3.out", immediateRender: false }, 4.5);
+    tl.fromTo("#s09-card-2", { scale: 1.04 }, { scale: 0.94, duration: 0.4, ease: "power2.out", immediateRender: false }, 4.5);
+    tl.fromTo("#s09-card-1", { scale: 0.94 }, { scale: 0.94, duration: 0.01, ease: "none", immediateRender: false }, 4.5);
+    tl.fromTo("#s09-dim-2", { opacity: 0.08 }, { opacity: 0, duration: 0.4, ease: "power1.out", immediateRender: false }, 4.5);
+    tl.fromTo("#s09-dim-3", { opacity: 0.08 }, { opacity: 0, duration: 0.4, ease: "power1.out", immediateRender: false }, 4.5);
+    tl.fromTo("#s09-tab-ind", { x: 630 }, { x: 1260, duration: 0.4, ease: "power3.inOut", immediateRender: false }, 4.5);
+    tl.fromTo("#s09-account", { opacity: 0, y: -6 },
+      { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 4.7);
+
+    /* 4. 6.2s：tertiary 2px 下划线 scaleX 标出「退出登录会删除本机保存的令牌」+ mono 注记 */
+    tl.fromTo("#s09-token-line", { scaleX: 0, opacity: 1 },
+      { scaleX: 1, opacity: 1, duration: 0.3, ease: "power2.out" }, 6.2);
+    tl.fromTo("#s09-token-note", { opacity: 0, y: 8 },
+      { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, 6.4);
+
+    /* 5. 8.0s：三张截图整体向左推 -120，形成"循环"感 */
+    tl.fromTo("#s09-card-1", { x: 0 }, { x: -120, duration: 0.5, ease: "power2.inOut", immediateRender: false }, 8.0);
+    tl.fromTo("#s09-card-2", { x: 0 }, { x: -120, duration: 0.5, ease: "power2.inOut", immediateRender: false }, 8.0);
+    tl.fromTo("#s09-card-3", { x: 0 }, { x: -120, duration: 0.5, ease: "power2.inOut", immediateRender: false }, 8.0);
+    tl.fromTo("#s09-account", { x: 0 }, { x: -120, duration: 0.5, ease: "power2.inOut", immediateRender: false }, 8.0);
+    tl.fromTo("#s09-token-zone", { x: 0 }, { x: -120, duration: 0.5, ease: "power2.inOut", immediateRender: false }, 8.0);
+
+    /* 6. 10.0–14.5s：极缓慢 y -12 漂浮（错开 0.8s）；证据行数字依次高亮 */
+    tl.fromTo("#s09-card-1", { y: 0 }, { y: -12, duration: 4.5, ease: "power1.inOut", immediateRender: false }, 10.0);
+    tl.fromTo("#s09-card-2", { y: 0 }, { y: -12, duration: 4.5, ease: "power1.inOut", immediateRender: false }, 10.8);
+    tl.fromTo("#s09-card-3", { y: 0 }, { y: -12, duration: 4.5, ease: "power1.inOut", immediateRender: false }, 11.6);
+    tl.fromTo("#s09-ev-drafts", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 11.0);
+    tl.fromTo("#s09-ev-gist", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 12.4);
+
+    /* 7. 14.5–15.7s：三张图收束到中心（x 向 810 靠拢、opacity 递减），整屏淡出 */
+    tl.fromTo("#s09-card-1", { x: -120, opacity: 1 },
+      { x: 450, opacity: 0, duration: 0.8, ease: "power2.in", immediateRender: false }, 14.5);
+    tl.fromTo("#s09-card-2", { x: -120, opacity: 1 },
+      { x: 0, opacity: 0, duration: 0.8, ease: "power2.in", immediateRender: false }, 14.6);
+    tl.fromTo("#s09-card-3", { x: -120, opacity: 1 },
+      { x: -450, opacity: 0, duration: 0.8, ease: "power2.in", immediateRender: false }, 14.7);
+    tl.fromTo("#s09-account", { opacity: 1 }, { opacity: 0, duration: 0.4, ease: "power1.in", immediateRender: false }, 14.5);
+    tl.fromTo("#s09-token-zone", { opacity: 1 }, { opacity: 0, duration: 0.4, ease: "power1.in", immediateRender: false }, 14.5);
+    tl.fromTo("#s09-title", { opacity: 1 }, { opacity: 0, duration: 0.35, ease: "power2.in", immediateRender: false }, 15.0);
+    tl.fromTo("#s09-body", { opacity: 1 }, { opacity: 0, duration: 0.35, ease: "power2.in", immediateRender: false }, 15.0);
+    tl.fromTo("#s09-evidence", { opacity: 1 }, { opacity: 0, duration: 0.35, ease: "power2.in", immediateRender: false }, 15.0);
+    tl.fromTo("#s09-exit", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power3.in" }, 15.35);
+
+    window.__timelines["s09"] = tl;
+  </script>
+</template>

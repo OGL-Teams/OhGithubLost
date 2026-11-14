@@ -9,14 +9,14 @@
     "lint": "npx -y hyperframes@0.9.46 lint --json .",
     "snapshot": "npx -y hyperframes@0.9.46 snapshot --at 1,7,15,23,31,39,47,54",
     "render": "npx -y hyperframes@0.9.46 render . --output final/OGL-Promo.mp4 --fps 30 --workers 2",
-    "bgm": "python3 scripts/make_bgm.py"
+    "bgm": "python3 scripts/make_score.py"
   },
   "hyperframes": {
     "version": "0.9.46",
     "width": 1920,
     "height": 1080,
     "fps": 30,
-    "duration": 56,
+    "duration": 180,
     "renderer": "github-actions-ubuntu-latest",
     "localBrowser": "HYPERFRAMES_BROWSER_PATH must point to Chromium on linux-arm64"
   }

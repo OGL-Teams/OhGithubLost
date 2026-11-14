@@ -1,62 +1,62 @@
-# OGL 宣传片 · EDL（04-edl）· v2 · Wordless 卡点版
+# OGL 宣传片 · EDL（04-edl）· 180s 重构版
 
-主编辑文件：`promo/index.html`
-渲染目标：1920×1080 / 30 fps / 56.000 s / H.264 MP4 + AAC 音轨
-定位：新手开发者 + 尝鲜极客
+主编辑：`promo/index.html`（11 个 scene host）
+渲染：1920×1080 / 30fps / 180.0s / H.264 + 180s 编排音轨
+结构依据：`08-architecture.md`
 
-| 轨道 | 类型 | 内容 |
+## 轨道
+
+| 轨道 | 内容 |
+|---|---|
+| 1 | 11 个 scene host（s01–s11） |
+| 8 | `#vignette` 暗角 + `#grain` 扫描线（全片静态） |
+| 9 | `#bgm` ← `assets/audio/score-180s.mp3`，volume 1 |
+
+## 场景表
+
+| # | In | Out | 时长 | 场景 | 版式 | 进入转场 | 截图 |
+|---|---|---|---|---|---|---|---|
+| s01 | 00:00 | 00:12 | 12 | 片头 | 居中 | 第 0 帧 2px 主色线已在 | — |
+| s02 | 00:12 | 00:30 | 18 | 仓库目录 | A 证据台 | 从横线纵向展开 | 06-repo-files |
+| s03 | 00:30 | 00:46 | 16 | 长文件阅读 | B 全幅裁切 | 向下揭示（文件被打开） | 07-code-view |
+| s04 | 00:46 | 01:02 | 16 | 编辑与保存 | C 解剖图 | 容器变换（scale 0.96→1） | 08-editor-save |
+| s05 | 01:02 | 01:20 | 18 | Issue 评论 | D 序列条 | 从下升起（评论面板） | 09-issue-comment |
+| s06 | 01:20 | 01:36 | 16 | 启动日志 | E 操作接龙 | 横向揭示 | 11-log |
+| s07 | 01:36 | 01:56 | 20 | 下载与 DNS | A + 局部 | 从右滑入 | 10-network-dns |
+| s08 | 01:56 | 02:14 | 18 | 法律与语言 | C 解剖图 | 圆形展开（点击点为心） | 12-legal |
+| s09 | 02:14 | 02:30 | 16 | 多账号 | D 序列条 | 三图错峰升起 | 01 / 02 / 03 |
+| s10 | 02:30 | 02:48 | 18 | 产物与许可 | E 操作接龙 | 表格行落下 | 05-about |
+| s11 | 02:48 | 03:00 | 12 | 片尾 | 居中 | 从横线展开 | ogl_icon |
+
+时长校验：12+18+16+16+18+16+20+18+16+18+12 = **180**。
+
+## 配乐对位
+
+`assets/audio/score-180s.mp3`（180.04s）：
+
+| 区间 | 音量 | 画面对应 |
 |---|---|---|
-| 1 | graphics | 8 个 scene host，见下表 |
-| 7 | graphics | `#beat-flash` — 7 个真实 onset 上的品牌蓝脉冲 |
-| 8 | graphics | `#vignette` 暗角 + `#grain` 扫描线（全片静态） |
-| — | 转场 | 每场景 `#sN-stage` 的 M3 shared axis X：入场 x:+80→0（0.42s power4.out），出场 x:0→-80（0.26s power3.in） |
-| 9 | audio | `#bgm` ← `assets/audio/wordless-56s.mp3`，volume 0.92 |
-| 10 | audio | `#bgm-fallback` ← `assets/audio/bgm.wav`，volume 0（备用，不参与混音） |
+| 00:00–00:40 | 0 | 片头 + 仓库目录前半（只靠文案与界面） |
+| 00:40–00:52 | 0 → 0.5 | 进入长文件阅读 |
+| 00:52–01:40 | 0.5 | 编辑 / Issue / 日志（铺底不抢戏） |
+| 01:40–02:00 | 0.5 → 1.0 | 下载与 DNS 推进 |
+| 02:00–02:52 | 1.0 | 法律 / 多账号 / 产物（满档） |
+| 02:52–03:00 | 1.0 → 0 | 片尾收净 |
 
-## 场景时间线（对齐 onset）
-
-| In | Out | 场景 ID | 局部时长 | 文件 | 切点依据 |
-|---|---|---|---|---|---|
-| 00:00.000 | 00:06.800 | s1-hook | 6.8 | `compositions/s1-hook.html` | 6.79s 强拍 |
-| 00:06.800 | 00:14.100 | s2-repo | 7.3 | `compositions/s2-repo.html` | 14.10s 强拍 |
-| 00:14.100 | 00:23.000 | s3-collab | 8.9 | `compositions/s3-collab.html` | 23.03s 强拍 |
-| 00:23.000 | 00:32.200 | s4-layers | 9.2 | `compositions/s4-layers.html` | 32.23s 强拍 |
-| 00:32.200 | 00:40.200 | s5-trust | 8.0 | `compositions/s5-trust.html` | 40.25s 强拍 |
-| 00:40.200 | 00:46.200 | s6-i18n | 6.0 | `compositions/s6-i18n.html` | 46.23s 强拍 |
-| 00:46.200 | 00:52.300 | s7-platforms | 6.1 | `compositions/s7-platforms.html` | 52.33s 强拍 |
-| 00:52.300 | 00:56.000 | s8-end | 3.7 | `compositions/s8-end.html` | 末帧静止 1.5s |
-
-时长校验：6.8 + 7.3 + 8.9 + 9.2 + 8.0 + 6.0 + 6.1 + 3.7 = **56.0**。
-
-## 卡点结构
-
-每个切点 `t`：
-
-1. `t - 0.42s`：上一场景 `#sN-stage` 向左退出（x 0→-80，opacity 1→0，0.26s power3.in）。
-2. `t`：根 `#beat-flash` 按弱/强拍叠加 primary 8% / 16% 状态层；新场景 host 起。
-3. `t + 0.1~0.9s`：新场景主体 stagger 入场。
-
-根 timeline 只驱动 `#beat-flash`，从不 add 子场景 timeline；runtime 按 host 的 `data-start` 各自 seek。
-
-## 渲染与交付
+## 渲染
 
 ```bash
-# 本地
-python3 promo/scripts/make_bgm.py       # 复现备用音轨
+python3 promo/scripts/make_score.py     # 180s 编排（源曲在挂载目录）
 npm --prefix promo run lint             # 静态硬门禁
-npm --prefix promo run render           # 本地出片（ARM64 需 HYPERFRAMES_BROWSER_PATH）
-
-# CI（video 分支自动）
-# 1. ffmpeg / p7zip-full / fonts-noto-cjk
-# 2. lint 0 error → render MP4 → contact sheet
-# 3. 7z a -t7z -mx=9 -m0=LZMA2 -md=64m → OGL-Promo.7z
-# 4. git tag promo-<sha7> + GitHub Release（含 7z、MP4、联系表、SHA256SUMS）
+npm --prefix promo run render           # 本地出片
 ```
 
-## 剪辑契约自检
+CI：`.github/workflows/promo-render.yml` → 1080p + 720p + 7z + tag `promo-<sha7>`。
 
-- 根 `data-duration="56"` 等于 8 个 host 时长之和。
-- 每个 `.clip` 有 `data-start` / `data-duration` / `data-track-index`；图片路径 `assets/screens/...`。
-- 每个 scene 的 host id == `data-composition-id` == `window.__timelines` key。
-- 每个子 composition 一条 `gsap.timeline({paused:true})`；wipe 目标侧显式 `opacity: 1`。
-- 无 `Date.now()` / `Math.random()` / fetch / timer / `repeat:-1`；一律 `fromTo`。
+## 自检
+
+- 根 `data-duration="180"` = 11 个 host 时长之和。
+- 每个 `.clip` 有 `data-start` / `data-duration` / `data-track-index`。
+- 每个 host id = `data-composition-id` = `window.__timelines` key。
+- 相邻场景转场类型不重复；无全屏色块 wipe。
+- 第 0 帧有可见元素（2px 主色线）。

@@ -1,0 +1,146 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: var(--md-surface); }
+    #s06-stage { position: absolute; inset: 0; }
+
+    /* 左侧文案栏 x=128 宽 700 */
+    #s06-copy { position: absolute; left: 128px; top: 0; width: 700px; height: 1080px; }
+    #s06-kicker { position: absolute; left: 0; top: 128px; font-family: var(--md-mono); opacity: 0; }
+    #s06-title  { position: absolute; left: 0; top: 184px; width: 660px; color: var(--md-on-surface); opacity: 0; }
+    #s06-body   { position: absolute; left: 0; top: 344px; width: 640px; color: var(--md-on-surface-variant); opacity: 0; }
+
+    /* 中间 x=760 竖排 3 张 340×120 步骤卡 */
+    #s06-steps { position: absolute; left: 760px; top: 300px; width: 340px; }
+    #s06-steps-inner { position: relative; }
+    .s06-step {
+      position: absolute; left: 0; width: 340px; height: 120px;
+      border-radius: var(--md-shape-sm); background: var(--md-surface-container);
+      border: 1px solid var(--md-outline-variant);
+      display: flex; align-items: center; padding: 0 24px 0 28px;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      color: var(--md-on-surface); letter-spacing: 0.3px;
+      opacity: 0; transform-origin: center center;
+    }
+    .s06-step .bar {
+      position: absolute; left: 0; top: 0; width: 2px; height: 120px;
+      background: var(--md-primary); transform-origin: center top; transform: scaleY(0);
+    }
+    .s06-step .arrow { color: var(--md-outline); margin: 0 10px; }
+    .s06-step .val { color: var(--md-primary); }
+    /* 数字轮盘：24px 视窗 */
+    .s06-reel { display: inline-block; height: 24px; overflow: hidden; vertical-align: bottom; }
+    .s06-reel-stack { display: block; }
+    .s06-reel-stack span { display: block; height: 24px; line-height: 24px; color: var(--md-primary); }
+    #s06-step1 { top: 0; }
+    #s06-step2 { top: 144px; }
+    #s06-step3 { top: 288px; }
+
+    /* 右侧截图 460×818 @ x=1180 y=120 */
+    #s06-shotwrap {
+      position: absolute; left: 1180px; top: 120px; width: 460px; height: 818px;
+      clip-path: inset(0 100% 0 0);
+    }
+    #s06-shot { width: 460px; height: 818px; }
+
+    /* 日志行逐行揭示：3 个与背景同色的遮条 scaleX 1→0 */
+    .s06-logcover {
+      position: absolute; left: 0; width: 458px; height: 30px;
+      background: var(--md-surface); transform-origin: left center;
+    }
+    #s06-logcover1 { top: 300px; }
+    #s06-logcover2 { top: 336px; }
+    #s06-logcover3 { top: 372px; }
+
+    /* badge 300×88 surface-container-high 圆角 8，mono */
+    #s06-badge {
+      position: absolute; left: 1320px; top: 810px; width: 300px; height: 88px;
+      border-radius: var(--md-shape-sm); background: var(--md-surface-container-high);
+      border: 1px solid var(--md-outline-variant);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--md-mono); font-size: 20px; font-weight: 500;
+      color: var(--md-on-surface); letter-spacing: 0.3px; opacity: 0;
+    }
+    #s06-badge .n { color: var(--md-primary); }
+    #s06-badge .z { color: var(--md-tertiary); }
+
+    /* 出场：步骤卡收成一条 2px 横线 */
+    #s06-curtain {
+      position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+      background: var(--md-surface); opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="s06" data-width="1920" data-height="1080">
+    <div id="s06-stage">
+      <div id="s06-copy">
+        <div id="s06-kicker" class="clip t-label-m primary" data-start="0" data-duration="16" data-track-index="2">05 · OBSERVABILITY</div>
+        <div id="s06-title" class="clip t-headline" data-start="0" data-duration="16" data-track-index="2">启动花了多少，写得清楚</div>
+        <div id="s06-body" class="clip t-body" data-start="0" data-duration="16" data-track-index="2">分阶段耗时直接落盘；失败、告警、模块数量都有据可查。</div>
+      </div>
+
+      <div id="s06-steps" class="clip" data-start="0" data-duration="16" data-track-index="3">
+        <div id="s06-steps-inner">
+          <div class="s06-step" id="s06-step1"><div class="bar"></div>启动<span class="arrow">→</span><span class="s06-reel"><span class="s06-reel-stack" id="s06-reel1"><span>----ms</span><span>7946ms</span></span></span></div>
+          <div class="s06-step" id="s06-step2"><div class="bar"></div>内核引导<span class="arrow">→</span><span class="s06-reel"><span class="s06-reel-stack" id="s06-reel2"><span>----ms</span><span>7556ms</span></span></span></div>
+          <div class="s06-step" id="s06-step3"><div class="bar"></div>日志落盘<span class="arrow">→</span><span class="s06-reel"><span class="s06-reel-stack" id="s06-reel3"><span>---ms</span><span>313ms</span></span></span></div>
+        </div>
+      </div>
+
+      <div id="s06-shotwrap" class="clip" data-start="0" data-duration="16" data-track-index="4">
+        <img id="s06-shot" class="shot" src="assets/screens/11-log.png" alt="日志页：启动耗时分解" />
+        <div class="s06-logcover" id="s06-logcover1"></div>
+        <div class="s06-logcover" id="s06-logcover2"></div>
+        <div class="s06-logcover" id="s06-logcover3"></div>
+      </div>
+
+      <div id="s06-badge" class="clip" data-start="0" data-duration="16" data-track-index="5">模块 <span class="n">8 项</span> / 告警 <span class="z">0 条</span></div>
+      <div id="s06-curtain" class="clip" data-start="0" data-duration="16" data-track-index="9"></div>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    /* 1. 入场：截图 clip-path inset(0 100% 0 0) 横向揭开 0.5s power3.out；文案 0.3–0.7s */
+    tl.fromTo("#s06-shotwrap", { clipPath: "inset(0 100% 0 0)" },
+      { clipPath: "inset(0 0% 0 0)", duration: 0.5, ease: "power3.out" }, 0);
+    tl.fromTo("#s06-kicker", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.3);
+    tl.fromTo("#s06-title", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.5);
+    tl.fromTo("#s06-body", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.7);
+
+    /* 2. 1.8/2.1/2.4s 三张步骤卡 y+24 依次落下，左侧 2px 竖条 scaleY 0→1 */
+    tl.fromTo("#s06-step1", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 1.8);
+    tl.fromTo("#s06-step2", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 2.1);
+    tl.fromTo("#s06-step3", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 2.4);
+    tl.fromTo("#s06-step1 .bar", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "power3.out" }, 1.9);
+    tl.fromTo("#s06-step2 .bar", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "power3.out" }, 2.2);
+    tl.fromTo("#s06-step3 .bar", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "power3.out" }, 2.5);
+
+    /* 3. 3.4s 截图内日志行逐行揭示（遮条 scaleX 1→0，每行 0.28s，间隔 0.18s） */
+    tl.fromTo("#s06-logcover1", { scaleX: 1 }, { scaleX: 0, duration: 0.28, ease: "none" }, 3.4);
+    tl.fromTo("#s06-logcover2", { scaleX: 1 }, { scaleX: 0, duration: 0.28, ease: "none" }, 3.58);
+    tl.fromTo("#s06-logcover3", { scaleX: 1 }, { scaleX: 0, duration: 0.28, ease: "none" }, 3.76);
+
+    /* 4. 5.5s 三张卡数字同时轮盘滚动（translateY -24px，0.5s power2.out）→ 7946 / 7556 / 313 */
+    tl.fromTo("#s06-reel1", { y: 0 }, { y: -24, duration: 0.5, ease: "power2.out" }, 5.5);
+    tl.fromTo("#s06-reel2", { y: 0 }, { y: -24, duration: 0.5, ease: "power2.out" }, 5.5);
+    tl.fromTo("#s06-reel3", { y: 0 }, { y: -24, duration: 0.5, ease: "power2.out" }, 5.5);
+
+    /* 5. 8.0s badge 浮出在截图右下角 */
+    tl.fromTo("#s06-badge", { opacity: 0, y: 16, scale: 0.96 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "power2.out" }, 8.0);
+
+    /* 6. 10.0–14.5s 截图上移 120→60；步骤卡 x -20 轻微位移制造层次 */
+    tl.fromTo("#s06-shotwrap", { y: 0 }, { y: -60, duration: 4.5, ease: "power1.inOut", immediateRender: false }, 10.0);
+    tl.fromTo("#s06-steps-inner", { x: 0 }, { x: -20, duration: 4.5, ease: "power1.inOut", immediateRender: false }, 10.0);
+
+    /* 7. 14.5s 三张卡收成一条 2px 横线（scaleY 1→0.02，0.3s power2.in）；整屏淡出 */
+    tl.fromTo("#s06-step1", { scaleY: 1 }, { scaleY: 0.02, duration: 0.3, ease: "power2.in", immediateRender: false }, 14.5);
+    tl.fromTo("#s06-step2", { scaleY: 1 }, { scaleY: 0.02, duration: 0.3, ease: "power2.in", immediateRender: false }, 14.5);
+    tl.fromTo("#s06-step3", { scaleY: 1 }, { scaleY: 0.02, duration: 0.3, ease: "power2.in", immediateRender: false }, 14.5);
+    tl.fromTo("#s06-badge", { opacity: 1 }, { opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, 14.5);
+    tl.fromTo("#s06-curtain", { opacity: 0 }, { opacity: 1, duration: 1.0, ease: "power2.in" }, 14.7);
+
+    window.__timelines["s06"] = tl;
+  </script>
+</template>
