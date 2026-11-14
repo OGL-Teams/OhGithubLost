@@ -29,8 +29,8 @@ library;
 
 import 'package:flutter/material.dart';
 
-import 'error_surface.dart';
 import '../util/og_l_space.dart';
+import 'error_surface.dart';
 
 /// 统一用户反馈（SnackBar）。
 ///
