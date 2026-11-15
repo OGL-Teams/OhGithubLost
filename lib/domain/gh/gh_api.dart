@@ -508,7 +508,7 @@ class GhApi implements CacheRemote {
     return GhTag(
       name: name,
       sha: GhJson.str(refJson, 'sha', fallback: sha),
-      raw: object ?? const <String, dynamic>{'ref': 'refs/tags/$name'},
+      raw: object ?? <String, dynamic>{'ref': 'refs/tags/$name'},
     );
   }
 

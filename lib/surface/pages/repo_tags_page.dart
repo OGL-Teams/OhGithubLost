@@ -16,8 +16,8 @@ import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/flat_list.dart';
 
-String _t(String key, [Map<String, Object?>? args]) =>
-    OgLI18n.instance.t('repo_tags', key, args);
+String _t(String key, [Map<String, String>? args]) =>
+    OgLI18n.instance.t('repo_tags', key, args: args);
 
 /// 标签列表页。
 class RepoTagsPage extends StatefulWidget {
@@ -135,7 +135,7 @@ class _RepoTagsPageState extends State<RepoTagsPage> {
             builder: (BuildContext dialogContext) => AlertDialog(
               title: Text(_t('deleteTitle')),
               content:
-                  Text(_t('deleteBody', <String, Object?>{'name': tag.name})),
+                  Text(_t('deleteBody', <String, String>{'name': tag.name})),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(false),

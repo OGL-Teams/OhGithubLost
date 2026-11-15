@@ -64,9 +64,9 @@ void main() {
       ]);
     final List<GhTag> list = await _api(t).tags('o/r', perPage: 50, page: 2);
     expect(list.single.name, 'v1');
-    expect(t.received.single.path, '/repos/o/r/tags');
-    expect(t.received.single.query['per_page'], '50');
-    expect(t.received.single.query['page'], '2');
+    expect(t.received.single.url, contains('/repos/o/r/tags'));
+    expect(t.received.single.url, contains('per_page=50'));
+    expect(t.received.single.url, contains('page=2'));
   });
 
   test('createTag 走 POST git/refs 且 body 为 ref+sha', () async {
@@ -79,7 +79,7 @@ void main() {
         await _api(t).createTag('o/r', name: 'v2', sha: 'deadbeef');
     expect(tag.name, 'v2');
     expect(t.received.single.method, NetMethod.post);
-    expect(t.received.single.path, '/repos/o/r/git/refs');
+    expect(t.received.single.url, endsWith('/repos/o/r/git/refs'));
     final Map<String, dynamic> body =
         jsonDecode(t.received.single.body as String) as Map<String, dynamic>;
     expect(body['ref'], 'refs/tags/v2');
@@ -90,7 +90,7 @@ void main() {
     final _RecordingTransport t = _RecordingTransport();
     await _api(t).deleteTag('o/r', 'v3');
     expect(t.received.single.method, NetMethod.delete);
-    expect(t.received.single.path, '/repos/o/r/git/refs/tags/v3');
+    expect(t.received.single.url, endsWith('/repos/o/r/git/refs/tags/v3'));
   });
 
   test('tag() 从 Git ref 取 sha', () async {
@@ -100,7 +100,7 @@ void main() {
       });
     final GhTag? tag = await _api(t).tag('o/r', 'v4');
     expect(tag?.sha, 'cafebabe');
-    expect(t.received.single.path, '/repos/o/r/git/ref/tags/v4');
+    expect(t.received.single.url, endsWith('/repos/o/r/git/ref/tags/v4'));
   });
 
   test('Tags 三项设置持久化往返（含 false 与坏值回落）', () {
