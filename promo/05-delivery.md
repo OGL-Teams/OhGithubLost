@@ -1,62 +1,51 @@
-# OGL 宣传片 · 交付说明（05-delivery）· v2
+# OGL 宣传片 · 交付说明（05-delivery）· 3D One-Shot
 
-## 分支与产物
+## 成片
 
 | 项 | 值 |
 |---|---|
-| 专用分支 | `video` |
-| CI 工作流 | `.github/workflows/promo-render.yml` |
-| 触发 | push 到 video / main / promo\/**（限 `promo/**` 与 workflow 变更）、手动 dispatch |
-| tag | `promo-<sha7>`，每次 video 分支渲染成功自动创建并推送 |
-| Release | 同 tag，附带 4 个文件 |
-| 成片 | `OGL-Promo.mp4`（180s / 1920×1080 / 30fps / H.264 CRF16 + 180s 编排音轨） |
-| 轻量版 | `OGL-Promo-720p.mp4`（1280×720 / CRF23 / preset slow / faststart） |
-| 压缩包 | `OGL-Promo.7z` — **7-Zip `-mx=9 -m0=LZMA2 -md=64m -mmt=on` 极限压缩**，含两个成片、联系表、lint/check、EDL、交付文档 |
-| 联系表 | `contact-sheet.jpg`（每 20 秒一帧，3×3，覆盖全片 180s） |
-| 校验 | `SHA256SUMS.txt` |
-| 诊断 | `lint.json`（硬门禁，0 error）、`check.json`（运行时/布局诊断） |
+| 分支 | `video` |
+| 技术栈 | HyperFrames 0.9.46 + Three.js（本地 vendor）+ GSAP（空 timeline 注册） |
+| 结构 | **单个 canvas / 单相机 / 一镜到底 / 零切镜 / 零黑场** |
+| 时长 | **175.01s**，由 BGM《月宫试云衣》完整长度决定，不裁切 |
+| 分辨率 | 1920×1080 / 30fps；另出 720p 轻量版 |
+| 压缩包 | `OGL-Promo.7z`，7-Zip `-mx=9 -m0=LZMA2 -md=64m -mmt=on` |
+| tag | `promo-<sha7>`，每次 video 分支渲染成功自动打 tag + Release |
 
-## 源文件
+## 关键源文件
 
 ```
 promo/
-├── index.html                 # 根：11 场景 + 180s 音轨 + 暗角
-├── compositions/s01-intro.html … s11-outro.html
-├── assets/screens/01-home.png … 12-legal.png   # 12 张 Android 实机截图
-├── assets/fonts/              # UbuntuMono-Regular/Bold.ttf
-├── assets/ogl_icon.svg        # 仓库原图标
-├── assets/vendor/gsap.min.js  # GSAP 3.14.2 本地副本
-├── assets/audio/score-180s.mp3    # 180s 编排：40s 静默 + 132s 原曲 + 8s 收
-├── assets/audio/bgm.wav       # 96 BPM 合成备用轨
-├── assets/audio/bgm-beats.json
-├── scripts/make_bgm.py        # 确定性 BGM 生成器（seed 20261114）
-├── package.json / meta.json
+├── index.html                    # 单个 WebGL canvas + HUD + BGM
+├── assets/one-shot.js            # Three.js 场景、相机路径、hf-seek 纯函数
+├── assets/three/                 # three.module.min.js / three.core.min.js / LICENSE
+├── assets/vendor/gsap.min.js
+├── assets/audio/bgm-lunar.mp3    # 175.01s 主音轨
+├── assets/panels/panel-00..10.png# 烘焙中文面板（CJK 不依赖 CI 字体）
+├── assets/screens/01..12.png     # 12 张 Android 实机截图
+├── scripts/bake_panels.py        # 面板烘焙器（本地运行，PNG 入库）
 ├── 01-brief.md · 02-storyboard.md · 03-asset-plan.md
-├── 04-edl.md · 06-music-plan.md · 07-motion.md · 05-delivery.md
+├── 04-edl.md · 06-music-plan.md · 07-motion.md
+└── 08-architecture.md            # 2D 重构的历史记录，当前不参与渲染
 ```
+
+`compositions-2d-archive/` 是上一版 180s 多场景 HTML，已归档，不参与 lint / render。
 
 ## 本地修改方式
 
 ```bash
-python3 promo/scripts/make_bgm.py        # 改备用音乐后须同步提交 wav
-npm --prefix promo run lint              # 静态门禁（不需浏览器）
-npm --prefix promo run check             # 运行时/布局/对比度（需 Chromium）
-npm --prefix promo run render            # 本地出片（ARM64 需 HYPERFRAMES_BROWSER_PATH）
+python3 promo/scripts/bake_panels.py       # 改面板文案后重烘焙
+npm --prefix promo run lint                # 静态门禁（不需 WebGL）
+npm --prefix promo run render              # 官方 Chrome 环境
 ```
 
-改主音轨：替换 `assets/audio/wordless-56s.mp3` 并同步 `index.html` 的 `#bgm src`；若切回合成 BGM，把 `#bgm` 与 `#bgm-fallback` 的 `data-volume` 对调即可，画面无需改动。
-改卡点：同时调整 root 的 `cuts` 数组、8 个 host 的 `data-start`/`data-duration`、各子场景的 wipe 绝对时间、`02-storyboard.md` 与 `04-edl.md`。
+改相机节奏：只动 `assets/one-shot.js` 的 `poseAt(t)`。改站点：动 `STATIONS` 数组 + 对应面板贴图。改片长：必须同步 BGM、`index.html` 的 4 个 `data-duration`、audio duration、`one-shot.js` 的 `DUR`、EDL 与 workflow 校验。
 
 ## 已知限制
 
-1. **音乐授权**：《子不语 Wordless》版权归原权利人，仅用于本次样片评估。正式对外投放前必须确认授权，或切回 `bgm.wav`（已在工程内保留为零改动备用方案）。
-2. **截图隐私**：5 张实机图含 `@yingo-server` 账号名与通知条目；对外发布前建议打码或确认可公开。
-3. **示意重绘**：s3/s4/s5/s6/s7 的卡片、架构、节点、滑块、平台轮廓是代码绘制，用于表达关系，不冒充应用界面；s2/s5/s6/s8 已用真实截图作为主证据。
-4. **桌面端无截图**：只有 Android 竖屏实机图，s7 平台卡仍是矢量示意。
-5. **本地 ARM64 渲染环境**：HyperFrames 0.9.46 的 `browser ensure` 误判 linux-arm64 无 Chrome 构建（实际 Chrome for Testing Stable 157 已提供 `chrome-headless-shell-linux-arm64.zip`）；本地可装 Alpine `chromium` 并设 `HYPERFRAMES_BROWSER_PATH=/usr/bin/chromium`。正式出片统一在 CI 的 ubuntu-latest 完成，CI 显式安装 `ffmpeg`、`p7zip-full`、`fonts-noto-cjk`。
-6. **中文字体**：CI 已装 Noto CJK；本地缺 CJK 字体会出现豆腐块。
-7. **无配音**：全片只有音乐与画面，无旁白与字幕。
-8. **`timeline_track_too_dense` 警告**：单文件同轨道元素较多的可维护性建议，不影响渲染。
-9. **BGM 复现性**：CI 重算 `bgm.wav` 并与提交产物逐字节比对；升级 numpy / 改算法时须同时提交新 wav。
-10. **设计系统**：全片按 Material 3 令牌实现（`index.html` 第 12–120 行为唯一来源）：形状仅 0/4/8/12、M3 type scale、surface-container 分级、零投影；动效规范见 `07-motion.md`。
-11. **压缩边界**：1080p 源片已是 H.264 CRF16，7-Zip 对视频流几乎无收益（实测 11.86 MB → 11.76 MB）；要显著减体积请用 `OGL-Promo-720p.mp4`。
+1. **音乐授权**：《月宫试云衣》版权归原权利人；仅内部样片，正式投放须授权或换曲。
+2. **WebGL 环境**：本地 ARM64 Alpine Chromium 在 PRoot 下启动超时；正式出片只认 CI 的 ubuntu-latest Chrome + SwiftShader。
+3. **截图隐私**：实机图含 `@yingo-server` 账号名与通知条目，公开前建议处理。
+4. **3D 可读性**：面板只做 ≤0.045rad 的轻微倾斜；不把产品 UI 当装饰块旋转。
+5. **无配音 / 无字幕**：全片靠 3D 面板与 HUD 承载文字。
+6. **lint warning**：`nested_structure_needs_subcomposition` 1 条（HUD 进度条内嵌填充 div），仅为可维护性建议，不影响渲染。

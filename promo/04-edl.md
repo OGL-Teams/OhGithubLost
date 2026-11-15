@@ -1,62 +1,69 @@
-# OGL 宣传片 · EDL（04-edl）· 180s 重构版
+# OGL 宣传片 · EDL（04-edl）· 3D One-Shot
 
-主编辑：`promo/index.html`（11 个 scene host）
-渲染：1920×1080 / 30fps / 180.0s / H.264 + 180s 编排音轨
-结构依据：`08-architecture.md`
+主编辑文件：`promo/index.html`（单个 canvas composition）
+渲染：1920×1080 / 30fps / **175.01s** / H.264 + AAC
+片长锁：`assets/audio/bgm-lunar.mp3`（175.046531s，源曲 175.007979s，不裁切）
 
 ## 轨道
 
 | 轨道 | 内容 |
 |---|---|
-| 1 | 11 个 scene host（s01–s11） |
-| 8 | `#vignette` 暗角 + `#grain` 扫描线（全片静态） |
-| 9 | `#bgm` ← `assets/audio/score-180s.mp3`，volume 1 |
+| 1 | `#gl` — Three.js WebGL canvas，全片唯一画面层 |
+| 2 | `#hud` / `#chapter` / `#progress` — 常驻轻量 HUD |
+| 9 | `#bgm` ← `assets/audio/bgm-lunar.mp3`，volume 1 |
 
-## 场景表
+## 时间线（不是切镜表，是相机路径采样）
 
-| # | In | Out | 时长 | 场景 | 版式 | 进入转场 | 截图 |
-|---|---|---|---|---|---|---|---|
-| s01 | 00:00 | 00:12 | 12 | 片头 | 居中 | 第 0 帧 2px 主色线已在 | — |
-| s02 | 00:12 | 00:30 | 18 | 仓库目录 | A 证据台 | 从横线纵向展开 | 06-repo-files |
-| s03 | 00:30 | 00:46 | 16 | 长文件阅读 | B 全幅裁切 | 向下揭示（文件被打开） | 07-code-view |
-| s04 | 00:46 | 01:02 | 16 | 编辑与保存 | C 解剖图 | 容器变换（scale 0.96→1） | 08-editor-save |
-| s05 | 01:02 | 01:20 | 18 | Issue 评论 | D 序列条 | 从下升起（评论面板） | 09-issue-comment |
-| s06 | 01:20 | 01:36 | 16 | 启动日志 | E 操作接龙 | 横向揭示 | 11-log |
-| s07 | 01:36 | 01:56 | 20 | 下载与 DNS | A + 局部 | 从右滑入 | 10-network-dns |
-| s08 | 01:56 | 02:14 | 18 | 法律与语言 | C 解剖图 | 圆形展开（点击点为心） | 12-legal |
-| s09 | 02:14 | 02:30 | 16 | 多账号 | D 序列条 | 三图错峰升起 | 01 / 02 / 03 |
-| s10 | 02:30 | 02:48 | 18 | 产物与许可 | E 操作接龙 | 表格行落下 | 05-about |
-| s11 | 02:48 | 03:00 | 12 | 片尾 | 居中 | 从横线展开 | ogl_icon |
+| 全局时间 | 相机 z（约） | 经过站点 | HUD 章节 |
+|---|---|---|---|
+| 0s | +34 | 00 开场进入视野 | 00 · 开场 |
+| 14s | +17 | 01 仓库 | 01 · 仓库 |
+| 30s | -1 | 02 代码 | 02 · 代码 |
+| 46s | -20 | 03 编辑 | 03 · 编辑 |
+| 62s | -39 | 04 Issue | 04 · Issue |
+| 80s | -60 | 05 日志 | 05 · 日志 |
+| 96s | -79 | 06 网络 | 06 · 网络 |
+| 116s | -103 | 07 法律 | 07 · 法律 |
+| 134s | -126 | 08 账号 | 08 · 账号 |
+| 150s | -143 | 09 产物 | 09 · 产物 |
+| 168s | -163 | 10 片尾 | 10 · 片尾 |
+| 175.01s | -172 | 停在片尾后方 | 10 · 片尾 |
 
-时长校验：12+18+16+16+18+16+20+18+16+18+12 = **180**。
+相机公式（纯时间函数）：
 
-## 配乐对位
+```js
+u = t / 175.01
+camera.z = 34 - u * 206
+camera.x = sin(t*0.055)*1.15 + sin(t*0.013)*0.55
+camera.y = 3.0 + sin(t*0.041)*0.35
+lookAt( sin(t*0.021)*0.9, 0.4 + sin(t*0.031)*0.35, camera.z - 17 )
+```
 
-`assets/audio/score-180s.mp3`（180.04s）：
+站点近场函数：
 
-| 区间 | 音量 | 画面对应 |
-|---|---|---|
-| 00:00–00:40 | 0 | 片头 + 仓库目录前半（只靠文案与界面） |
-| 00:40–00:52 | 0 → 0.5 | 进入长文件阅读 |
-| 00:52–01:40 | 0.5 | 编辑 / Issue / 日志（铺底不抢戏） |
-| 01:40–02:00 | 0.5 → 1.0 | 下载与 DNS 推进 |
-| 02:00–02:52 | 1.0 | 法律 / 多账号 / 产物（满档） |
-| 02:52–03:00 | 1.0 → 0 | 片尾收净 |
+```js
+near = exp(-((camera.z - station.z)/13)^2)
+station.scale = 0.90 + 0.10 * near
+panel.opacity = 0.72 + 0.28 * near
+```
+
+## 配乐
+
+完整《月宫试云衣》，无裁切、无淡入淡出、无额外混音。画面唯一"对齐"是 90–160s 的曝光/雾距抬升，对应曲子的能量段；不做帧级卡点，因为一镜到底不该被鼓点切碎。详见 `06-music-plan.md`。
 
 ## 渲染
 
 ```bash
-python3 promo/scripts/make_score.py     # 180s 编排（源曲在挂载目录）
-npm --prefix promo run lint             # 静态硬门禁
-npm --prefix promo run render           # 本地出片
+npm --prefix promo run lint    # 静态硬门禁
+npm --prefix promo run render  # 官方 Chrome 环境
 ```
 
-CI：`.github/workflows/promo-render.yml` → 1080p + 720p + 7z + tag `promo-<sha7>`。
+CI：`.github/workflows/promo-render.yml` → lint → render → 720p → 7z -mx=9 → tag `promo-<sha7>` → Release。
 
 ## 自检
 
-- 根 `data-duration="180"` = 11 个 host 时长之和。
-- 每个 `.clip` 有 `data-start` / `data-duration` / `data-track-index`。
-- 每个 host id = `data-composition-id` = `window.__timelines` key。
-- 相邻场景转场类型不重复；无全屏色块 wipe。
-- 第 0 帧有可见元素（2px 主色线）。
+- [x] 根 `data-duration="175.01"` 与音轨时长一致
+- [x] 单个 composition、单个 canvas、无 `data-composition-src`
+- [x] `hf-seek` 纯函数；无 rAF / Date.now / Math.random / timer
+- [x] `window.__hf.buildReady.oneShot` 等纹理加载与 shader 编译
+- [x] 第 0 帧亮色，有 HUD、导轨、地面、第一块面板

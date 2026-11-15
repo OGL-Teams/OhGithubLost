@@ -1,13 +1,12 @@
 name: Promo Render
 
 # ============================================================================
-# OGL 宣传片 · 代码渲染管线
+# OGL 宣传片 · Three.js 一镜到底渲染管线
 #
-# 本地（任意架构）：只写 HTML/CSS/GSAP、音轨、分镜与静态 lint。
-# CI（ubuntu-latest x64）：装 Chrome Headless Shell，逐帧渲染 MP4 + 混音，
-#                          用 7-Zip 极限压缩打进 tag / Release，并上传 artifact。
+# 本地：写 HTML / Three.js / 面板贴图 / BGM / 文档，跑静态 lint。
+# CI：ubuntu-latest x64 官方 Chrome 逐帧渲染 WebGL → MP4 → 720p → 7z → tag。
 #
-# 分支：video（宣传片工程专用分支）；main 上 promo/ 变更也会触发。
+# 片长由 BGM 决定：HOYO-MiX《月宫试云衣》完整 175.01s，不裁切。
 # ============================================================================
 
 on:
@@ -33,11 +32,12 @@ permissions:
 env:
   HYPERFRAMES_TELEMETRY: '0'
   HF_VERSION: '0.9.46'
+  PROMO_DURATION: '175.01'
 
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,15 +47,11 @@ jobs:
         with:
           node-version: '22'
 
-      # 片中大量中文/俄文/德文文案；GitHub runner 默认无 CJK 字体，
-      # 不装会渲染成豆腐块。ffmpeg/ffprobe 供 HyperFrames 编码与探测使用
-      # （ubuntu-latest 镜像不保证预装，首轮渲染即因缺它失败）。
-      - name: Install CJK fonts & FFmpeg
+      - name: Install fonts, FFmpeg, 7-Zip
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji ffmpeg p7zip-full
           fc-cache -f
-          fc-list :lang=zh | head -3
           ffmpeg -version | head -1
           ffprobe -version | head -1
 
@@ -70,27 +66,29 @@ jobs:
           npx -y "hyperframes@${HF_VERSION}" --version
           npx -y "hyperframes@${HF_VERSION}" browser ensure
 
-      # 主音轨是 180s 编排（源曲不在仓库，不可复现）；校验时长与可解码性即可。
-      # 同时确认所有场景引用的截图都在仓库里，避免 CI 渲染出破图。
-      - name: Verify audio & screenshot assets
+      - name: Verify BGM length and 3D assets
         run: |
           set -euo pipefail
-          test -s promo/assets/audio/score-180s.mp3
+          AUDIO=promo/assets/audio/bgm-lunar.mp3
+          test -s "$AUDIO"
           DUR=$(ffprobe -v error -show_entries format=duration \
-                -of default=noprint_wrappers=1:nokey=1 \
-                promo/assets/audio/score-180s.mp3)
+                -of default=noprint_wrappers=1:nokey=1 "$AUDIO")
           python3 - "$DUR" <<'PY'
           import sys
           d = float(sys.argv[1])
-          assert 179.0 <= d <= 181.0, f"配乐时长 {d}s 不是 180s ±1s"
-          print(f"score-180s.mp3: {d:.3f}s OK")
+          assert 174.5 <= d <= 175.5, f"BGM 时长 {d}s 不是 175.01s ±0.5s"
+          print(f"bgm-lunar.mp3: {d:.3f}s · 片长锁 {d:.2f}s")
           PY
+          test -s promo/assets/one-shot.js
+          test -s promo/assets/three/three.module.min.js
+          test -s promo/assets/three/three.core.min.js
+          for i in $(seq -w 0 10); do test -s "promo/assets/panels/panel-${i}.png"; done
           missing=0
-          for f in $(grep -rhoE 'assets/screens/[0-9a-z-]+\.png' promo/compositions | sort -u); do
+          for f in $(grep -rhoE 'assets/(screens|panels)/[0-9a-z-]+\.(png|jpg)' promo/assets/one-shot.js promo/index.html | sort -u); do
             if [ ! -s "promo/$f" ]; then echo "::error::缺素材 promo/$f"; missing=1; fi
           done
-          [ "$missing" = "0" ] && echo "所有截图引用均存在"
-          ls -lh promo/assets/audio/ promo/assets/screens/ | tail -20
+          [ "$missing" = "0" ] && echo "3D 素材引用均存在"
+          ls -lh "$AUDIO" promo/assets/one-shot.js promo/assets/panels/ | tail -14
 
       - name: Lint composition (strict gate)
         working-directory: promo
@@ -114,34 +112,28 @@ jobs:
               sys.exit(1)
           PY
 
-      # 运行时/布局/对比度检查需要起浏览器，结果作为诊断上传；
-      # 仅静态 lint 的 error 级别作为硬门禁，避免环境差异误杀渲染。
       - name: Runtime check (advisory)
         working-directory: promo
         continue-on-error: true
         run: |
           npx -y "hyperframes@${HF_VERSION}" check --json . \
-            --budget 5m --samples 9 > ../check.json 2>&1 || true
+            --budget 8m --samples 6 > ../check.json 2>&1 || true
           python3 - <<'PY'
           import json
           raw = open('../check.json', encoding='utf-8').read()
           try:
               d = json.loads(raw[raw.index('{'): raw.rindex('}') + 1])
               print('check ok =', d.get('ok'))
-              for k in ('errorCount', 'warningCount', 'issueCount', 'status', 'summary'):
-                  if k in d: print(k, '=', d[k])
               for key in ('errors', 'violations', 'issues', 'findings'):
                   items = d.get(key) or []
                   if isinstance(items, list) and items:
                       print(f'-- {key}: {len(items)}')
-                      for it in items[:15]:
+                      for it in items[:10]:
                           if isinstance(it, dict):
                               print('  ', it.get('severity'), it.get('code'),
-                                    it.get('selector') or '', str(it.get('message',''))[:160])
-                          else:
-                              print('  ', str(it)[:160])
+                                    str(it.get('message',''))[:140])
           except Exception:
-              print(raw[:3000])
+              print(raw[:2500])
           PY
 
       - name: Render MP4 (delivery 1080p)
@@ -150,16 +142,14 @@ jobs:
           npx -y "hyperframes@${HF_VERSION}" render promo \
             --output promo/final/OGL-Promo.mp4 \
             --fps 30 \
-            --workers 6 \
+            --workers 4 \
             --no-browser-gpu
           ls -lh promo/final/
           ffprobe -v error \
             -show_entries format=duration,size,bit_rate \
-            -show_entries stream=width,height,r_frame_rate,codec_name,bit_rate \
+            -show_entries stream=width,height,r_frame_rate,codec_name \
             -of default=noprint_wrappers=1 promo/final/OGL-Promo.mp4
 
-      # 1080p 源片已是 CRF16，体积压不动；真正的「小包」靠降分辨率重编码。
-      # 720p / CRF23 通常只有源片的 30–40%，适合聊天工具与移动端分发。
       - name: Derive 720p lightweight cut
         run: |
           set -euo pipefail
@@ -169,22 +159,12 @@ jobs:
             -c:a aac -b:a 128k -movflags +faststart \
             promo/final/OGL-Promo-720p.mp4
           ls -lh promo/final/*.mp4
-          echo "--- 体积对比 ---"
-          python3 - <<'PY'
-          import os
-          for f in ('promo/final/OGL-Promo.mp4','promo/final/OGL-Promo-720p.mp4'):
-              print(f"{f:36s} {os.path.getsize(f)/1048576:7.2f} MB")
-          a=os.path.getsize('promo/final/OGL-Promo.mp4')
-          b=os.path.getsize('promo/final/OGL-Promo-720p.mp4')
-          print(f"720p 为源片的 {b/a*100:.1f}%")
-          PY
 
       - name: Generate contact sheet
         run: |
           ffmpeg -y -i promo/final/OGL-Promo.mp4 -vf \
             "fps=1/20,scale=480:-1,tile=3x3" -frames:v 1 \
             promo/final/contact-sheet.jpg
-          ls -lh promo/final/contact-sheet.jpg
 
       - name: Package with 7-Zip (maximum compression)
         run: |
@@ -194,13 +174,12 @@ jobs:
              promo/final/OGL-Promo-720p.mp4 \
              promo/final/contact-sheet.jpg \
              lint.json check.json \
+             promo/01-brief.md promo/02-storyboard.md \
              promo/04-edl.md promo/05-delivery.md \
+             promo/06-music-plan.md promo/07-motion.md \
              promo/final/package/
-          # -mx=9 极限压缩；-m0=LZMA2 -md=64m 提高字典；-mmt=on 多核。
-          # 注意：MP4 本身已是 H.264 压缩流，7z 主要收益在打包与文档，不是再压视频。
           7z a -t7z -mx=9 -m0=LZMA2 -md=64m -mmt=on -bd \
              promo/final/OGL-Promo.7z ./promo/final/package/*
-          ls -lh promo/final/OGL-Promo.mp4 promo/final/OGL-Promo-720p.mp4 promo/final/OGL-Promo.7z
           7z t promo/final/OGL-Promo.7z -bd | tail -3
           sha256sum promo/final/OGL-Promo.mp4 promo/final/OGL-Promo-720p.mp4 \
             promo/final/OGL-Promo.7z | tee promo/final/SHA256SUMS.txt
@@ -208,7 +187,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ogl-promo-${{ github.ref_name }}-${{ github.sha }}
+          name: ogl-promo-3d-${{ github.ref_name }}-${{ github.sha }}
           path: |
             promo/final/OGL-Promo.mp4
             promo/final/OGL-Promo-720p.mp4
@@ -219,8 +198,6 @@ jobs:
             check.json
           retention-days: 30
 
-      # 每次 video 分支成功渲染都打一个轻量 tag 并发布 Release；
-      # 手动触发时保留 publish_release 开关作为显式控制。
       - name: Publish to Release & tag
         if: ${{ github.ref == 'refs/heads/video' || (github.event_name == 'workflow_dispatch' && inputs.publish_release) }}
         env:
@@ -230,7 +207,7 @@ jobs:
           TAG="promo-${GITHUB_SHA::7}"
           git config user.name "OGL Promo Bot"
           git config user.email "promo@users.noreply.github.com"
-          git tag -a "$TAG" -m "OGL 宣传片 $TAG · 代码渲染 + Wordless 卡点"
+          git tag -a "$TAG" -m "OGL 宣传片 $TAG · Three.js 一镜到底"
           git push origin "$TAG"
           gh release create "$TAG" \
             promo/final/OGL-Promo.7z \
@@ -238,13 +215,13 @@ jobs:
             promo/final/OGL-Promo-720p.mp4 \
             promo/final/contact-sheet.jpg \
             promo/final/SHA256SUMS.txt \
-            --title "OGL 宣传片 $TAG" \
+            --title "OGL 宣传片 $TAG · 3D 一镜到底" \
             --notes "由 .github/workflows/promo-render.yml 从 promo/ 源码自动渲染。
 
-          - 56s / 30fps / 1920x1080 成片，HOYO-MiX《子不语 Wordless》卡点混音
-          - 5 张 Android 实机截图，面向新手开发者与尝鲜极客
-          - **OGL-Promo-720p.mp4**：720p / CRF23 轻量版，体积约为 1080p 的 30–40%，适合移动端与聊天分发
-          - **OGL-Promo.7z**：7-Zip -mx=9 极限压缩包（含两个成片、联系表、lint/check、EDL、交付文档）
+          - 175.01s / 30fps / 1920x1080，片长由 HOYO-MiX《月宫试云衣》完整曲目决定
+          - 单个 Three.js 相机连续飞行：11 个功能站点、零切镜、零黑场
+          - 亮色 Material 3 长廊，中文面板为烘焙贴图，12 张实机截图作为 3D 平面
+          - OGL-Promo-720p.mp4：轻量版；OGL-Promo.7z：-mx=9 极限压缩包
           - SHA256SUMS.txt：完整性校验
 
-          > 说明：1080p 源片已是 H.264 CRF16，7z 无法再显著压缩视频流；要减体积请看 720p 版本。"
+          > 音轨版权归原权利人，仅随 video 分支用于内部样片。"

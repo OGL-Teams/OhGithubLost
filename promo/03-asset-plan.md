@@ -1,40 +1,40 @@
-# OGL 宣传片 · 素材清单（03-asset-plan）· v2
+# OGL 宣传片 · 素材清单（03-asset-plan）· 3D One-Shot
 
-## pack-b：可验证素材
+## Pack B · 可验证素材（全部入库）
 
-| 文件 | 来源 | 用途 |
+| 文件 | 来源 | 3D 用途 |
 |---|---|---|
-| `assets/screens/01-home.png` | 用户提供 Android 实机截图 | s2 首页仓库列表 |
-| `assets/screens/02-discover.png` | 同上 | s2 发现页 / 议题 / CI 动态 |
-| `assets/screens/03-profile.png` | 同上 | s5 令牌与草稿安全 |
-| `assets/screens/04-settings.png` | 同上 | s6 中文设置与真实配置值 |
-| `assets/screens/05-about.png` | 同上 | s8 版本 / 许可 / 致谢 |
-| `assets/fonts/UbuntuMono-{Regular,Bold}.ttf` | 仓库 `assets/fonts/` | 代码与数据字体 |
-| `assets/ogl_icon.svg` | 仓库 `assets/icon/ogl_icon.svg` | End card 品牌图标 |
-| `assets/audio/wordless-56s.mp3` | 挂载目录 Tiernan_Music，28–84s 裁段转码 | 主音轨，卡点基准 |
-| `assets/audio/bgm.wav` | `scripts/make_bgm.py` 合成 | 备用轨（volume 0） |
-| `assets/audio/bgm-beats.json` | 同上 | 原 96 BPM 网格，保留作对照 |
-| `assets/vendor/gsap.min.js` | HyperFrames registry 自带 GSAP 3.14.2 | 离线动画运行时 |
-| `changed/_posts/v12.6.{3,8,9}.md` | 仓库更新日志 | s1/s3/s8 的证据文案 |
+| `assets/screens/01-home.png` … `12-legal.png` | 用户提供 Android 实机截图 | 9 个站点的右侧 3D 平面贴图 |
+| `assets/audio/bgm-lunar.mp3` | 挂载目录《月宫试云衣》，完整转码 | 主音轨；片长 175.01s 由它决定 |
+| `assets/three/three.module.min.js` | HyperFrames registry `cuboid-carousel` 内置 Three.js | WebGL 运行时 |
+| `assets/three/three.core.min.js` | 同上 | Three.js core 依赖 |
+| `assets/three/Three-LICENSE.txt` | 同上 | MIT 许可 |
+| `assets/vendor/gsap.min.js` | HyperFrames registry 内置 GSAP 3.14.2 | 空根 timeline 注册（runtime 契约） |
+| `assets/fonts/UbuntuMono-{Regular,Bold}.ttf` | 仓库原字体 | 面板 mono 证据行烘焙 |
+| `assets/ogl_icon.svg` | 仓库原图标 | 本版未上片，保留作品牌资产 |
+| `assets/panels/panel-00.png … panel-10.png` | `scripts/bake_panels.py` 本地烘焙 | 11 块 3D 信息面板贴图 |
 
-**截图共同特征**：1080×1920 竖屏、白底、Material 3、中文界面、底部四标签（仓库 / 发现 / 个人 / 设置）、状态栏 10:17–10:18。作为「实机证据」使用，不裁切掉可见文字，不做 3D 倾斜。
+## Pack A · 代码生成视觉
 
-## pack-a：代码绘制的示意视觉
+- 亮色地面 / 网格 / 品牌蓝导轨 / 站点线框 / 小圆点 / 连接线：全部由 `assets/one-shot.js` 在 setup 里生成。
+- 没有生成式图片，没有装饰性 AI 图；所有可读内容都来自真实截图或仓库数据。
 
-`s3` 五功能卡、`s4` 四层架构与越界箭头、`s5` 请求节点、`s6` 语言胶囊与滑块、`s7` 平台轮廓与连接线、`s8` 图标填充——均为 HTML/CSS/SVG 绘制。
+## 面板烘焙
 
-**变更**：v1 的 `s2` 假窗口骨架（虚构导航 + `repo_page.dart` 代码块）已**删除**，改为两张真实截图。其余场景的示意元素不冒充应用界面，只表达架构/状态/数据关系。
+`python3 promo/scripts/bake_panels.py`
+
+- 尺寸 1024×640，M3 亮色卡：8px 圆角、1px `#C7D0DC` 描边、左侧 4px `#0B57D0` 主色条。
+- 字体：本机 Noto Sans CJK（标题 62 / 正文 30）+ Ubuntu Mono（kicker 28 / 证据行 26）。
+- 中文 PNG 已提交进仓库，CI 不需要系统中文字体即可正确显示 3D 文字。
 
 ## 版权与来源
 
-- 5 张截图：用户提供，来自其本人设备，含 `@yingo-server` 账号名与通知条目；对外发布前建议打码或确认可公开。
-- 字体与图标：仓库自有，Apache-2.0 项目资产。
-- `wordless-56s.mp3`：HOYO-MiX《子不语 Wordless》裁段，**版权归原权利人**，仅内部样片评估；正式投放需授权或切回 `bgm.wav`。
-- `bgm.wav`：本项目脚本算法合成，无第三方音频。
-- GSAP：随 HyperFrames registry 分发的本地副本。
+- 实机截图来自用户设备，含 `@yingo-server` 账号名，公开前建议确认。
+- 《月宫试云衣》版权归 HOYO-MiX 及权利人，仅内部样片。
+- Three.js MIT；GSAP 标准许可；Ubuntu Mono 与 OGL 图标为仓库自有资产。
 
 ## 缺口
 
-- 无桌面端实机截图（只有 Android 竖屏），因此 s7 的平台卡仍是矢量示意，不假装成截图。
-- 无配音（需求未要求）。
-- 无应用录屏，卡点靠切点与闪层实现，不做「假操作」动画。
+- 没有 PR 差异、Actions 运行日志、下载管理页的实机截图（本版用日志页/网络页/关于页替代，不伪造）。
+- 无配音，无字幕轨。
+- 本地 ARM64 无法稳定启动 WebGL Chrome；正式出片只认 CI。

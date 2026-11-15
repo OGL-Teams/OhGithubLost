@@ -1,8 +1,9 @@
 {
-  "id": "ogl-promo",
-  "name": "OhGithubLost · 180s · code-rendered",
+  "id": "ogl-promo-3d",
+  "name": "OhGithubLost · Three.js One-Shot · Lunar Palace",
   "width": 1920,
   "height": 1080,
   "fps": 30,
-  "duration": 180
+  "duration": 175.01,
+  "renderer": "three-js-webgl"
 }
