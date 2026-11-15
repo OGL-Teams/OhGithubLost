@@ -27,22 +27,22 @@
 | 134s | -126 | 08 账号 | 08 · 账号 |
 | 150s | -143 | 09 产物 | 09 · 产物 |
 | 168s | -163 | 10 片尾 | 10 · 片尾 |
-| 175.01s | -172 | 停在片尾后方 | 10 · 片尾 |
+| 175.01s | -158 | 停在片尾后方（留 8 单位余量） | 10 · 片尾 |
 
 相机公式（纯时间函数）：
 
 ```js
 u = t / 175.01
-camera.z = 34 - u * 206
+camera.z = 34 - u * 192
 camera.x = sin(t*0.055)*1.15 + sin(t*0.013)*0.55
 camera.y = 3.0 + sin(t*0.041)*0.35
-lookAt( sin(t*0.021)*0.9, 0.4 + sin(t*0.031)*0.35, camera.z - 17 )
+lookAt( sin(t*0.021)*0.9, 0.4 + sin(t*0.031)*0.35, camera.z - 21 )
 ```
 
 站点近场函数：
 
 ```js
-near = exp(-((camera.z - station.z)/13)^2)
+near = exp(-((camera.z - station.z)/10)^2)
 station.scale = 0.90 + 0.10 * near
 panel.opacity = 0.72 + 0.28 * near
 ```
