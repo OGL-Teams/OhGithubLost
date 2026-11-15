@@ -1,60 +1,41 @@
-# release_notes · 发布说明
+# 发布说明 / Release Notes
 
-每版本一个 Markdown，**中英逐条对照**，固定小节：新增 / 变更 / 修复 / 已知限制 / 产物。
+> 体例从属于 [`docs/DOCUMENT_STYLE.md`](../docs/DOCUMENT_STYLE.md)。
+> Convention is subordinate to [`docs/DOCUMENT_STYLE.md`](../docs/DOCUMENT_STYLE.md).
 
-- 文件名：`v<版本>.md`（如 `v6.0.0.md`）；
-- 未发布成功 / 跳过的版本**不建文件**，在 `CHANGELOG.md` 里标注；
-- 发布时正文由 `release_notes/v<版本>.md` 写入 GitHub Release。
+每版本一个文件，**中英逐条对照**；固定小节见上位规范。
+One file per release, **bilingual line by line**; fixed sections are defined in
+the parent guide.
 
-## 正文是怎么进到 Release 页的（v6.4.2 起自动化）
+- 文件名 / File name: `v<版本>.md`（例如 / e.g. `v12.6.10.md`）
+- 未发布或跳过的版本不建文件，在 `CHANGELOG.md` 标注。
+  Unreleased or skipped versions have no file here; record them in `CHANGELOG.md`.
+- 发布时以本目录文件写入 GitHub Release 正文。
+  The published Release body is taken from the matching file in this directory.
 
-发布作业 `build.yml` → `release` job 的「生成发布说明」步骤按**优先级**取正文：
+## 自动化 / Automation
 
-| 顺序 | 来源 | 说明 |
+发布作业 `build.yml` 的 `release` job 按以下优先级取正文。
+The `release` job in `build.yml` selects the body in this order:
+
+| 顺序 / Order | 来源 / Source | 说明 / Note |
 | --- | --- | --- |
-| ① | workflow 输入 `release_notes` | 手工 dispatch 时显式传入 |
-| ② | `release_notes/v<版本>.md` | **正规来源** |
-| ③ | `release_notes/v<版本>-<通道>.md` | 预发布（如 `v7.0.0-beta.md`） |
-| ④ | 自动模板 | 兜底；同时发 warning 提示缺文件 |
+| ① | workflow 输入 `release_notes` | 手工 dispatch 显式传入 / Explicit manual dispatch input |
+| ② | `release_notes/v<版本>.md` | **正规来源 / Canonical** |
+| ③ | `release_notes/v<版本>-<通道>.md` | 通道预发布 / Channel pre-release |
+| ④ | 自动模板 / Auto template | 兜底并发警告 / Fallback, emits a warning |
 
-在此之前只有 ① 和 ④ —— 仓库里写好的发布说明**不会**出现在 Release 页上，
-线上看到的是信息量最少的模板（263 字符 vs 笔记的 1500+），于是每个版本都得
-事后手工 PATCH 一次，漏了就一直是错的。现在发布作业自己读笔记。
+若线上 Release 正文明显偏短，说明当时走了兜底模板；检查对应文件是否存在，
+必要时 PATCH 补齐。历史版本清单由 `changed/releases.json` 与 `CHANGELOG.md`
+维护，本文件不再保留静态版本表。
+A conspicuously short published body indicates the fallback template was used;
+verify the corresponding file and PATCH the Release if needed. Historical version
+inventory is maintained in `changed/releases.json` and `CHANGELOG.md`; no static
+version table is kept here.
 
-> 若某版 Release 正文明显偏短（只有通道/版本/产物三行），说明当时用的是
-> 兜底模板：检查 `release_notes/v<版本>.md` 是否存在，然后 PATCH 补上。
+## 历史分界 / Boundary
 
-## 跳版本核查结论（2026-10-06 全量比对）
-
-把 CHANGELOG、本目录、`changed/_posts/`、线上 Release 四处清单逐版本比对后：
-
-| 版本 | 情况 |
-| --- | --- |
-| **v6.0.1** | CHANGELOG / 本目录 / 日志站**都有**，但**从未发布为 GitHub Release**（线上 404）。改动已并入 v6.2.0；日志站那一篇已如实标注并指向 v6.2.0。 |
-| **v4.4.0** | CHANGELOG 有条目，但本目录与日志站都缺文件，且未标注未发布。**本文件为事后补齐**。 |
-| v5.4.0 / v5.5.0 | 明确标注「内部开发版 · 未单独发布」 → 正确。 |
-| v5.7.0 / v5.8.0 / v2.1.0 | 明确标注「未发布 / 跳过」 → 正确。 |
-| v5.9.0 | 明确标注「未发布成功 · 构建失败」 → 正确（本目录保留其说明，日志站按无日期跳过）。 |
-| 其余 | CHANGELOG 写 `v4.2.0-alpha` 而文件名为 `v4.2.0-alpha.md`，属**命名后缀差异**，非缺口。 |
-
-**结论**：真正的缺口只有 **v6.0.1 缺 GitHub Release** 与 **v4.4.0 缺发布说明**（已补）。
-不再为 v6.0.1 事后补建 Release —— 它没有对应的构建产物，凭空建一个空 Release
-会让人误以为它发布过；日志站那篇已说明情况并指向 v6.2.0。
-
-| 文件 | 对应版本 |
-| --- | --- |
-| `v7.4.0.md` | 7.4.0 正式版（仓库文件操作接入文件操作服务 + 遗留缺陷修复批） |
-| `v7.3.1.md` | 7.3.1 正式版（界面细节修复批：弹层闭场动效 / 表单返回保护 / 动效与无障碍覆盖 / 多语言文案） |
-| `v7.3.0.md` | 7.3.0 正式版（新增文件操作服务 + 传输层健全 + 界面与交互修复） |
-| `v7.2.2.md` | 7.2.2 正式版（修复一轮界面与交互审查发现的问题） |
-| `v7.2.1.md` | 7.2.1 正式版（调整平台架构兼容性） |
-| `v7.0.0.md` | 7.0.0 正式版（新增 Web 版 + 按版本发布到 app/） |
-| `v6.5.0.md` | 6.5.0 正式版（一轮全量审查的修复） |
-| `v6.4.3.md` | 6.4.3 正式版（删内置代理，只留自定义通道；去掉静默降级） |
-| `v6.4.2.md` | 6.4.2 正式版（图标改由 `assets/icon` 派生 + 修两个自 v5.6.0 起存在的缺陷） |
-| `v6.4.1.md` | 6.4.1 正式版（私有仓库加速的知情警告弹窗） |
-| `v6.4.0.md` | 6.4.0 正式版（界面语言由 15 种收敛为 6 种） |
-| `v6.3.0.md` | 6.3.0 正式版（无障碍 + 截屏矩阵 + 可见性统一） |
-| `v6.2.0.md` | 6.2.0 正式版（下载链路重做 + 文件预览 + 隐私承诺） |
-| `v6.0.1.md` | 6.0.1 正式版（加速通道换新代理 + 实验性 Web(wasm)） |
-| `v6.0.0.md` | 6.0.0 正式版（合并 v5.9.0 未发布功能） |
+v12.6.10 之前的文件保留原始体例，不追溯改写。自 v12.6.10 起，
+新增文件一律采用中英逐条对照的固定小节体例。
+Files predating v12.6.10 retain their original style and are not rewritten.
+From v12.6.10 onward, all new files use the bilingual fixed-section convention.

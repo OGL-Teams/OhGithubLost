@@ -1,58 +1,72 @@
-# 更新日志写作规范
+# 更新日志写作规范 / Changelog Writing Guide
 
-本目录下的文章面向**使用者**，不是开发者文档。写作时严格遵守以下规范。
+> 本目录体例从属于 [`docs/DOCUMENT_STYLE.md`](../../docs/DOCUMENT_STYLE.md)。
+> 冲突时以上位规范为准。
+> This directory's convention is subordinate to
+> [`docs/DOCUMENT_STYLE.md`](../../docs/DOCUMENT_STYLE.md), which prevails on conflict.
 
-## 语气与文体
+本目录文章面向**使用者**，不是开发者文档；使用中文正式书面语。
+Articles in this directory address **end users**, not developers, in formal Chinese.
 
-- 中文书面语，权威、克制、正式。陈述事实，不使用「我们」「你」「大家」。
-- 不使用感叹号、表情符号、口语化词汇（如「搞定」「爽」「炸了」）。
-- 不使用营销语言（如「史无前例」「重磅」「焕新」），只陈述变化本身。
-- 每个版本第一段为总述，一到两句话说明这一版的主要方向，会被用作列表页摘要。
+## 语气与文体 / Register
 
-## 内容边界
+- 中文书面语，权威、克制、正式；不使用「我们」「你」「大家」。
+  Formal, restrained, authoritative Chinese; no first- or second-person pronouns.
+- 不使用感叹号、表情符号、口语词或营销语言。
+  No exclamation marks, emoji, colloquialisms, or marketing language.
+- 每个版本第一段为总述，一到两句话，用作列表页摘要。
+  The first paragraph is a one- or two-sentence summary used as the list-page excerpt.
+
+## 内容边界 / Scope
 
 只写**使用者能够感知**的变化：界面、功能、行为、性能、兼容性、数据安全。
+Describe only **user-perceivable** changes: interface, features, behaviour,
+performance, compatibility, and data safety.
 
-不写以下内容：
+不写 / Exclude:
 
-- 类名、函数名、变量名、文件名、目录路径、方法调用；
+- 类名、函数名、文件名、路径、提交号、缺陷编号；
+  Class names, function names, file paths, commit hashes, defect IDs;
 - 代码结构、设计模式、重构手法、层级调整；
+  Code structure, design patterns, refactoring, layering changes;
 - 测试、构建、持续集成、依赖库、编译器、工具链；
-- 提交号、缺陷编号、内部术语（如 `isolate`、`pipeline`、`state machine`）；
-- 具体实现机制（如「分片下载」「指数退避」「响应式布局」这类内部手段）；
-  若必须表达，改写为结果：「大文件下载更稳定」「网络波动时仍能续传」。
+  Tests, builds, CI, dependencies, compilers, toolchains;
+- 内部实现机制；必须表达时改写为结果。
+  Internal mechanisms; when unavoidable, state the outcome instead.
 
-## 结构
+## 结构 / Structure
 
 ```
-（总述段落，一到两句）
+（总述段落 / Summary paragraph）
 
-## 新增
+## 新增 / Added
+- ……
 
-- 一条一句，说明新增了什么、使用者能做什么。
+## 改进 / Improved
+- ……
 
-## 改进
+## 修复 / Fixed
+- ……
 
-- 说明原本如何、现在如何，突出使用者感受。
-
-## 修复
-
-- 说明原先的问题症状，修复后的表现。
-
-## 变更
-
-- 说明行为、默认值、兼容性的调整，以及使用者需要知道的影响。
+## 变更 / Changed
+- ……
 ```
 
-- 各节按实际内容取舍，无内容的小节整节删除；顺序固定为 新增 → 改进 → 修复 → 变更。
-- 每节 3 到 8 条，条目按影响从大到小排列。
-- 篇幅控制在 350 至 700 字。旧版本条目少的可短至 200 字。
+- 小节顺序固定；无内容的小节整节删除。
+  Fixed section order; omit empty sections entirely.
+- 每节 3 至 8 条，按影响从大到小排列。
+  Three to eight items per section, ordered by impact.
+- 篇幅 350 至 700 字；旧版本条目少的可短至 200 字。
+  350–700 Chinese characters; older releases may be as short as 200.
 
-## 合并规则
+## 合并规则 / Merging
 
-部分版本从未单独对外发布，其内容并入其后第一个正式发布的版本，作为该版本的一部分叙述，
-**不单列小节、不提及其版本号**，读者不应察觉存在过中间版本。
+未单独发布的版本并入其后首个正式版本叙述，不单列小节、不提及其版本号。
+Unreleased versions are folded into the next published release without a
+separate section or explicit version reference.
 
-## 结尾
+## 结尾 / Closing
 
-正文不写下载地址、不写版本号变更、不写发布流程；下载信息由生成脚本统一追加。
+正文不写下载地址、版本号变更或发布流程；由生成脚本统一追加。
+The body contains no download links, version transitions, or release-process notes;
+the generator appends them.

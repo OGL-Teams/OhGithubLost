@@ -53,6 +53,7 @@ P0/P1 计数取自各交叉报告**确证并裁决后**的口径（原始发现�
 | [`audit_spec_b_fixed.md`](audit_spec_b_fixed.md) | 批 9 UI 动效 / 细节修复与未修理由 |
 | [`download_fix_notes.md`](download_fix_notes.md) | 下载三件套修复笔记（LTS 前） |
 | [`discover_polish_notes.md`](discover_polish_notes.md) | 发现页打磨逐项记录 |
+| [`DOCUMENT_STYLE.md`](DOCUMENT_STYLE.md) | **文档体系统一契约**（双语格式 / 目录职责 / 层级口径 / 历史分界） |
 | [`CONVERGENCE_STATUS.md`](CONVERGENCE_STATUS.md) | **待收敛条权威现状总表**（实测口径，含第九节批 12 结论） |
 | [`MD3_AUDIT.md`](MD3_AUDIT.md) | Material 3 合规审计（2026-11-15，90/100；十类评分 + 建议） |
 | [`PERF.md`](PERF.md) | 性能预算与实测 |

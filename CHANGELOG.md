@@ -1,20 +1,27 @@
-# 更新日志
+# 更新日志 / Changelog
 
 ## 12.6.10（2026-11-15）
 
-### 审计与文档
+### 审计与文档 / Audit and Documentation
 
 - 新增 Material 3 合规只读审计（90/100，无阻断项/警告项）；零气泡三页记为合法项目约束。
-- 文档索引补齐批次 9–12 与发布后专项；REPO_HYGIENE 加现状勘误；68 篇文档、0 死链。
+  Added a read-only Material 3 compliance audit (90/100, no blockers or warnings); flat-layout pages are recorded as a legitimate project constraint.
+- 文档索引补齐批次 9–12 与发布后专项；整理报告加现状勘误；文档全部登记、相对链接零死链。
+  Completed the index for audit batches 9–12 and post-release reviews; added a current-state erratum; all documents are registered with zero broken relative links.
+- 确立文档体系统一规范：发布说明中英逐条对照，网站文章中文书面语，历史报告不追溯改写。
+  Established a unified documentation convention: bilingual release notes, formal Chinese site articles, and no retrospective rewriting of historical reports.
 
-### 门禁
+### 质量检查 / Quality Gates
 
-- version_sync 以 __file__ 定根 + 文档头禁写死版本号；纳入 gate_of_gates（11 支）。
-- 本地十八道离线门禁通过；四层依赖零越级。
+- 版本一致性检查以脚本位置定根，新增文档头禁写死版本号；纳入元验证（11 支）。
+  Version consistency resolves from the script location and rejects hard-coded versions in document headers; both are covered by meta-verification (11 gates).
+- 本地十八道离线门禁通过；四层依赖零越级；类型检查与测试由持续集成裁决。
+  All 18 local offline gates pass; the four-layer graph has zero upward violations; type analysis and tests are adjudicated by CI.
 
-### 其它
+### 其它 / Other
 
-- 等宽文本兜底字号改用 OgLFont；README / AGENTS 头部去版本快照。
+- 等宽文本兜底字号改用统一档位；README 与工程规范头部去除版本快照。
+  The monospaced fallback size now uses a shared token; README and contributor-guide headers no longer carry version snapshots.
 
 ## 12.6.9（2026-11-14）
 

@@ -1,15 +1,16 @@
-# docs · 文档目录
+# docs · 文档目录 / Documentation Index
 
-本目录分四类：**规范**（长期有效、裁决依据）、**设计**（结构与方案）、**审计**（一次性产物，全部登记在总索引）、**运维**（CI / 构建 / 发布）。完整审计台账见 [`AUDIT_INDEX.md`](AUDIT_INDEX.md)。
+本目录分四类 / Four categories：**规范 / Normative**（长期有效、裁决依据 / long-lived, decisive）、**设计 / Design**（结构与方案 / structure and plans）、**审计 / Audit**（一次性产物，全部登记在总索引 / one-off reports, all indexed）、**运维 / Operations**（CI、构建、发布 / CI, build, release）。完整审计台账见 / Full audit ledger: [`AUDIT_INDEX.md`](AUDIT_INDEX.md)。
 
-## 规范（长期有效）
+## 规范（长期有效 / Normative）
 
-| 文件 | 内容 | 读者 |
+| 文件 / File | 内容 / Content | 读者 / Audience |
 | --- | --- | --- |
-| [`QUALITY_STANDARD.md`](QUALITY_STANDARD.md) | 质量标准：**59 条**原则性条款（不谈实现，裁决依据） | 贡献者 |
-| [`CONSISTENCY.md`](CONSISTENCY.md) | 缓存一致性 D1–D9 权威描述：各防线语义、合法例外、失效路径 | 贡献者 |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | 五层架构：层职责 / 依赖方向 / 命名约定 / 自检命令 | 贡献者 |
-| [`I18N.md`](I18N.md) | 多语言维护手册：新增文案 / 翻译流程 | 贡献者 |
+| [`DOCUMENT_STYLE.md`](DOCUMENT_STYLE.md) | **文档体系统一契约**：中英双语格式、目录职责、历史分界 / Unified documentation convention: bilingual format, directory roles, historical boundary | 全体 / All |
+| [`QUALITY_STANDARD.md`](QUALITY_STANDARD.md) | 质量标准：原则性条款，不谈实现，裁决依据 / Quality principles, implementation-agnostic | 贡献者 / Contributors |
+| [`CONSISTENCY.md`](CONSISTENCY.md) | 缓存一致性 D1–D9 权威描述：防线语义、合法例外、失效路径 / Cache-consistency semantics, exceptions, failure paths | 贡献者 / Contributors |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | 四层架构 L0–L3：层职责、依赖方向、命名约定 / Four-layer architecture: responsibilities, dependency direction, naming | 贡献者 / Contributors |
+| [`I18N.md`](I18N.md) | 多语言维护手册：新增文案、翻译流程 / Multilingual maintenance | 贡献者 / Contributors |
 
 ## 设计与方案
 
