@@ -44,7 +44,7 @@ def pick(cands, size):
 F_KICK = pick(MONO_CANDIDATES, 28)
 F_TITLE = pick(FONT_CANDIDATES, 62)
 F_BODY = pick(FONT_CANDIDATES, 30)
-F_MONO = pick(MONO_CANDIDATES, 26)
+F_MONO = pick(FONT_CANDIDATES, 26)  # 证据行含中文；Ubuntu Mono 无 CJK 字形，改用 Noto Sans CJK
 
 PANELS = [
     dict(kicker="00 · OGL / v12.6.9",

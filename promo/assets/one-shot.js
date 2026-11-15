@@ -237,14 +237,15 @@ function smoothstep(a, b, x) {
 
 function poseAt(t) {
   const u = Math.max(0, Math.min(1, t / DUR));
-  // 一镜到底：z 从 +34 到 -172，没有 cut；x/y 用低频正弦制造手持感
+  // 一镜到底：z 从 +34 推进到约 -158（终点站点再留 8 单位余量），
+  // 避免相机贴到片尾截图平面上造成局部放大破图；x/y 用低频正弦制造手持感
   camera.position.set(
     Math.sin(t * 0.055) * 1.15 + Math.sin(t * 0.013) * 0.55,
     3.0 + Math.sin(t * 0.041) * 0.35,
-    34 - u * 206
+    34 - u * 192
   );
   // 始终看向下一站点附近：不是硬切，而是连续 look-ahead
-  const lookZ = camera.position.z - 17;
+  const lookZ = camera.position.z - 21;
   const lookY = 0.4 + Math.sin(t * 0.031) * 0.35;
   camera.lookAt(Math.sin(t * 0.021) * 0.9, lookY, lookZ);
   camera.rotation.z = Math.sin(t * 0.018) * 0.006;
@@ -252,8 +253,8 @@ function poseAt(t) {
   // 站点靠近时从 0.86 放大到 1.0 再缩回，形成「经过」而非「切到」
   stations.forEach((s, i) => {
     const dz = camera.position.z - s.def.z;
-    const near = Math.exp(-Math.pow(dz / 13, 2));
-    const scale = 0.9 + 0.1 * near;
+    const near = Math.exp(-Math.pow(dz / 10, 2));
+    const scale = 0.94 + 0.06 * near;
     s.group.scale.setScalar(scale);
     s.group.position.y = Math.sin(t * 0.5 + i * 0.7) * 0.12 * (1 - near);
     s.group.rotation.y = Math.sin(t * 0.18 + i) * 0.012;
