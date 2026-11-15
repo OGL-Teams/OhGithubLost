@@ -128,15 +128,15 @@ def wire(langs):
     s=s.replace("    - assets/i18n/ru/\n","    - assets/i18n/ru/\n"+add,1)
     io.open(p,'w',encoding='utf-8').write(s)
 TOTAL=0
-def run_one(code, name, shards):
+def run_one(code, name, shards, concurrency=1, interval=None, chunk=None):
     global TOTAL
+    if interval is not None: globals()['MIN_INTERVAL']=interval
+    if chunk is not None: globals()['CHUNK_CHARS']=chunk
     TOTAL=len(shards)
     print('batch language=%s (%s) shards=%d jobs=%d'%(code,name,len(shards),TOTAL))
     os.makedirs(ROOT+'/assets/i18n/'+code,exist_ok=True)
     START[0]=time.time(); FAIL.clear(); DONE[0]=0; bar(TOTAL)
     if a_interval:=a.interval: globals()['MIN_INTERVAL']=a_interval
-    if a.chunk: globals()['CHUNK_CHARS']=a.chunk
-    else: globals()['CHUNK_CHARS']=0  # 单键模式
     with concurrent.futures.ThreadPoolExecutor(max_workers=a.concurrency) as ex:
         fs=[ex.submit(job,code,name,x) for x in shards]
         for f in concurrent.futures.as_completed(fs):
@@ -177,6 +177,6 @@ def main():
         print('ERROR: use --lang CODE or --batch N (1-24); one invocation handles exactly one language'); return 2
     if a.dry_run:
         print('dry-run: %s / %d shards / concurrency=%d / interval=%.1fs'%(sel[0][0],len(shards),a.concurrency,MIN_INTERVAL)); return 0
-    return run_one(sel[0][0],sel[0][1],shards)
+    return run_one(sel[0][0],sel[0][1],shards,a.concurrency,a.interval, a.chunk if a.chunk else 0)
 if __name__=='__main__':
     sys.exit(main())
