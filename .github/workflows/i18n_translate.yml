@@ -1,0 +1,70 @@
+# 24 语言批量翻译（每 job 一种语言）。
+# 关键约束（实测）：免费公网接口按 IP 限速（RPM），连续请求会 504。
+# 因此：job 内**串行**（concurrency=1）+ 每次请求间隔 1s + **单键一块**，
+# 24 个语言交给 CI 的 job 矩阵并行 —— 每个语言独立成败、独立重试。
+name: i18n-translate
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: 'Batch number 1-24 (one language per batch)'
+        required: false
+        default: '1'
+      concurrency:
+        description: 'Concurrent requests per job (keep 1; the API is rate limited)'
+        required: false
+        default: '1'
+      interval:
+        description: 'Minimum seconds between requests'
+        required: false
+        default: '1.0'
+      chunk:
+        description: 'Characters per chunk (0 = one key per chunk, safest)'
+        required: false
+        default: '0'
+      only:
+        description: 'Only this language (blank = all 24)'
+        required: false
+        default: ''
+
+jobs:
+  translate:
+    name: 'translate ${{ matrix.lang }}'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        # ★ 全部加引号：YAML 1.1 会把裸 `no` 解析成布尔 false。
+        lang: ['ja', 'ko', 'es', 'pt', 'it', 'nl', 'pl', 'tr', 'ar', 'hi', 'th', 'vi', 'id', 'ms', 'uk', 'cs', 'sv', 'da', 'fi', 'no', 'hu', 'ro', 'he', 'el']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Translate ${{ matrix.lang }}
+        if: ${{ inputs.only == '' || inputs.only == matrix.lang }}
+        env:
+          # 最保守：单键、1s 间隔、串行
+          I18N_MIN_INTERVAL: ${{ inputs.interval }}
+        run: |
+          python3 tool/i18n_translate.py \
+            --lang "${{ matrix.lang }}" \
+            --concurrency "${{ inputs.concurrency }}" \
+            --interval "${{ inputs.interval }}" \
+            --chunk "${{ inputs.chunk }}"
+
+      - name: Commit translations
+        run: |
+          if [ -z "$(git status --porcelain assets/i18n)" ]; then
+            echo 'no changes'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add assets/i18n
+          git commit -m "i18n: translate ${{ matrix.lang }} via Index-Translate"
+          git push origin HEAD:${{ github.ref_name }}

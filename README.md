@@ -10,6 +10,8 @@ Android · Windows · Linux · Web
 
 [![Release](https://img.shields.io/github/v/release/OGL-Teams/OhGithubLost?label=release&color=blue)](https://github.com/OGL-Teams/OhGithubLost/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](#贡献)
+[![Issues](https://img.shields.io/github/issues/OGL-Teams/OhGithubLost)](https://github.com/OGL-Teams/OhGithubLost/issues)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Windows%20%7C%20Linux%20%7C%20Web-informational)](#平台支持)
 [![i18n](https://img.shields.io/badge/i18n-6%20languages-informational)](docs/I18N.md)
 
@@ -27,6 +29,14 @@ Android · Windows · Linux · Web
 > **插入截图**：主界面（首页 / 仓库页 / 代码编辑器 三联图最佳），置于 README 居中位置。
 
 ---
+
+## 贡献！
+
+如果您有代码贡献意愿，联系QQ3449776312，我们会为您单开分支，在一个星期的质量审查后决定是否将您加入主线开发中。
+
+其次，有意愿宣发或提供 Apple 平台构建方式的也可联系，我们将会将您加入致谢名单。
+
+> 提交前请阅读 [`AGENTS.md`](AGENTS.md) 与 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)：分层违规、未本地化文案、动效绕档与质量反模式均由 CI 拦截。
 
 ## 关于本项目
 
@@ -115,10 +125,6 @@ lib/
 - [`docs/AUDIT_INDEX.md`](docs/AUDIT_INDEX.md) —— 九批三视角审计总索引
 - [`docs/CI_BUILD_BASELINE.md`](docs/CI_BUILD_BASELINE.md) —— CI 构建实测基线
 - [`release_notes/`](release_notes/) —— 逐版本发布说明（中英对照）
-
-## 贡献
-
-OGL 不接受随意合入：分层违规、未本地化中文、动效绕档、质量反模式均由 CI 拦截。请先阅读 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) 的「依赖方向的保障机制」与 [`docs/I18N.md`](docs/I18N.md) 的流程，再提交变更。
 
 ## 许可证
 
