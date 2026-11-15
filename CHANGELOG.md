@@ -1,5 +1,23 @@
 # 更新日志 / Changelog
 
+## 13.0.0（2026-11-15）
+
+### 新增 / Added
+
+- 仓库标签管理：列表、读取、创建、删除；仓库页新增标签子页，六语言文案。
+  Repository tag management: list, read, create and delete; a new Tags tab and six-language copy.
+- 设置页新增标签排序、每页数量、删除前确认三项偏好，旧配置使用保守默认值。
+  Settings gains tag order, page size and deletion-confirmation preferences; older configurations use conservative defaults.
+- 新增目标层级与分阶段计划文档；页面经既有领域桥访问，未新增跨层依赖。
+  Added a target-layer and staged-plan document; pages use the existing domain bridge with no new upward dependency.
+
+### 检查 / Verification
+
+- 离线回归覆盖标签接口方法、路径、请求体与设置持久化；十一支门禁与元验证通过。
+  Offline regression covers tag API methods, paths, bodies and settings persistence; eleven gates and meta-verification pass.
+- 类型检查与单元测试由持续集成裁决通过；前一版本修复保持不变。
+  Type analysis and unit tests pass in CI; prior fixes remain intact.
+
 ## 12.6.10（2026-11-15）
 
 ### 审计与文档 / Audit and Documentation
