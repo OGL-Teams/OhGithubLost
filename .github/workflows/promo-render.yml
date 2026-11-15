@@ -4,7 +4,7 @@ name: Promo Render
 # OGL 片尾 · HF 0.9.46 + GSAP 单根 HTML 2D 电影片尾
 #
 # 零图纯文字、黑体居中、连续匀速上滚、无边框无装饰线。
-# 片长由《梦之咏叹》98.746s 决定，不裁切、不补帧。
+# 片长由《燕辞归》175.082s 决定，不裁切、不补帧。
 # ============================================================================
 
 on:
@@ -30,7 +30,7 @@ permissions:
 env:
   HYPERFRAMES_TELEMETRY: '0'
   HF_VERSION: '0.9.46'
-  PROMO_DURATION: '98.746'
+  PROMO_DURATION: '175.082'
 
 jobs:
   render:
@@ -72,7 +72,7 @@ jobs:
       - name: Verify audio, fonts and zero-image sources
         run: |
           set -euo pipefail
-          AUDIO=promo/assets/audio/dream-aria-25.m4a
+          AUDIO=promo/assets/audio/yancigui-25.m4a
           test -s "$AUDIO"
           DUR=$(ffprobe -v error -show_entries format=duration \
                 -of default=noprint_wrappers=1:nokey=1 "$AUDIO")
@@ -80,7 +80,7 @@ jobs:
           import sys
           d, target = float(sys.argv[1]), float(sys.argv[2])
           assert abs(d - target) <= 0.5, f"音轨时长 {d}s 不是 {target}s ±0.5s"
-          print(f"dream-aria-25.m4a: {d:.3f}s · 片长锁 {target:.3f}s")
+          print(f"yancigui-25.m4a: {d:.3f}s · 片长锁 {target:.3f}s")
           PY
           for f in \
             promo/assets/fonts/heiti-subset.woff2 \
@@ -201,9 +201,9 @@ jobs:
       - name: Generate contact sheet (3x3, full 98s)
         run: |
           set -euo pipefail
-          # 时间轴归一化到 ~81s 后按 fps=1/10 取 9 帧，使 3x3 网格覆盖整段 98.746s
+          # 时间轴归一化到 ~160s 后按 fps=1/18 取 9 帧，使 3x3 网格覆盖整段 175.082s
           ffmpeg -y -v error -i promo/final/OGL-Credits.mp4 -an -vf \
-            "setpts=0.82*(PTS-STARTPTS),fps=1/10,scale=480:-1,tile=3x3" \
+            "setpts=0.91*(PTS-STARTPTS),fps=1/18,scale=480:-1,tile=3x3" \
             -frames:v 1 -q:v 3 promo/final/contact-sheet.jpg
           test -s promo/final/contact-sheet.jpg
           ls -lh promo/final/contact-sheet.jpg
@@ -260,8 +260,8 @@ jobs:
           cat > /tmp/RELEASE_NOTES.md <<'NOTES'
           由 .github/workflows/promo-render.yml 从 promo/ 源码自动渲染。
 
-          - 2D 电影片尾 / 18 条里程碑 / 黑体居中上滚 / 零图纯文字 / Dream Aria 25% / 98.746s
-          - HF 0.9.46 + GSAP 单根 HTML 合成，30fps；四幕仅作隐藏分组，不上屏
+          - 2D 电影片尾 / 16 条版本区间 / 黑体居中上滚 / 零图纯文字 / 燕辞归 25% / 175.082s
+          - HF 0.9.46 + GSAP 单根 HTML 合成，30fps；版本区间置于内容正上方
           - OGL-Credits-720p.mp4：CRF23 轻量版；OGL-Credits.7z：-mx=9 极限压缩包
           - contact-sheet.jpg：3x3 全片采样；SHA256SUMS.txt：完整性校验
 

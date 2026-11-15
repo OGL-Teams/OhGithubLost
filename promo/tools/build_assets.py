@@ -3,7 +3,7 @@
 """输入层可复现构建：音轨 / 字体子集 / milestones 校验。
 
 只写入这三个路径（tools/ 下脚本除外）：
-  assets/audio/dream-aria-25.m4a
+  assets/audio/yancigui-25.m4a
   assets/fonts/heiti-subset.woff2
   data/milestones.json   （仅规范化；内容字节不变时绝不写回）
 不生成任何图片、位图、SVG、HTML。
@@ -23,29 +23,28 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = Path('/var/minis/mounts/Tiernan_Music/'
-           '陈致逸 - Dream Aria (Genshin Impact Main Theme Var.) 梦之咏叹.mp3.mp3')
+           'HOYO-MiX - 翦玉令·燕辞归 Tune_ _Sheared Jade_ - Return of the Swallow.mp3.mp3')
 TTC = Path('/usr/share/fonts/noto/NotoSansCJK-Regular.ttc')
 AUDIO_DIR = ROOT / 'assets/audio'
-AUDIO_OUT = AUDIO_DIR / 'dream-aria-25.m4a'
+AUDIO_OUT = AUDIO_DIR / 'yancigui-25.m4a'
 FONT_OUT = ROOT / 'assets/fonts/heiti-subset.woff2'
 DATA = ROOT / 'data/milestones.json'
 
-FIXED = ('OhGithubLost 更新日志 项目转折 长期基线 v0.1.0 — v12.6.9 '
+FIXED = ('OhGithubLost 首个覆盖几乎所有常用功能的全平台 GitHub 客户端 但这不是终点 '
          'This is the first real platform-wide client of GitHub that covers '
          'almost all common functions, but this is not the end '
          'Powered by Hy4free Thanks to OGL-Teams and Workbuddy '
-         'About 12.5 billion tokens have been used '
-         '起点 扩张 收敛 基线 五平台首航 系统标准样式重写 下载器与草稿箱 '
-         'GitHub 工作流，在本地完成 github.com/OGL-Teams/OhGithubLost '
-         '十八道离线门禁全通过 · 四层依赖零越级 · Apache-2.0 '
-         'Android Windows Linux Web OGL Teams')
+         'About 12.5 billion tokens have been used 客尚淹留 '
+         'v0.1.0 v1.4 v12.6.9 AGPL-3.0 Apache-2.0 NOTICE '
+         'Android Windows Linux Web macOS iOS ARM deb rpm AppImage BL CI LTS '
+         'GitHub Actions Gist AI Hy4free OGL Teams Workbuddy')
 ASCII = ''.join(chr(i) for i in range(0x20, 0x7f))
 CJK_PUNCT = '，。、；：！？（）【】《》「」『』—…·～／＼＋－＝°％'
 
-FIELDS = ('version', 'era', 'act_line', 'kind', 'headline', 'detail')
+FIELDS = ('range', 'kind', 'headline', 'detail')
 KINDS = {'origin', 'architecture', 'platform', 'feature', 'turn',
          'reliability', 'governance', 'finale'}
-EXPECT_DUR = 98.746
+EXPECT_DUR = 175.082
 FAMILY = 'OGLHeiti'
 
 
@@ -71,11 +70,19 @@ def build_audio():
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     tmp = AUDIO_OUT.with_suffix('.tmp.m4a')
     tmp.unlink(missing_ok=True)
-    # -map 0:a:0 + -map_metadata -1 + -vn：杜绝源 FLAC 内嵌封面等附加流
-    run(['ffmpeg', '-y', '-hide_banner', '-loglevel', 'error',
-         '-i', SRC, '-map', '0:a:0', '-vn', '-map_metadata', '-1',
-         '-af', 'volume=0.25', '-ar', '44100', '-ac', '2',
-         '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', tmp])
+    # 主曲 167.582s（自带 1s 淡出） + 3.5s 黑屏 + 1s 淡入同曲尾段 + 3s 题字
+    cmd = ['ffmpeg', '-y', '-hide_banner', '-loglevel', 'error',
+           '-i', SRC,
+           '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo:d=3.5',
+           '-ss', '163.582', '-i', SRC,
+           '-filter_complex',
+           '[0:a]volume=0.25,afade=t=out:st=166.582:d=1,atrim=0:167.582,asetpts=PTS-STARTPTS[a];'
+           '[1:a]asetpts=PTS-STARTPTS[b];'
+           '[2:a]volume=0.25,afade=t=in:st=0:d=1,atrim=0:4,asetpts=PTS-STARTPTS[c];'
+           '[a][b][c]concat=n=3:v=0:a=1[out]',
+           '-map', '[out]', '-ar', '44100', '-ac', '2',
+           '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', tmp]
+    run(cmd)
     tmp.replace(AUDIO_OUT)
     removed = []
     for p in sorted(AUDIO_DIR.iterdir()):
@@ -129,8 +136,8 @@ def validate_milestones(write=False):
     data = json.loads(raw.decode('utf-8'))
     assert isinstance(data, list), '根节点必须是数组'
     problems = []
-    if len(data) != 18:
-        problems.append(f'条数 {len(data)} != 18')
+    if len(data) != 16:
+        problems.append(f'条数 {len(data)} != 16')
     kinds = {}
     seq = []
     max_hz = max_hc = max_dz = max_dc = 0.0
@@ -153,11 +160,11 @@ def validate_milestones(write=False):
         max_hz, max_dz = max(max_hz, hz), max(max_dz, dz)
         max_hc, max_dc = max(max_hc, hc), max(max_dc, dc)
         # 正式书面句允许略长：软校验只记录，不判失败
-        if hz > 14 or dz > 26:
+        if hz > 20 or dz > 48:
             print(f'  note #{i} 字数偏长 headline={hz} detail={dz}')
-        m = re.fullmatch(r'v(\d+)\.(\d+)\.(\d+)', item.get('version', ''))
+        m = re.search(r'v(\d+)\.(\d+)\.(\d+)', item.get('range', ''))
         if not m:
-            problems.append(f'#{i} 版本号格式 {item.get("version")!r}')
+            problems.append(f'#{i} 区间格式 {item.get("range")!r}')
         else:
             seq.append(tuple(int(x) for x in m.groups()))
     if any(a >= b for a, b in zip(seq, seq[1:])):

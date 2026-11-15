@@ -17,30 +17,46 @@
     #finale-bg {
       position: absolute; inset: 0; z-index: 8; background: #050810; opacity: 0;
     }
-    #intro { top: 420px; }
-    #intro .a { font-size: 72px; line-height: 1.12; color: #e2e0d8; }
-    #intro .b {
-      margin-top: 32px; margin-left: auto; margin-right: auto;
-      width: 1180px; font-size: 28px; line-height: 1.55; color: #8d95a8;
+    #intro { top: 468px; opacity: 1; }
+    #intro .a { font-size: 88px; line-height: 1.12; color: #e2e0d8; }
+    #explain {
+      position: absolute; left: 0; width: 1920px; text-align: center;
+      top: 408px; z-index: 9; opacity: 0;
+    }
+    #explain .zh {
+      margin-left: auto; margin-right: auto; width: 1240px;
+      font-size: 38px; line-height: 1.6; color: #d8d6ce;
+    }
+    #explain .en {
+      margin-top: 36px; margin-left: auto; margin-right: auto; width: 1180px;
+      font-size: 24px; line-height: 1.6; color: #737c90;
     }
     #finale { top: 420px; opacity: 0; z-index: 9; }
     #finale .a { font-size: 56px; line-height: 1.2; color: #e2e0d8; }
     #finale .b { margin-top: 28px; font-size: 26px; line-height: 1.5; color: #8d95a8; }
     #finale .c { margin-top: 18px; font-size: 22px; line-height: 1.5; color: #8d95a8; }
+    #closing {
+      position: absolute; left: 0; width: 1920px; text-align: center;
+      top: 500px; z-index: 10; opacity: 0;
+      font-size: 56px; line-height: 1.2; color: #d8d6ce;
+    }
+    #closing-bg {
+      position: absolute; inset: 0; z-index: 9; background: #050810; opacity: 0;
+    }
 
     /* 单列连续上滚。第一行在 t≈4s 时位于画面正中（y≈540）。 */
     #track {
       position: absolute; left: 0; width: 1920px; top: 540px;
       text-align: center; z-index: 4; opacity: 0;
     }
-    .milestone { width: 1920px; height: 118px; }
-    .milestone .head {
-      font-size: 44px; line-height: 1.25; color: #d8d6ce;
-    }
+    .milestone { width: 1920px; height: 176px; }
+    .milestone .range { font-size: 22px; line-height: 1.3; color: #8d95a8; }
+    .milestone .head { margin-top: 10px; font-size: 42px; line-height: 1.25; color: #d8d6ce; }
     .milestone .detail {
-      margin-top: 12px; font-size: 26px; line-height: 1.4; color: #697287;
+      margin-top: 12px; margin-left: auto; margin-right: auto; width: 1360px;
+      font-size: 23px; line-height: 1.45; color: #697287;
     }
-    .gap { width: 1920px; height: 118px; }
+    .gap { width: 1920px; height: 176px; }
     #mask-top, #mask-bottom {
       position: absolute; left: 0; width: 1920px; height: 160px;
       z-index: 6; pointer-events: none;
@@ -50,110 +66,123 @@
   </style>
 
   <div id="root" data-composition-id="credits" data-width="1920" data-height="1080">
-    <div id="intro" class="clip" data-start="0" data-duration="98.746" data-track-index="6">
+    <div id="intro" class="clip" data-start="0" data-duration="175.082" data-track-index="6">
       <div class="a">OhGithubLost</div>
-      <div class="b">This is the first real platform-wide client of GitHub that covers almost all common functions, but this is not the end</div>
     </div>
 
-    <div id="track" class="clip" data-start="0" data-duration="98.746" data-track-index="3">
-    <div class="milestone" data-era="初期" data-kind="origin">
-      <div class="head">首个公开版本</div>
-      <div class="detail">v0.1.0 支持个人访问令牌登录 未登录也可浏览公开内容</div>
+    <div id="explain" class="clip" data-start="0" data-duration="175.082" data-track-index="6">
+      <div class="zh">首个覆盖几乎所有常用功能的全平台 GitHub 客户端 但这不是终点</div>
+      <div class="en">This is the first real platform-wide client of GitHub that covers almost all common functions, but this is not the end</div>
+    </div>
+
+    <div id="track" class="clip" data-start="0" data-duration="175.082" data-track-index="3">
+    <div class="milestone" data-kind="origin">
+      <div class="range">v0.1.0 — v1.4</div>
+      <div class="head">仓库主要功能</div>
+      <div class="detail">浏览 编辑 提交 分支 议题 差异 发布 片段 令牌登录与游客浏览同期加入</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="初期" data-kind="architecture">
-      <div class="head">界面重写</div>
-      <div class="detail">v1.0.0 控件改用系统标准样式 各平台视觉表现保持一致</div>
+    <div class="milestone" data-kind="architecture">
+      <div class="range">v0.2.0 — v1.0.0</div>
+      <div class="head">界面体系重写</div>
+      <div class="detail">自绘界面先统一十二页 后移除自绘控件改用系统标准样式 代码显示设置加入</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="初期" data-kind="feature">
-      <div class="head">工作流与 Gist</div>
-      <div class="detail">v2.0.0 可查看运行步骤并重跑 Gist 支持新建编辑与删除</div>
+    <div class="milestone" data-kind="feature">
+      <div class="range">v2.0.0 — v2.2.0</div>
+      <div class="head">协作与编辑功能</div>
+      <div class="detail">Actions 与 Gist 完整操作加入 全屏编辑器 发布管理 手动触发工作流一并加入</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="初期" data-kind="feature">
-      <div class="head">下载与草稿</div>
-      <div class="detail">v3.1.0 大文件分段取回 编辑器改动自动留存</div>
+    <div class="milestone" data-kind="platform">
+      <div class="range">v2.2.0 — v6.4.0</div>
+      <div class="head">翻译加入与移除</div>
+      <div class="detail">先加入十四种语言后扩至十五种完整译文 后移除九种占位译文收敛为六种</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="平台扩展" data-kind="reliability">
-      <div class="head">可靠性调整</div>
-      <div class="detail">v4.0.0 下载加入队列与断点续传 权限申请改为系统对话框</div>
+    <div class="milestone" data-kind="feature">
+      <div class="range">v3.0.0 — v3.2.0</div>
+      <div class="head">本机设施加入</div>
+      <div class="detail">内建下载器 编辑器草稿 通知中心 动效档位 关于页加入 未提交改动自动留存</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="平台扩展" data-kind="architecture">
-      <div class="head">本地化与构建校验</div>
-      <div class="detail">v4.9.0 界面提供十五种语言 分层校验接入持续集成</div>
+    <div class="milestone" data-kind="reliability">
+      <div class="range">v4.0.0 — v4.8.0</div>
+      <div class="head">下载与权限重建</div>
+      <div class="detail">下载队列与断点续传加入 权限改系统对话框 自研模块移除改用成熟库</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="平台扩展" data-kind="feature">
-      <div class="head">多连接下载</div>
-      <div class="detail">v5.1.0 分段并发取回并逐段核对 失败不留下不完整文件</div>
+    <div class="milestone" data-kind="platform">
+      <div class="range">v5.0.0 — v5.6.0</div>
+      <div class="head">传输加入与平台移除</div>
+      <div class="detail">多连接分片下载加入并逐段核对 macOS 与 iOS 产物移除 桌面补 ARM 构建</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="平台扩展" data-kind="turn">
-      <div class="head">平台收敛</div>
-      <div class="detail">v5.6.0 不再提供 macOS 与 iOS 版本 最后支持 v5.3.0</div>
+    <div class="milestone" data-kind="feature">
+      <div class="range">v6.0.0 — v6.2.0</div>
+      <div class="head">桌面与校验加入</div>
+      <div class="detail">自绘标题栏加入 deb rpm AppImage 同发 下载完整性校验与文件预览加入</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="平台扩展" data-kind="platform">
-      <div class="head">桌面端</div>
-      <div class="detail">v6.0.0 采用自绘标题栏 Linux 提供 deb rpm 与 AppImage</div>
+    <div class="milestone" data-kind="governance">
+      <div class="range">v6.3.0</div>
+      <div class="head">许可更换</div>
+      <div class="detail">AGPL-3.0 移除 改用 Apache-2.0 并加入 NOTICE 随产物分发</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="平台扩展" data-kind="turn">
-      <div class="head">许可调整</div>
-      <div class="detail">v6.3.0 由 AGPL-3.0 更换为 Apache-2.0 NOTICE 随产物分发</div>
+    <div class="milestone" data-kind="governance">
+      <div class="range">v6.4.1 — v6.5.0</div>
+      <div class="head">通道移除与治理</div>
+      <div class="detail">内置加速通道与镜像移除 加速按资源逐项选择加入 静默回退直连移除</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="平台扩展" data-kind="turn">
-      <div class="head">网络策略</div>
-      <div class="detail">v6.5.0 不预置加速通道 取消静默回退直连</div>
+    <div class="milestone" data-kind="platform">
+      <div class="range">v7.0.0 — v7.2.1</div>
+      <div class="head">Web 加入与独立</div>
+      <div class="detail">浏览器版本加入并作正式平台 后转独立渠道 原生只发三端 差异如实标注</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="平台扩展" data-kind="platform">
-      <div class="head">浏览器版本</div>
-      <div class="detail">v7.0.0 可作为独立窗口安装 与桌面端差异在界面如实标注</div>
+    <div class="milestone" data-kind="feature">
+      <div class="range">v7.3.0 — v7.4.0</div>
+      <div class="head">文件操作加入</div>
+      <div class="detail">文件与目录复制移动批量递归加入 长任务可查看进度并取消 无需下载再上传</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="方向收敛" data-kind="feature">
-      <div class="head">助手功能</div>
-      <div class="detail">v8.2.0 支持多轮对话与会话历史 工具调用留有记录</div>
+    <div class="milestone" data-kind="turn">
+      <div class="range">v8.0.0 — v9.5.0</div>
+      <div class="head">助手加入</div>
+      <div class="detail">AI 助手与多轮会话加入 工具调用留审计 下载与解析缺陷同期集中修复</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="方向收敛" data-kind="turn">
-      <div class="head">功能移除</div>
-      <div class="detail">v10.0.0 移除助手相关入口并清理本机遗留数据 界面语言收敛为两种</div>
+    <div class="milestone" data-kind="turn">
+      <div class="range">v10.0.0 — v10.3.0</div>
+      <div class="head">助手移除与登录加入</div>
+      <div class="detail">AI 助手整体移除 密钥会话记录清理 设备流授权登录加入 六语言译文回补</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="方向收敛" data-kind="reliability">
-      <div class="head">授权登录</div>
-      <div class="detail">v10.2.0 浏览器输入一次性代码即可完成 令牌仅存本机</div>
+    <div class="milestone" data-kind="platform">
+      <div class="range">v11.0.0 — v12.5.0</div>
+      <div class="head">字体加入与 BL 校验</div>
+      <div class="detail">系统默认 等宽 宋体 私有字体加入 后统一加载路径与缓存校验 BL 启动期校验与能力体系同期加入</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="方向收敛" data-kind="turn">
-      <div class="head">界面语言扩充</div>
-      <div class="detail">v10.3.0 界面由两种扩展至六种 新增语言均为完整译文</div>
-    </div>
-    <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="长期基线" data-kind="governance">
-      <div class="head">功能基线确立</div>
-      <div class="detail">v12.0.0 发现 仓库 议题 工作流四组功能完成 后续以修复为主</div>
-    </div>
-    <div class="gap" aria-hidden="true"></div>
-    <div class="milestone" data-era="长期基线" data-kind="finale">
-      <div class="head">版本收束</div>
-      <div class="detail">v12.6.9 本地十八道离线门禁全部通过 依赖分层无越级引用</div>
+    <div class="milestone" data-kind="finale">
+      <div class="range">v12.6.0 — v12.6.9</div>
+      <div class="head">字体回补与终版收口</div>
+      <div class="detail">思源宋体与私有字体改同一加载路径 持久缓存与校验加入 十八道检查通过 依赖分层无越级引用</div>
     </div>
     <div class="gap" aria-hidden="true"></div>
     </div>
 
-    <div id="mask-top" class="clip" data-start="0" data-duration="98.746" data-track-index="7"></div>
-    <div id="mask-bottom" class="clip" data-start="0" data-duration="98.746" data-track-index="7"></div>
-    <div id="vignette" class="clip" data-start="0" data-duration="98.746" data-track-index="9"></div>
+    <div id="mask-top" class="clip" data-start="0" data-duration="175.082" data-track-index="7"></div>
+    <div id="mask-bottom" class="clip" data-start="0" data-duration="175.082" data-track-index="7"></div>
+    <div id="vignette" class="clip" data-start="0" data-duration="175.082" data-track-index="9"></div>
 
-    <div id="finale-bg" class="clip" data-start="0" data-duration="98.746" data-track-index="8"></div>
-    <div id="finale" class="clip" data-start="0" data-duration="98.746" data-track-index="9">
+    <div id="finale-bg" class="clip" data-start="0" data-duration="175.082" data-track-index="8"></div>
+    <div id="closing-bg" class="clip" data-start="0" data-duration="175.082" data-track-index="9"></div>
+    <div id="closing" class="clip" data-start="0" data-duration="175.082" data-track-index="10">客尚淹留</div>
+
+    <div id="finale" class="clip" data-start="0" data-duration="175.082" data-track-index="9">
       <div class="a">Powered by Hy4free</div>
       <div class="b">Thanks to OGL-Teams and Workbuddy</div>
       <div class="c">About 12.5 billion tokens have been used</div>
@@ -163,24 +192,32 @@
   <script>
     const tl = gsap.timeline({ paused: true });
 
-    /* 片头纯文字：停留后淡出，无装饰线、无图片、无边框 */
-    tl.fromTo("#intro", { opacity: 0 }, { opacity: 1, duration: 1.4, ease: "power2.out" }, 0);
-    tl.fromTo("#intro", { opacity: 1 }, { opacity: 0, duration: 1.2, ease: "power2.in", immediateRender: false }, 3.2);
+    tl.fromTo("#intro", { opacity: 1 },
+      { opacity: 0, duration: 1.2, ease: "power2.in", immediateRender: false }, 3.2);
 
-    /* 单列匀速上滚：18 条里程碑 ×(118px 内容 + 118px 空行) = 4248px。
-       从 y=0 起滚到 y=-4248，滚完正好把最后一条送出顶部。 */
+    tl.fromTo("#explain", { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 4.6);
+    tl.fromTo("#explain", { opacity: 1 },
+      { opacity: 0, duration: 0.8, ease: "power2.in", immediateRender: false }, 9.2);
+
     tl.fromTo("#track", { opacity: 0 },
-      { opacity: 1, duration: 0.5, ease: "power2.out", immediateRender: false }, 4.8);
+      { opacity: 1, duration: 0.5, ease: "power2.out", immediateRender: false }, 10.2);
     tl.fromTo("#track", { y: 0 },
-      { y: -4248, duration: 82.0, ease: "none", immediateRender: false }, 5.0);
+      { y: -5632, duration: 148.382, ease: "none", immediateRender: false }, 10.2);
     tl.fromTo("#track", { opacity: 1 },
-      { opacity: 0, duration: 1.0, ease: "power2.in", immediateRender: false }, 87.0);
+      { opacity: 0, duration: 1.0, ease: "power2.in", immediateRender: false }, 158.6);
 
-    /* 片尾纯文字定格：最后约 9.7s 显现，保持到片尾 */
     tl.fromTo("#finale-bg", { opacity: 0 },
-      { opacity: 1, duration: 0.8, ease: "power2.in", immediateRender: false }, 88.0);
+      { opacity: 1, duration: 0.8, ease: "power2.in", immediateRender: false }, 158.582);
     tl.fromTo("#finale", { opacity: 0, y: 16 },
-      { opacity: 1, y: 0, duration: 1.8, ease: "power2.out" }, 89.0);
+      { opacity: 1, y: 0, duration: 1.8, ease: "power2.out" }, 159.382);
+
+    tl.fromTo("#finale", { opacity: 1 },
+      { opacity: 0, duration: 0.6, ease: "power2.in", immediateRender: false }, 167.582);
+    tl.fromTo("#closing-bg", { opacity: 0 },
+      { opacity: 1, duration: 0.01, ease: "none", immediateRender: false }, 167.582);
+    tl.fromTo("#closing", { opacity: 0 },
+      { opacity: 1, duration: 1.0, ease: "power2.out" }, 171.082);
 
     window.__timelines["credits"] = tl;
   </script>

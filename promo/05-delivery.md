@@ -4,7 +4,7 @@
 
 **Tag**：`promo-<sha7>`，附注 tag 推送到 origin；已存在则复用。
 
-**Release**：与 tag 同名，标题「OGL 片尾 · 2D 电影片尾」，notes 写明 2D 电影片尾 / 18 条里程碑 / 黑体居中上滚 / 零图纯文字 / Dream Aria 25% / 98.746s。
+**Release**：与 tag 同名，标题「OGL 片尾 · 2D 电影片尾」，notes 写明 2D 电影片尾 / 16 条版本区间 / 黑体居中上滚 / 零图纯文字 / 燕辞归 25% / 175.082s。
 
 **Artifact**：`ogl-credits-2d-<ref>-<sha>`，保留 30 天；全部文件落在 `promo/final/`。
 
