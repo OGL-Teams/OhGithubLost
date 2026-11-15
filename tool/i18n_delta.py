@@ -41,13 +41,20 @@ def extract(base, out, langs):
     else:
         print('WARN: base %s 不可读，视全部为新增' % base); old = {}
     delta = {}
+    snapshot = {}
     for shard, kv in cur.items():
         ov = old.get(shard, {})
         changed = [k for k, v in kv.items() if ov.get(k) != v]
-        if changed: delta[shard] = sorted(changed)
+        if changed:
+            delta[shard] = sorted(changed)
+            # ★ 记录**源值快照**：子代理必须按快照译，而不是翻译时刻的
+            #   工作区值 —— 否则 zh 在中途被改，前后批次会对同一键给出
+            #   不同译文（第 1/2 批演练实测踩到）。
+            snapshot[shard] = {k: kv[k] for k in changed}
     os.makedirs(WORK, exist_ok=True)
     path = os.path.join(WORK, out)
-    json.dump(delta, open(path, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    json.dump({'delta': delta, 'source': snapshot},
+              open(path, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     n = sum(len(v) for v in delta.values())
     print('delta: %d 分片 / %d 键 -> %s' % (len(delta), n, path))
     print('涉及语言（8 种/代理，%d 个代理）: %s' % (
@@ -55,15 +62,25 @@ def extract(base, out, langs):
 
 def check(langs):
     delta_path = os.path.join(WORK, 'delta.json')
-    delta = json.load(open(delta_path, encoding='utf-8')) if os.path.exists(delta_path) else {}
+    raw = json.load(open(delta_path, encoding='utf-8')) if os.path.exists(delta_path) else {}
+    # 兼容两种结构：{'delta': {...}, 'source': {...}}（新，带源值快照）与
+    # 旧的 {shard: [keys]}。
+    if isinstance(raw, dict) and 'delta' in raw:
+        delta, source = raw.get('delta') or {}, raw.get('source') or {}
+    else:
+        delta, source = raw, {}
     cur = load(ZH)
     bad = []
+    peer_norm = {}
     for lang in langs:
         staged = os.path.join(WORK, 'i18n', lang)
         base_dir = staged if os.path.isdir(staged) else os.path.join(ROOT, 'assets/i18n', lang)
         ld = load(base_dir)
         for shard, keys in delta.items():
-            sv, lv = cur.get(shard, {}), ld.get(shard, {})
+            # 源值优先取快照（extract 时刻的中文原文），回落当前 zh。
+            snap = (source.get(shard) or {})
+            sv = {k: snap.get(k, cur.get(shard, {}).get(k)) for k in keys}
+            lv = ld.get(shard, {})
             for k in keys:
                 if k not in sv: continue
                 if k not in lv:
@@ -72,6 +89,16 @@ def check(langs):
                     bad.append('%s/%s 占位符不符 %s' % (lang, shard, k))
                 if lv[k] == sv[k] and __import__('re').search(r'[\u4e00-\u9fff]', str(sv[k])):
                     bad.append('%s/%s 未翻译 %s' % (lang, shard, k))
+                # ★ 跨语言一致性：同一个 DELTA 键，不同语言的译文不应
+                #   一处是名词、一处是动词（第 1/2 批演练实测踩到）。
+                #   判定：把各语言同键译文归一（去空白/标点/大小写）后比对，
+                #   完全相同的多语言视为「同词复用」（合法，如 Tag/标签同形），
+                #   不一致则提示人工复核（不直接判失败）。
+                norm = __import__('re').sub(r'[\s\W_]+', '', str(lv[k])).lower()
+                peer = peer_norm.get((shard, k), {})
+                if norm and norm not in peer:
+                    peer[norm] = lang
+                    peer_norm.setdefault((shard, k), peer)
     if bad:
         print('FAIL %d:' % len(bad)); [print(' ', x) for x in bad[:20]]
         return 1
