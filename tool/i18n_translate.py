@@ -52,6 +52,10 @@ def request_shard(texts, lang, force_model=None):
         # ★ 退避阶梯（用户指定）：第 1 次失败等 5s，第 2 次等 15s；
         #   仍失败则**跳过该块并记录**（不阻断整批，可续跑补齐）。
         time.sleep(5.0 if attempt == 0 else 15.0)
+        # ★ 504 连发说明 RPM 撞顶：把全局间隔翻倍（上限 8s），后续请求整体放慢。
+        if last == 'HTTP 504':
+            with _RATE:
+                globals()['MIN_INTERVAL'] = min(MIN_INTERVAL * 2, 8.0)
     return None,last
 LOCK=threading.Lock(); DONE=[0]; FAIL=[]; START=[0.0]
 # ★ RPM 限速闸：免费公网接口按 IP 限速，连续请求会 504（实测：间隔够就成功）。
@@ -157,7 +161,7 @@ def main():
     ap.add_argument('--dry-run',action='store_true')
     ap.add_argument('--shards',default='')
     ap.add_argument('--wire',action='store_true',help='register all 30 languages in code/pubspec (run once)')
-    ap.add_argument('--concurrency',type=int,default=1)
+    ap.add_argument('--concurrency',type=int,default=3)
     ap.add_argument('--chunk',type=int,default=0,help='chars per chunk; 0 = one key per chunk (safest)')
     ap.add_argument('--interval',type=float,default=0.0,help='min seconds between requests (default 2.5)')
     a=ap.parse_args()
