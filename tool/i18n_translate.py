@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import argparse, concurrent.futures, json, os, re, sys, threading, time
 import urllib.request, urllib.error, collections
-ROOT='/root/OhGithubLost'
+# ★ 用**当前工作目录**（CI 的 checkout 根），不硬编码本地沙箱路径。
+ROOT=os.path.abspath(os.environ.get('OGL_ROOT') or os.getcwd())
 ENDPOINT='https://index-translate.bilibili.com/v1/chat/completions'
 LANGS=[('ja','Japanese'),('ko','Korean'),('es','Spanish'),('pt','Portuguese'),('it','Italian'),('nl','Dutch'),('pl','Polish'),('tr','Turkish'),('ar','Arabic'),('hi','Hindi'),('th','Thai'),('vi','Vietnamese'),('id','Indonesian'),('ms','Malay'),('uk','Ukrainian'),('cs','Czech'),('sv','Swedish'),('da','Danish'),('fi','Finnish'),('no','Norwegian'),('hu','Hungarian'),('ro','Romanian'),('he','Hebrew'),('el','Greek')]
 EXISTING={'zh','zh_Hant','en','de','fr','ru'}
