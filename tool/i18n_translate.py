@@ -136,8 +136,7 @@ def run_one(code, name, shards, concurrency=1, interval=None, chunk=None):
     print('batch language=%s (%s) shards=%d jobs=%d'%(code,name,len(shards),TOTAL))
     os.makedirs(ROOT+'/assets/i18n/'+code,exist_ok=True)
     START[0]=time.time(); FAIL.clear(); DONE[0]=0; bar(TOTAL)
-    if a_interval:=a.interval: globals()['MIN_INTERVAL']=a_interval
-    with concurrent.futures.ThreadPoolExecutor(max_workers=a.concurrency) as ex:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as ex:
         fs=[ex.submit(job,code,name,x) for x in shards]
         for f in concurrent.futures.as_completed(fs):
             try: f.result()
