@@ -1,24 +1,10 @@
 {
-  "name": "ogl-promo",
-  "version": "1.0.0",
+  "name": "ogl-credits",
   "private": true,
-  "description": "OhGithubLost 宣传片 · Three.js 一镜到底",
+  "description": "OhGithubLost · HF + GSAP 2D 电影片尾（零图纯文字）",
   "scripts": {
-    "dev": "npx -y hyperframes@0.9.46 preview --background",
-    "check": "npx -y hyperframes@0.9.46 check --json .",
     "lint": "npx -y hyperframes@0.9.46 lint --json .",
-    "snapshot": "npx -y hyperframes@0.9.46 snapshot --at 0,14,30,46,80,116,150,174",
-    "render": "npx -y hyperframes@0.9.46 render . --output final/OGL-Promo.mp4 --fps 30 --workers 4 --no-browser-gpu",
-    "bgm": "python3 scripts/make_score.py"
-  },
-  "hyperframes": {
-    "version": "0.9.46",
-    "width": 1920,
-    "height": 1080,
-    "fps": 30,
-    "duration": 175.01,
-    "renderer": "three-js-webgl",
-    "localBrowser": "HYPERFRAMES_BROWSER_PATH must point to Chromium on linux-arm64",
-    "bgm": "assets/audio/bgm-lunar.mp3"
+    "check": "npx -y hyperframes@0.9.46 check --json .",
+    "render": "npx -y hyperframes@0.9.46 render . --output final/OGL-Credits.mp4 --fps 30 --workers 4 --no-browser-gpu"
   }
 }

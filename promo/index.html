@@ -3,75 +3,49 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
-    <title>OhGithubLost · 3D One-Shot · Lunar Palace</title>
+    <title>OhGithubLost · Credits</title>
+    <script src="assets/vendor/gsap.min.js"></script>
     <style>
+      @font-face {
+        font-family: "OGLHeiti";
+        src: url("assets/fonts/heiti-subset.woff2") format("woff2");
+        font-weight: 400;
+        font-display: block;
+      }
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body {
-        width: 1920px; height: 1080px; margin: 0; overflow: hidden;
-        background: #F7F9FC;
+        width: 1920px; height: 1080px; margin: 0;
+        overflow: hidden; background: #050810;
+        color: #e2e0d8; font-family: "OGLHeiti", sans-serif;
       }
       #root {
-        position: relative; width: 100%; height: 100%; overflow: hidden;
-        background: #F7F9FC;
+        position: relative; width: 100%; height: 100%;
+        overflow: hidden; background: #050810;
       }
-      #gl {
-        position: absolute; inset: 0; width: 1920px; height: 1080px;
-        display: block; z-index: 1;
-      }
-      /* 轻量 M3 风格顶栏：始终在 3D 之上，不参与切镜 */
-      #hud {
-        position: absolute; left: 64px; top: 48px; z-index: 3;
-        display: flex; align-items: center; gap: 16px;
-        font: 500 18px/1.2 "Roboto", sans-serif;
-        color: #3C4043; letter-spacing: 0.08em;
-      }
-      #hud .dot { width: 8px; height: 8px; border-radius: 50%; background: #0B57D0; }
-      #hud .sep { color: #9AA0A6; }
-      #progress {
-        position: absolute; left: 64px; right: 64px; bottom: 48px; z-index: 3;
-        height: 2px; background: rgba(11,87,208,0.16);
-      }
-      #progress-fill {
-        position: absolute; left: 0; top: 0; width: 0%; height: 2px;
-        background: #0B57D0;
-      }
-      #chapter {
-        position: absolute; right: 64px; top: 48px; z-index: 3;
-        font: 500 18px/1.2 "Roboto", sans-serif;
-        color: #5F6368; letter-spacing: 0.04em;
-      }
+      .clip { position: absolute; }
+      .scene-host { position: absolute; inset: 0; width: 1920px; height: 1080px; }
     </style>
-    <script src="assets/vendor/gsap.min.js"></script>
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "./assets/three/three.module.min.js"
-        }
-      }
-    </script>
   </head>
   <body>
     <div id="root"
          data-composition-id="main"
-         data-start="0" data-duration="175.01"
-         data-width="1920" data-height="1080"
-         data-no-timeline>
-      <canvas id="gl" class="clip" data-start="0" data-duration="175.01" data-track-index="1"></canvas>
+         data-start="0" data-duration="98.746"
+         data-width="1920" data-height="1080">
 
-      <div id="hud" class="clip" data-start="0" data-duration="175.01" data-track-index="2">
-        <span class="dot"></span>OhGithubLost<span class="sep">·</span>v12.6.9<span class="sep">·</span>3D one-shot
-      </div>
-      <div id="chapter" class="clip" data-start="0" data-duration="175.01" data-track-index="2">00 · 开场</div>
-      <div id="progress" class="clip" data-start="0" data-duration="175.01" data-track-index="2">
-        <div id="progress-fill"></div>
-      </div>
+      <div id="credits" class="clip scene-host"
+           data-composition-id="credits"
+           data-composition-src="compositions/credits.html"
+           data-start="0" data-duration="98.746" data-track-index="1"
+           data-track-kind="graphics" data-width="1920" data-height="1080"></div>
 
-      <!-- BGM 决定片长：HOYO-MiX《月宫试云衣》完整 175.01s，不裁切。
-           版权归原权利人，仅随 video 分支用于内部样片。 -->
-      <audio id="bgm" src="assets/audio/bgm-lunar.mp3"
-             data-start="0" data-duration="175.01" data-track-index="9" data-volume="1"></audio>
+      <!-- 《梦之咏叹》98.746s，文件已固化为原音量 25%，此处不再二次衰减 -->
+      <audio id="bgm" src="assets/audio/dream-aria-25.m4a"
+             data-start="0" data-duration="98.746" data-track-index="9" data-volume="1"></audio>
     </div>
 
-    <script type="module" src="assets/one-shot.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
   </body>
 </html>

@@ -1,12 +1,10 @@
 name: Promo Render
 
 # ============================================================================
-# OGL 宣传片 · Three.js 一镜到底渲染管线
+# OGL 片尾 · HF 0.9.46 + GSAP 单根 HTML 2D 电影片尾
 #
-# 本地：写 HTML / Three.js / 面板贴图 / BGM / 文档，跑静态 lint。
-# CI：ubuntu-latest x64 官方 Chrome 逐帧渲染 WebGL → MP4 → 720p → 7z → tag。
-#
-# 片长由 BGM 决定：HOYO-MiX《月宫试云衣》完整 175.01s，不裁切。
+# 零图纯文字、黑体居中、连续匀速上滚、无边框无装饰线。
+# 片长由《梦之咏叹》98.746s 决定，不裁切、不补帧。
 # ============================================================================
 
 on:
@@ -32,12 +30,12 @@ permissions:
 env:
   HYPERFRAMES_TELEMETRY: '0'
   HF_VERSION: '0.9.46'
-  PROMO_DURATION: '175.01'
+  PROMO_DURATION: '98.746'
 
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,46 +47,56 @@ jobs:
 
       - name: Install fonts, FFmpeg, 7-Zip
         run: |
+          # fonts-noto-cjk 仅作 CI 字体兜底；成片使用本地 OGLHeiti 子集
           sudo apt-get update -qq
-          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji ffmpeg p7zip-full
+          sudo apt-get install -y -qq fonts-noto-cjk ffmpeg p7zip-full
           fc-cache -f
           ffmpeg -version | head -1
           ffprobe -version | head -1
 
-      - name: Cache HyperFrames CLI
+      - name: Cache npm
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: hf-npm-${{ runner.os }}-${{ env.HF_VERSION }}-v1
+          key: hf-npm-${{ runner.os }}-${{ env.HF_VERSION }}-v2
 
       - name: Install HyperFrames CLI & Chrome
         run: |
           npx -y "hyperframes@${HF_VERSION}" --version
           npx -y "hyperframes@${HF_VERSION}" browser ensure
 
-      - name: Verify BGM length and 3D assets
+      - name: Verify audio, fonts and zero-image sources
         run: |
           set -euo pipefail
-          AUDIO=promo/assets/audio/bgm-lunar.mp3
+          AUDIO=promo/assets/audio/dream-aria-25.m4a
           test -s "$AUDIO"
           DUR=$(ffprobe -v error -show_entries format=duration \
                 -of default=noprint_wrappers=1:nokey=1 "$AUDIO")
-          python3 - "$DUR" <<'PY'
+          python3 - "$DUR" "${PROMO_DURATION}" <<'PY'
           import sys
-          d = float(sys.argv[1])
-          assert 174.5 <= d <= 175.5, f"BGM 时长 {d}s 不是 175.01s ±0.5s"
-          print(f"bgm-lunar.mp3: {d:.3f}s · 片长锁 {d:.2f}s")
+          d, target = float(sys.argv[1]), float(sys.argv[2])
+          assert abs(d - target) <= 0.5, f"音轨时长 {d}s 不是 {target}s ±0.5s"
+          print(f"dream-aria-25.m4a: {d:.3f}s · 片长锁 {target:.3f}s")
           PY
-          test -s promo/assets/one-shot.js
-          test -s promo/assets/three/three.module.min.js
-          test -s promo/assets/three/three.core.min.js
-          for i in $(seq -w 0 10); do test -s "promo/assets/panels/panel-${i}.png"; done
-          missing=0
-          for f in $(grep -rhoE 'assets/(screens|panels)/[0-9a-z-]+\.(png|jpg)' promo/assets/one-shot.js promo/index.html | sort -u); do
-            if [ ! -s "promo/$f" ]; then echo "::error::缺素材 promo/$f"; missing=1; fi
+          for f in \
+            promo/assets/fonts/heiti-subset.woff2 \
+            promo/assets/vendor/gsap.min.js \
+            promo/index.html \
+            promo/compositions/credits.html \
+            promo/data/milestones.json ; do
+            test -s "$f" || { echo "::error::缺源文件 $f"; exit 1; }
           done
-          [ "$missing" = "0" ] && echo "3D 素材引用均存在"
-          ls -lh "$AUDIO" promo/assets/one-shot.js promo/assets/panels/ | tail -14
+          echo "2D 源文件齐备"
+          IMAGES=$(find promo -type f \
+            \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \
+               -o -iname '*.svg' -o -iname '*.webp' -o -iname '*.gif' \) \
+            -print)
+          if [ -n "$IMAGES" ]; then
+            echo "::error::零图约束被破坏，promo/ 下发现图片文件："
+            echo "$IMAGES"
+            exit 1
+          fi
+          echo "zero-image gate: promo/ 下无 png/jpg/jpeg/svg/webp/gif"
 
       - name: Lint composition (strict gate)
         working-directory: promo
@@ -103,13 +111,30 @@ jobs:
               print('::error::lint 输出无法解析为 JSON')
               print(raw[:2000])
               sys.exit(1)
-          errs = d.get('errorCount', 0)
+          errs = d.get('errorCount')
+          if not isinstance(errs, int):
+              print('::error::lint 输出缺少 errorCount')
+              print(raw[:2000])
+              sys.exit(1)
           warns = d.get('warningCount', 0)
           print(f'lint: {errs} errors, {warns} warnings')
-          for f in d.get('findings', []):
-              print(' ', f.get('severity'), f.get('code'), f.get('selector') or '')
-          if errs:
+          for key in ('findings', 'warnings'):
+              items = d.get(key)
+              if not isinstance(items, list):
+                  continue
+              for f in items:
+                  if isinstance(f, dict):
+                      sev = str(f.get('severity') or f.get('level') or '')
+                      if key == 'warnings' or 'warn' in sev.lower():
+                          print('  warning:', f.get('code') or key,
+                                f.get('selector') or '',
+                                str(f.get('message', ''))[:140])
+                  else:
+                      print('  warning:', str(f)[:200])
+          if errs != 0:
+              print('::error::lint 硬门禁：errorCount 必须为 0')
               sys.exit(1)
+          print('lint gate: errorCount == 0')
           PY
 
       - name: Runtime check (advisory)
@@ -117,7 +142,7 @@ jobs:
         continue-on-error: true
         run: |
           npx -y "hyperframes@${HF_VERSION}" check --json . \
-            --budget 8m --samples 6 > ../check.json 2>&1 || true
+            --budget 5m --samples 6 > ../check.json 2>&1 || true
           python3 - <<'PY'
           import json
           raw = open('../check.json', encoding='utf-8').read()
@@ -138,9 +163,10 @@ jobs:
 
       - name: Render MP4 (delivery 1080p)
         run: |
+          set -euo pipefail
           mkdir -p promo/final
           npx -y "hyperframes@${HF_VERSION}" render promo \
-            --output promo/final/OGL-Promo.mp4 \
+            --output promo/final/OGL-Credits.mp4 \
             --fps 30 \
             --workers 4 \
             --no-browser-gpu
@@ -148,30 +174,42 @@ jobs:
           ffprobe -v error \
             -show_entries format=duration,size,bit_rate \
             -show_entries stream=width,height,r_frame_rate,codec_name \
-            -of default=noprint_wrappers=1 promo/final/OGL-Promo.mp4
+            -of default=noprint_wrappers=1 promo/final/OGL-Credits.mp4
+          DUR=$(ffprobe -v error -show_entries format=duration \
+                -of default=noprint_wrappers=1:nokey=1 promo/final/OGL-Credits.mp4)
+          python3 - "$DUR" "${PROMO_DURATION}" <<'PY'
+          import sys
+          d, target = float(sys.argv[1]), float(sys.argv[2])
+          assert abs(d - target) <= 0.5, f"成片时长 {d}s 偏离 {target}s 超过 0.5s"
+          print(f"render duration gate: {d:.3f}s ≈ {target:.3f}s")
+          PY
 
       - name: Derive 720p lightweight cut
         run: |
           set -euo pipefail
-          ffmpeg -y -v error -i promo/final/OGL-Promo.mp4 \
+          ffmpeg -y -v error -i promo/final/OGL-Credits.mp4 \
             -vf "scale=1280:720:flags=lanczos" \
             -c:v libx264 -preset slow -crf 23 -profile:v high -level 4.0 \
             -c:a aac -b:a 128k -movflags +faststart \
-            promo/final/OGL-Promo-720p.mp4
+            promo/final/OGL-Credits-720p.mp4
           ls -lh promo/final/*.mp4
 
-      - name: Generate contact sheet
+      - name: Generate contact sheet (3x3, full 98s)
         run: |
-          ffmpeg -y -i promo/final/OGL-Promo.mp4 -vf \
-            "fps=1/20,scale=480:-1,tile=3x3" -frames:v 1 \
-            promo/final/contact-sheet.jpg
+          set -euo pipefail
+          # 时间轴归一化到 ~81s 后按 fps=1/10 取 9 帧，使 3x3 网格覆盖整段 98.746s
+          ffmpeg -y -v error -i promo/final/OGL-Credits.mp4 -an -vf \
+            "setpts=0.82*(PTS-STARTPTS),fps=1/10,scale=480:-1,tile=3x3" \
+            -frames:v 1 -q:v 3 promo/final/contact-sheet.jpg
+          test -s promo/final/contact-sheet.jpg
+          ls -lh promo/final/contact-sheet.jpg
 
       - name: Package with 7-Zip (maximum compression)
         run: |
           set -euo pipefail
           mkdir -p promo/final/package
-          cp promo/final/OGL-Promo.mp4 \
-             promo/final/OGL-Promo-720p.mp4 \
+          cp promo/final/OGL-Credits.mp4 \
+             promo/final/OGL-Credits-720p.mp4 \
              promo/final/contact-sheet.jpg \
              lint.json check.json \
              promo/01-brief.md promo/02-storyboard.md \
@@ -179,19 +217,21 @@ jobs:
              promo/06-music-plan.md promo/07-motion.md \
              promo/final/package/
           7z a -t7z -mx=9 -m0=LZMA2 -md=64m -mmt=on -bd \
-             promo/final/OGL-Promo.7z ./promo/final/package/*
-          7z t promo/final/OGL-Promo.7z -bd | tail -3
-          sha256sum promo/final/OGL-Promo.mp4 promo/final/OGL-Promo-720p.mp4 \
-            promo/final/OGL-Promo.7z | tee promo/final/SHA256SUMS.txt
+             promo/final/OGL-Credits.7z ./promo/final/package/*
+          7z t promo/final/OGL-Credits.7z -bd | tail -3
+          sha256sum promo/final/OGL-Credits.mp4 \
+            promo/final/OGL-Credits-720p.mp4 \
+            promo/final/contact-sheet.jpg \
+            promo/final/OGL-Credits.7z | tee promo/final/SHA256SUMS.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ogl-promo-3d-${{ github.ref_name }}-${{ github.sha }}
+          name: ogl-credits-2d-${{ github.ref_name }}-${{ github.sha }}
           path: |
-            promo/final/OGL-Promo.mp4
-            promo/final/OGL-Promo-720p.mp4
-            promo/final/OGL-Promo.7z
+            promo/final/OGL-Credits.mp4
+            promo/final/OGL-Credits-720p.mp4
+            promo/final/OGL-Credits.7z
             promo/final/contact-sheet.jpg
             promo/final/SHA256SUMS.txt
             lint.json
@@ -207,21 +247,29 @@ jobs:
           TAG="promo-${GITHUB_SHA::7}"
           git config user.name "OGL Promo Bot"
           git config user.email "promo@users.noreply.github.com"
-          git tag -a "$TAG" -m "OGL 宣传片 $TAG · Three.js 一镜到底"
-          git push origin "$TAG"
-          gh release create "$TAG" \
-            promo/final/OGL-Promo.7z \
-            promo/final/OGL-Promo.mp4 \
-            promo/final/OGL-Promo-720p.mp4 \
-            promo/final/contact-sheet.jpg \
-            promo/final/SHA256SUMS.txt \
-            --title "OGL 宣传片 $TAG · 3D 一镜到底" \
-            --notes "由 .github/workflows/promo-render.yml 从 promo/ 源码自动渲染。
+          if git ls-remote --exit-code --tags origin "$TAG" >/dev/null 2>&1; then
+            echo "tag $TAG 已存在，复用"
+          else
+            git tag -a "$TAG" -m "OGL 2D 电影片尾 $TAG"
+            git push origin "$TAG"
+          fi
+          cat > /tmp/RELEASE_NOTES.md <<'NOTES'
+          由 .github/workflows/promo-render.yml 从 promo/ 源码自动渲染。
 
-          - 175.01s / 30fps / 1920x1080，片长由 HOYO-MiX《月宫试云衣》完整曲目决定
-          - 单个 Three.js 相机连续飞行：11 个功能站点、零切镜、零黑场
-          - 亮色 Material 3 长廊，中文面板为烘焙贴图，12 张实机截图作为 3D 平面
-          - OGL-Promo-720p.mp4：轻量版；OGL-Promo.7z：-mx=9 极限压缩包
-          - SHA256SUMS.txt：完整性校验
+          - 2D 电影片尾 / 18 条里程碑 / 黑体居中上滚 / 零图纯文字 / Dream Aria 25% / 98.746s
+          - HF 0.9.46 + GSAP 单根 HTML 合成，30fps；四幕仅作隐藏分组，不上屏
+          - OGL-Credits-720p.mp4：CRF23 轻量版；OGL-Credits.7z：-mx=9 极限压缩包
+          - contact-sheet.jpg：3x3 全片采样；SHA256SUMS.txt：完整性校验
 
-          > 音轨版权归原权利人，仅随 video 分支用于内部样片。"
+          > 音轨版权归原权利人，仅随 video 分支用于内部样片。
+          NOTES
+          ASSETS="promo/final/OGL-Credits.7z promo/final/OGL-Credits.mp4 \
+                  promo/final/OGL-Credits-720p.mp4 promo/final/contact-sheet.jpg \
+                  promo/final/SHA256SUMS.txt"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" $ASSETS --clobber
+          else
+            gh release create "$TAG" $ASSETS \
+              --title "OGL 片尾 $TAG · 2D 电影片尾" \
+              --notes-file /tmp/RELEASE_NOTES.md
+          fi

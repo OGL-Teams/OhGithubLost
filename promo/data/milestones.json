@@ -1,0 +1,20 @@
+[
+  {"version":"v0.1.0","era":"起点 · 从零到全平台","act_line":"首个公开版本，确立客户端骨架","kind":"origin","headline":"五平台首航","detail":"令牌登录、游客模式；仓库、议题、PR、发布全功能"},
+  {"version":"v1.0.0","era":"起点 · 从零到全平台","act_line":"首个公开版本，确立客户端骨架","kind":"architecture","headline":"系统标准样式重写","detail":"弃用自绘控件；跨平台观感与操作反馈统一"},
+  {"version":"v2.0.0","era":"起点 · 从零到全平台","act_line":"首个公开版本，确立客户端骨架","kind":"feature","headline":"Actions 与 Gist 上线","detail":"工作流步骤可查可重跑；Gist 增删改查；多账号隔离"},
+  {"version":"v3.1.0","era":"起点 · 从零到全平台","act_line":"首个公开版本，确立客户端骨架","kind":"feature","headline":"下载器与草稿箱","detail":"内建多线程分段下载；编辑器自动保存草稿；通知中心"},
+  {"version":"v4.0.0","era":"扩张 · 能力与平台双线","act_line":"能力做深，平台做宽，底线写进代码","kind":"reliability","headline":"下载队列与断点续传","detail":"权限、下载、编辑器重建；登录失效自动回登录页"},
+  {"version":"v4.9.0","era":"扩张 · 能力与平台双线","act_line":"能力做深，平台做宽，底线写进代码","kind":"architecture","headline":"15 语言与分层门禁","detail":"界面扩至 15 种语言；分层与文案校验进入 CI"},
+  {"version":"v5.1.0","era":"扩张 · 能力与平台双线","act_line":"能力做深，平台做宽，底线写进代码","kind":"feature","headline":"多连接分片下载","detail":"Range 并发拉取、逐字节校验；失败不交付半成品"},
+  {"version":"v5.6.0","era":"扩张 · 能力与平台双线","act_line":"能力做深，平台做宽，底线写进代码","kind":"turn","headline":"弃用 macOS 与 iOS","detail":"最后支持 v5.3.0；正式产物收敛为三平台"},
+  {"version":"v6.0.0","era":"扩张 · 能力与平台双线","act_line":"能力做深，平台做宽，底线写进代码","kind":"platform","headline":"桌面自绘窗口与 Linux 包","detail":"自绘标题栏；deb、rpm、AppImage 三种安装包"},
+  {"version":"v6.3.0","era":"扩张 · 能力与平台双线","act_line":"能力做深，平台做宽，底线写进代码","kind":"turn","headline":"许可改为 Apache-2.0","detail":"告别 AGPL 强著佐权；NOTICE 随产物分发"},
+  {"version":"v6.5.0","era":"扩张 · 能力与平台双线","act_line":"能力做深，平台做宽，底线写进代码","kind":"turn","headline":"删除内置加速通道","detail":"不预置代理、不静默降级；加速仅由用户自备"},
+  {"version":"v7.0.0","era":"扩张 · 能力与平台双线","act_line":"能力做深，平台做宽，底线写进代码","kind":"platform","headline":"Web 版正式上线","detail":"PWA 可装主屏；与桌面端差异如实标注"},
+  {"version":"v8.2.0","era":"扩张 · 能力与平台双线","act_line":"能力做深，平台做宽，底线写进代码","kind":"feature","headline":"AI 助手接入","detail":"多轮对话与会话历史；工具调用审计落盘"},
+  {"version":"v10.0.0","era":"收敛 · 做减法的取舍","act_line":"删掉错误方向，把数据安全放回中心","kind":"turn","headline":"移除 AI 与语言收敛","detail":"清理密钥、会话与记录；语言收敛为中英双语"},
+  {"version":"v10.2.0","era":"收敛 · 做减法的取舍","act_line":"删掉错误方向，把数据安全放回中心","kind":"reliability","headline":"设备流授权登录","detail":"一次性代码登录；令牌仅存本机安全存储"},
+  {"version":"v10.3.0","era":"收敛 · 做减法的取舍","act_line":"删掉错误方向，把数据安全放回中心","kind":"turn","headline":"六语言完整译文","detail":"由双语回扩至六种；繁中、德、法、俄均为全译"},
+  {"version":"v12.0.0","era":"基线 · 长期支持与门禁","act_line":"冻结功能面，以门禁守住长期基线","kind":"governance","headline":"确立 LTS 基线","detail":"发现、仓库、议题、工作流四组能力完成，此后以修复为主"},
+  {"version":"v12.6.9","era":"基线 · 长期支持与门禁","act_line":"冻结功能面，以门禁守住长期基线","kind":"finale","headline":"十八道门禁全通过","detail":"四层依赖零越级；Apache-2.0；四平台同步发布"}
+]

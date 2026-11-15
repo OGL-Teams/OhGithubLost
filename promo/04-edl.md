@@ -1,69 +1,16 @@
-# OGL 宣传片 · EDL（04-edl）· 3D One-Shot
+# 04 · EDL
 
-主编辑文件：`promo/index.html`（单个 canvas composition）
-渲染：1920×1080 / 30fps / **175.01s** / H.264 + AAC
-片长锁：`assets/audio/bgm-lunar.mp3`（175.046531s，源曲 175.007979s，不裁切）
+单根合成 `compositions/credits.html`，时间域 `[0, 98.746)`，30fps。
 
-## 轨道
-
-| 轨道 | 内容 |
-|---|---|
-| 1 | `#gl` — Three.js WebGL canvas，全片唯一画面层 |
-| 2 | `#hud` / `#chapter` / `#progress` — 常驻轻量 HUD |
-| 9 | `#bgm` ← `assets/audio/bgm-lunar.mp3`，volume 1 |
-
-## 时间线（不是切镜表，是相机路径采样）
-
-| 全局时间 | 相机 z（约） | 经过站点 | HUD 章节 |
+| 轨道 | 类型 | 内容 | 区间 |
 |---|---|---|---|
-| 0s | +34 | 00 开场进入视野 | 00 · 开场 |
-| 14s | +17 | 01 仓库 | 01 · 仓库 |
-| 30s | -1 | 02 代码 | 02 · 代码 |
-| 46s | -20 | 03 编辑 | 03 · 编辑 |
-| 62s | -39 | 04 Issue | 04 · Issue |
-| 80s | -60 | 05 日志 | 05 · 日志 |
-| 96s | -79 | 06 网络 | 06 · 网络 |
-| 116s | -103 | 07 法律 | 07 · 法律 |
-| 134s | -126 | 08 账号 | 08 · 账号 |
-| 150s | -143 | 09 产物 | 09 · 产物 |
-| 168s | -163 | 10 片尾 | 10 · 片尾 |
-| 175.01s | -158 | 停在片尾后方（留 8 单位余量） | 10 · 片尾 |
+| 1 | graphics credits | OGLHeiti 文字流，18 条，居中上滚 | 0 → 98.746s |
+| 9 | audio | `dream-aria-25.m4a`，原音量 25% 已固化 | 0 → 98.746s |
 
-相机公式（纯时间函数）：
+其余轨道为空。四幕仅作为数据分组，不映射为轨道、不上屏。
 
-```js
-u = t / 175.01
-camera.z = 34 - u * 192
-camera.x = sin(t*0.055)*1.15 + sin(t*0.013)*0.55
-camera.y = 3.0 + sin(t*0.041)*0.35
-lookAt( sin(t*0.021)*0.9, 0.4 + sin(t*0.031)*0.35, camera.z - 21 )
-```
+**滚动公式**：`y(t) = H/2 − v·t`，`v = D / T`，`T = 98.746s`，`D` 为从首行中心到末行完全离屏的位移。每步高 `2h`（`h` 为行高），故条间空一整行字高；第一行在 t=0 位于画面中心。`v` 恒定，无缓动。
 
-站点近场函数：
+**片长校验**：CI 对音轨与成片各做一次 ffprobe，`|duration − 98.746| ≤ 0.5s`；不满足即失败。
 
-```js
-near = exp(-((camera.z - station.z)/10)^2)
-station.scale = 0.90 + 0.10 * near
-panel.opacity = 0.72 + 0.28 * near
-```
-
-## 配乐
-
-完整《月宫试云衣》，无裁切、无淡入淡出、无额外混音。画面唯一"对齐"是 90–160s 的曝光/雾距抬升，对应曲子的能量段；不做帧级卡点，因为一镜到底不该被鼓点切碎。详见 `06-music-plan.md`。
-
-## 渲染
-
-```bash
-npm --prefix promo run lint    # 静态硬门禁
-npm --prefix promo run render  # 官方 Chrome 环境
-```
-
-CI：`.github/workflows/promo-render.yml` → lint → render → 720p → 7z -mx=9 → tag `promo-<sha7>` → Release。
-
-## 自检
-
-- [x] 根 `data-duration="175.01"` 与音轨时长一致
-- [x] 单个 composition、单个 canvas、无 `data-composition-src`
-- [x] `hf-seek` 纯函数；无 rAF / Date.now / Math.random / timer
-- [x] `window.__hf.buildReady.oneShot` 等纹理加载与 shader 编译
-- [x] 第 0 帧亮色，有 HUD、导轨、地面、第一块面板
+**CI 产物**：`OGL-Credits.mp4`（1080p）、`OGL-Credits-720p.mp4`（CRF23）、`contact-sheet.jpg`（fps=1/10 · tile 3x3）、`OGL-Credits.7z`（−mx=9）、`SHA256SUMS.txt`、`lint.json`、`check.json`。
