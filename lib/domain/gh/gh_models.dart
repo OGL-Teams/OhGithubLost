@@ -367,6 +367,47 @@ class GhRepo extends GhRecord {
 }
 
 /// 分支。
+class GhTag extends GhRecord {
+  /// 创建标签记录。
+  const GhTag({
+    required this.name,
+    required this.sha,
+    this.commitUrl = '',
+    this.raw = const <String, dynamic>{},
+  });
+
+  factory GhTag.fromJson(Map<String, dynamic> json) {
+    final commit = json['commit'];
+    final commitJson = commit is Map<Object?, Object?>
+        ? Map<String, dynamic>.from(commit)
+        : const <String, dynamic>{};
+    return GhTag(
+      name: GhJson.str(json, 'name'),
+      sha: GhJson.str(commitJson, 'sha'),
+      commitUrl: GhJson.str(commitJson, 'url'),
+      raw: json,
+    );
+  }
+
+  /// 标签名。
+  final String name;
+
+  /// 指向的提交 SHA。
+  final String sha;
+
+  /// 提交 API 地址。
+  final String commitUrl;
+
+  @override
+  final Map<String, dynamic> raw;
+
+  @override
+  Map<String, Object?> toJson() => <String, Object?>{
+        'name': name,
+        'commit': <String, Object?>{'sha': sha, 'url': commitUrl},
+      };
+}
+
 class GhBranch extends GhRecord {
   /// 创建分支。
   const GhBranch({

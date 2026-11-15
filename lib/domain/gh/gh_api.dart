@@ -436,6 +436,40 @@ class GhApi implements CacheRemote {
   // ───────────────────────── 分支 ─────────────────────────
 
   /// 分支列表。
+  /// 仓库标签列表（分页）。GET /repos/{fullName}/tags
+  Future<List<GhTag>> tags(
+    String fullName, {
+    int perPage = 30,
+    int page = 1,
+  }) async {
+    final list = await client.getList(
+      '/repos/$fullName/tags',
+      query: <String, String>{'per_page': '$perPage', 'page': '$page'},
+      label: 'GET /repos/$fullName/tags',
+    );
+    return list.map(GhTag.fromJson).toList();
+  }
+
+  /// 单个标签（经 Git ref）。GET /repos/{fullName}/git/ref/tags/{name}
+  Future<GhTag?> tag(String fullName, String name) async {
+    final object = await client.getObject(
+      '/repos/$fullName/git/ref/tags/$name',
+      label: 'GET /repos/$fullName/git/ref/tags/$name',
+    );
+    if (object == null) {
+      return null;
+    }
+    final refObject = object['object'];
+    final refJson = refObject is Map<Object?, Object?>
+        ? Map<String, dynamic>.from(refObject)
+        : const <String, dynamic>{};
+    return GhTag(
+      name: name,
+      sha: GhJson.str(refJson, 'sha', fallback: GhJson.str(object, 'sha')),
+      raw: object,
+    );
+  }
+
   Future<List<GhBranch>> branches(
     String fullName, {
     int perPage = 100,
@@ -448,6 +482,46 @@ class GhApi implements CacheRemote {
     );
     return list.map(GhBranch.fromJson).toList();
   }
+
+  /// 创建轻量标签。POST /repos/{fullName}/git/refs
+  ///
+  /// 走 Git refs 而非 Releases API：轻量标签不生成 Release。
+  Future<GhTag> createTag(
+    String fullName, {
+    required String name,
+    required String sha,
+  }) async {
+    final response = await client.send(GhRequest(
+      path: '/repos/$fullName/git/refs',
+      method: NetMethod.post,
+      body: <String, Object?>{
+        'ref': 'refs/tags/$name',
+        'sha': sha,
+      },
+      label: 'POST /repos/$fullName/git/refs',
+    ));
+    final object = response.jsonObject;
+    final refObject = object?['object'];
+    final refJson = refObject is Map<Object?, Object?>
+        ? Map<String, dynamic>.from(refObject)
+        : const <String, dynamic>{};
+    return GhTag(
+      name: name,
+      sha: GhJson.str(refJson, 'sha', fallback: sha),
+      raw: object ?? const <String, dynamic>{'ref': 'refs/tags/$name'},
+    );
+  }
+
+  /// 删除标签。DELETE /repos/{fullName}/git/refs/tags/{name}
+  ///
+  /// 破坏性操作；UI 层必须二次确认后才调用。
+  Future<void> deleteTag(String fullName, String name) => client
+      .send(GhRequest(
+        path: '/repos/$fullName/git/refs/tags/$name',
+        method: NetMethod.delete,
+        label: 'DELETE tag($name)',
+      ))
+      .then<void>((_) {});
 
   /// 创建分支（基于 [fromSha] 或 [fromBranch]）。
   ///
