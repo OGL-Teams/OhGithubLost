@@ -35,6 +35,7 @@
 | 文件 | 内容 |
 | --- | --- |
 | [`CI_BUILD_BASELINE.md`](CI_BUILD_BASELINE.md) | CI 实测基线（各门禁在当前基线的实测结果） |
+| [`MD3_AUDIT.md`](MD3_AUDIT.md) | Material 3 合规只读审计（十类评分；零气泡为合法用户约束） |
 | [`REPO_HYGIENE.md`](REPO_HYGIENE.md) | 仓库文档整理报告（2026-11，本次产出） |
 | [`CONVERGENCE_STATUS.md`](CONVERGENCE_STATUS.md) | **待收敛条权威现状总表**（分层/门禁/UI/下载/DNS/供应链，实测口径） |
 | [`audit_layering_principles.md`](audit_layering_principles.md) | 层级桥接与模块独立原则只读专项审查（2026-11，含路线图） |

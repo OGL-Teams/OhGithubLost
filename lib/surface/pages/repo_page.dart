@@ -2431,7 +2431,7 @@ class _CodeTabState extends State<_CodeTab> {
     return OgLCodeViewer(
       code: text,
       path: file.path,
-      fontSize: codeStyle.fontSize ?? 13,
+      fontSize: codeStyle.fontSize ?? OgLFont.monoMd,
       highlight: true,
       codeTheme: theme,
     );
