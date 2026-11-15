@@ -45,12 +45,16 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install fonts, FFmpeg, 7-Zip
+      # 成片只用本地 OGLHeiti 子集，不再安装系统 CJK 字体；
+      # ffmpeg/ffprobe 与 p7zip 在 ubuntu-latest 镜像里通常已具备，仅做探测，缺了才装。
+      - name: Ensure FFmpeg & 7-Zip
         run: |
-          # fonts-noto-cjk 仅作 CI 字体兜底；成片使用本地 OGLHeiti 子集
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq fonts-noto-cjk ffmpeg p7zip-full
-          fc-cache -f
+          if command -v ffmpeg >/dev/null && command -v ffprobe >/dev/null && command -v 7z >/dev/null; then
+            echo "ffmpeg / ffprobe / 7z already present — skip apt-get"
+          else
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg p7zip-full
+          fi
           ffmpeg -version | head -1
           ffprobe -version | head -1
 
