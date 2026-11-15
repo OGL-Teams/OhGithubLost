@@ -5,9 +5,16 @@
 默认双语（zh_Hant / en）只在重要版本扩展到 30 语言。
 
 ## 你会收到（任务书注入）
-- `LANGS`：本次负责的语言代码列表（8 种/代理）
-- `DELTA`：一个 JSON 文件路径，结构 `{"<shard>": ["key1","key2",...]}`，
+- `LANGS`：本次负责的语言代码列表（8 种/代理）- `DELTA`：一个 JSON 文件路径，结构 `{"<shard>": ["key1","key2",...]}`，
   只含需要翻译的键；不存在该文件或为空 → 直接结束
+
+## 产出落点（重要，勿写错）
+- 目标目录：`.translate-work/i18n/<lang>/<shard>.json`（**暂存区**，已被 .gitignore 排除）。
+- **不要写进 `assets/i18n/`**：主干只维护 zh / zh_Hant / en（默认双语）。多语言在
+  「重要版本」才整体合入；缺分片的语言目录进主干会破坏 `tool/i18n_scan.py --check`
+  的「键集合以 zh 全量为基准」校验。
+- 若目标语言在 `assets/i18n/` 下没有该分片：用仓库自带 `tool/i18n_translate.py`
+  生成机翻基线到暂存区（仅作占位），再对 DELTA 键做精翻覆写。
 
 ## 硬性输出契约
 1. 只改 `assets/i18n/<lang>/<shard>.json` 的 **DELTA 列出的键**；其余键一字不动。

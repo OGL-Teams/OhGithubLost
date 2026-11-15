@@ -59,7 +59,9 @@ def check(langs):
     cur = load(ZH)
     bad = []
     for lang in langs:
-        ld = load(os.path.join(ROOT, 'assets/i18n', lang))
+        staged = os.path.join(WORK, 'i18n', lang)
+        base_dir = staged if os.path.isdir(staged) else os.path.join(ROOT, 'assets/i18n', lang)
+        ld = load(base_dir)
         for shard, keys in delta.items():
             sv, lv = cur.get(shard, {}), ld.get(shard, {})
             for k in keys:
