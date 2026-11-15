@@ -50,3 +50,6 @@ boot_manifest.json
 .backup/
 __pycache__/
 *.pyc
+
+# 增量翻译中间产物（delta 提取 / 子代理交接，不入库）
+.translate-work/

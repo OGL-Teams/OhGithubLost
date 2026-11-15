@@ -1,4 +1,10 @@
-# 24 语言批量翻译（每 job 一种语言）。
+<system-reminder>
+<Minis System Notice>Argument shortened for context (340 chars). NOT the real value - never reuse it. Starts with: «# 24 语言批量翻译（每 job 一种语言）。
+#
+# ★ 使用纪律（2026-11-15 用户明确）：**默认只维护中英双语**，
+#   多语言**只在重要版本手动触发本 workflow**，不随每次发版自动跑。
+#   日常增量优先用子代理精翻（docs/I18N_DELTA_BRIEF.md + tool/i18n_delta.py）。
+#
 # 关键约束（实测）：免费公网接口按 IP 限速（RPM），连续请求会 504。
 # 因此：job 内**串行**（concurrency=1）+ 每次请求间隔 1s + **单键一块**，
 # 24 个语言交给 CI 的 job 矩阵并行 —— 每个语言独立成败、独立重试。

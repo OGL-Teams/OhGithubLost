@@ -32,11 +32,11 @@
 - 不得为了"完整"翻译未列入 DELTA 的键
 
 ## 验收自检（交付前逐条过）
-- [ ] 24 语言 × 28 分片的 DELTA 键全部处理
+- [ ] 本批 LANGS × DELTA 涉及分片的键全部处理
 - [ ] 抽 3 分片 diff：只有 DELTA 键变化
 - [ ] `python3 tool/i18n_scan.py --check` 通过（键集合一致、值类型字符串）
-- [ ] 占位符校验通过（脚本：`tool/i18n_check_delta.py`）
+- [ ] 增量校验通过：`python3 tool/i18n_delta.py check`（缺键 / 占位符多重集 / 未翻译 三重校验）
 
 ## 返回格式
 聊天回报 ≤ 200 字：处理的键数、失败分片（如有）、门禁结果。明细写
-`docs/i18n_delta_report.md`。
+`docs/i18n_delta_report.md`（该文件若不存在则新建；只写你本批的语言）。
