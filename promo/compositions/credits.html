@@ -27,7 +27,7 @@
     /* 单列连续上滚。第一行在 t≈4s 时位于画面正中（y≈540）。 */
     #track {
       position: absolute; left: 0; width: 1920px; top: 540px;
-      text-align: center; z-index: 4;
+      text-align: center; z-index: 4; opacity: 0;
     }
     .milestone { width: 1920px; height: 118px; }
     .milestone .head {
@@ -163,16 +163,20 @@
 
     /* 片头纯文字：停留后淡出，无装饰线、无图片、无边框 */
     tl.fromTo("#intro", { opacity: 0 }, { opacity: 1, duration: 1.4, ease: "power2.out" }, 0);
-    tl.fromTo("#intro", { opacity: 1 }, { opacity: 0, duration: 1.4, ease: "power2.in", immediateRender: false }, 4.2);
+    tl.fromTo("#intro", { opacity: 1 }, { opacity: 0, duration: 1.2, ease: "power2.in", immediateRender: false }, 3.2);
 
     /* 单列匀速上滚：18 条里程碑 ×(118px 内容 + 118px 空行) = 4248px。
        从 y=0 起滚到 y=-4248，滚完正好把最后一条送出顶部。 */
-    tl.fromTo("#track", { y: 0, opacity: 0 },
-      { y: -4248, opacity: 1, duration: 82.0, ease: "none", immediateRender: false }, 5.0);
+    tl.fromTo("#track", { opacity: 0 },
+      { opacity: 1, duration: 0.5, ease: "power2.out", immediateRender: false }, 4.8);
+    tl.fromTo("#track", { y: 0 },
+      { y: -4248, duration: 82.0, ease: "none", immediateRender: false }, 5.0);
     tl.fromTo("#track", { opacity: 1 },
-      { opacity: 0, duration: 1.2, ease: "power2.in", immediateRender: false }, 87.0);
+      { opacity: 0, duration: 1.0, ease: "power2.in", immediateRender: false }, 87.0);
 
     /* 片尾纯文字定格：最后约 9.7s 显现，保持到片尾 */
+    tl.fromTo("#vignette", { opacity: 1, background: "radial-gradient(ellipse 86% 78% at 50% 48%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.34) 100%)" },
+      { opacity: 1, background: "linear-gradient(#050810,#050810)", duration: 0.8, ease: "power2.in", immediateRender: false }, 88.0);
     tl.fromTo("#finale", { opacity: 0, y: 16 },
       { opacity: 1, y: 0, duration: 1.8, ease: "power2.out" }, 89.0);
 
