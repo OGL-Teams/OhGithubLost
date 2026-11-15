@@ -32,7 +32,7 @@ def request_shard(texts, lang, force_model=None):
     model=force_model or ('Index-Translate-9B' if len(json.dumps(texts,ensure_ascii=False))>3500 else 'Index-Translate-35B-A3B')
     body={'model':model,'temperature':0,'chat_template_kwargs':{'enable_thinking':False},'messages':[{'role':'user','content':build_prompt(texts,lang)}]}
     last=None
-    for attempt in range(2):
+    for attempt in range(3):
         try:
             r=call(body,model,60)
             out=clean(r['choices'][0]['message']['content'] or '')
@@ -48,7 +48,9 @@ def request_shard(texts, lang, force_model=None):
             if e.code not in (429,500,502,503,504): return None,last
         except Exception as e:
             last='%s: %s'%(type(e).__name__,str(e)[:80])
-        time.sleep(2.0*(attempt+1))
+        # ★ 退避阶梯（用户指定）：第 1 次失败等 5s，第 2 次等 15s；
+        #   仍失败则**跳过该块并记录**（不阻断整批，可续跑补齐）。
+        time.sleep(5.0 if attempt == 0 else 15.0)
     return None,last
 LOCK=threading.Lock(); DONE=[0]; FAIL=[]; START=[0.0]
 # ★ RPM 限速闸：免费公网接口按 IP 限速，连续请求会 504（实测：间隔够就成功）。

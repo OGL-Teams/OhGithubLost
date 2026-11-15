@@ -57,8 +57,38 @@ jobs:
             --interval "${{ inputs.interval }}" \
             --chunk "${{ inputs.chunk }}"
 
-      - name: Commit translations
+      # ★ 不在 job 内 push：24 个 job 并发 push 会互相冲突（实测：全部
+      #   显示 success 但远端无任何新语言）。改为上传 artifact，由 collect 汇总。
+      - name: Upload translations
+        uses: actions/upload-artifact@v4
+        with:
+          name: i18n-${{ matrix.lang }}
+          path: assets/i18n/${{ matrix.lang }}
+          if-no-files-found: ignore
+          retention-days: 7
+
+  collect:
+    name: collect and commit
+    needs: translate
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Merge and commit
         run: |
+          mkdir -p assets/i18n
+          for d in artifacts/i18n-*; do
+            [ -d "$d" ] || continue
+            lang=$(basename "$d" | sed 's/^i18n-//')
+            if [ -n "$lang" ] && [ -d "$d" ]; then
+              mkdir -p "assets/i18n/$lang"
+              cp -r "$d/." "assets/i18n/$lang/"
+              echo "merged: $lang ($(ls "$d" | wc -l) files)"
+            fi
+          done
           if [ -z "$(git status --porcelain assets/i18n)" ]; then
             echo 'no changes'
             exit 0
@@ -66,5 +96,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add assets/i18n
-          git commit -m "i18n: translate ${{ matrix.lang }} via Index-Translate"
+          git commit -m "i18n: translate via Index-Translate (24 languages)"
           git push origin HEAD:${{ github.ref_name }}
