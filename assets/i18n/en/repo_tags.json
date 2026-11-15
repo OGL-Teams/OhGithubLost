@@ -1,0 +1,12 @@
+{
+  "title": "Tags",
+  "empty": "No tags",
+  "loadFailed": "Failed to load tags",
+  "create": "Create",
+  "createTitle": "Create tag",
+  "tagName": "Tag name",
+  "targetSha": "Target commit SHA",
+  "delete": "Delete",
+  "deleteTitle": "Delete tag",
+  "deleteBody": "Delete \"{name}\"? This cannot be undone."
+}

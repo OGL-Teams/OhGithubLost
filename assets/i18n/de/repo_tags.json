@@ -1,0 +1,12 @@
+{
+  "title": "Tags",
+  "empty": "Keine Tags",
+  "loadFailed": "Tags konnten nicht geladen werden",
+  "create": "Erstellen",
+  "createTitle": "Tag erstellen",
+  "tagName": "Tagname",
+  "targetSha": "Ziel-Commit-SHA",
+  "delete": "Löschen",
+  "deleteTitle": "Tag löschen",
+  "deleteBody": "\"{name}\" löschen? Nicht widerrufbar."
+}

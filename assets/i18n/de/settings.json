@@ -192,5 +192,11 @@
   "unknown": "Unbekannt",
   "viewAccelAgreement": "Beschleunigungserklärung anzeigen",
   "accountSummary": "Anmeldung",
-  "aboutSummary": "Version & Hilfe"
+  "aboutSummary": "Version & Hilfe",
+  "tagSort": "Tag-Reihenfolge",
+  "tagSortName": "Nach Name",
+  "tagSortUpdated": "Nach Aktualisierung",
+  "tagsPerPage": "Tags pro Seite",
+  "tagDeleteConfirm": "Löschen bestätigen",
+  "tagDeleteConfirmDesc": "Vor dem Löschen eines Tags bestätigen"
 }

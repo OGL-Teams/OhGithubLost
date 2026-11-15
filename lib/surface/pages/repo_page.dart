@@ -59,6 +59,7 @@ import 'new_issue_page.dart';
 import 'new_release_page.dart';
 import 'pull_page.dart';
 import 'release_detail_page.dart';
+import 'repo_tags_page.dart';
 import 'search_page.dart';
 import 'workflow_dispatch_page.dart';
 
@@ -468,6 +469,7 @@ class _RepoPageState extends State<RepoPage> {
       Tab(text: OgLI18n.instance.t('repo', 'pulls')),
       Tab(text: OgLI18n.instance.t('repo', 'releases')),
       Tab(text: OgLI18n.instance.t('repo', 'branches')),
+      Tab(text: OgLI18n.instance.t('repo', 'tags')),
       Tab(text: OgLI18n.instance.t('repo', 'commits')),
       Tab(text: OgLI18n.instance.t('repo', 'actions')),
       if (showSettingsTab)
@@ -506,6 +508,12 @@ class _RepoPageState extends State<RepoPage> {
         fullName: _full,
         defaultBranch: _repo.defaultBranch,
         onBranchChanged: () => setState(() {}),
+        canWrite: canWrite,
+      ),
+      _TagsTab(
+        key: ValueKey<String>('tags-$branchKey'),
+        surface: widget.surface,
+        fullName: _full,
         canWrite: canWrite,
       ),
       _CommitsTab(
@@ -2936,6 +2944,27 @@ class _PullsTabState extends State<_PullsTab> {
 // ─────────────────────────────────────────────────────────────────────────────
 // 发布
 // ─────────────────────────────────────────────────────────────────────────────
+
+/// 标签 Tab：复用独立页面（内嵌 Scaffold，TabBarView 允许）。
+class _TagsTab extends StatelessWidget {
+  const _TagsTab({
+    required this.surface,
+    required this.fullName,
+    required this.canWrite,
+    super.key,
+  });
+
+  final SurfaceBridge surface;
+  final String fullName;
+  final bool canWrite;
+
+  @override
+  Widget build(BuildContext context) => RepoTagsPage(
+        surface: surface,
+        fullName: fullName,
+        canWrite: canWrite,
+      );
+}
 
 class _ReleasesTab extends StatefulWidget {
   const _ReleasesTab({

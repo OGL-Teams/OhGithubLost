@@ -907,6 +907,40 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
           ),
+          OgLSettingsChoiceTile<String>(
+            title: _t('tagSort'),
+            valueLabel: value.tagSort == 'updated'
+                ? _t('tagSortUpdated')
+                : _t('tagSortName'),
+            current: value.tagSort,
+            options: <OgLSettingsChoice<String>>[
+              OgLSettingsChoice<String>(
+                  value: 'name', label: _t('tagSortName')),
+              OgLSettingsChoice<String>(
+                  value: 'updated', label: _t('tagSortUpdated')),
+            ],
+            onSelected: (String v) => unawaited(_settings.setTagSort(v)),
+          ),
+          const Divider(height: 1),
+          OgLSettingsChoiceTile<int>(
+            title: _t('tagsPerPage'),
+            valueLabel: '${value.tagsPerPage}',
+            current: value.tagsPerPage,
+            options: <OgLSettingsChoice<int>>[
+              for (final int n in const <int>[20, 30, 50, 100])
+                OgLSettingsChoice<int>(value: n, label: '$n'),
+            ],
+            onSelected: (int v) => unawaited(_settings.setTagsPerPage(v)),
+          ),
+          const Divider(height: 1),
+          OgLSettingsSwitchRow(
+            title: _t('tagDeleteConfirm'),
+            subtitle: _t('tagDeleteConfirmDesc'),
+            value: value.tagDeleteConfirm,
+            onChanged: (bool on) =>
+                unawaited(_settings.setTagDeleteConfirm(on)),
+          ),
+          const Divider(height: 1),
           OgLSettingsSwitchRow(
             title: _t('syntaxHighlight'),
             value: value.codeHighlight,

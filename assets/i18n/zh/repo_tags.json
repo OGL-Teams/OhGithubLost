@@ -1,0 +1,12 @@
+{
+  "title": "标签",
+  "empty": "还没有标签",
+  "loadFailed": "标签加载失败",
+  "create": "创建",
+  "createTitle": "创建标签",
+  "tagName": "标签名",
+  "targetSha": "目标提交 SHA",
+  "delete": "删除",
+  "deleteTitle": "删除标签",
+  "deleteBody": "确定删除「{name}」吗？此操作不可撤销。"
+}

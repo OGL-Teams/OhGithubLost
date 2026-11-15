@@ -192,5 +192,11 @@
   "unknown": "未知",
   "viewAccelAgreement": "查看加速通道说明",
   "accountSummary": "登录与账号",
-  "aboutSummary": "版本与帮助"
+  "aboutSummary": "版本与帮助",
+  "tagSort": "标签排序",
+  "tagSortName": "按名称",
+  "tagSortUpdated": "按更新",
+  "tagsPerPage": "每页标签数",
+  "tagDeleteConfirm": "删除前确认",
+  "tagDeleteConfirmDesc": "删除标签前显示二次确认"
 }

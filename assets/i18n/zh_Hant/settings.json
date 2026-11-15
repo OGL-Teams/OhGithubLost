@@ -192,5 +192,11 @@
   "unknown": "未知",
   "viewAccelAgreement": "查看加速聲明",
   "accountSummary": "登入與帳號",
-  "aboutSummary": "版本與說明"
+  "aboutSummary": "版本與說明",
+  "tagSort": "標籤排序",
+  "tagSortName": "按名稱",
+  "tagSortUpdated": "按更新",
+  "tagsPerPage": "每頁標籤數",
+  "tagDeleteConfirm": "刪除前確認",
+  "tagDeleteConfirmDesc": "刪除標籤前顯示二次確認"
 }

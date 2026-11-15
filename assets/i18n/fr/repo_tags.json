@@ -1,0 +1,12 @@
+{
+  "title": "Étiquettes",
+  "empty": "Aucune étiquette",
+  "loadFailed": "Échec du chargement",
+  "create": "Créer",
+  "createTitle": "Créer une étiquette",
+  "tagName": "Nom",
+  "targetSha": "SHA du commit cible",
+  "delete": "Supprimer",
+  "deleteTitle": "Supprimer l’étiquette",
+  "deleteBody": "Supprimer « {name} » ? Irréversible."
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Теги",
+  "empty": "Тегов нет",
+  "loadFailed": "Не удалось загрузить теги",
+  "create": "Создать",
+  "createTitle": "Создать тег",
+  "tagName": "Имя тега",
+  "targetSha": "SHA коммита",
+  "delete": "Удалить",
+  "deleteTitle": "Удалить тег",
+  "deleteBody": "Удалить «{name}»? Необратимо."
+}

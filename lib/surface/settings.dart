@@ -146,6 +146,10 @@ class OgLSettings {
     this.uiFontId = 'system',
     this.customFonts = const <OgLCustomFont>[],
     this.languageCode = 'zh',
+    // ★ v13 Tags：客户端偏好，旧配置缺失时保持保守默认。
+    this.tagSort = 'name',
+    this.tagsPerPage = 30,
+    this.tagDeleteConfirm = true,
   });
 
   /// 默认值。
@@ -238,6 +242,12 @@ class OgLSettings {
               ? raw['uiFontId'] as String
               : 'system',
       customFonts: _customFontsOf(raw['customFonts']),
+      // ★ v13：坏值一律回落保守默认，fromJson 永不抛。
+      tagSort: raw['tagSort'] == 'updated' ? 'updated' : 'name',
+      tagsPerPage: <int>{20, 30, 50, 100}.contains(raw['tagsPerPage'])
+          ? raw['tagsPerPage'] as int
+          : 30,
+      tagDeleteConfirm: _asBool(raw['tagDeleteConfirm'], fallback: true),
     );
   }
 
@@ -538,7 +548,19 @@ class OgLSettings {
   final List<OgLCustomFont> customFonts;
 
   /// 复制并覆盖部分字段。
+  /// 标签列表排序（`name` / `updated`）。
+  final String tagSort;
+
+  /// 标签列表每页数量。
+  final int tagsPerPage;
+
+  /// 删除标签前二次确认。
+  final bool tagDeleteConfirm;
+
   OgLSettings copyWith({
+    String? tagSort,
+    int? tagsPerPage,
+    bool? tagDeleteConfirm,
     OgLThemeMode? mode,
     String? seedColorId,
     double? fontScale,
@@ -613,6 +635,9 @@ class OgLSettings {
         onboardingDone: onboardingDone ?? this.onboardingDone,
         languageCode: languageCode ?? this.languageCode,
         motionLevel: motionLevel ?? this.motionLevel,
+        tagSort: tagSort ?? this.tagSort,
+        tagsPerPage: tagsPerPage ?? this.tagsPerPage,
+        tagDeleteConfirm: tagDeleteConfirm ?? this.tagDeleteConfirm,
         uiFontId: uiFontId ?? this.uiFontId,
         customFonts: customFonts ?? this.customFonts,
       );
@@ -660,6 +685,9 @@ class OgLSettings {
         'customFonts': <Object?>[
           for (final OgLCustomFont font in customFonts) font.toJson(),
         ],
+        'tagSort': tagSort,
+        'tagsPerPage': tagsPerPage,
+        'tagDeleteConfirm': tagDeleteConfirm,
       };
 
   /// 编码为 JSON 文本。
@@ -800,6 +828,21 @@ class OgLSettingsController extends ChangeNotifier {
       apply(_settings.copyWith(mode: mode));
 
   /// 便捷：设置 DNS 解析模式（`system` / `custom`）。
+  Future<void> setTagSort(String sort) =>
+      apply(_settings.copyWith(tagSort: sort));
+
+  Future<void> setTagsPerPage(int count) =>
+      apply(_settings.copyWith(tagsPerPage: count));
+
+  /// 删除确认可显式置 false（copyWith 的 `??` 写不了 false）——
+  /// 用完整 JSON 重建，保持 fromJson 的容错语义。
+  Future<void> setTagDeleteConfirm(bool enabled) => apply(
+        OgLSettings.fromJson(<String, Object?>{
+          ..._settings.toJson(),
+          'tagDeleteConfirm': enabled,
+        }),
+      );
+
   Future<void> setDnsMode(String mode) => apply(
       _settings.copyWith(dnsMode: mode == 'custom' ? 'custom' : 'system'));
 

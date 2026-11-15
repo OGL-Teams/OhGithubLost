@@ -1,0 +1,12 @@
+{
+  "title": "標籤",
+  "empty": "還沒有標籤",
+  "loadFailed": "標籤載入失敗",
+  "create": "建立",
+  "createTitle": "建立標籤",
+  "tagName": "標籤名稱",
+  "targetSha": "目標提交 SHA",
+  "delete": "刪除",
+  "deleteTitle": "刪除標籤",
+  "deleteBody": "確定刪除「{name}」嗎？此操作無法復原。"
+}

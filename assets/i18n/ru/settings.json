@@ -192,5 +192,11 @@
   "unknown": "Неизвестно",
   "viewAccelAgreement": "Просмотреть заявление об ускорении",
   "accountSummary": "Вход",
-  "aboutSummary": "Версия и справка"
+  "aboutSummary": "Версия и справка",
+  "tagSort": "Порядок тегов",
+  "tagSortName": "По имени",
+  "tagSortUpdated": "По обновлению",
+  "tagsPerPage": "Тегов на странице",
+  "tagDeleteConfirm": "Подтверждение удаления",
+  "tagDeleteConfirmDesc": "Спрашивать перед удалением тега"
 }

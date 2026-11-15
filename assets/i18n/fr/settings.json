@@ -192,5 +192,11 @@
   "unknown": "Inconnu",
   "viewAccelAgreement": "Consulter la déclaration sur l'accélération",
   "accountSummary": "Connexion",
-  "aboutSummary": "Version & aide"
+  "aboutSummary": "Version & aide",
+  "tagSort": "Ordre des étiquettes",
+  "tagSortName": "Par nom",
+  "tagSortUpdated": "Par mise à jour",
+  "tagsPerPage": "Étiquettes par page",
+  "tagDeleteConfirm": "Confirmer la suppression",
+  "tagDeleteConfirmDesc": "Demander avant de supprimer une étiquette"
 }

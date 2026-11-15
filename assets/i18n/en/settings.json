@@ -192,5 +192,11 @@
   "unknown": "Unknown",
   "viewAccelAgreement": "View acceleration terms",
   "accountSummary": "Sign-in",
-  "aboutSummary": "Version & help"
+  "aboutSummary": "Version & help",
+  "tagSort": "Tag order",
+  "tagSortName": "By name",
+  "tagSortUpdated": "By update",
+  "tagsPerPage": "Tags per page",
+  "tagDeleteConfirm": "Confirm deletion",
+  "tagDeleteConfirmDesc": "Ask before deleting a tag"
 }
