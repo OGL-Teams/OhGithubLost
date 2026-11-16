@@ -1,5 +1,4 @@
-<system-reminder>
-<Minis System Notice>Argument shortened for context (340 chars). NOT the real value - never reuse it. Starts with: «# 24 语言批量翻译（每 job 一种语言）。
+# 24 语言批量翻译（每 job 一种语言）。
 #
 # ★ 使用纪律（2026-11-15 用户明确）：**默认只维护中英双语**，
 #   多语言**只在重要版本手动触发本 workflow**，不随每次发版自动跑。

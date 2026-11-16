@@ -24,6 +24,7 @@ ALLOWED = {
     'actions/cache/save@v4',
     'actions/checkout@v4',
     'actions/download-artifact@v4',
+    'actions/setup-python@v5',
     'actions/upload-artifact@v4',
     'softprops/action-gh-release@v2',
     'subosito/flutter-action@v2',
