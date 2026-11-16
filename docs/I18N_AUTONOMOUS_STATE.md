@@ -24,9 +24,9 @@
 命令参考：`tool/i18n_scan.py --check`（接线后）、Python 逐分片脚本（接线前）。
 
 ## 进度
-- [done] ja 精译、ko 精译、zh_Hant 润色（自检 problems=0；zh_Hant 改动已在主干，i18n_scan 通过）
-- [进行中·3并发] es（ef22e864）、pt（2de1da95）、it（1f775087）——es/pt 首次因 provider 限流失败，已重派
-- [待派精译] nl pl tr ar hi th vi id ms uk cs sv da fi no hu ro he el（18 种）
+- [done] ja、ko、es、pt、it 精译，zh_Hant 润色（全部自检 problems=0；zh_Hant 已在主干，i18n_scan 通过）
+- [进行中·3并发] nl（c59b653b）、pl（68b35057）、tr（待派）
+- [待派精译] ar hi th vi id ms uk cs sv da fi no hu ro he el（15 种）
 - [待派润色] en de fr ru（4 种）
 
 ## 教训

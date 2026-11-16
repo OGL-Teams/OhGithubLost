@@ -34,5 +34,10 @@ OGL_ROOT=/root/OhGithubLost/.translate-work/<lang>-root python3 tool/i18n_scan.p
 ## 地区用语
 见各任务指定的地区（如 ja=日本、pt=巴西、es=西班牙本土）。同一语言内术语只用一种译法。
 
+## 报告写入纪律（硬性）
+- 写 `docs/i18n_shard_report.md` / `docs/i18n_polish_report.md` 时**必须先读现有内容再追加**，
+  绝对禁止用 file_write 直接覆盖整个文件（已有代理因此丢失其他语言的小节）。
+- 用 file_edit 在文件末尾追加，或先读全文再写「原文 + 新节」。
+
 ## 返回
 报告：完成的分片数 / 总键数、自检结论、遗留问题（如某术语拿不准）。聊天回复 <200 字，明细写进指定的报告文件（如任务书所附）。
