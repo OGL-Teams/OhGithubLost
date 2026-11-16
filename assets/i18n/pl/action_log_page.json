@@ -1,0 +1,18 @@
+{
+  "copyAll": "Kopiuj wszystko",
+  "downloadFailed": "Nie udało się pobrać logu: {error}",
+  "downloadLog": "Pobierz log na urządzenie",
+  "downloadUnavailable": "Bieżący sposób przechowywania nie pozwala na zapis — nie można zapisać logu",
+  "downloaded": "Log zapisany",
+  "downloadedAt": "Log zapisano w {path}",
+  "linesCount": "Łącznie {count} wierszy",
+  "noLogMatch": "Brak pasujących wpisów w logu",
+  "noLogs": "Brak logów (być może uruchomienie jeszcze się nie zakończyło lub token nie ma uprawnień do Actions)",
+  "noMatchingJob": "Brak pasującego joba",
+  "nothingToCopy": "Brak logów do skopiowania",
+  "reload": "Pobierz ponownie",
+  "searchJobHint": "Szukaj nazwy joba",
+  "searchLogHint": "Szukaj w logu (bez rozróżniania wielkości liter)",
+  "title": "Log uruchomienia",
+  "toggleSearch": "Szukaj w treści logu"
+}

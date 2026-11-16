@@ -1,0 +1,13 @@
+{
+  "created": "Gist を作成しました",
+  "empty": "Gist スニペットはまだありません",
+  "fileCount": "{count} ファイル · ",
+  "missingId": "この Gist には id がなく、開けません",
+  "new": "新規",
+  "noDescription": "（説明なし）",
+  "noOpenLink": "この Gist には開けるリンクがありません",
+  "openInBrowser": "ブラウザで開く",
+  "private": "非公開",
+  "public": "公開",
+  "title": "Gist スニペット"
+}

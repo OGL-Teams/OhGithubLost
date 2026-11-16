@@ -1,0 +1,12 @@
+{
+  "copyContent": "Kopioi sisältö",
+  "delete": "Poista",
+  "deleteDraft": "Poista luonnos",
+  "deleted": "Luonnos poistettu",
+  "draft": "Luonnos",
+  "empty": "Ei vielä commitoimattomia luonnoksia",
+  "title": "Luonnokset",
+  "deleteDraftDesc": "Tämä luonnos poistetaan laitteeltasi, eikä toimintoa voi peruuttaa.",
+  "openInEditor": "Avaa editorissa",
+  "draftGone": "Luonnos on kadonnut"
+}

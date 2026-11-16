@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Catatan (opsional, mendukung Markdown)",
+  "createFailed": "Gagal membuat: {error}",
+  "created": "Dibuat",
+  "draft": "Draf",
+  "draftDesc": "Simpan sebagai draf, jangan rilis dulu",
+  "prerelease": "Prarilis",
+  "prereleaseDesc": "Tandai sebagai pre-release",
+  "publish": "Buat Release",
+  "publishing": "Merilis…",
+  "tagLabel": "Tag",
+  "tagRequired": "Harap isi tag terlebih dahulu (mis. v1.0.0)",
+  "title": "Release baru",
+  "titleLabel": "Judul (opsional)"
+}

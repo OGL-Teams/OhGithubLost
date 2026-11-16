@@ -1,0 +1,19 @@
+{
+  "cancel": "İptal",
+  "copiedEvent": "Olay kopyalandı",
+  "copy": "Kopyala",
+  "empty": "Koşula uyan olay yok",
+  "filterAll": "Tümü",
+  "filterError": "Hata",
+  "filterWarning": "Uyarı",
+  "markAllRead": "Tümünü okundu işaretle",
+  "markRead": "Okundu işaretle",
+  "reset": "Sıfırla",
+  "resetDesc": "Bellekteki tüm olaylar temizlenecek (disk günlüğü korunur).",
+  "resetTitle": "Bildirim merkezini sıfırla",
+  "title": "Bildirim merkezi",
+  "unread": "Okunmadı",
+  "toggleNotification": "Bildirimi aç/kapat",
+  "filterUnread": "Okunmamış",
+  "emptyUnread": "Okunmamış bildirim yok"
+}

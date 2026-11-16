@@ -1,0 +1,12 @@
+{
+  "title": "תגיות",
+  "empty": "אין עדיין תגיות",
+  "loadFailed": "טעינת התגיות נכשלה",
+  "create": "תגית חדשה",
+  "createTitle": "יצירת תגית",
+  "tagName": "שם התגית",
+  "targetSha": "SHA של ה-commit היעד",
+  "delete": "הסרה",
+  "deleteTitle": "הסרת תגית",
+  "deleteBody": "האם ברצונך למחוק את „{name}”? פעולה זו אינה ניתנת לביטול."
+}

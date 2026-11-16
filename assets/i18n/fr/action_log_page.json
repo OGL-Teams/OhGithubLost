@@ -7,7 +7,7 @@
   "downloadedAt": "Logs enregistrés dans {path}",
   "linesCount": "{count} lignes",
   "noLogMatch": "Aucun contenu de log correspondant",
-  "noLogs": "Aucun journal (le travail est peut-être incomplet, ou le Token n’a pas les autorisations Actions)",
+  "noLogs": "Aucun journal (le travail est peut-être incomplet, ou le jeton n’a pas les autorisations Actions)",
   "noMatchingJob": "Aucun travail correspondant trouvé",
   "nothingToCopy": "Aucun journal à copier",
   "reload": "Actualiser",

@@ -1,0 +1,19 @@
+{
+  "downloads": "Downloads",
+  "emptyMine": "Ingen repositories endnu",
+  "emptyStarred": "Ingen stjernemarkerede repositories endnu",
+  "home": "Hjem",
+  "loadMore": "Indlæs flere ({count} indtil nu)",
+  "mine": "Mine",
+  "newRepo": "Nyt repository",
+  "notifications": "Notifikationer",
+  "private": "Privat",
+  "repoCreated": "Repository oprettet",
+  "repoCreatedName": "Oprettede {name}",
+  "retry": "Prøv igen",
+  "searchHint": "Søg i repositories…",
+  "searchRepos": "Søg i repositories",
+  "searchTooltip": "Søg i repositories",
+  "starred": "Stjernemarkeret",
+  "starsCount": "{count} stjerner"
+}

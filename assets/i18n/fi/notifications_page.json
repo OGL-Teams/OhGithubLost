@@ -1,0 +1,19 @@
+{
+  "cancel": "Peruuta",
+  "copiedEvent": "Tapahtuma kopioitiin",
+  "copy": "Kopioi",
+  "empty": "Ei tapahtumia, jotka täyttäisivät ehdot",
+  "filterAll": "Kaikki",
+  "filterError": "Virhe",
+  "filterWarning": "Varoitus",
+  "markAllRead": "Merkitse kaikki luetuiksi",
+  "markRead": "Merkitse luetuksi",
+  "reset": "Tyhjennä",
+  "resetDesc": "Tyhjentää kaikki tällä hetkellä muistissa olevat tapahtumat (levyloki säilyy).",
+  "resetTitle": "Tyhjennä ilmoituskeskus",
+  "title": "Ilmoituskeskus",
+  "unread": "Lukemattomat",
+  "toggleNotification": "Vaihda ilmoitusta",
+  "filterUnread": "Lukemattomat",
+  "emptyUnread": "Ei lukemattomia viestejä"
+}

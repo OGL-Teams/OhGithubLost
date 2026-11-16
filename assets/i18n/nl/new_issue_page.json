@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Tekst (optioneel, Markdown wordt ondersteund)",
+  "createFailed": "Aanmaken mislukt: {error}",
+  "created": "Aangemaakt",
+  "submit": "Issue aanmaken",
+  "submitting": "Verzenden bezig…",
+  "title": "Nieuwe Issue",
+  "titleLabel": "Titel",
+  "titleRequired": "Vul eerst een titel in"
+}

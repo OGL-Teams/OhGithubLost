@@ -1,0 +1,12 @@
+{
+  "copyContent": "Kopírovat obsah",
+  "delete": "Smazat",
+  "deleteDraft": "Smazat koncept",
+  "deleted": "Koncept byl smazán",
+  "draft": "Koncept",
+  "empty": "Zatím žádné necommitnuté koncepty",
+  "title": "Koncepty",
+  "deleteDraftDesc": "Tento koncept bude smazán ze zařízení, operaci nelze vrátit zpět.",
+  "openInEditor": "Otevřít v editoru",
+  "draftGone": "Koncept už neexistuje"
+}

@@ -1,0 +1,16 @@
+{
+  "content": "Indhold",
+  "contentHint": "Indsæt eller skriv kode / tekst",
+  "contentRequired": "Indholdet må ikke være tomt",
+  "create": "Opret",
+  "createFailed": "Oprettelse mislykkedes: {error}",
+  "created": "Oprettet",
+  "creating": "Opretter…",
+  "description": "Beskrivelse (valgfrit)",
+  "fileName": "Filnavn (angiv filtypenavn for at bestemme fremhævningssprog)",
+  "fileNameHint": "Bemærk: Filtypenavnet afgør sprogfremhævningen (f.eks. main.dart / app.py).",
+  "fileNameRequired": "Angiv et filnavn",
+  "isPublic": "Offentlig Gist",
+  "isPublicDesc": "Når Gisten er offentlig, kan alle få adgang via linket",
+  "title": "Ny Gist"
+}

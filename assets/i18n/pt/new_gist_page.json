@@ -1,0 +1,16 @@
+{
+  "content": "Conteúdo",
+  "contentHint": "Cole ou digite código / texto",
+  "contentRequired": "O conteúdo não pode ficar vazio",
+  "create": "Criar",
+  "createFailed": "Falha ao criar: {error}",
+  "created": "Criado",
+  "creating": "Criando…",
+  "description": "Descrição (opcional)",
+  "fileName": "Nome do arquivo (com extensão, define a linguagem de destaque)",
+  "fileNameHint": "Dica: a extensão do arquivo define a linguagem de destaque (ex.: main.dart / app.py).",
+  "fileNameRequired": "Informe o nome do arquivo",
+  "isPublic": "Gist público",
+  "isPublicDesc": "Depois de público, qualquer pessoa pode acessá-lo pelo link",
+  "title": "Novo Gist"
+}

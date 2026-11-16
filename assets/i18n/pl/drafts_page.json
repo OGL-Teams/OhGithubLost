@@ -1,0 +1,12 @@
+{
+  "copyContent": "Kopiuj treść",
+  "delete": "Usuń",
+  "deleteDraft": "Usuń szkic",
+  "deleted": "Szkic usunięty",
+  "draft": "Szkic",
+  "empty": "Nie ma jeszcze niezatwierdzonych szkiców",
+  "title": "Szkice",
+  "deleteDraftDesc": "Ten szkic zostanie usunięty z tego urządzenia. Tej operacji nie można cofnąć.",
+  "openInEditor": "Otwórz w edytorze",
+  "draftGone": "Szkic już nie istnieje"
+}

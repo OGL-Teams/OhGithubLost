@@ -1,0 +1,12 @@
+{
+  "create": "Utwórz repozytorium",
+  "createFailed": "Nie udało się utworzyć: {error}",
+  "created": "Utworzono",
+  "creating": "Tworzenie…",
+  "description": "Opis (opcjonalnie)",
+  "nameLabel": "Nazwa repozytorium",
+  "nameRequired": "Najpierw wpisz nazwę repozytorium",
+  "private": "Prywatne repozytorium",
+  "privateDesc": "Widoczne tylko dla Ciebie",
+  "title": "Nowe repozytorium"
+}

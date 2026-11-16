@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Descripción (opcional, admite Markdown)",
+  "createFailed": "No se ha podido crear: {error}",
+  "created": "Creado",
+  "draft": "Borrador",
+  "draftDesc": "Guardar como borrador y no publicar todavía",
+  "prerelease": "Prelanzamiento",
+  "prereleaseDesc": "Marcar como pre-release",
+  "publish": "Crear el release",
+  "publishing": "Publicando…",
+  "tagLabel": "Etiqueta (tag)",
+  "tagRequired": "Primero escribe una etiqueta (por ejemplo, v1.0.0)",
+  "title": "Nuevo release",
+  "titleLabel": "Título (opcional)"
+}

@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Kuvaus (valinnainen, Markdown on tuettu)",
+  "createFailed": "Luonti epäonnistui: {error}",
+  "created": "Luotu",
+  "draft": "Luonnos",
+  "draftDesc": "Tallenna luonnokseksi äläkä julkaise vielä",
+  "prerelease": "Esijulkaisu",
+  "prereleaseDesc": "Merkitse pre-release-tilaan",
+  "publish": "Luo julkaisu",
+  "publishing": "Julkaisaan…",
+  "tagLabel": "Tunniste (tag)",
+  "tagRequired": "Syötä ensin tunniste (esim. v1.0.0)",
+  "title": "Luo julkaisu",
+  "titleLabel": "Otsikko (valinnainen)"
+}

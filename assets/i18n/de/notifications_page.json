@@ -3,10 +3,8 @@
   "copiedEvent": "Ereignis kopiert",
   "copy": "Kopieren",
   "empty": "Keine passenden Ereignisse",
-  "emptyUnread": "Keine ungelesenen Benachrichtigungen",
   "filterAll": "Alle",
   "filterError": "Fehler",
-  "filterUnread": "Ungelesen",
   "filterWarning": "Warnungen",
   "markAllRead": "Alle als gelesen markieren",
   "markRead": "Als gelesen markieren",
@@ -14,6 +12,8 @@
   "resetDesc": "Löscht alle Ereignisse im Arbeitsspeicher (Protokolle auf der Festplatte bleiben erhalten).",
   "resetTitle": "Benachrichtigungscenter zurücksetzen",
   "title": "Benachrichtigungen",
+  "unread": "Ungelesen",
   "toggleNotification": "Benachrichtigung umschalten",
-  "unread": "Ungelesen"
+  "filterUnread": "Ungelesen",
+  "emptyUnread": "Keine ungelesenen Benachrichtigungen"
 }

@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Sisältö (valinnainen, Markdown on tuettu)",
+  "createFailed": "Luonti epäonnistui: {error}",
+  "created": "Luotu",
+  "submit": "Luo keskustelu",
+  "submitting": "Lähetetään…",
+  "title": "Uusi keskustelu",
+  "titleLabel": "Otsikko",
+  "titleRequired": "Syötä ensin otsikko"
+}

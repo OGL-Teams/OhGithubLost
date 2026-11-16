@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "본문(선택, Markdown 지원)",
+  "createFailed": "생성 실패: {error}",
+  "created": "생성되었습니다",
+  "submit": "이슈 만들기",
+  "submitting": "제출 중…",
+  "title": "새 이슈",
+  "titleLabel": "제목",
+  "titleRequired": "제목을 먼저 입력해 주세요"
+}

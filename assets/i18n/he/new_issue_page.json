@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "תוכן (רשות, נתמכת ב-Markdown)",
+  "createFailed": "היצירה נכשלה: {error}",
+  "created": "נוצר",
+  "submit": "יצירת Issue",
+  "submitting": "שולח…",
+  "title": "Issue חדש",
+  "titleLabel": "כותרת",
+  "titleRequired": "יש למלא תחילה כותרת"
+}

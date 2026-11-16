@@ -1,0 +1,12 @@
+{
+  "title": "Tags",
+  "empty": "Nog geen tags",
+  "loadFailed": "Laden van tags mislukt",
+  "create": "Nieuwe tag",
+  "createTitle": "Tag aanmaken",
+  "tagName": "Naam van de tag",
+  "targetSha": "Doelcommit-SHA",
+  "delete": "Verwijderen",
+  "deleteTitle": "Tag verwijderen",
+  "deleteBody": "Weet u zeker dat u «{name}» wilt verwijderen? Deze actie kan niet worden ongedaan gemaakt."
+}

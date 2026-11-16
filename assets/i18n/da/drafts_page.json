@@ -1,0 +1,12 @@
+{
+  "copyContent": "Kopiér indhold",
+  "delete": "Slet",
+  "deleteDraft": "Slet kladde",
+  "deleted": "Kladde slettet",
+  "draft": "Kladde",
+  "empty": "Ingen ikke-sendte kladder endnu",
+  "title": "Kladder",
+  "deleteDraftDesc": "Denne kladde slettes fra denne enhed. Handlingen kan ikke fortrydes.",
+  "openInEditor": "Åbn i editor",
+  "draftGone": "Denne kladde findes ikke længere"
+}

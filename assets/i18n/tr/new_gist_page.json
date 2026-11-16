@@ -1,0 +1,16 @@
+{
+  "content": "İçerik",
+  "contentHint": "Kod / metin yapıştırın veya yazın",
+  "contentRequired": "İçerik boş olamaz",
+  "create": "Oluştur",
+  "createFailed": "Oluşturulamadı: {error}",
+  "created": "Oluşturuldu",
+  "creating": "Oluşturuluyor…",
+  "description": "Açıklama (isteğe bağlı)",
+  "fileName": "Dosya adı (uzantı, vurgulama dilini belirler)",
+  "fileNameHint": "İpucu: Dosya uzantısı vurgulama dilini etkiler (örn. main.dart / app.py).",
+  "fileNameRequired": "Lütfen dosya adını girin",
+  "isPublic": "Herkese açık Gist",
+  "isPublicDesc": "Herkese açık olduktan sonra herkes bağlantıyla erişebilir",
+  "title": "Yeni Gist"
+}

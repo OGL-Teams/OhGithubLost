@@ -1,0 +1,18 @@
+{
+  "copyAll": "Alles kopiëren",
+  "downloadFailed": "Downloaden van log mislukt: {error}",
+  "downloadLog": "Log lokaal downloaden",
+  "downloadUnavailable": "De huidige opslagmethode is niet beschrijfbaar; het log kan niet worden opgeslagen",
+  "downloaded": "Log opgeslagen",
+  "downloadedAt": "Log opgeslagen in {path}",
+  "linesCount": "{count} regels in totaal",
+  "noLogMatch": "Geen overeenkomende logregels",
+  "noLogs": "Geen logs (misschien nog niet voltooid, of het Token heeft geen Actions-rechten)",
+  "noMatchingJob": "Geen overeenkomende job",
+  "nothingToCopy": "Geen log om te kopiëren",
+  "reload": "Opnieuw ophalen",
+  "searchJobHint": "Zoek op jobnaam",
+  "searchLogHint": "Zoeken in het log (hoofdletterongevoelig)",
+  "title": "Uitvoeringslog",
+  "toggleSearch": "Zoeken in log"
+}

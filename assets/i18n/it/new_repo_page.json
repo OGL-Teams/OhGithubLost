@@ -1,0 +1,12 @@
+{
+  "create": "Crea repository",
+  "createFailed": "Creazione non riuscita: {error}",
+  "created": "Creata",
+  "creating": "Creazione in corso…",
+  "description": "Descrizione (facoltativa)",
+  "nameLabel": "Nome della repository",
+  "nameRequired": "Inserisci prima il nome della repository",
+  "private": "Repository privata",
+  "privateDesc": "Visibile solo a te",
+  "title": "Nuova repository"
+}

@@ -1,0 +1,12 @@
+{
+  "title": "태그",
+  "empty": "아직 태그가 없습니다",
+  "loadFailed": "태그 로딩에 실패했습니다",
+  "create": "새 태그",
+  "createTitle": "태그 만들기",
+  "tagName": "태그 이름",
+  "targetSha": "목표 커밋 SHA",
+  "delete": "삭제",
+  "deleteTitle": "태그 삭제",
+  "deleteBody": "「{name}」을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+}

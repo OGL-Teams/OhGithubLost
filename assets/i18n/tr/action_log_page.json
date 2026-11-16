@@ -1,0 +1,18 @@
+{
+  "copyAll": "Tümünü kopyala",
+  "downloadFailed": "Günlük indirilemedi: {error}",
+  "downloadLog": "Günlüğü cihaza indir",
+  "downloadUnavailable": "Geçerli depolama yöntemi yazılabilir değil, günlük kaydedilemiyor",
+  "downloaded": "Günlük kaydedildi",
+  "downloadedAt": "Günlük şuraya kaydedildi: {path}",
+  "linesCount": "Toplam {count} satır",
+  "noLogMatch": "Eşleşen günlük içeriği yok",
+  "noLogs": "Günlük yok (henüz tamamlanmamış olabilir veya Token'da Actions izni yok)",
+  "noMatchingJob": "Eşleşen job yok",
+  "nothingToCopy": "Kopyalanacak günlük yok",
+  "reload": "Yeniden çek",
+  "searchJobHint": "Job adı ara",
+  "searchLogHint": "Günlükte ara (büyük/küçük harfe duyarsız)",
+  "title": "Çalıştırma günlüğü",
+  "toggleSearch": "Günlük içeriğinde ara"
+}

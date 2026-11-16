@@ -1,0 +1,16 @@
+{
+  "content": "Obsah",
+  "contentHint": "Vložte nebo napište kód / text",
+  "contentRequired": "Obsah nesmí být prázdný",
+  "create": "Vytvořit",
+  "createFailed": "Vytvoření selhalo: {error}",
+  "created": "Vytvořeno",
+  "creating": "Vytváří se…",
+  "description": "Popis (volitelné)",
+  "fileName": "Název souboru (s příponou, určuje jazyk zvýrazňování)",
+  "fileNameHint": "Tip: přípona názvu souboru ovlivňuje zvýrazňování (např. main.dart / app.py).",
+  "fileNameRequired": "Zadejte název souboru",
+  "isPublic": "Veřejný Gist",
+  "isPublicDesc": "Po zveřejnění jej bude moci otevřít kdokoli s odkazem",
+  "title": "Nový Gist"
+}

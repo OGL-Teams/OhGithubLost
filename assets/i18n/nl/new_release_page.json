@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Toelichting (optioneel, Markdown wordt ondersteund)",
+  "createFailed": "Aanmaken mislukt: {error}",
+  "created": "Aangemaakt",
+  "draft": "Concept",
+  "draftDesc": "Opslaan als concept, nog niet publiceren",
+  "prerelease": "Pre-release",
+  "prereleaseDesc": "Markeren als pre-release",
+  "publish": "Release aanmaken",
+  "publishing": "Publiceren bezig…",
+  "tagLabel": "Tag",
+  "tagRequired": "Vul eerst een tag in (bijv. v1.0.0)",
+  "title": "Nieuwe Release",
+  "titleLabel": "Titel (optioneel)"
+}

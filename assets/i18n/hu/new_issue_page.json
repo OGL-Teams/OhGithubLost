@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Szöveg (opcionális, Markdown támogatott)",
+  "createFailed": "Létrehozás nem sikerült: {error}",
+  "created": "Létrehozva",
+  "submit": "Issue létrehozása",
+  "submitting": "Létrehozás folyamatban…",
+  "title": "Új Issue",
+  "titleLabel": "Cím",
+  "titleRequired": "Először adjon meg egy címet"
+}

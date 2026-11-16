@@ -1,0 +1,16 @@
+{
+  "content": "Innhold",
+  "contentHint": "Lim inn eller skriv inn kode / tekst",
+  "contentRequired": "Innholdet kan ikke være tomt",
+  "create": "Opprett",
+  "createFailed": "Kunne ikke opprette: {error}",
+  "created": "Opprettet",
+  "creating": "Oppretter…",
+  "description": "Beskrivelse (valgfritt)",
+  "fileName": "Filnavn (med endelse; bestemmer språket for syntaksmarkering)",
+  "fileNameHint": "Tips: Filnavnets endelse påvirker syntaksmarkeringen (for eksempel main.dart / app.py).",
+  "fileNameRequired": "Fyll inn filnavnet",
+  "isPublic": "Offentlig Gist",
+  "isPublicDesc": "Når den er offentlig, kan alle åpne den via lenken",
+  "title": "Ny Gist"
+}

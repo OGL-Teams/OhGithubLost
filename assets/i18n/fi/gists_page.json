@@ -1,0 +1,13 @@
+{
+  "created": "Gist luotu",
+  "empty": "Ei vielä Gist-pätkiä",
+  "fileCount": "{count} tiedostoa · ",
+  "missingId": "Tältä Gistiltä puuttuu id, eikä sitä voi avata",
+  "new": "Luo uusi",
+  "noDescription": "(ei kuvausta)",
+  "noOpenLink": "Tällä Gistillä ei ole avattavaa linkkiä",
+  "openInBrowser": "Avaa selaimessa",
+  "private": "Yksityinen",
+  "public": "Julkinen",
+  "title": "Gist-pätkät"
+}

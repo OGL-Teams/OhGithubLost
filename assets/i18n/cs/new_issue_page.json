@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Tělo zprávy (volitelné, podporuje Markdown)",
+  "createFailed": "Vytvoření selhalo: {error}",
+  "created": "Vytvořeno",
+  "submit": "Vytvořit Issue",
+  "submitting": "Odesílá se…",
+  "title": "Nové Issue",
+  "titleLabel": "Název",
+  "titleRequired": "Nejprve vyplňte název"
+}

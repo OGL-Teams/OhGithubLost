@@ -1,0 +1,16 @@
+{
+  "content": "Innehåll",
+  "contentHint": "Klistra in eller skriv kod/text",
+  "contentRequired": "Innehållet får inte vara tomt",
+  "create": "Skapa",
+  "createFailed": "Det gick inte att skapa: {error}",
+  "created": "Skapad",
+  "creating": "Skapar…",
+  "description": "Beskrivning (valfritt)",
+  "fileName": "Filnamn (med filändelse, avgör markeringsspråket)",
+  "fileNameHint": "Tips: filändelsen avgör vilket språk som markeras (t.ex. main.dart / app.py).",
+  "fileNameRequired": "Ange ett filnamn",
+  "isPublic": "Offentlig Gist",
+  "isPublicDesc": "När den är offentlig kan alla komma åt den via länken",
+  "title": "Ny Gist"
+}

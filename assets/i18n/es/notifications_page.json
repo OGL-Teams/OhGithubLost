@@ -1,0 +1,19 @@
+{
+  "cancel": "Cancelar",
+  "copiedEvent": "Se ha copiado el evento",
+  "copy": "Copiar",
+  "empty": "No hay eventos que cumplan los filtros",
+  "filterAll": "Todos",
+  "filterError": "Errores",
+  "filterWarning": "Avisos",
+  "markAllRead": "Marcar todo como leído",
+  "markRead": "Marcar como leído",
+  "reset": "Restablecer",
+  "resetDesc": "Se borrarán todos los eventos que hay ahora en memoria (el registro en disco se conserva).",
+  "resetTitle": "Restablecer el centro de notificaciones",
+  "title": "Centro de notificaciones",
+  "unread": "No leído",
+  "toggleNotification": "Alternar las notificaciones",
+  "filterUnread": "No leídos",
+  "emptyUnread": "No hay mensajes sin leer"
+}

@@ -1,0 +1,16 @@
+{
+  "content": "المحتوى",
+  "contentHint": "الصق الشيفرة أو النص",
+  "contentRequired": "لا يمكن أن يكون المحتوى فارغًا",
+  "create": "إنشاء",
+  "createFailed": "تعذّر الإنشاء: {error}",
+  "created": "تم الإنشاء",
+  "creating": "جارٍ الإنشاء…",
+  "description": "الوصف (اختياري)",
+  "fileName": "اسم الملف (مع الامتداد، وهو ما يحدّد لغة الإبراز)",
+  "fileNameHint": "ملاحظة: امتداد اسم الملف يحدّد لغة الإبراز (مثل main.dart / app.py).",
+  "fileNameRequired": "يُرجى إدخال اسم الملف",
+  "isPublic": "Gist عام",
+  "isPublicDesc": "بعد جعله عامًا يمكن لأي شخص الوصول إليه عبر الرابط",
+  "title": "Gist جديد"
+}

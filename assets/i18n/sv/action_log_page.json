@@ -1,0 +1,18 @@
+{
+  "copyAll": "Kopiera allt",
+  "downloadFailed": "Det gick inte att ladda ned loggen: {error}",
+  "downloadLog": "Ladda ned loggen lokalt",
+  "downloadUnavailable": "Den aktuella lagringslösningen är skrivskyddad, loggen kan inte sparas",
+  "downloaded": "Loggen har sparats",
+  "downloadedAt": "Loggen har sparats till {path}",
+  "linesCount": "Totalt {count} rader",
+  "noLogMatch": "Inget logginnehåll matchade",
+  "noLogs": "Inga loggar (körningen kanske inte är klar ännu, eller så saknar Token behörighet för Actions)",
+  "noMatchingJob": "Inget matchande jobb",
+  "nothingToCopy": "Ingen logg att kopiera ännu",
+  "reload": "Hämta igen",
+  "searchJobHint": "Sök efter jobbnamn",
+  "searchLogHint": "Sök i loggen (utan avseende på skiftläge)",
+  "title": "Körningslogg",
+  "toggleSearch": "Sök i logginnehållet"
+}

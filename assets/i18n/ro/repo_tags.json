@@ -1,0 +1,12 @@
+{
+  "title": "Etichete",
+  "empty": "Încă nicio etichetă",
+  "loadFailed": "Încărcarea etichetelor a eșuat",
+  "create": "Etichetă nouă",
+  "createTitle": "Creare etichetă",
+  "tagName": "Numele etichetei",
+  "targetSha": "SHA-ul commit-ului țintă",
+  "delete": "Ștergere",
+  "deleteTitle": "Ștergerea etichetei",
+  "deleteBody": "Sigur că doriți să ștergeți „{name}”? Această acțiune nu poate fi anulată."
+}

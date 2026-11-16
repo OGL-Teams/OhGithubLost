@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Brødtekst (valgfrit, Markdown understøttes)",
+  "createFailed": "Oprettelse mislykkedes: {error}",
+  "created": "Oprettet",
+  "submit": "Opret Issue",
+  "submitting": "Sender…",
+  "title": "Nyt Issue",
+  "titleLabel": "Titel",
+  "titleRequired": "Udfyld titlen først"
+}

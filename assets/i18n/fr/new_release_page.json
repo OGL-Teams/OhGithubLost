@@ -8,7 +8,7 @@
   "prereleaseDesc": "Marquer comme préversion",
   "publish": "Créer une Release",
   "publishing": "Publication en cours…",
-  "tagLabel": "Tag",
+  "tagLabel": "Étiquette (tag)",
   "tagRequired": "Veuillez d'abord renseigner un tag (ex. v1.0.0)",
   "title": "Nouvelle Release",
   "titleLabel": "Titre (facultatif)"

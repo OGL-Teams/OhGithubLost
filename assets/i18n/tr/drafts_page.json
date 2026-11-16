@@ -1,0 +1,12 @@
+{
+  "copyContent": "İçeriği kopyala",
+  "delete": "Sil",
+  "deleteDraft": "Taslağı sil",
+  "deleted": "Taslak silindi",
+  "draft": "Taslak",
+  "empty": "Henüz gönderilmemiş taslak yok",
+  "title": "Taslaklar",
+  "deleteDraftDesc": "Bu taslak cihazınızdan silinecek. Bu işlem geri alınamaz.",
+  "openInEditor": "Düzenleyicide aç",
+  "draftGone": "Taslak artık mevcut değil"
+}

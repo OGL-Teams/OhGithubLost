@@ -1,0 +1,18 @@
+{
+  "copyAll": "Kopioi kaikki",
+  "downloadFailed": "Lokien lataaminen epäonnistui: {error}",
+  "downloadLog": "Lataa lokit laitteelle",
+  "downloadUnavailable": "Nykyinen tallennustila ei ole kirjoitettava, lokkeja ei voi tallentaa",
+  "downloaded": "Lokit tallennettu",
+  "downloadedAt": "Lokit tallennettu kohteeseen {path}",
+  "linesCount": "Yhteensä {count} riviä",
+  "noLogMatch": "Ei osumia lokin sisällöstä",
+  "noLogs": "Ei lokkeja (ajo ei ehkä ole valmis tai tokenilla ei ole Actions-oikeuksia)",
+  "noMatchingJob": "Ei osumia jobiin",
+  "nothingToCopy": "Ei kopioitavia lokkeja",
+  "reload": "Hae uudelleen",
+  "searchJobHint": "Hae jobin nimeä",
+  "searchLogHint": "Hae lokkeista (ei erota kirjainkokoja)",
+  "title": "Ajolokit",
+  "toggleSearch": "Hae lokin sisällöstä"
+}

@@ -1,0 +1,12 @@
+{
+  "create": "Creează repository-ul",
+  "createFailed": "Crearea a eșuat: {error}",
+  "created": "Creat",
+  "creating": "Se creează…",
+  "description": "Descriere (opțional)",
+  "nameLabel": "Numele repository-ului",
+  "nameRequired": "Vă rugăm să completați mai întâi numele repository-ului",
+  "private": "Repository privat",
+  "privateDesc": "Vizibil numai de dumneavoastră",
+  "title": "Repository nou"
+}

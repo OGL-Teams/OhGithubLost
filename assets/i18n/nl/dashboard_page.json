@@ -1,0 +1,19 @@
+{
+  "downloads": "Downloads",
+  "emptyMine": "Nog geen repositories",
+  "emptyStarred": "Nog geen repositories met een ster",
+  "home": "Start",
+  "loadMore": "Meer laden ({count} geladen)",
+  "mine": "Mijn",
+  "newRepo": "Nieuwe repository",
+  "notifications": "Meldingen",
+  "private": "Privé",
+  "repoCreated": "Repository aangemaakt",
+  "repoCreatedName": "{name} aangemaakt",
+  "retry": "Opnieuw proberen",
+  "searchHint": "Repositories zoeken…",
+  "searchRepos": "Repositories zoeken",
+  "searchTooltip": "Repositories zoeken",
+  "starred": "Met een ster",
+  "starsCount": "{count} sterren"
+}

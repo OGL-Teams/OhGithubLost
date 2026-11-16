@@ -1,0 +1,18 @@
+{
+  "copyAll": "Copiar tudo",
+  "downloadFailed": "Falha ao baixar o log: {error}",
+  "downloadLog": "Baixar log para o dispositivo",
+  "downloadUnavailable": "A opção de armazenamento atual não permite gravação; não é possível salvar o log",
+  "downloaded": "Log salvo",
+  "downloadedAt": "Log salvo em {path}",
+  "linesCount": "{count} linhas ao total",
+  "noLogMatch": "Nenhum conteúdo de log encontrado",
+  "noLogs": "Nenhum log (a execução pode não ter terminado, ou o Token não tem permissão de Actions)",
+  "noMatchingJob": "Nenhum job correspondente",
+  "nothingToCopy": "Nenhum log para copiar",
+  "reload": "Buscar novamente",
+  "searchJobHint": "Buscar nome do job",
+  "searchLogHint": "Buscar no log (sem diferenciar maiúsculas)",
+  "title": "Log de execução",
+  "toggleSearch": "Buscar no conteúdo do log"
+}

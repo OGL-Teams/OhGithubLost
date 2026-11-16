@@ -1,0 +1,12 @@
+{
+  "copyContent": "Salin kandungan",
+  "delete": "Padam",
+  "deleteDraft": "Padam draf",
+  "deleted": "Draf telah dipadam",
+  "draft": "Draf",
+  "empty": "Tiada draf yang belum dihantar",
+  "title": "Kotak draf",
+  "deleteDraftDesc": "Draf ini akan dipadamkan daripada peranti ini. Tindakan ini tidak boleh dibatalkan.",
+  "openInEditor": "Buka dalam editor",
+  "draftGone": "Draf tidak lagi wujud"
+}

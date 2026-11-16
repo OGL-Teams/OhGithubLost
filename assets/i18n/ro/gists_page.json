@@ -1,0 +1,13 @@
+{
+  "created": "Gist creat",
+  "empty": "Nu aveți încă Gist-uri",
+  "fileCount": "{count} fișiere · ",
+  "missingId": "Acest Gist nu are un id și nu poate fi deschis",
+  "new": "Nou",
+  "noDescription": "(Fără descriere)",
+  "noOpenLink": "Acest Gist nu are un link care să poată fi deschis",
+  "openInBrowser": "Deschide în browser",
+  "private": "Privat",
+  "public": "Public",
+  "title": "Gist-uri"
+}

@@ -1,0 +1,19 @@
+{
+  "cancel": "Hủy",
+  "copiedEvent": "Đã sao chép sự kiện này",
+  "copy": "Sao chép",
+  "empty": "Không có sự kiện nào phù hợp",
+  "filterAll": "Tất cả",
+  "filterError": "Lỗi",
+  "filterWarning": "Cảnh báo",
+  "markAllRead": "Đánh dấu tất cả đã đọc",
+  "markRead": "Đánh dấu đã đọc",
+  "reset": "Đặt lại",
+  "resetDesc": "Thao tác này sẽ xóa toàn bộ sự kiện hiện có trong bộ nhớ (nhật ký trên đĩa vẫn được giữ lại).",
+  "resetTitle": "Đặt lại trung tâm thông báo",
+  "title": "Trung tâm thông báo",
+  "unread": "Chưa đọc",
+  "toggleNotification": "Chuyển đổi thông báo",
+  "filterUnread": "Chưa đọc",
+  "emptyUnread": "Không có thông báo chưa đọc"
+}

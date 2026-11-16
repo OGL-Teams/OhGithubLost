@@ -1,0 +1,13 @@
+{
+  "created": "Gist opprettet",
+  "empty": "Du har ingen Gist-snippets ennå",
+  "fileCount": "{count} filer · ",
+  "missingId": "Denne Gisten mangler id og kan ikke åpnes",
+  "new": "Ny",
+  "noDescription": "(ingen beskrivelse)",
+  "noOpenLink": "Denne Gisten har ingen lenke som kan åpnes",
+  "openInBrowser": "Åpne i nettleser",
+  "private": "Privat",
+  "public": "Offentlig",
+  "title": "Gist-snippets"
+}

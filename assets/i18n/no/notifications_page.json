@@ -1,0 +1,19 @@
+{
+  "cancel": "Avbryt",
+  "copiedEvent": "Hendelsen er kopiert",
+  "copy": "Kopier",
+  "empty": "Ingen hendelser som passer filteret",
+  "filterAll": "Alle",
+  "filterError": "Feil",
+  "filterWarning": "Advarsel",
+  "markAllRead": "Merk alle som lest",
+  "markRead": "Merk som lest",
+  "reset": "Nullstill",
+  "resetDesc": "Tømmer alle hendelser som finnes nå i minnet (loggen på disk beholdes).",
+  "resetTitle": "Nullstill varslingssenteret",
+  "title": "Varslingssenter",
+  "unread": "Ulest",
+  "toggleNotification": "Veksle varsling",
+  "filterUnread": "Ulest",
+  "emptyUnread": "Ingen uleste meldinger"
+}

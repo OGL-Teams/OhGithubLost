@@ -1,0 +1,18 @@
+{
+  "copyAll": "Salin semua",
+  "downloadFailed": "Gagal memuat turun log: {error}",
+  "downloadLog": "Muat turun log ke peranti",
+  "downloadUnavailable": "Skim storan semasa tidak boleh ditulis, log tidak dapat disimpan",
+  "downloaded": "Log telah disimpan",
+  "downloadedAt": "Log telah disimpan ke {path}",
+  "linesCount": "Sejumlah {count} baris",
+  "noLogMatch": "Tiada kandungan log yang sepadan",
+  "noLogs": "Tiada log (mungkin belum siap, atau Token tidak mempunyai kebenaran Actions)",
+  "noMatchingJob": "Tiada job yang sepadan",
+  "nothingToCopy": "Tiada log untuk disalin",
+  "reload": "Muat semula",
+  "searchJobHint": "Cari nama job",
+  "searchLogHint": "Cari dalam log (tidak kira huruf besar/kecil)",
+  "title": "Log larian",
+  "toggleSearch": "Cari kandungan log"
+}

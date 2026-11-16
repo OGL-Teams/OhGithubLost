@@ -1,0 +1,18 @@
+{
+  "copyAll": "Copiar todo",
+  "downloadFailed": "No se ha podido descargar el registro: {error}",
+  "downloadLog": "Descargar el registro en el dispositivo",
+  "downloadUnavailable": "El almacenamiento actual no permite escritura, así que no se puede guardar el registro",
+  "downloaded": "Registro guardado",
+  "downloadedAt": "Registro guardado en {path}",
+  "linesCount": "{count} líneas en total",
+  "noLogMatch": "Ningún registro coincide con la búsqueda",
+  "noLogs": "No hay registros (puede que la ejecución aún no haya terminado o que el token no tenga permisos de Actions)",
+  "noMatchingJob": "Ningún job coincide",
+  "nothingToCopy": "No hay registros que copiar",
+  "reload": "Volver a cargar",
+  "searchJobHint": "Buscar por nombre de job",
+  "searchLogHint": "Buscar en los registros (sin distinguir mayúsculas y minúsculas)",
+  "title": "Registro de ejecución",
+  "toggleSearch": "Buscar en los registros"
+}

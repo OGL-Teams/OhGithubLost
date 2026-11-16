@@ -1,0 +1,16 @@
+{
+  "content": "Nội dung",
+  "contentHint": "Dán hoặc nhập mã / văn bản",
+  "contentRequired": "Nội dung không được để trống",
+  "create": "Tạo",
+  "createFailed": "Tạo thất bại: {error}",
+  "created": "Đã tạo",
+  "creating": "Đang tạo…",
+  "description": "Mô tả (không bắt buộc)",
+  "fileName": "Tên tệp (kèm phần mở rộng, quyết định ngôn ngữ tô sáng)",
+  "fileNameHint": "Mẹo: phần mở rộng của tên tệp ảnh hưởng đến ngôn ngữ tô sáng (ví dụ main.dart / app.py).",
+  "fileNameRequired": "Vui lòng nhập tên tệp",
+  "isPublic": "Gist công khai",
+  "isPublicDesc": "Sau khi công khai, bất kỳ ai cũng có thể truy cập qua liên kết",
+  "title": "Gist mới"
+}

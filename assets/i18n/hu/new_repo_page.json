@@ -1,0 +1,12 @@
+{
+  "create": "Repository létrehozása",
+  "createFailed": "Létrehozás nem sikerült: {error}",
+  "created": "Létrehozva",
+  "creating": "Létrehozás folyamatban…",
+  "description": "Leírás (opcionális)",
+  "nameLabel": "Repository neve",
+  "nameRequired": "Először adjon meg egy repository-nevet",
+  "private": "Privát repository",
+  "privateDesc": "Csak Ön láthatja",
+  "title": "Új repository"
+}

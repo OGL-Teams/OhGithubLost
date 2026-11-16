@@ -1,0 +1,12 @@
+{
+  "create": "Luo repositorio",
+  "createFailed": "Luonti epäonnistui: {error}",
+  "created": "Luotu",
+  "creating": "Luodaan…",
+  "description": "Kuvaus (valinnainen)",
+  "nameLabel": "Repositorion nimi",
+  "nameRequired": "Syötä ensin repositorion nimi",
+  "private": "Yksityinen repositorio",
+  "privateDesc": "Näkyy vain itsellesi",
+  "title": "Luo repositorio"
+}

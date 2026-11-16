@@ -1,0 +1,19 @@
+{
+  "downloads": "إدارة التنزيلات",
+  "emptyMine": "لا توجد مستودعات بعد",
+  "emptyStarred": "لا توجد مستودعات مميّزة بعد",
+  "home": "الرئيسية",
+  "loadMore": "تحميل المزيد (‏{count} عنصرًا)",
+  "mine": "مستودعاتي",
+  "newRepo": "مستودع جديد",
+  "notifications": "مركز الإشعارات",
+  "private": "خاص",
+  "repoCreated": "تم إنشاء المستودع",
+  "repoCreatedName": "تم إنشاء {name}",
+  "retry": "إعادة المحاولة",
+  "searchHint": "ابحث في المستودعات…",
+  "searchRepos": "البحث في المستودعات",
+  "searchTooltip": "البحث في المستودعات",
+  "starred": "مميّز",
+  "starsCount": "‏{count} نجمة"
+}

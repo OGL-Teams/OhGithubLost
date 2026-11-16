@@ -1,0 +1,12 @@
+{
+  "title": "Nhãn",
+  "empty": "Chưa có nhãn nào",
+  "loadFailed": "Tải nhãn thất bại",
+  "create": "Nhãn mới",
+  "createTitle": "Tạo nhãn",
+  "tagName": "Tên nhãn",
+  "targetSha": "SHA của commit mục tiêu",
+  "delete": "Xóa",
+  "deleteTitle": "Xóa nhãn",
+  "deleteBody": "Bạn có chắc chắn muốn xóa nhãn «{name}» không? Thao tác này không thể hoàn tác."
+}

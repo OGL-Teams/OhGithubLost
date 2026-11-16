@@ -1,0 +1,19 @@
+{
+  "downloads": "Správa stahování",
+  "emptyMine": "Zatím žádné repozitáře",
+  "emptyStarred": "Zatím žádné repozitáře s hvězdičkou",
+  "home": "Domů",
+  "loadMore": "Načíst další (celkem {count})",
+  "mine": "Moje",
+  "newRepo": "Nový repozitář",
+  "notifications": "Centrum oznámení",
+  "private": "Soukromé",
+  "repoCreated": "Repozitář byl vytvořen",
+  "repoCreatedName": "Byl vytvořen {name}",
+  "retry": "Zkusit znovu",
+  "searchHint": "Hledat repozitář…",
+  "searchRepos": "Hledat repozitáře",
+  "searchTooltip": "Hledat repozitáře",
+  "starred": "S hvězdičkou",
+  "starsCount": "Hvězdiček: {count}"
+}

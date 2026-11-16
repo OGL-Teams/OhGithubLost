@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Popis (volitelné, podporuje Markdown)",
+  "createFailed": "Vytvoření selhalo: {error}",
+  "created": "Vytvořeno",
+  "draft": "Koncept",
+  "draftDesc": "Uložit jako koncept, zatím nezveřejňovat",
+  "prerelease": "Předběžné vydání",
+  "prereleaseDesc": "Označit jako pre-release",
+  "publish": "Vydat Release",
+  "publishing": "Vydává se…",
+  "tagLabel": "Štítek (tag)",
+  "tagRequired": "Nejprve vyplňte štítek (např. v1.0.0)",
+  "title": "Nový Release",
+  "titleLabel": "Název (volitelné)"
+}

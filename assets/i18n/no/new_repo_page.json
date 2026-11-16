@@ -1,0 +1,12 @@
+{
+  "create": "Opprett repo",
+  "createFailed": "Kunne ikke opprette: {error}",
+  "created": "Opprettet",
+  "creating": "Oppretter…",
+  "description": "Beskrivelse (valgfritt)",
+  "nameLabel": "Reponavn",
+  "nameRequired": "Fyll inn reponavnet først",
+  "private": "Privat repo",
+  "privateDesc": "Bare synlig for deg selv",
+  "title": "Nytt repo"
+}

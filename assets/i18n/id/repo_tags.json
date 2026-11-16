@@ -1,0 +1,12 @@
+{
+  "title": "Tag",
+  "empty": "Belum ada tag",
+  "loadFailed": "Gagal memuat tag",
+  "create": "Tag baru",
+  "createTitle": "Buat tag",
+  "tagName": "Nama tag",
+  "targetSha": "SHA commit target",
+  "delete": "Hapus",
+  "deleteTitle": "Hapus tag",
+  "deleteBody": "Apakah Anda yakin ingin menghapus «{name}»? Tindakan ini tidak dapat dibatalkan."
+}

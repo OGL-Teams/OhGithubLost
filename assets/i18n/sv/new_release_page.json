@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Beskrivning (valfritt, Markdown stöds)",
+  "createFailed": "Det gick inte att skapa: {error}",
+  "created": "Skapad",
+  "draft": "Utkast",
+  "draftDesc": "Spara som utkast, publicera inte ännu",
+  "prerelease": "Förhandsversion",
+  "prereleaseDesc": "Markera som pre-release",
+  "publish": "Skapa Release",
+  "publishing": "Publicerar…",
+  "tagLabel": "Tagg",
+  "tagRequired": "Ange en tagg först (t.ex. v1.0.0)",
+  "title": "Ny Release",
+  "titleLabel": "Titel (valfritt)"
+}

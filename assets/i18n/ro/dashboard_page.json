@@ -1,0 +1,19 @@
+{
+  "downloads": "Descărcări",
+  "emptyMine": "Nu aveți încă repository-uri",
+  "emptyStarred": "Nu aveți încă repository-uri cu stea",
+  "home": "Acasă",
+  "loadMore": "Încarcă mai multe ({count} până acum)",
+  "mine": "Ale mele",
+  "newRepo": "Repository nou",
+  "notifications": "Notificări",
+  "private": "Privat",
+  "repoCreated": "Repository creat",
+  "repoCreatedName": "Creat {name}",
+  "retry": "Reîncearcă",
+  "searchHint": "Caută repository-uri…",
+  "searchRepos": "Caută repository-uri",
+  "searchTooltip": "Caută repository-uri",
+  "starred": "Cu stea",
+  "starsCount": "{count} stele"
+}

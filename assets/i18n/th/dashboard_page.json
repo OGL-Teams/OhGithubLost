@@ -1,0 +1,19 @@
+{
+  "downloads": "การจัดการดาวน์โหลด",
+  "emptyMine": "ยังไม่มีคลังเก็บ",
+  "emptyStarred": "ยังไม่มีคลังเก็บที่ติดดาว",
+  "home": "หน้าแรก",
+  "loadMore": "โหลดเพิ่ม (แล้ว {count} รายการ)",
+  "mine": "ของฉัน",
+  "newRepo": "สร้างคลังเก็บใหม่",
+  "notifications": "ศูนย์การแจ้งเตือน",
+  "private": "ส่วนตัว",
+  "repoCreated": "สร้างคลังเก็บแล้ว",
+  "repoCreatedName": "สร้าง {name} แล้ว",
+  "retry": "ลองอีกครั้ง",
+  "searchHint": "ค้นหาคลังเก็บ…",
+  "searchRepos": "ค้นหาคลังเก็บ",
+  "searchTooltip": "ค้นหาคลังเก็บ",
+  "starred": "ติดดาว",
+  "starsCount": "ติดดาว {count} รายการ"
+}

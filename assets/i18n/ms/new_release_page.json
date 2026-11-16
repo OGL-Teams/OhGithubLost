@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Penerangan (pilihan, menyokong Markdown)",
+  "createFailed": "Gagal dicipta: {error}",
+  "created": "Telah dicipta",
+  "draft": "Draf",
+  "draftDesc": "Simpan sebagai draf, belum diterbitkan",
+  "prerelease": "Pre-release",
+  "prereleaseDesc": "Tandakan sebagai pre-release",
+  "publish": "Cipta Release",
+  "publishing": "Menerbitkan…",
+  "tagLabel": "Tag",
+  "tagRequired": "Sila isi tag terlebih dahulu (contoh. v1.0.0)",
+  "title": "Release baharu",
+  "titleLabel": "Tajuk (pilihan)"
+}

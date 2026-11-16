@@ -1,0 +1,12 @@
+{
+  "title": "Taggar",
+  "empty": "Inga taggar ännu",
+  "loadFailed": "Det gick inte att läsa in taggar",
+  "create": "Ny tagg",
+  "createTitle": "Skapa tagg",
+  "tagName": "Tagnamn",
+  "targetSha": "Målcommitens SHA",
+  "delete": "Ta bort",
+  "deleteTitle": "Ta bort tagg",
+  "deleteBody": "Är du säker på att du vill ta bort ”{name}”? Åtgärden kan inte ångras."
+}

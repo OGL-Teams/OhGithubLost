@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Note (facoltative, supportano Markdown)",
+  "createFailed": "Creazione non riuscita: {error}",
+  "created": "Creato",
+  "draft": "Bozza",
+  "draftDesc": "Salva come bozza, senza pubblicare per ora",
+  "prerelease": "Pre-release",
+  "prereleaseDesc": "Segna come pre-release",
+  "publish": "Crea Release",
+  "publishing": "Pubblicazione in corso…",
+  "tagLabel": "Tag",
+  "tagRequired": "Inserisci prima un tag (es. v1.0.0)",
+  "title": "Nuova Release",
+  "titleLabel": "Titolo (facoltativo)"
+}

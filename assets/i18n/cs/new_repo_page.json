@@ -1,0 +1,12 @@
+{
+  "create": "Vytvořit repozitář",
+  "createFailed": "Vytvoření selhalo: {error}",
+  "created": "Vytvořeno",
+  "creating": "Vytváří se…",
+  "description": "Popis (volitelné)",
+  "nameLabel": "Název repozitáře",
+  "nameRequired": "Nejprve vyplňte název repozitáře",
+  "private": "Soukromý repozitář",
+  "privateDesc": "Viditelný pouze pro vás",
+  "title": "Nový repozitář"
+}

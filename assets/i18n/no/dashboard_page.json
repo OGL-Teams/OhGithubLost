@@ -1,0 +1,19 @@
+{
+  "downloads": "Nedlastingsbehandling",
+  "emptyMine": "Du har ingen repos ennå",
+  "emptyStarred": "Du har ingen stjernemerke-repos ennå",
+  "home": "Hjem",
+  "loadMore": "Last inn flere ({count} lastet)",
+  "mine": "Mine",
+  "newRepo": "Nytt repo",
+  "notifications": "Varslingssenter",
+  "private": "Privat",
+  "repoCreated": "Repoet er opprettet",
+  "repoCreatedName": "Opprettet {name}",
+  "retry": "Prøv igjen",
+  "searchHint": "Søk etter repos…",
+  "searchRepos": "Søk etter repos",
+  "searchTooltip": "Søk etter repos",
+  "starred": "Stjernemerket",
+  "starsCount": "{count} stjernemerker"
+}

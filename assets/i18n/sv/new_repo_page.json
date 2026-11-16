@@ -1,0 +1,12 @@
+{
+  "create": "Skapa repositorium",
+  "createFailed": "Det gick inte att skapa: {error}",
+  "created": "Skapat",
+  "creating": "Skapar…",
+  "description": "Beskrivning (valfritt)",
+  "nameLabel": "Namn på repositoriet",
+  "nameRequired": "Ange namnet på repositoriet först",
+  "private": "Privat repositorium",
+  "privateDesc": "Bara du kan se det",
+  "title": "Nytt repositorium"
+}

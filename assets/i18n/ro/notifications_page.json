@@ -1,0 +1,19 @@
+{
+  "cancel": "Anulează",
+  "copiedEvent": "Eveniment copiat",
+  "copy": "Copiază",
+  "empty": "Niciun eveniment care să corespundă",
+  "filterAll": "Toate",
+  "filterError": "Erori",
+  "filterWarning": "Avertismente",
+  "markAllRead": "Marchează tot ca citit",
+  "markRead": "Marchează ca citit",
+  "reset": "Resetează",
+  "resetDesc": "Șterge toate evenimentele din memorie (jurnalele de pe disc sunt păstrate).",
+  "resetTitle": "Resetează centrul de notificări",
+  "title": "Notificări",
+  "unread": "Necitite",
+  "toggleNotification": "Comută notificarea",
+  "filterUnread": "Necitite",
+  "emptyUnread": "Nicio notificare necitită"
+}

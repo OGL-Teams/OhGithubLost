@@ -1,0 +1,16 @@
+{
+  "content": "Inhoud",
+  "contentHint": "Plak of typ code / tekst",
+  "contentRequired": "Inhoud mag niet leeg zijn",
+  "create": "Aanmaken",
+  "createFailed": "Aanmaken mislukt: {error}",
+  "created": "Aangemaakt",
+  "creating": "Aanmaken bezig…",
+  "description": "Beschrijving (optioneel)",
+  "fileName": "Bestandsnaam (inclusief extensie; bepaalt de markeertaal)",
+  "fileNameHint": "Tip: de bestandsextensie bepaalt de markeertaal (bijv. main.dart / app.py).",
+  "fileNameRequired": "Vul een bestandsnaam in",
+  "isPublic": "Openbare Gist",
+  "isPublicDesc": "Nadat de Gist openbaar is, kan iedereen hem via de link bereiken",
+  "title": "Nieuwe Gist"
+}

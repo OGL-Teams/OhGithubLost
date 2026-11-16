@@ -1,0 +1,18 @@
+{
+  "copyAll": "نسخ الكل",
+  "downloadFailed": "تعذّر تنزيل السجل: {error}",
+  "downloadLog": "تنزيل السجل إلى الجهاز",
+  "downloadUnavailable": "طريقة التخزين الحالية غير قابلة للكتابة، لذا يتعذّر حفظ السجل",
+  "downloaded": "تم حفظ السجل",
+  "downloadedAt": "تم حفظ السجل في {path}",
+  "linesCount": "‏{count} سطرًا",
+  "noLogMatch": "لا توجد نتائج مطابقة في السجل",
+  "noLogs": "لا توجد سجلات (ربما لم تكتمل بعد، أو ينقص الـ Token إذن Actions)",
+  "noMatchingJob": "لا توجد job مطابقة",
+  "nothingToCopy": "لا توجد سجلات يمكن نسخها حاليًا",
+  "reload": "إعادة السحب",
+  "searchJobHint": "ابحث في اسم job",
+  "searchLogHint": "ابحث داخل السجل (غير حساس لحالة الأحرف)",
+  "title": "سجل التشغيل",
+  "toggleSearch": "البحث في محتوى السجل"
+}

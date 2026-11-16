@@ -1,0 +1,19 @@
+{
+  "cancel": "Mégse",
+  "copiedEvent": "Az esemény másolva",
+  "copy": "Másolás",
+  "empty": "Nincs a feltételeknek megfelelő esemény",
+  "filterAll": "Összes",
+  "filterError": "Hiba",
+  "filterWarning": "Figyelmeztetés",
+  "markAllRead": "Összes olvasottnak jelölése",
+  "markRead": "Olvasottnak jelölés",
+  "reset": "Visszaállítás",
+  "resetDesc": "Ez törli a memóriában tárolt összes eseményt (a lemezen lévő napló megmarad).",
+  "resetTitle": "Értesítések visszaállítása",
+  "title": "Értesítések",
+  "unread": "Olvasatlan",
+  "toggleNotification": "Értesítések be/ki",
+  "filterUnread": "Olvasatlan",
+  "emptyUnread": "Nincs olvasatlan üzenet"
+}

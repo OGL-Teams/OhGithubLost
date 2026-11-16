@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "İçerik (isteğe bağlı, Markdown desteklenir)",
+  "createFailed": "Oluşturulamadı: {error}",
+  "created": "Oluşturuldu",
+  "submit": "Issue oluştur",
+  "submitting": "Gönderiliyor…",
+  "title": "Yeni Issue",
+  "titleLabel": "Başlık",
+  "titleRequired": "Lütfen önce başlığı girin"
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Tunnisteet",
+  "empty": "Ei tunnisteita vielä",
+  "loadFailed": "Tunnisteiden lataaminen epäonnistui",
+  "create": "Uusi tunniste",
+  "createTitle": "Luo tunniste",
+  "tagName": "Tunnisteen nimi",
+  "targetSha": "Kohdecommitin SHA",
+  "delete": "Poista",
+  "deleteTitle": "Poista tunniste",
+  "deleteBody": "Haluatko varmasti poistaa tunnisteen »{name}»? Toimintoa ei voi peruuttaa."
+}

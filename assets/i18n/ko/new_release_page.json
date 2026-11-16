@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "설명(선택, Markdown 지원)",
+  "createFailed": "생성 실패: {error}",
+  "created": "생성되었습니다",
+  "draft": "초안",
+  "draftDesc": "초안으로 저장하고 아직 게시하지 않습니다",
+  "prerelease": "시험 발표",
+  "prereleaseDesc": "pre-release로 표시",
+  "publish": "발표 만들기",
+  "publishing": "발표 중…",
+  "tagLabel": "태그(tag)",
+  "tagRequired": "태그를 먼저 입력해 주세요(예: v1.0.0)",
+  "title": "새 발표",
+  "titleLabel": "제목(선택)"
+}

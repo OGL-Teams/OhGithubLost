@@ -1,0 +1,12 @@
+{
+  "create": "Opret repository",
+  "createFailed": "Oprettelse mislykkedes: {error}",
+  "created": "Oprettet",
+  "creating": "Opretter…",
+  "description": "Beskrivelse (valgfrit)",
+  "nameLabel": "Repository-navn",
+  "nameRequired": "Angiv repository-navnet først",
+  "private": "Privat repository",
+  "privateDesc": "Kun synligt for dig",
+  "title": "Nyt repository"
+}

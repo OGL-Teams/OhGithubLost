@@ -1,0 +1,18 @@
+{
+  "copyAll": "Kopiér alle",
+  "downloadFailed": "Download af log mislykkedes: {error}",
+  "downloadLog": "Download logs til enheden",
+  "downloadUnavailable": "Lageret kan ikke skrives til; logs kan ikke gemmes",
+  "downloaded": "Logs gemt",
+  "downloadedAt": "Logs gemt i {path}",
+  "linesCount": "I alt {count} linjer",
+  "noLogMatch": "Ingen matchende logindhold",
+  "noLogs": "Ingen logs (jobbet er måske ikke færdigt, eller Token mangler Actions-rettigheder)",
+  "noMatchingJob": "Intet matchende job fundet",
+  "nothingToCopy": "Ingen logs at kopiere",
+  "reload": "Hent igen",
+  "searchJobHint": "Søg efter jobnavn",
+  "searchLogHint": "Søg i logs (ikke casesensitivt)",
+  "title": "Kørelseslogs",
+  "toggleSearch": "Søg i logindhold"
+}

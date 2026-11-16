@@ -1,0 +1,12 @@
+{
+  "title": "Címkék",
+  "empty": "Még nincs címke",
+  "loadFailed": "A címkék betöltése nem sikerült",
+  "create": "Új címke",
+  "createTitle": "Címke létrehozása",
+  "tagName": "Címke neve",
+  "targetSha": "Célkommit SHA-ja",
+  "delete": "Törlés",
+  "deleteTitle": "Címke törlése",
+  "deleteBody": "Biztosan törölni szeretné a(z) „{name}” elemet? Ezt a műveletet nem lehet visszavonni."
+}

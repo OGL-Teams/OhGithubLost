@@ -1,0 +1,19 @@
+{
+  "cancel": "ביטול",
+  "copiedEvent": "האירוע הועתק",
+  "copy": "העתקה",
+  "empty": "אין אירועים שמתאימים לתנאים",
+  "filterAll": "הכול",
+  "filterError": "שגיאות",
+  "filterWarning": "אזהרות",
+  "markAllRead": "סימון הכול כנקרא",
+  "markRead": "סימון כנקרא",
+  "reset": "איפוס",
+  "resetDesc": "כל האירועים המאוחסנים כרגע בזיכרון יימחקו (היומנים בדיסק יישארו).",
+  "resetTitle": "איפוס מרכז ההתראות",
+  "title": "מרכז התראות",
+  "unread": "לא נקרא",
+  "toggleNotification": "הפעלה או כיבוי של התראות",
+  "filterUnread": "לא נקרא",
+  "emptyUnread": "אין הודעות שלא נקראו"
+}

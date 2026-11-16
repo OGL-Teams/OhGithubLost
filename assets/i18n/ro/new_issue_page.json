@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Corp (opțional, acceptă Markdown)",
+  "createFailed": "Crearea a eșuat: {error}",
+  "created": "Creat",
+  "submit": "Creează Issue-ul",
+  "submitting": "Se trimite…",
+  "title": "Issue nou",
+  "titleLabel": "Titlu",
+  "titleRequired": "Vă rugăm să completați mai întâi titlul"
+}

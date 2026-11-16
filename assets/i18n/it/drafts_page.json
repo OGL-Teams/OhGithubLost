@@ -1,0 +1,12 @@
+{
+  "copyContent": "Copia il contenuto",
+  "delete": "Elimina",
+  "deleteDraft": "Elimina bozza",
+  "deleted": "Bozza eliminata",
+  "draft": "Bozza",
+  "empty": "Nessuna bozza non committata",
+  "title": "Bozze",
+  "deleteDraftDesc": "Questa bozza verrà eliminata dal dispositivo; l'operazione non può essere annullata.",
+  "openInEditor": "Apri nell'editor",
+  "draftGone": "La bozza non esiste più"
+}

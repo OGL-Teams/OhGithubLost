@@ -1,0 +1,16 @@
+{
+  "content": "תוכן",
+  "contentHint": "הדבק או הקלד קוד / טקסט",
+  "contentRequired": "לא ניתן להשאיר תוכן ריק",
+  "create": "יצירה",
+  "createFailed": "היצירה נכשלה: {error}",
+  "created": "נוצר",
+  "creating": "יוצר…",
+  "description": "תיאור (רשות)",
+  "fileName": "שם הקובץ (כולל הסיומת, הוא קובע את שפת ההדגשה)",
+  "fileNameHint": "טיפ: סיומת שם הקובץ משפיעה על שפת ההדגשה (למשל main.dart / app.py).",
+  "fileNameRequired": "יש למלא שם קובץ",
+  "isPublic": "Gist ציבורי",
+  "isPublicDesc": "לאחר פרסום, כל אחד יוכל לגשת אליו דרך קישור",
+  "title": "Gist חדש"
+}

@@ -1,0 +1,12 @@
+{
+  "copyContent": "Inhoud kopiëren",
+  "delete": "Verwijderen",
+  "deleteDraft": "Concept verwijderen",
+  "deleted": "Concept verwijderd",
+  "draft": "Concept",
+  "empty": "Nog geen niet-gecommitte concepten",
+  "title": "Concepten",
+  "deleteDraftDesc": "Dit concept wordt van dit apparaat verwijderd; deze actie kan niet worden ongedaan gemaakt.",
+  "openInEditor": "Openen in editor",
+  "draftGone": "Concept bestaat niet meer"
+}

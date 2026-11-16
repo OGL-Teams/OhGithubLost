@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "本文（任意、Markdown 対応）",
+  "createFailed": "作成に失敗しました：{error}",
+  "created": "作成しました",
+  "submit": "Issue を作成",
+  "submitting": "送信中…",
+  "title": "新しい Issue",
+  "titleLabel": "タイトル",
+  "titleRequired": "先にタイトルを入力してください"
+}

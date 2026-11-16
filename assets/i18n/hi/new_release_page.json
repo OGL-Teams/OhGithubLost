@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "विवरण (वैकल्पिक, Markdown समर्थित)",
+  "createFailed": "बनाने में विफल: {error}",
+  "created": "बन गया",
+  "draft": "ड्राफ़्ट",
+  "draftDesc": "ड्राफ़्ट के रूप में सहेजें, अभी प्रकाशित न करें",
+  "prerelease": "पूर्व-रिलीज़",
+  "prereleaseDesc": "pre-release के रूप में चिह्नित करें",
+  "publish": "रिलीज़ बनाएँ",
+  "publishing": "प्रकाशित किया जा रहा है…",
+  "tagLabel": "टैग",
+  "tagRequired": "कृपया पहले टैग भरें (जैसे v1.0.0)",
+  "title": "नई रिलीज़",
+  "titleLabel": "शीर्षक (वैकल्पिक)"
+}

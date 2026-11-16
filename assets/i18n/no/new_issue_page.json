@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Innhold (valgfritt, støtter Markdown)",
+  "createFailed": "Kunne ikke opprette: {error}",
+  "created": "Opprettet",
+  "submit": "Opprett Issue",
+  "submitting": "Sender inn…",
+  "title": "Ny Issue",
+  "titleLabel": "Tittel",
+  "titleRequired": "Fyll inn tittelen først"
+}

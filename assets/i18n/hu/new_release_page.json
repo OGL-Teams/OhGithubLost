@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Leírás (opcionális, Markdown támogatott)",
+  "createFailed": "Létrehozás nem sikerült: {error}",
+  "created": "Létrehozva",
+  "draft": "Vázlat",
+  "draftDesc": "Mentés vázlatként, közzététel nélkül",
+  "prerelease": "Előzetes kiadás",
+  "prereleaseDesc": "Megjelölés pre-release-ként",
+  "publish": "Release létrehozása",
+  "publishing": "Közzététel folyamatban…",
+  "tagLabel": "Címke (tag)",
+  "tagRequired": "Először adjon meg egy címkét (pl. v1.0.0)",
+  "title": "Új Release",
+  "titleLabel": "Cím (opcionális)"
+}

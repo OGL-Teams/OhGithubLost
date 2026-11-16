@@ -1,0 +1,13 @@
+{
+  "created": "Gist dibuat",
+  "empty": "Belum ada Gist",
+  "fileCount": "{count} berkas · ",
+  "missingId": "Gist ini tidak memiliki id, tidak dapat dibuka",
+  "new": "Baru",
+  "noDescription": "(Tanpa deskripsi)",
+  "noOpenLink": "Gist ini tidak memiliki tautan yang dapat dibuka",
+  "openInBrowser": "Buka di browser",
+  "private": "Privat",
+  "public": "Publik",
+  "title": "Gist"
+}

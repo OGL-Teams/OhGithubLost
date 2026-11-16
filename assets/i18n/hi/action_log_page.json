@@ -1,0 +1,18 @@
+{
+  "copyAll": "सभी कॉपी करें",
+  "downloadFailed": "लॉग डाउनलोड विफल: {error}",
+  "downloadLog": "लॉग अपने डिवाइस पर डाउनलोड करें",
+  "downloadUnavailable": "वर्तमान स्टोरेज में लिखा नहीं जा सकता, लॉग सहेजे नहीं जा सकते",
+  "downloaded": "लॉग सहेजा गया",
+  "downloadedAt": "लॉग {path} पर सहेजा गया",
+  "linesCount": "कुल {count} पंक्तियाँ",
+  "noLogMatch": "कोई मेल खाता लॉग नहीं मिला",
+  "noLogs": "कोई लॉग नहीं (शायद अभी पूरा नहीं हुआ, या टोकन में Actions अनुमति नहीं है)",
+  "noMatchingJob": "कोई मेल खाता job नहीं",
+  "nothingToCopy": "कॉपी करने के लिए अभी कोई लॉग नहीं है",
+  "reload": "फिर से लाएँ",
+  "searchJobHint": "job का नाम खोजें",
+  "searchLogHint": "लॉग में खोजें (केस संवेदनशील नहीं)",
+  "title": "रन लॉग",
+  "toggleSearch": "लॉग सामग्री खोजें"
+}

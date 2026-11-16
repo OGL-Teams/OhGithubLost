@@ -176,7 +176,7 @@
   "privateRepo": "Privé",
   "protectedTag": " · Protégé",
   "publicHint": "Tout le monde peut voir le code et les commits.",
-  "publicRepo": "Public",
+  "publicRepo": "Dépôt public",
   "pulls": "Demandes de tirage",
   "readDirFailed": "Échec de la lecture du contenu du répertoire : {error}",
   "readFailed": "Échec de la lecture : {error}",

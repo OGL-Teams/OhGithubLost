@@ -1,0 +1,18 @@
+{
+  "copyAll": "모두 복사",
+  "downloadFailed": "로그 다운로드 실패: {error}",
+  "downloadLog": "로그를 기기에 저장",
+  "downloadUnavailable": "현재 저장 방식으로는 쓸 수 없어 로그를 저장할 수 없습니다.",
+  "downloaded": "로그가 저장되었습니다",
+  "downloadedAt": "로그가 {path}에 저장되었습니다",
+  "linesCount": "총 {count}줄",
+  "noLogMatch": "일치하는 로그 내용이 없습니다",
+  "noLogs": "로그가 없습니다(아직 완료되지 않았거나 토큰에 Actions 권한이 없을 수 있습니다).",
+  "noMatchingJob": "일치하는 job이 없습니다",
+  "nothingToCopy": "복사할 로그가 없습니다",
+  "reload": "다시 가져오기",
+  "searchJobHint": "job 이름 검색",
+  "searchLogHint": "로그에서 찾기(대소문자 구분 없음)",
+  "title": "실행 로그",
+  "toggleSearch": "로그 내용 찾기"
+}

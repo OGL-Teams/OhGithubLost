@@ -1,0 +1,12 @@
+{
+  "copyContent": "Salin konten",
+  "delete": "Hapus",
+  "deleteDraft": "Hapus draf",
+  "deleted": "Draf dihapus",
+  "draft": "Draf",
+  "empty": "Belum ada draf yang belum dikirim",
+  "title": "Draf",
+  "deleteDraftDesc": "Draf ini akan dihapus dari perangkat Anda. Tindakan ini tidak dapat dibatalkan.",
+  "openInEditor": "Buka di editor",
+  "draftGone": "Draf sudah tidak ada"
+}

@@ -1,0 +1,19 @@
+{
+  "cancel": "Annuller",
+  "copiedEvent": "Hændelse kopieret",
+  "copy": "Kopiér",
+  "empty": "Ingen matchende hændelser",
+  "filterAll": "Alle",
+  "filterError": "Fejl",
+  "filterWarning": "Advarsler",
+  "markAllRead": "Markér alle som læst",
+  "markRead": "Markér som læst",
+  "reset": "Nulstil",
+  "resetDesc": "Rydder alle hændelser i hukommelsen (disklogfiler bevares).",
+  "resetTitle": "Nulstil notifikationscenter",
+  "title": "Notifikationer",
+  "unread": "Ulæste",
+  "toggleNotification": "Slå notifikation til/fra",
+  "filterUnread": "Ulæste",
+  "emptyUnread": "Ingen ulæste notifikationer"
+}

@@ -1,0 +1,19 @@
+{
+  "downloads": "Nedladdningar",
+  "emptyMine": "Inga repositorier ännu",
+  "emptyStarred": "Inga stjärnmärkta repositorier ännu",
+  "home": "Hem",
+  "loadMore": "Ladda fler ({count} hittills)",
+  "mine": "Mina",
+  "newRepo": "Nytt repositorium",
+  "notifications": "Notiser",
+  "private": "Privat",
+  "repoCreated": "Repositorium skapat",
+  "repoCreatedName": "{name} har skapats",
+  "retry": "Försök igen",
+  "searchHint": "Sök repositorier…",
+  "searchRepos": "Sök repositorier",
+  "searchTooltip": "Sök repositorier",
+  "starred": "Stjärnmärkta",
+  "starsCount": "{count} stjärnor"
+}

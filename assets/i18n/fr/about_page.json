@@ -20,7 +20,7 @@
   "trustCount": "{count} alertes (action requise)",
   "trustOk": "Aucune alerte : signature du manifeste de démarrage et dépendances vérifiées",
   "trustWarnings": "Avertissements de confiance",
-  "version": "Version {version}",
+  "version": "Version : {version}",
   "credits": "Remerciements",
   "creditsDesc": "Projets open-source derrière cette application",
   "licenseCare": "À propos des licences",
@@ -33,7 +33,7 @@
   "roleMaintainer": "Développeur principal",
   "roleAutomation": "Automatisation build et publication",
   "roleCommit": "Contribution de code",
-  "commitCount": "{count} commits",
+  "commitCount": "Nombre de commits : {count}",
   "licenseSection": "Par licence",
   "viewLicenses": "Voir toutes les licences"
 }

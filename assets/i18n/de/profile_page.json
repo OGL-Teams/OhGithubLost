@@ -22,10 +22,10 @@
   "removeFailed": "Entfernen fehlgeschlagen: {error}",
   "removeTitle": "Konto entfernen",
   "removed": "Entfernt",
-  "settings": "Einstellungen",
-  "settingsDesc": "Aussehen · Netzwerk · Über",
   "switch": "Umschalten",
   "switchFailed": "Umschalten fehlgeschlagen: {error}",
   "switchable": "Umschaltbar",
-  "switched": "Umschaltete"
+  "switched": "Umgeschaltet",
+  "settings": "Einstellungen",
+  "settingsDesc": "Aussehen · Netzwerk · Über"
 }

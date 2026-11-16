@@ -1,0 +1,13 @@
+{
+  "created": "Gist oluşturuldu",
+  "empty": "Henüz Gist yok",
+  "fileCount": "{count} dosya · ",
+  "missingId": "Bu Gist'te id yok, açılamıyor",
+  "new": "Yeni",
+  "noDescription": "(Açıklama yok)",
+  "noOpenLink": "Bu Gist'in açılabilir bir bağlantısı yok",
+  "openInBrowser": "Tarayıcıda aç",
+  "private": "Özel",
+  "public": "Herkese açık",
+  "title": "Gist'ler"
+}

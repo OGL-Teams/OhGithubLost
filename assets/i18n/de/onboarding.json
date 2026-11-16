@@ -20,7 +20,7 @@
   "licenseIntro": "※ Dieses Dokument dient nur der Erläuterung: Es beschreibt, was die Anwendung tatsächlich tut. Es ist keine rechtliche Vereinbarung und hat keine rechtliche Wirkung.\n※ Das einzig rechtlich bindende Dokument für diese Anwendung ist die Apache-Lizenz 2.0 (Apache-2.0), die mit dem Programm geliefert wird.\n─── Anwendungsbereich ───────────────────────────────────────────────\nDiese Aussage ist nach ihrer Natur in drei Teile unterteilt:\n· Teil 1 — was die Anwendung selbst tatsächlich tut;\n· Teil 2 — warum die optionale Web-Funktion eine Ausnahme darstellt;\n· Teil 3 — die separate Anmerkung zu den Beschleunigungskanälen.",
   "licenseOfficialCopy": "※ Diese Aussage gilt nur für die offiziell mit dieser Anwendung veröffentlichte und nicht später geänderte Kopie. Jede von einem Drittanbieter neu veröffentlichte, modifizierte, ausgedehnte oder anderweitig verteilte Version repräsentiert nicht die Position des Anwendungsentwicklers, und die Anwendung ist nicht für deren Inhalt verantwortlich.",
   "licenseOfficialLine": "Übersetzungen dienen nur dem Verständnis. Bei Abweichungen gilt der englische LICENSE-Text.",
-  "licenseSimple": "Nutz es sorglos: Open Source, die Lizenz steht in LICENSE. Merke dir einfach: Deine Daten bleiben deine.",
+  "licenseSimple": "Diese Anwendung ist Open Source: Quellcode und Build-Konfiguration sind vollständig öffentlich, die Lizenzbedingungen stehen in der LICENSE-Datei im Stammverzeichnis des Repositorys. Sie erhebt keine personenbezogenen Daten, und dein GitHub-Token bleibt auf deinem eigenen Gerät.",
   "licenseTitle": "§ Datenschutz- und Vereinbarungserklärung §",
   "next": "Weiter",
   "noAuthNeeded": "{title}: Keine Autorisierung erforderlich auf dieser Plattform",

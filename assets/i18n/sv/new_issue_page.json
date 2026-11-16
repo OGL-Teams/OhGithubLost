@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Brödtext (valfritt, Markdown stöds)",
+  "createFailed": "Det gick inte att skapa: {error}",
+  "created": "Skapad",
+  "submit": "Skapa Issue",
+  "submitting": "Skickar…",
+  "title": "Nytt Issue",
+  "titleLabel": "Titel",
+  "titleRequired": "Fyll i en titel först"
+}

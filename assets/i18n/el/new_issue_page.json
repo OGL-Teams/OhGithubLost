@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Κείμενο (προαιρετικό, υποστηρίζεται Markdown)",
+  "createFailed": "Η δημιουργία απέτυχε: {error}",
+  "created": "Δημιουργήθηκε",
+  "submit": "Δημιουργία Issue",
+  "submitting": "Υποβολή…",
+  "title": "Νέο Issue",
+  "titleLabel": "Τίτλος",
+  "titleRequired": "Συμπληρώστε πρώτα τον τίτλο"
+}

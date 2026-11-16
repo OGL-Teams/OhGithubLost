@@ -1,0 +1,16 @@
+{
+  "content": "Tartalom",
+  "contentHint": "Illesszen be vagy írjon be kódot / szöveget",
+  "contentRequired": "A tartalom nem lehet üres",
+  "create": "Létrehozás",
+  "createFailed": "Létrehozás nem sikerült: {error}",
+  "created": "Létrehozva",
+  "creating": "Létrehozás folyamatban…",
+  "description": "Leírás (opcionális)",
+  "fileName": "Fájlnév (kiterjesztéssel; ez határozza meg a kiemelési nyelvet)",
+  "fileNameHint": "Tipp: a fájlnév kiterjesztése befolyásolja a kiemelési nyelvet (pl. main.dart / app.py).",
+  "fileNameRequired": "Adjon meg egy fájlnevet",
+  "isPublic": "Nyilvános Gist",
+  "isPublicDesc": "Közzététel után bárki elérheti a hivatkozáson",
+  "title": "Új Gist"
+}

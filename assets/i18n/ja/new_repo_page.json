@@ -1,0 +1,12 @@
+{
+  "create": "リポジトリを作成",
+  "createFailed": "作成に失敗しました：{error}",
+  "created": "作成しました",
+  "creating": "作成中…",
+  "description": "説明（任意）",
+  "nameLabel": "リポジトリ名",
+  "nameRequired": "先にリポジトリ名を入力してください",
+  "private": "非公開リポジトリ",
+  "privateDesc": "自分にのみ表示されます",
+  "title": "リポジトリを作成"
+}

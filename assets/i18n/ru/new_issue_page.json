@@ -2,9 +2,9 @@
   "bodyLabel": "Тело (необязательно, поддерживается Markdown)",
   "createFailed": "Не удалось создать: {error}",
   "created": "Создано",
-  "submit": "Создать проблему",
+  "submit": "Создать Issue",
   "submitting": "Отправка…",
-  "title": "Новая проблема",
+  "title": "Новый Issue",
   "titleLabel": "Заголовок",
   "titleRequired": "Сначала заполните заголовок"
 }

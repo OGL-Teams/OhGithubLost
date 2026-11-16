@@ -1,0 +1,19 @@
+{
+  "downloads": "Latausten hallinta",
+  "emptyMine": "Ei vielä repositorioita",
+  "emptyStarred": "Ei vielä tähtisessä olevia repositorioita",
+  "home": "Etusivu",
+  "loadMore": "Lataa lisää ({count} kpl)",
+  "mine": "Omat",
+  "newRepo": "Luo repositorio",
+  "notifications": "Ilmoituskeskus",
+  "private": "Yksityinen",
+  "repoCreated": "Repositorio luotu",
+  "repoCreatedName": "Luotiin {name}",
+  "retry": "Yritä uudelleen",
+  "searchHint": "Hae repositorioita…",
+  "searchRepos": "Hae repositorioita",
+  "searchTooltip": "Hae repositorioita",
+  "starred": "Tähtisessä",
+  "starsCount": "{count} tähteä"
+}

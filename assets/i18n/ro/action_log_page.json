@@ -1,0 +1,18 @@
+{
+  "copyAll": "Copiază tot",
+  "downloadFailed": "Descărcarea jurnalului a eșuat: {error}",
+  "downloadLog": "Descarcă jurnalul pe dispozitiv",
+  "downloadUnavailable": "Soluția de stocare curentă nu permite scrierea; jurnalul nu poate fi salvat",
+  "downloaded": "Jurnal salvat",
+  "downloadedAt": "Jurnalul a fost salvat în {path}",
+  "linesCount": "În total {count} linii",
+  "noLogMatch": "Niciun conținut de jurnal care să corespundă",
+  "noLogs": "Niciun jurnal (poate nu s-a încheiat încă jobul, sau Token-ul nu are permisiuni Actions)",
+  "noMatchingJob": "Niciun job care să corespundă",
+  "nothingToCopy": "Niciun jurnal de copiat",
+  "reload": "Reîncarcă",
+  "searchJobHint": "Caută numele jobului",
+  "searchLogHint": "Caută în jurnal (fără diferență de majuscule)",
+  "title": "Jurnal de rulare",
+  "toggleSearch": "Caută în conținutul jurnalului"
+}

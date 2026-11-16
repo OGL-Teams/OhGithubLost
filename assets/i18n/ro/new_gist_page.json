@@ -1,0 +1,16 @@
+{
+  "content": "Conținut",
+  "contentHint": "Lipește sau scrie cod / text",
+  "contentRequired": "Conținutul nu poate fi gol",
+  "create": "Creează",
+  "createFailed": "Crearea a eșuat: {error}",
+  "created": "Creat",
+  "creating": "Se creează…",
+  "description": "Descriere (opțional)",
+  "fileName": "Numele fișierului (cu extensie, pentru a determina limbajul de evidențiere)",
+  "fileNameHint": "Sfat: extensia numelui de fișier influențează evidențierea sintaxei (de ex. main.dart / app.py).",
+  "fileNameRequired": "Vă rugăm să indicați numele fișierului",
+  "isPublic": "Gist public",
+  "isPublicDesc": "Când este public, oricine poate accesa prin link",
+  "title": "Gist nou"
+}

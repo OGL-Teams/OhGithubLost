@@ -1,0 +1,16 @@
+{
+  "content": "Treść",
+  "contentHint": "Wklej lub wpisz kod / tekst",
+  "contentRequired": "Treść nie może być pusta",
+  "create": "Utwórz",
+  "createFailed": "Nie udało się utworzyć: {error}",
+  "created": "Utworzono",
+  "creating": "Tworzenie…",
+  "description": "Opis (opcjonalnie)",
+  "fileName": "Nazwa pliku (z rozszerzeniem, określa język podświetlania)",
+  "fileNameHint": "Wskazówka: rozszerzenie nazwy pliku wpływa na język podświetlania (np. main.dart / app.py).",
+  "fileNameRequired": "Podaj nazwę pliku",
+  "isPublic": "Publiczny Gist",
+  "isPublicDesc": "Po opublikowaniu każdy może uzyskać do niego dostęp przez link",
+  "title": "Nowy Gist"
+}

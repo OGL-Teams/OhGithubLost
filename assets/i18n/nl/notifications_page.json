@@ -1,0 +1,19 @@
+{
+  "cancel": "Annuleren",
+  "copiedEvent": "Gebeurtenis gekopieerd",
+  "copy": "Kopiëren",
+  "empty": "Geen gebeurtenissen die voldoen aan de voorwaarden",
+  "filterAll": "Alles",
+  "filterError": "Fout",
+  "filterWarning": "Waarschuwing",
+  "markAllRead": "Alles als gelezen markeren",
+  "markRead": "Als gelezen markeren",
+  "reset": "Opnieuw instellen",
+  "resetDesc": "Hiermee worden alle gebeurtenissen in het geheugen gewist (logbestanden op schijf blijven bewaard).",
+  "resetTitle": "Meldingen opnieuw instellen",
+  "title": "Meldingen",
+  "unread": "Ongelezen",
+  "toggleNotification": "Meldingen in-/uitschakelen",
+  "filterUnread": "Ongelezen",
+  "emptyUnread": "Geen ongelezen meldingen"
+}

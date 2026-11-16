@@ -1,0 +1,18 @@
+{
+  "copyAll": "העתקת הכול",
+  "downloadFailed": "הורדת היומן נכשלה: {error}",
+  "downloadLog": "הורדת היומן למכשיר",
+  "downloadUnavailable": "אחסון נוכחי אינו ניתן לכתיבה, לכן לא ניתן לשמור את היומן",
+  "downloaded": "היומן נשמר",
+  "downloadedAt": "היומן נשמר אל {path}",
+  "linesCount": "{count} שורות בסך הכול",
+  "noLogMatch": "לא נמצא תוכן יומן תואם",
+  "noLogs": "אין יומנים (אולי ההרצה עוד לא הסתיימה, או שה-token חסר הרשאות Actions)",
+  "noMatchingJob": "אין job תואם",
+  "nothingToCopy": "אין יומנים להעתיק",
+  "reload": "טעינה מחדש",
+  "searchJobHint": "חיפוש לפי שם job",
+  "searchLogHint": "חיפוש בתוך היומן (ללא רגישות לאותיות גדולות וקטנות)",
+  "title": "יומן הרצה",
+  "toggleSearch": "חיפוש בתוך תוכן היומן"
+}

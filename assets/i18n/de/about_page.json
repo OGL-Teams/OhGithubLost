@@ -20,7 +20,7 @@
   "trustCount": "{count} Warnungen (Aktion erforderlich)",
   "trustOk": "Keine Warnungen: Signatur des Startmanifests und Modulabhängigkeiten geprüft",
   "trustWarnings": "Vertrauenswarnungen",
-  "version": "Version {version}",
+  "version": "Version: {version}",
   "credits": "Danksagungen",
   "creditsDesc": "Open-Source-Projekte hinter dieser App",
   "licenseCare": "Lizenzhinweise",

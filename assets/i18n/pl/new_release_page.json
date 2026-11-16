@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Opis (opcjonalnie, obsługuje Markdown)",
+  "createFailed": "Nie udało się utworzyć: {error}",
+  "created": "Utworzono",
+  "draft": "Szkic",
+  "draftDesc": "Zapisz jako szkic, nie publikuj teraz",
+  "prerelease": "Pre-release",
+  "prereleaseDesc": "Oznacz jako pre-release",
+  "publish": "Utwórz wydanie",
+  "publishing": "Publikowanie…",
+  "tagLabel": "Tag",
+  "tagRequired": "Najpierw podaj tag (np. v1.0.0)",
+  "title": "Nowe wydanie",
+  "titleLabel": "Tytuł (opcjonalnie)"
+}

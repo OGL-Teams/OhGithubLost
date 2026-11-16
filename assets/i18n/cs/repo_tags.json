@@ -1,0 +1,12 @@
+{
+  "title": "Štítky",
+  "empty": "Zatím žádné štítky",
+  "loadFailed": "Načtení štítků selhalo",
+  "create": "Nový štítek",
+  "createTitle": "Vytvořit štítek",
+  "tagName": "Název štítku",
+  "targetSha": "Cílový SHA commitu",
+  "delete": "Odstranit",
+  "deleteTitle": "Odstranit štítek",
+  "deleteBody": "Opravdu chcete odstranit „{name}“? Tuto akci nelze vrátit zpět."
+}

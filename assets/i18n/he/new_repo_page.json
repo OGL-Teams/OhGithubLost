@@ -1,0 +1,12 @@
+{
+  "create": "יצירת מאגר",
+  "createFailed": "היצירה נכשלה: {error}",
+  "created": "נוצר",
+  "creating": "יוצר…",
+  "description": "תיאור (רשות)",
+  "nameLabel": "שם המאגר",
+  "nameRequired": "יש למלא תחילה שם מאגר",
+  "private": "מאגר פרטי",
+  "privateDesc": "גלוי רק לך",
+  "title": "מאגר חדש"
+}

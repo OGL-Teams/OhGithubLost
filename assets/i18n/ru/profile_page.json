@@ -22,10 +22,10 @@
   "removeFailed": "Удаление не удалось: {error}",
   "removeTitle": "Удалить аккаунт",
   "removed": "Удалено",
-  "settings": "Настройки",
-  "settingsDesc": "Внешний вид · Сеть · О программе",
   "switch": "Переключить",
   "switchFailed": "Переключение не удалось: {error}",
   "switchable": "Можно переключить",
-  "switched": "Переключено"
+  "switched": "Переключено",
+  "settings": "Настройки",
+  "settingsDesc": "Внешний вид · Сеть · О программе"
 }

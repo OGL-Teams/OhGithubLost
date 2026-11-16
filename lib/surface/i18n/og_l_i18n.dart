@@ -35,7 +35,11 @@ class OgLLocale {
 /// 按设备语言匹配支持的语言；未识别语言统一回落简体中文。
 String ogLDetectDeviceLocale() {
   final String language = PlatformDispatcher.instance.locale.languageCode;
-  const Set<String> supported = <String>{'en', 'zh', 'de', 'fr', 'ru'};
+  const Set<String> supported = <String>{
+    'zh', 'en', 'de', 'fr', 'ru', 'ja', 'ko', 'es', 'pt', 'it', 'nl', 'pl',
+    'tr', 'ar', 'hi', 'th', 'vi', 'id', 'ms', 'uk', 'cs', 'sv', 'da', 'fi',
+    'no', 'hu', 'ro', 'he', 'el',
+  };
   if (!supported.contains(language)) {
     return 'zh';
   }
@@ -57,19 +61,13 @@ class OgLI18n extends ChangeNotifier {
   /// 基线语言（任何缺失键的最终兜底）。
   static const String baseLocale = 'en';
 
-  /// 全部可选语言（v6.4.0 起收敛为 6 种；此前为 15 种）。
+  /// 全部可选语言（30 种）。
   ///
-  /// ## 为什么砍掉 9 种
-  /// 15 种里有 12 种的法律类正文（`onboardingLicenseBody`、`accelThirdPartyBody`
-  /// 等）实际是**英文占位**：语言目录存在、键存在、值与英文相同。用户在自己的
-  /// 语言里读到的是自己看不懂的法律说明，而这恰恰是本项目最不容含糊的部分。
-  ///
-  /// 一位负责任的维护者宁可少 9 种语言，也不肯让 9 种语言的人读到自己读不懂
-  /// 的条款。剩下的 6 种——简中（原始表述）／繁中／英／德／法／俄——每一份都是
-  /// 逐句写出来的，可以对读。
-  ///
-  /// 将来若要把某个语种加回来，前提是**它的全部键都是真译文**，而不是复制
-  /// 英文。键集合由 `tool/i18n_scan.py --check` 强制与 `zh` 一致。
+  /// 简中／繁中／英／德／法／俄为长期维护语言；其余 24 种在重要版本由
+  /// 子代理按 andrew-translate skill 分片级精译补全，全部键为真译文。
+  /// 加回语种的前提始终是**全部键都是真译文**，而不是复制英文占位：
+  /// 键集合由 `tool/i18n_scan.py --check` 强制与 `zh` 一致，
+  /// 逐分片译文由 `tool/i18n_shard_check.py` 校验占位符与顺序。
   static const List<OgLLocale> locales = <OgLLocale>[
     OgLLocale('zh', '简体中文'),
     OgLLocale('zh_Hant', '繁體中文'),
@@ -77,6 +75,30 @@ class OgLI18n extends ChangeNotifier {
     OgLLocale('de', 'Deutsch'),
     OgLLocale('fr', 'Français'),
     OgLLocale('ru', 'Русский'),
+    OgLLocale('ja', '日本語'),
+    OgLLocale('ko', '한국어'),
+    OgLLocale('es', 'Español'),
+    OgLLocale('pt', 'Português'),
+    OgLLocale('it', 'Italiano'),
+    OgLLocale('nl', 'Nederlands'),
+    OgLLocale('pl', 'Polski'),
+    OgLLocale('tr', 'Türkçe'),
+    OgLLocale('ar', 'العربية'),
+    OgLLocale('hi', 'हिन्दी'),
+    OgLLocale('th', 'ไทย'),
+    OgLLocale('vi', 'Tiếng Việt'),
+    OgLLocale('id', 'Bahasa Indonesia'),
+    OgLLocale('ms', 'Bahasa Melayu'),
+    OgLLocale('uk', 'Українська'),
+    OgLLocale('cs', 'Čeština'),
+    OgLLocale('sv', 'Svenska'),
+    OgLLocale('da', 'Dansk'),
+    OgLLocale('fi', 'Suomi'),
+    OgLLocale('no', 'Norsk'),
+    OgLLocale('hu', 'Magyar'),
+    OgLLocale('ro', 'Română'),
+    OgLLocale('he', 'עברית'),
+    OgLLocale('el', 'Ελληνικά'),
   ];
 
   /// 需要加载的页面分片（新增页面时在这里补一项即可）。

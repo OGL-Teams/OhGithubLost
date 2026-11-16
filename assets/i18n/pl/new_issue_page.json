@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Treść (opcjonalnie, obsługuje Markdown)",
+  "createFailed": "Nie udało się utworzyć: {error}",
+  "created": "Utworzono",
+  "submit": "Utwórz Issue",
+  "submitting": "Wysyłanie…",
+  "title": "Nowy Issue",
+  "titleLabel": "Tytuł",
+  "titleRequired": "Najpierw wpisz tytuł"
+}

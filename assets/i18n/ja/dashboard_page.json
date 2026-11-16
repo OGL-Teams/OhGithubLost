@@ -1,0 +1,19 @@
+{
+  "downloads": "ダウンロード管理",
+  "emptyMine": "リポジトリはまだありません",
+  "emptyStarred": "スターを付けたリポジトリはまだありません",
+  "home": "ホーム",
+  "loadMore": "さらに読み込む（{count} 件）",
+  "mine": "マイページ",
+  "newRepo": "リポジトリを作成",
+  "notifications": "通知センター",
+  "private": "非公開",
+  "repoCreated": "リポジトリを作成しました",
+  "repoCreatedName": "{name} を作成しました",
+  "retry": "再試行",
+  "searchHint": "リポジトリを検索…",
+  "searchRepos": "リポジトリを検索",
+  "searchTooltip": "リポジトリを検索",
+  "starred": "スター",
+  "starsCount": "スター {count} 件"
+}

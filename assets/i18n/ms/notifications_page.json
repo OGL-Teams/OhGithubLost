@@ -1,0 +1,19 @@
+{
+  "cancel": "Batal",
+  "copiedEvent": "Acara ini telah disalin",
+  "copy": "Salin",
+  "empty": "Tiada acara yang memenuhi syarat",
+  "filterAll": "Semua",
+  "filterError": "Ralat",
+  "filterWarning": "Amaran",
+  "markAllRead": "Tandakan semua sebagai dibaca",
+  "markRead": "Tandakan sebagai dibaca",
+  "reset": "Tetapkan semula",
+  "resetDesc": "Ini akan mengosongkan semua acara dalam memori semasa (log pada cakera kekal).",
+  "resetTitle": "Tetapkan semula pusat notifikasi",
+  "title": "Pusat notifikasi",
+  "unread": "Belum dibaca",
+  "toggleNotification": "Togol notifikasi",
+  "filterUnread": "Belum dibaca",
+  "emptyUnread": "Tiada mesej yang belum dibaca"
+}

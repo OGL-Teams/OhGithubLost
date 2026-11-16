@@ -1,0 +1,13 @@
+{
+  "created": "ה-Gist נוצר",
+  "empty": "עדיין אין קטעי Gist",
+  "fileCount": "{count} קבצים · ",
+  "missingId": "ל-Gist הזה חסר id, ולכן לא ניתן לפתוח אותו",
+  "new": "חדש",
+  "noDescription": "(ללא תיאור)",
+  "noOpenLink": "ל-Gist הזה אין קישור שניתן לפתוח",
+  "openInBrowser": "פתיחה בדפדפן",
+  "private": "פרטי",
+  "public": "ציבורי",
+  "title": "קטעי Gist"
+}

@@ -1,0 +1,18 @@
+{
+  "copyAll": "Kopier alle",
+  "downloadFailed": "Kunne ikke laste ned loggen: {error}",
+  "downloadLog": "Last ned loggen lokalt",
+  "downloadUnavailable": "Lagringsløsningen er ikke skrivbar, kan ikke lagre loggen",
+  "downloaded": "Loggen er lagret",
+  "downloadedAt": "Loggen er lagret i {path}",
+  "linesCount": "{count} linjer totalt",
+  "noLogMatch": "Ingen logginnhold traff",
+  "noLogs": "Ingen logger (kanskje ikke fullført ennå, eller tokenet mangler Actions-tillatelse)",
+  "noMatchingJob": "Ingen jobb som passer",
+  "nothingToCopy": "Ingen logger å kopiere ennå",
+  "reload": "Hent på nytt",
+  "searchJobHint": "Søk etter jobbnavn",
+  "searchLogHint": "Søk i loggen (uten skilletegn på bokstavcase)",
+  "title": "Kjøringslogg",
+  "toggleSearch": "Søk i logginnhold"
+}

@@ -147,3 +147,27 @@ flutter:
     - assets/i18n/de/
     - assets/i18n/fr/
     - assets/i18n/ru/
+    - assets/i18n/ja/
+    - assets/i18n/ko/
+    - assets/i18n/es/
+    - assets/i18n/pt/
+    - assets/i18n/it/
+    - assets/i18n/nl/
+    - assets/i18n/pl/
+    - assets/i18n/tr/
+    - assets/i18n/ar/
+    - assets/i18n/hi/
+    - assets/i18n/th/
+    - assets/i18n/vi/
+    - assets/i18n/id/
+    - assets/i18n/ms/
+    - assets/i18n/uk/
+    - assets/i18n/cs/
+    - assets/i18n/sv/
+    - assets/i18n/da/
+    - assets/i18n/fi/
+    - assets/i18n/no/
+    - assets/i18n/hu/
+    - assets/i18n/ro/
+    - assets/i18n/he/
+    - assets/i18n/el/

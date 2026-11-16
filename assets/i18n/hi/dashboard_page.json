@@ -1,0 +1,19 @@
+{
+  "downloads": "डाउनलोड प्रबंधन",
+  "emptyMine": "अभी कोई रिपॉजिटरी नहीं है",
+  "emptyStarred": "अभी कोई स्टार की गई रिपॉजिटरी नहीं है",
+  "home": "होम",
+  "loadMore": "और लोड करें ({count} तक)",
+  "mine": "मेरी",
+  "newRepo": "नई रिपॉजिटरी",
+  "notifications": "सूचना केंद्र",
+  "private": "निजी",
+  "repoCreated": "रिपॉजिटरी बन गई",
+  "repoCreatedName": "{name} बन गया",
+  "retry": "फिर से कोशिश करें",
+  "searchHint": "रिपॉजिटरी खोजें…",
+  "searchRepos": "रिपॉजिटरी खोजें",
+  "searchTooltip": "रिपॉजिटरी खोजें",
+  "starred": "स्टार की गई",
+  "starsCount": "{count} स्टार"
+}

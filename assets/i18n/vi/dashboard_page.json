@@ -1,0 +1,19 @@
+{
+  "downloads": "Quản lý tải xuống",
+  "emptyMine": "Chưa có kho lưu trữ nào",
+  "emptyStarred": "Chưa có kho lưu trữ nào được đánh dấu sao",
+  "home": "Trang chủ",
+  "loadMore": "Tải thêm (đã có {count})",
+  "mine": "Của tôi",
+  "newRepo": "Kho lưu trữ mới",
+  "notifications": "Trung tâm thông báo",
+  "private": "Riêng tư",
+  "repoCreated": "Đã tạo kho lưu trữ",
+  "repoCreatedName": "Đã tạo {name}",
+  "retry": "Thử lại",
+  "searchHint": "Tìm kiếm kho lưu trữ…",
+  "searchRepos": "Tìm kiếm kho lưu trữ",
+  "searchTooltip": "Tìm kiếm kho lưu trữ",
+  "starred": "Đã đánh dấu sao",
+  "starsCount": "{count} sao"
+}

@@ -1,0 +1,18 @@
+{
+  "copyAll": "すべてコピー",
+  "downloadFailed": "ログのダウンロードに失敗しました：{error}",
+  "downloadLog": "ログをローカルにダウンロード",
+  "downloadUnavailable": "現在のストレージ方式では書き込めず、ログを保存できません",
+  "downloaded": "ログを保存しました",
+  "downloadedAt": "ログを {path} に保存しました",
+  "linesCount": "全 {count} 行",
+  "noLogMatch": "一致するログ内容がありません",
+  "noLogs": "ログがありません（まだ完了していない、またはトークンに Actions 権限がない可能性があります）",
+  "noMatchingJob": "一致するジョブがありません",
+  "nothingToCopy": "コピーできるログがありません",
+  "reload": "再取得",
+  "searchJobHint": "ジョブ名を検索",
+  "searchLogHint": "ログ内を検索（大文字・小文字を区別しません）",
+  "title": "実行ログ",
+  "toggleSearch": "ログ内容を検索"
+}

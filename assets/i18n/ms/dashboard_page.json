@@ -1,0 +1,19 @@
+{
+  "downloads": "Pengurusan muat turun",
+  "emptyMine": "Tiada repositori lagi",
+  "emptyStarred": "Tiada repositori berbintang lagi",
+  "home": "Laman utama",
+  "loadMore": "Muat lebih banyak ({count} telah dimuatkan)",
+  "mine": "Milik saya",
+  "newRepo": "Repositori baharu",
+  "notifications": "Pusat notifikasi",
+  "private": "Peribadi",
+  "repoCreated": "Repositori telah dicipta",
+  "repoCreatedName": "{name} telah dicipta",
+  "retry": "Cuba semula",
+  "searchHint": "Cari repositori…",
+  "searchRepos": "Cari repositori",
+  "searchTooltip": "Cari repositori",
+  "starred": "Berbintang",
+  "starsCount": "{count} bintang"
+}

@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Ghi chú (không bắt buộc, hỗ trợ Markdown)",
+  "createFailed": "Tạo thất bại: {error}",
+  "created": "Đã tạo",
+  "draft": "Bản nháp",
+  "draftDesc": "Lưu dưới dạng bản nháp, chưa phát hành",
+  "prerelease": "Bản phát hành trước",
+  "prereleaseDesc": "Đánh dấu là pre-release",
+  "publish": "Tạo phát hành",
+  "publishing": "Đang phát hành…",
+  "tagLabel": "Nhãn (tag)",
+  "tagRequired": "Vui lòng nhập nhãn trước (ví dụ v1.0.0)",
+  "title": "Phát hành mới",
+  "titleLabel": "Tiêu đề (không bắt buộc)"
+}

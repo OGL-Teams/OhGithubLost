@@ -1,0 +1,12 @@
+{
+  "copyContent": "内容をコピー",
+  "delete": "削除",
+  "deleteDraft": "下書きを削除",
+  "deleted": "下書きを削除しました",
+  "draft": "下書き",
+  "empty": "未コミットの下書きはまだありません",
+  "title": "下書き",
+  "deleteDraftDesc": "この下書きを端末から削除します。この操作は取り消せません。",
+  "openInEditor": "エディターで開く",
+  "draftGone": "下書きはすでに存在しません"
+}

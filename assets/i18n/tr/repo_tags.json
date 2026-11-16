@@ -1,0 +1,12 @@
+{
+  "title": "Etiketler",
+  "empty": "Henüz etiket yok",
+  "loadFailed": "Etiketler yüklenemedi",
+  "create": "Yeni etiket",
+  "createTitle": "Etiket oluştur",
+  "tagName": "Etiket adı",
+  "targetSha": "Hedef commit SHA'sı",
+  "delete": "Sil",
+  "deleteTitle": "Etiketi sil",
+  "deleteBody": "「{name}」 öğesini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+}

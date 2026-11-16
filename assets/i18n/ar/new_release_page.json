@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "الوصف (اختياري، يدعم Markdown)",
+  "createFailed": "تعذّر الإنشاء: {error}",
+  "created": "تم الإنشاء",
+  "draft": "مسودة",
+  "draftDesc": "حفظ كمسودة دون نشر الآن",
+  "prerelease": "إصدار تجريبي",
+  "prereleaseDesc": "وضع علامة pre-release",
+  "publish": "إنشاء Release",
+  "publishing": "جارٍ النشر…",
+  "tagLabel": "الوسم (tag)",
+  "tagRequired": "يُرجى إدخال الوسم أولًا (مثل v1.0.0)",
+  "title": "Release جديد",
+  "titleLabel": "العنوان (اختياري)"
+}

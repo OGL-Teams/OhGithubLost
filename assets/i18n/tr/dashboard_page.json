@@ -1,0 +1,19 @@
+{
+  "downloads": "İndirmeler",
+  "emptyMine": "Henüz depo yok",
+  "emptyStarred": "Henüz yıldızlanmış depo yok",
+  "home": "Ana sayfa",
+  "loadMore": "Daha fazla yükle ({count} kayıt)",
+  "mine": "Depolarım",
+  "newRepo": "Yeni depo",
+  "notifications": "Bildirim merkezi",
+  "private": "Özel",
+  "repoCreated": "Depo oluşturuldu",
+  "repoCreatedName": "{name} oluşturuldu",
+  "retry": "Yeniden dene",
+  "searchHint": "Depo ara…",
+  "searchRepos": "Depo ara",
+  "searchTooltip": "Depo ara",
+  "starred": "Yıldızlı",
+  "starsCount": "{count} yıldız"
+}

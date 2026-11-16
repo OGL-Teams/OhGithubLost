@@ -1,0 +1,12 @@
+{
+  "copyContent": "Copiar conteúdo",
+  "delete": "Eliminar",
+  "deleteDraft": "Eliminar rascunho",
+  "deleted": "Rascunho eliminado",
+  "draft": "Rascunho",
+  "empty": "Nenhum rascunho não enviado ainda",
+  "title": "Rascunhos",
+  "deleteDraftDesc": "Este rascunho será eliminado deste dispositivo. Esta ação não pode ser anulada.",
+  "openInEditor": "Abrir no editor",
+  "draftGone": "O rascunho não existe mais"
+}

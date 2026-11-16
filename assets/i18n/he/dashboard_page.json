@@ -1,0 +1,19 @@
+{
+  "downloads": "ניהול הורדות",
+  "emptyMine": "עדיין אין מאגרים",
+  "emptyStarred": "עדיין אין מאגרים מסומנים בכוכבית",
+  "home": "דף הבית",
+  "loadMore": "טעינת עוד ({count} כבר)",
+  "mine": "שלי",
+  "newRepo": "מאגר חדש",
+  "notifications": "מרכז התראות",
+  "private": "פרטי",
+  "repoCreated": "המאגר נוצר",
+  "repoCreatedName": "{name} נוצר",
+  "retry": "ניסיון חוזר",
+  "searchHint": "חיפוש מאגרים…",
+  "searchRepos": "חיפוש מאגרים",
+  "searchTooltip": "חיפוש מאגרים",
+  "starred": "כוכביות",
+  "starsCount": "{count} כוכביות"
+}

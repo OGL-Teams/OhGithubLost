@@ -10,7 +10,7 @@
   "missingRequired": "Fehlende Pflichtparameter: {names}",
   "noInputs": "Dieser Workflow hat keine deklarierten Parameter (kann direkt ausgelöst werden).",
   "noWorkflows": "Keine Workflows in diesem Repo (oder das Token hat keine Berechtigungen für Actions)",
-  "optionalSuffix": "(Optional)",
+  "optionalSuffix": "(freiwillig)",
   "parseFailed": "Fehler beim Parsen der Workflow-Parameter: {error}",
   "readFileFailed": "Workflow-Datei kann nicht gelesen werden ({path}): Der Pfad hat sich möglicherweise geändert oder das Token hat nicht die nötigen Berechtigungen",
   "refLabel": "ref (Branch / Tag)",

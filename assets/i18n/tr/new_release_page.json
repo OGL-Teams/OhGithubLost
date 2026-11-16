@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Açıklama (isteğe bağlı, Markdown desteklenir)",
+  "createFailed": "Oluşturulamadı: {error}",
+  "created": "Oluşturuldu",
+  "draft": "Taslak",
+  "draftDesc": "Taslak olarak kaydet, henüz yayınlama",
+  "prerelease": "Ön sürüm",
+  "prereleaseDesc": "pre-release olarak işaretle",
+  "publish": "Release oluştur",
+  "publishing": "Yayınlanıyor…",
+  "tagLabel": "Etiket (tag)",
+  "tagRequired": "Lütfen önce etiketi girin (örn. v1.0.0)",
+  "title": "Yeni Release",
+  "titleLabel": "Başlık (isteğe bağlı)"
+}

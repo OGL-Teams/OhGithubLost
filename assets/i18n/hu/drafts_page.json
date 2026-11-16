@@ -1,0 +1,12 @@
+{
+  "copyContent": "Tartalom másolása",
+  "delete": "Törlés",
+  "deleteDraft": "Vázlat törlése",
+  "deleted": "Vázlat törölve",
+  "draft": "Vázlat",
+  "empty": "Még nincsenek nem beküldött vázlatok",
+  "title": "Vázlatok",
+  "deleteDraftDesc": "Ez a vázlat törlődni fog erről az eszközről. Ez a művelet nem vonható vissza.",
+  "openInEditor": "Megnyitás a szerkesztőben",
+  "draftGone": "A vázlat már nem létezik"
+}

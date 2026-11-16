@@ -1,0 +1,18 @@
+{
+  "copyAll": "Kopírovat vše",
+  "downloadFailed": "Stažení logu selhalo: {error}",
+  "downloadLog": "Stáhnout log do zařízení",
+  "downloadUnavailable": "Aktuální úložiště není zapisovatelné, log nelze uložit",
+  "downloaded": "Log byl uložen",
+  "downloadedAt": "Log byl uložen do {path}",
+  "linesCount": "Celkem {count} řádků",
+  "noLogMatch": "Žádná shoda v logu",
+  "noLogs": "Žádný log (možná ještě nedoběhl, nebo tokenu chybí oprávnění pro Actions)",
+  "noMatchingJob": "Žádná odpovídající úloha",
+  "nothingToCopy": "Zatím není co kopírovat",
+  "reload": "Načíst znovu",
+  "searchJobHint": "Hledat podle názvu úlohy",
+  "searchLogHint": "Hledat v logu (bez rozlišování velikosti písmen)",
+  "title": "Log běhu",
+  "toggleSearch": "Hledat v logu"
+}

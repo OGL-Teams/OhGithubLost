@@ -1,0 +1,19 @@
+{
+  "cancel": "Cancelar",
+  "copiedEvent": "Evento copiado",
+  "copy": "Copiar",
+  "empty": "Nenhum evento corresponde aos critérios",
+  "filterAll": "Todos",
+  "filterError": "Erro",
+  "filterWarning": "Aviso",
+  "markAllRead": "Marcar todos como lidos",
+  "markRead": "Marcar como lido",
+  "reset": "Redefinir",
+  "resetDesc": "Isso limpará todos os eventos na memória atual (os logs em disco serão mantidos).",
+  "resetTitle": "Redefinir central de notificações",
+  "title": "Central de notificações",
+  "unread": "Não lido",
+  "toggleNotification": "Alternar notificação",
+  "filterUnread": "Não lidos",
+  "emptyUnread": "Nenhuma mensagem não lida"
+}

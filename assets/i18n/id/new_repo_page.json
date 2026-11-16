@@ -1,0 +1,12 @@
+{
+  "create": "Buat repositori",
+  "createFailed": "Gagal membuat: {error}",
+  "created": "Dibuat",
+  "creating": "Membuat…",
+  "description": "Deskripsi (opsional)",
+  "nameLabel": "Nama repositori",
+  "nameRequired": "Harap isi nama repositori terlebih dahulu",
+  "private": "Repositori privat",
+  "privateDesc": "Hanya dapat dilihat oleh Anda",
+  "title": "Repositori baru"
+}

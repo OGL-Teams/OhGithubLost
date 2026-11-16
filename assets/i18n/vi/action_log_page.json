@@ -1,0 +1,18 @@
+{
+  "copyAll": "Sao chép tất cả",
+  "downloadFailed": "Tải nhật ký thất bại: {error}",
+  "downloadLog": "Tải nhật ký về thiết bị",
+  "downloadUnavailable": "Phương thức lưu trữ hiện tại không cho phép ghi, không thể lưu nhật ký",
+  "downloaded": "Đã lưu nhật ký",
+  "downloadedAt": "Nhật ký đã được lưu tại {path}",
+  "linesCount": "Tổng {count} dòng",
+  "noLogMatch": "Không có nội dung nhật ký nào khớp",
+  "noLogs": "Không có nhật ký (có thể chưa hoàn tất, hoặc Token thiếu quyền Actions)",
+  "noMatchingJob": "Không có job nào phù hợp",
+  "nothingToCopy": "Hiện không có nhật ký để sao chép",
+  "reload": "Tải lại",
+  "searchJobHint": "Tìm theo tên job",
+  "searchLogHint": "Tìm trong nhật ký (không phân biệt chữ hoa/thường)",
+  "title": "Nhật ký chạy",
+  "toggleSearch": "Tìm nội dung nhật ký"
+}

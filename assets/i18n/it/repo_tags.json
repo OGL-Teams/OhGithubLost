@@ -1,0 +1,12 @@
+{
+  "title": "Tag",
+  "empty": "Ancora nessun tag",
+  "loadFailed": "Impossibile caricare i tag",
+  "create": "Nuovo tag",
+  "createTitle": "Crea tag",
+  "tagName": "Nome del tag",
+  "targetSha": "SHA del commit di destinazione",
+  "delete": "Elimina",
+  "deleteTitle": "Elimina tag",
+  "deleteBody": "Sei sicuro di voler eliminare «{name}»? Questa azione non può essere annullata."
+}

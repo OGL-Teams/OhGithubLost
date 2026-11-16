@@ -1,0 +1,12 @@
+{
+  "copyContent": "Kopier innhold",
+  "delete": "Slett",
+  "deleteDraft": "Slett utkast",
+  "deleted": "Utkastet er slettet",
+  "draft": "Utkast",
+  "empty": "Du har ingen utkast som ikke er sendt inn ennå",
+  "title": "Utkastkasse",
+  "deleteDraftDesc": "Dette utkastet slettes fra enheten. Handlingen kan ikke angres.",
+  "openInEditor": "Åpne i redigering",
+  "draftGone": "Utkastet finnes ikke lenger"
+}

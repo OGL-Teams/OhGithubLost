@@ -1,0 +1,18 @@
+{
+  "copyAll": "Összes másolása",
+  "downloadFailed": "A napló letöltése nem sikerült: {error}",
+  "downloadLog": "Napló letöltése erre az eszközre",
+  "downloadUnavailable": "A jelenlegi tárolási módszer nem írható, a napló nem menthető",
+  "downloaded": "Napló elmentve",
+  "downloadedAt": "A napló ide lett mentve: {path}",
+  "linesCount": "Összesen {count} sor",
+  "noLogMatch": "Nincs találat a naplóban",
+  "noLogs": "Nincs napló (lehet, hogy még nem készült el, vagy a Token hiányoznak az Actions jogosultságai)",
+  "noMatchingJob": "Nincs egyező job",
+  "nothingToCopy": "Jelenleg nincs másolható napló",
+  "reload": "Újra letöltés",
+  "searchJobHint": "Job név keresése",
+  "searchLogHint": "Keresés a naplóban (kis- és nagybetűk nem számítanak)",
+  "title": "Futtatási napló",
+  "toggleSearch": "Keresés a napló tartalmában"
+}

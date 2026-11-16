@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Текст (необов'язково, підтримується Markdown)",
+  "createFailed": "Не вдалося створити: {error}",
+  "created": "Створено",
+  "submit": "Створити Issue",
+  "submitting": "Надсилання…",
+  "title": "Новий Issue",
+  "titleLabel": "Заголовок",
+  "titleRequired": "Спочатку заповніть заголовок"
+}

@@ -1,0 +1,16 @@
+{
+  "content": "Contenuto",
+  "contentHint": "Incolla o digita codice / testo",
+  "contentRequired": "Il contenuto non può essere vuoto",
+  "create": "Crea",
+  "createFailed": "Creazione non riuscita: {error}",
+  "created": "Creato",
+  "creating": "Creazione in corso…",
+  "description": "Descrizione (facoltativa)",
+  "fileName": "Nome del file (con estensione, determina la lingua di evidenziazione)",
+  "fileNameHint": "Suggerimento: l'estensione del file determina la lingua di evidenziazione (es. main.dart / app.py).",
+  "fileNameRequired": "Inserisci il nome del file",
+  "isPublic": "Gist pubblico",
+  "isPublicDesc": "Una volta pubblico, chiunque potrà accedervi tramite il link",
+  "title": "Nuovo Gist"
+}

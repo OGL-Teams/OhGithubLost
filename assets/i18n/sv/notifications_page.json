@@ -1,0 +1,19 @@
+{
+  "cancel": "Avbryt",
+  "copiedEvent": "Händelsen har kopierats",
+  "copy": "Kopiera",
+  "empty": "Inga händelser som matchar",
+  "filterAll": "Alla",
+  "filterError": "Fel",
+  "filterWarning": "Varningar",
+  "markAllRead": "Markera alla som lästa",
+  "markRead": "Markera som läst",
+  "reset": "Återställ",
+  "resetDesc": "Alla händelser i minnet rensas (loggarna på disken behålls).",
+  "resetTitle": "Återställ notiser",
+  "title": "Notiser",
+  "unread": "Oläst",
+  "toggleNotification": "Växla notis",
+  "filterUnread": "Olästa",
+  "emptyUnread": "Inga olästa meddelanden"
+}

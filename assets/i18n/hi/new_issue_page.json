@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "मुख्य भाग (वैकल्पिक, Markdown समर्थित)",
+  "createFailed": "बनाने में विफल: {error}",
+  "created": "बन गया",
+  "submit": "Issue बनाएँ",
+  "submitting": "जमा किया जा रहा है…",
+  "title": "नया Issue",
+  "titleLabel": "शीर्षक",
+  "titleRequired": "कृपया पहले शीर्षक भरें"
+}

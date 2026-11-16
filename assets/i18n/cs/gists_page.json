@@ -1,0 +1,13 @@
+{
+  "created": "Gist byl vytvořen",
+  "empty": "Zatím žádné úryvky Gist",
+  "fileCount": "Počet souborů: {count} · ",
+  "missingId": "Tento Gist nemá id, nelze jej otevřít",
+  "new": "Nový",
+  "noDescription": "(bez popisu)",
+  "noOpenLink": "Tento Gist nemá žádný otevíratelný odkaz",
+  "openInBrowser": "Otevřít v prohlížeči",
+  "private": "Soukromé",
+  "public": "Veřejné",
+  "title": "Úryvky Gist"
+}

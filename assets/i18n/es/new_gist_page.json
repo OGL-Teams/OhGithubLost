@@ -1,0 +1,16 @@
+{
+  "content": "Contenido",
+  "contentHint": "Pega o escribe código / texto",
+  "contentRequired": "El contenido no puede estar vacío",
+  "create": "Crear",
+  "createFailed": "No se ha podido crear: {error}",
+  "created": "Creado",
+  "creating": "Creando…",
+  "description": "Descripción (opcional)",
+  "fileName": "Nombre del archivo (con la extensión, que determina el resaltado de sintaxis)",
+  "fileNameHint": "Consejo: la extensión del archivo influye en el lenguaje de resaltado (por ejemplo, main.dart / app.py).",
+  "fileNameRequired": "Introduce el nombre del archivo",
+  "isPublic": "Gist público",
+  "isPublicDesc": "Si es público, cualquiera podrá acceder a él mediante el enlace",
+  "title": "Nuevo Gist"
+}

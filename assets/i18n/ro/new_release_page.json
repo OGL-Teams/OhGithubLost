@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Descriere (opțional, acceptă Markdown)",
+  "createFailed": "Crearea a eșuat: {error}",
+  "created": "Creat",
+  "draft": "Ciornă",
+  "draftDesc": "Salvează ca ciornă, fără a publica încă",
+  "prerelease": "Pre-release",
+  "prereleaseDesc": "Marchează ca pre-release",
+  "publish": "Creează Release-ul",
+  "publishing": "Se publică…",
+  "tagLabel": "Etichetă (tag)",
+  "tagRequired": "Vă rugăm să completați mai întâi o etichetă (de ex. v1.0.0)",
+  "title": "Release nou",
+  "titleLabel": "Titlu (opțional)"
+}

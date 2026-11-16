@@ -24,10 +24,11 @@
 命令参考：`tool/i18n_scan.py --check`（接线后）、Python 逐分片脚本（接线前）。
 
 ## 进度
-- [done] ja、ko、es、pt、it 精译，zh_Hant 润色（全部自检 problems=0；zh_Hant 已在主干，i18n_scan 通过）
-- [进行中·3并发] nl（c59b653b）、pl（68b35057）、tr（待派）
-- [待派精译] ar hi th vi id ms uk cs sv da fi no hu ro he el（15 种）
-- [待派润色] en de fr ru（4 种）
+- [done] ja、ko、es、pt、it、nl、pl、tr、ar、th、hi、vi、id、ms、cs、uk、sv、da、fi、no、hu、he、ro 精译，zh_Hant 润色（全部自检 problems=0；zh_Hant 已在主干，i18n_scan 通过）
+- [done] 24 语言全部精译完成并总闸验证 problems=0；zh_Hant 润色完成
+- [进行中·3并发] de 润色（928d9c18）、fr 润色（6350169c）、ru 润色（d01bb4f5）
+- [待做] 接线 → 门禁 → 发版 v13.0.2 → 归档
+- en 为基线不润色
 
 ## 教训
 - 子代理长任务易撞 provider 限流（503 / 6004 频率限制）：派发时明确「逐分片落盘」而非一次性读完再写。

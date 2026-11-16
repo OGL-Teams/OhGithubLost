@@ -1,0 +1,19 @@
+{
+  "downloads": "Pobrane",
+  "emptyMine": "Nie masz jeszcze repozytoriów",
+  "emptyStarred": "Nie masz jeszcze repozytoriów oznaczonych gwiazdką",
+  "home": "Strona główna",
+  "loadMore": "Wczytaj więcej (jest już {count})",
+  "mine": "Moje",
+  "newRepo": "Nowe repozytorium",
+  "notifications": "Centrum powiadomień",
+  "private": "Prywatne",
+  "repoCreated": "Utworzono repozytorium",
+  "repoCreatedName": "Utworzono {name}",
+  "retry": "Ponów",
+  "searchHint": "Szukaj repozytoriów…",
+  "searchRepos": "Szukaj repozytoriów",
+  "searchTooltip": "Szukaj repozytoriów",
+  "starred": "Gwiazdki",
+  "starsCount": "{count} gwiazdek"
+}

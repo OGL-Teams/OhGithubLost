@@ -1,0 +1,19 @@
+{
+  "downloads": "다운로드 관리",
+  "emptyMine": "아직 저장소가 없습니다",
+  "emptyStarred": "아직 스타를 표시한 저장소가 없습니다",
+  "home": "홈",
+  "loadMore": "더 불러오기({count}개)",
+  "mine": "내 저장소",
+  "newRepo": "새 저장소",
+  "notifications": "알림 센터",
+  "private": "비공개",
+  "repoCreated": "저장소가 생성되었습니다",
+  "repoCreatedName": "{name}을(를) 만들었습니다",
+  "retry": "재시도",
+  "searchHint": "저장소 검색…",
+  "searchRepos": "저장소 검색",
+  "searchTooltip": "저장소 검색",
+  "starred": "스타 표시",
+  "starsCount": "스타 {count}개"
+}

@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Beskrivelse (valgfrit, Markdown understøttes)",
+  "createFailed": "Oprettelse mislykkedes: {error}",
+  "created": "Oprettet",
+  "draft": "Kladde",
+  "draftDesc": "Gem som kladde; udgiv endnu ikke",
+  "prerelease": "Pre-release",
+  "prereleaseDesc": "Markér som pre-release",
+  "publish": "Opret Release",
+  "publishing": "Udgiver…",
+  "tagLabel": "Tag",
+  "tagRequired": "Angiv et tag først (f.eks. v1.0.0)",
+  "title": "Ny Release",
+  "titleLabel": "Titel (valgfrit)"
+}

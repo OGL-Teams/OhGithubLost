@@ -1,0 +1,12 @@
+{
+  "title": "Tagi",
+  "empty": "Nie ma jeszcze tagów",
+  "loadFailed": "Nie udało się załadować tagów",
+  "create": "Nowy tag",
+  "createTitle": "Utwórz tag",
+  "tagName": "Nazwa tagu",
+  "targetSha": "Docelowy skrót SHA commita",
+  "delete": "Usuń",
+  "deleteTitle": "Usuń tag",
+  "deleteBody": "Czy na pewno chcesz usunąć „{name}”? Tej operacji nie można cofnąć."
+}

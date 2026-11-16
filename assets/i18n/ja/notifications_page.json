@@ -1,0 +1,19 @@
+{
+  "cancel": "キャンセル",
+  "copiedEvent": "このイベントをコピーしました",
+  "copy": "コピー",
+  "empty": "条件に一致するイベントがありません",
+  "filterAll": "すべて",
+  "filterError": "エラー",
+  "filterWarning": "警告",
+  "markAllRead": "すべて既読にする",
+  "markRead": "既読にする",
+  "reset": "リセット",
+  "resetDesc": "メモリ内のすべてのイベントを消去します（ディスク上のログは保持されます）。",
+  "resetTitle": "通知センターをリセット",
+  "title": "通知センター",
+  "unread": "未読",
+  "toggleNotification": "通知の切り替え",
+  "filterUnread": "未読",
+  "emptyUnread": "未読のメッセージはありません"
+}

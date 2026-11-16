@@ -1,0 +1,19 @@
+{
+  "cancel": "Anuluj",
+  "copiedEvent": "Skopiowano zdarzenie",
+  "copy": "Kopiuj",
+  "empty": "Brak zdarzeń spełniających kryteria",
+  "filterAll": "Wszystkie",
+  "filterError": "Błędy",
+  "filterWarning": "Ostrzeżenia",
+  "markAllRead": "Oznacz wszystkie jako przeczytane",
+  "markRead": "Oznacz jako przeczytane",
+  "reset": "Zresetuj",
+  "resetDesc": "Wszystkie zdarzenia w pamięci zostaną wyczyszczone (logi na dysku zostaną zachowane).",
+  "resetTitle": "Zresetuj centrum powiadomień",
+  "title": "Centrum powiadomień",
+  "unread": "Nieprzeczytane",
+  "toggleNotification": "Przełącz powiadomienia",
+  "filterUnread": "Nieprzeczytane",
+  "emptyUnread": "Brak nieprzeczytanych wiadomości"
+}

@@ -1,0 +1,12 @@
+{
+  "create": "Repository aanmaken",
+  "createFailed": "Aanmaken mislukt: {error}",
+  "created": "Aangemaakt",
+  "creating": "Aanmaken bezig…",
+  "description": "Beschrijving (optioneel)",
+  "nameLabel": "Repositorynaam",
+  "nameRequired": "Vul eerst een repositorynaam in",
+  "private": "Privé-repository",
+  "privateDesc": "Alleen zichtbaar voor uzelf",
+  "title": "Nieuwe repository"
+}

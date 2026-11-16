@@ -1,0 +1,13 @@
+{
+  "created": "Gist létrehozva",
+  "empty": "Még nincs Gist",
+  "fileCount": "{count} fájl · ",
+  "missingId": "Ennek a Gistnek nincs azonosítója, így nem nyitható meg",
+  "new": "Új",
+  "noDescription": "(Nincs leírás)",
+  "noOpenLink": "Ennek a Gistnek nincs megnyitható hivatkozása",
+  "openInBrowser": "Megnyitás a böngészőben",
+  "private": "Privát",
+  "public": "Nyilvános",
+  "title": "Gistek"
+}

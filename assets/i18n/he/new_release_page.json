@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "תיאור (רשות, נתמכת ב-Markdown)",
+  "createFailed": "היצירה נכשלה: {error}",
+  "created": "נוצר",
+  "draft": "טיוטה",
+  "draftDesc": "שמירה כטיוטה בלי לפרסם",
+  "prerelease": "טרום-גרסה",
+  "prereleaseDesc": "סימון כ-pre-release",
+  "publish": "יצירת Release",
+  "publishing": "מפרסם…",
+  "tagLabel": "תגית (tag)",
+  "tagRequired": "יש למלא תחילה תגית (למשל v1.0.0)",
+  "title": "Release חדש",
+  "titleLabel": "כותרת (רשות)"
+}

@@ -1,0 +1,19 @@
+{
+  "downloads": "Завантаження",
+  "emptyMine": "Репозиторіїв ще немає",
+  "emptyStarred": "Немає репозиторіїв зі зіркою",
+  "home": "Головна",
+  "loadMore": "Завантажити ще (вже {count})",
+  "mine": "Мої",
+  "newRepo": "Новий репозиторій",
+  "notifications": "Сповіщення",
+  "private": "Приватний",
+  "repoCreated": "Репозиторій створено",
+  "repoCreatedName": "Створено {name}",
+  "retry": "Повторити",
+  "searchHint": "Пошук репозиторіїв…",
+  "searchRepos": "Пошук репозиторіїв",
+  "searchTooltip": "Пошук репозиторіїв",
+  "starred": "Зі зіркою",
+  "starsCount": "{count} зірок"
+}

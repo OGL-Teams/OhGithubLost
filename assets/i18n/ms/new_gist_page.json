@@ -1,0 +1,16 @@
+{
+  "content": "Kandungan",
+  "contentHint": "Tampal atau taip kod / teks",
+  "contentRequired": "Kandungan tidak boleh kosong",
+  "create": "Cipta",
+  "createFailed": "Gagal dicipta: {error}",
+  "created": "Telah dicipta",
+  "creating": "Mencipta…",
+  "description": "Penerangan (pilihan)",
+  "fileName": "Nama fail (termasuk sambungan, menentukan bahasa penyerlahan)",
+  "fileNameHint": "Petua: Sambungan nama fail mempengaruhi bahasa penyerlahan (contoh. main.dart / app.py).",
+  "fileNameRequired": "Sila isi nama fail",
+  "isPublic": "Gist awam",
+  "isPublicDesc": "Setelah diawamkan, sesiapa sahaja boleh mengaksesnya melalui pautan",
+  "title": "Gist baharu"
+}

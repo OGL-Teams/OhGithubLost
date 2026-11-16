@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Isi (opsional, mendukung Markdown)",
+  "createFailed": "Gagal membuat: {error}",
+  "created": "Dibuat",
+  "submit": "Buat Issue",
+  "submitting": "Mengirim…",
+  "title": "Issue baru",
+  "titleLabel": "Judul",
+  "titleRequired": "Harap isi judul terlebih dahulu"
+}

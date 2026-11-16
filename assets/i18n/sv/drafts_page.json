@@ -1,0 +1,12 @@
+{
+  "copyContent": "Kopiera innehåll",
+  "delete": "Ta bort",
+  "deleteDraft": "Ta bort utkast",
+  "deleted": "Utkastet har tagits bort",
+  "draft": "Utkast",
+  "empty": "Inga ocommitade utkast ännu",
+  "title": "Utkast",
+  "deleteDraftDesc": "Utkastet tas bort från enheten; åtgärden kan inte ångras.",
+  "openInEditor": "Öppna i redigeraren",
+  "draftGone": "Utkastet finns inte längre"
+}

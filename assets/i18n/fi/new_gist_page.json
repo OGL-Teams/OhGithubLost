@@ -1,0 +1,16 @@
+{
+  "content": "Sisältö",
+  "contentHint": "Liitä tai kirjoita koodia / tekstiä",
+  "contentRequired": "Sisältö ei voi olla tyhjä",
+  "create": "Luo",
+  "createFailed": "Luonti epäonnistui: {error}",
+  "created": "Luotu",
+  "creating": "Luodaan…",
+  "description": "Kuvaus (valinnainen)",
+  "fileName": "Tiedoston nimi (mukaan lukien pääte, joka määrää korostusvärin kielen)",
+  "fileNameHint": "Vihje: tiedoston päte vaikuttaa korostusvärin kieleen (esim. main.dart / app.py).",
+  "fileNameRequired": "Syötä tiedoston nimi",
+  "isPublic": "Julkinen Gist",
+  "isPublicDesc": "Julkisen Gistin voi kuka tahansa avata linkin kautta",
+  "title": "Luo Gist"
+}

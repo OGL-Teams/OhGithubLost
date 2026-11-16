@@ -1,0 +1,12 @@
+{
+  "create": "Cipta repositori",
+  "createFailed": "Gagal dicipta: {error}",
+  "created": "Telah dicipta",
+  "creating": "Mencipta…",
+  "description": "Penerangan (pilihan)",
+  "nameLabel": "Nama repositori",
+  "nameRequired": "Sila isi nama repositori terlebih dahulu",
+  "private": "Repositori peribadi",
+  "privateDesc": "Hanya boleh dilihat oleh anda",
+  "title": "Repositori baharu"
+}

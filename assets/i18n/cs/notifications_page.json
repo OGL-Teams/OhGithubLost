@@ -1,0 +1,19 @@
+{
+  "cancel": "Zrušit",
+  "copiedEvent": "Událost byla zkopírována",
+  "copy": "Kopírovat",
+  "empty": "Žádné události neodpovídají filtru",
+  "filterAll": "Vše",
+  "filterError": "Chyba",
+  "filterWarning": "Varování",
+  "markAllRead": "Označit vše jako přečtené",
+  "markRead": "Označit jako přečtené",
+  "reset": "Resetovat",
+  "resetDesc": "Vymaže všechny události aktuálně uložené v paměti (log na disku zůstane zachován).",
+  "resetTitle": "Resetovat centrum oznámení",
+  "title": "Centrum oznámení",
+  "unread": "Nepřečtené",
+  "toggleNotification": "Přepnout oznámení",
+  "filterUnread": "Nepřečtené",
+  "emptyUnread": "Žádné nepřečtené zprávy"
+}

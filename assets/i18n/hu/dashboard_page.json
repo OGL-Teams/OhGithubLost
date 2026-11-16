@@ -1,0 +1,19 @@
+{
+  "downloads": "Letöltések kezelése",
+  "emptyMine": "Még nincs repository",
+  "emptyStarred": "Még nincs csillagozott repository",
+  "home": "Kezdőlap",
+  "loadMore": "Tovább betöltése (már {count} db)",
+  "mine": "Saját",
+  "newRepo": "Új repository",
+  "notifications": "Értesítések",
+  "private": "Privát",
+  "repoCreated": "Repository létrehozva",
+  "repoCreatedName": "{name} létrehozva",
+  "retry": "Újra",
+  "searchHint": "Repository keresése…",
+  "searchRepos": "Repository keresése",
+  "searchTooltip": "Repository keresése",
+  "starred": "Csillagozott",
+  "starsCount": "{count} csillag"
+}

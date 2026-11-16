@@ -1,0 +1,16 @@
+{
+  "content": "Konten",
+  "contentHint": "Tempel atau ketik kode / teks",
+  "contentRequired": "Konten tidak boleh kosong",
+  "create": "Buat",
+  "createFailed": "Gagal membuat: {error}",
+  "created": "Dibuat",
+  "creating": "Membuat…",
+  "description": "Deskripsi (opsional)",
+  "fileName": "Nama berkas (termasuk ekstensi, menentukan bahasa penyorotan)",
+  "fileNameHint": "Tips: ekstensi berkas memengaruhi bahasa penyorotan (mis. main.dart / app.py).",
+  "fileNameRequired": "Harap isi nama berkas",
+  "isPublic": "Gist publik",
+  "isPublicDesc": "Setelah dipublikasikan, siapa pun dapat mengaksesnya lewat tautan",
+  "title": "Gist baru"
+}

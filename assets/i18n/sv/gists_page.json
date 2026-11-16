@@ -1,0 +1,13 @@
+{
+  "created": "Gist har skapats",
+  "empty": "Inga Gist-fragment ännu",
+  "fileCount": "{count} filer · ",
+  "missingId": "Den här Gisten saknar ett id och kan inte öppnas",
+  "new": "Ny",
+  "noDescription": "(Ingen beskrivning)",
+  "noOpenLink": "Den här Gisten har ingen länk som kan öppnas",
+  "openInBrowser": "Öppna i webbläsaren",
+  "private": "Privat",
+  "public": "Offentlig",
+  "title": "Gist-fragment"
+}

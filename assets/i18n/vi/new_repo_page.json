@@ -1,0 +1,12 @@
+{
+  "create": "Tạo kho lưu trữ",
+  "createFailed": "Tạo thất bại: {error}",
+  "created": "Đã tạo",
+  "creating": "Đang tạo…",
+  "description": "Mô tả (không bắt buộc)",
+  "nameLabel": "Tên kho lưu trữ",
+  "nameRequired": "Vui lòng nhập tên kho lưu trữ trước",
+  "private": "Kho lưu trữ riêng tư",
+  "privateDesc": "Chỉ mình bạn nhìn thấy",
+  "title": "Kho lưu trữ mới"
+}

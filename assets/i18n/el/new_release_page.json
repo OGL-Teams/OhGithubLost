@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Σημειώσεις (προαιρετικό, υποστηρίζεται Markdown)",
+  "createFailed": "Η δημιουργία απέτυχε: {error}",
+  "created": "Δημιουργήθηκε",
+  "draft": "Πρόχειρο",
+  "draftDesc": "Αποθήκευση ως πρόχειρο, χωρίς δημοσίευση προς το παρόν",
+  "prerelease": "Προέκδοση",
+  "prereleaseDesc": "Σήμανση ως pre-release",
+  "publish": "Δημιουργία Release",
+  "publishing": "Δημοσίευση…",
+  "tagLabel": "Ετικέτα (tag)",
+  "tagRequired": "Συμπληρώστε πρώτα την ετικέτα (π.χ. v1.0.0)",
+  "title": "Νέο Release",
+  "titleLabel": "Τίτλος (προαιρετικός)"
+}

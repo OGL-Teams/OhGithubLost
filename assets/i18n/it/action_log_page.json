@@ -1,0 +1,18 @@
+{
+  "copyAll": "Copia tutto",
+  "downloadFailed": "Download del log non riuscito: {error}",
+  "downloadLog": "Scarica il log sul dispositivo",
+  "downloadUnavailable": "La modalità di archiviazione attuale non è scrivibile: impossibile salvare il log",
+  "downloaded": "Log salvato",
+  "downloadedAt": "Log salvato in {path}",
+  "linesCount": "In totale {count} righe",
+  "noLogMatch": "Nessun contenuto del log corrispondente",
+  "noLogs": "Nessun log (forse non è ancora terminato, oppure il token non ha i permessi Actions)",
+  "noMatchingJob": "Nessun job corrispondente",
+  "nothingToCopy": "Nessun log da copiare",
+  "reload": "Ricarica",
+  "searchJobHint": "Cerca il nome del job",
+  "searchLogHint": "Cerca nel log (senza distinguere maiuscole/minuscole)",
+  "title": "Log di esecuzione",
+  "toggleSearch": "Cerca nel contenuto del log"
+}

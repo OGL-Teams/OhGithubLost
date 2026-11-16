@@ -1,0 +1,12 @@
+{
+  "copyContent": "Copiar el contenido",
+  "delete": "Eliminar",
+  "deleteDraft": "Eliminar el borrador",
+  "deleted": "Borrador eliminado",
+  "draft": "Borrador",
+  "empty": "Todavía no hay borradores sin confirmar",
+  "title": "Borradores",
+  "deleteDraftDesc": "Se eliminará este borrador del dispositivo. La acción no se puede deshacer.",
+  "openInEditor": "Abrir en el editor",
+  "draftGone": "El borrador ya no existe"
+}

@@ -1,0 +1,12 @@
+{
+  "copyContent": "Copiază conținutul",
+  "delete": "Șterge",
+  "deleteDraft": "Șterge ciorna",
+  "deleted": "Ciorna a fost ștearsă",
+  "draft": "Ciornă",
+  "empty": "Nu aveți încă ciorne netransmise",
+  "title": "Ciorne",
+  "deleteDraftDesc": "Această ciornă va fi ștearsă de pe dispozitiv. Operația nu poate fi anulată.",
+  "openInEditor": "Deschide în editor",
+  "draftGone": "Această ciornă nu mai există"
+}

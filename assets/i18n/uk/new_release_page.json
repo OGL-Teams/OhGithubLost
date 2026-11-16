@@ -1,0 +1,15 @@
+{
+  "bodyLabel": "Опис (необов'язково, підтримується Markdown)",
+  "createFailed": "Не вдалося створити: {error}",
+  "created": "Створено",
+  "draft": "Чернетка",
+  "draftDesc": "Зберегти як чернетку, поки не публікувати",
+  "prerelease": "Попередній випуск",
+  "prereleaseDesc": "Позначити як pre-release",
+  "publish": "Створити Release",
+  "publishing": "Публікація…",
+  "tagLabel": "Тег (tag)",
+  "tagRequired": "Спочатку вкажіть тег (наприклад, v1.0.0)",
+  "title": "Новий Release",
+  "titleLabel": "Заголовок (необов'язково)"
+}

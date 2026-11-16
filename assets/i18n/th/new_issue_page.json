@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "เนื้อหา (ไม่บังคับ รองรับ Markdown)",
+  "createFailed": "สร้างไม่สำเร็จ: {error}",
+  "created": "สร้างแล้ว",
+  "submit": "ส่ง Issue",
+  "submitting": "กำลังส่ง…",
+  "title": "Issue ใหม่",
+  "titleLabel": "หัวข้อ",
+  "titleRequired": "กรุณากรอกหัวข้อก่อน"
+}

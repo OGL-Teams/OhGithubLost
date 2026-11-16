@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Isi kandungan (pilihan, menyokong Markdown)",
+  "createFailed": "Gagal dicipta: {error}",
+  "created": "Telah dicipta",
+  "submit": "Cipta Issue",
+  "submitting": "Menghantar…",
+  "title": "Issue baharu",
+  "titleLabel": "Tajuk",
+  "titleRequired": "Sila isi tajuk terlebih dahulu"
+}

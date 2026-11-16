@@ -1,0 +1,19 @@
+{
+  "downloads": "Gerenciar downloads",
+  "emptyMine": "Nenhum repositório ainda",
+  "emptyStarred": "Nenhum repositório com estrela ainda",
+  "home": "Início",
+  "loadMore": "Carregar mais ({count} itens)",
+  "mine": "Meus",
+  "newRepo": "Novo repositório",
+  "notifications": "Central de notificações",
+  "private": "Privado",
+  "repoCreated": "Repositório criado",
+  "repoCreatedName": "{name} criado",
+  "retry": "Tentar novamente",
+  "searchHint": "Buscar repositórios…",
+  "searchRepos": "Buscar repositórios",
+  "searchTooltip": "Buscar repositórios",
+  "starred": "Com estrela",
+  "starsCount": "{count} estrelas"
+}

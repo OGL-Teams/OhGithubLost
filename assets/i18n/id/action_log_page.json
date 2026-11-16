@@ -1,0 +1,18 @@
+{
+  "copyAll": "Salin semua",
+  "downloadFailed": "Gagal mengunduh log: {error}",
+  "downloadLog": "Unduh log ke perangkat",
+  "downloadUnavailable": "Skema penyimpanan saat ini tidak dapat ditulis, log tidak dapat disimpan",
+  "downloaded": "Log tersimpan",
+  "downloadedAt": "Log disimpan di {path}",
+  "linesCount": "{count} baris",
+  "noLogMatch": "Tidak ada isi log yang cocok",
+  "noLogs": "Tidak ada log (mungkin belum selesai, atau Token tidak memiliki izin Actions)",
+  "noMatchingJob": "Tidak ada job yang cocok",
+  "nothingToCopy": "Tidak ada log untuk disalin",
+  "reload": "Muat ulang",
+  "searchJobHint": "Cari nama job",
+  "searchLogHint": "Cari dalam log (tidak peka huruf besar/kecil)",
+  "title": "Log running",
+  "toggleSearch": "Cari isi log"
+}

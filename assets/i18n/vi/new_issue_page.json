@@ -1,0 +1,10 @@
+{
+  "bodyLabel": "Nội dung (không bắt buộc, hỗ trợ Markdown)",
+  "createFailed": "Tạo thất bại: {error}",
+  "created": "Đã tạo",
+  "submit": "Tạo Issue",
+  "submitting": "Đang gửi…",
+  "title": "Issue mới",
+  "titleLabel": "Tiêu đề",
+  "titleRequired": "Vui lòng nhập tiêu đề trước"
+}

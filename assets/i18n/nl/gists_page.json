@@ -1,0 +1,13 @@
+{
+  "created": "Gist aangemaakt",
+  "empty": "Nog geen Gist-fragmenten",
+  "fileCount": "{count} bestanden · ",
+  "missingId": "Deze Gist mist een id en kan niet worden geopend",
+  "new": "Nieuw",
+  "noDescription": "(geen beschrijving)",
+  "noOpenLink": "Deze Gist heeft geen link om te openen",
+  "openInBrowser": "Openen in browser",
+  "private": "Privé",
+  "public": "Openbaar",
+  "title": "Gist-fragmenten"
+}

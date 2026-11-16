@@ -1,0 +1,12 @@
+{
+  "title": "Tags",
+  "empty": "Ingen tags endnu",
+  "loadFailed": "Tags kunne ikke indlæses",
+  "create": "Nyt tag",
+  "createTitle": "Opret tag",
+  "tagName": "Tagnavn",
+  "targetSha": "SHA for målcommit",
+  "delete": "Slet",
+  "deleteTitle": "Slet tag",
+  "deleteBody": "Er du sikker på, at du vil slette »{name}«? Denne handling kan ikke fortrydes."
+}

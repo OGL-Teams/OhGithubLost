@@ -1,0 +1,12 @@
+{
+  "copyContent": "Sao chép nội dung",
+  "delete": "Xóa",
+  "deleteDraft": "Xóa bản nháp",
+  "deleted": "Đã xóa bản nháp",
+  "draft": "Bản nháp",
+  "empty": "Chưa có bản nháp nào chưa gửi",
+  "title": "Thùng bản nháp",
+  "deleteDraftDesc": "Bản nháp này sẽ bị xóa khỏi thiết bị. Thao tác này không thể hoàn tác.",
+  "openInEditor": "Mở trong trình soạn thảo",
+  "draftGone": "Bản nháp không còn tồn tại"
+}

@@ -1,0 +1,19 @@
+{
+  "cancel": "Batal",
+  "copiedEvent": "Event disalin",
+  "copy": "Salin",
+  "empty": "Tidak ada event yang sesuai",
+  "filterAll": "Semua",
+  "filterError": "Kesalahan",
+  "filterWarning": "Peringatan",
+  "markAllRead": "Tandai semua dibaca",
+  "markRead": "Tandai dibaca",
+  "reset": "Atur ulang",
+  "resetDesc": "Ini akan menghapus semua event di memori saat ini (log di disk tetap tersimpan).",
+  "resetTitle": "Atur ulang notifikasi",
+  "title": "Notifikasi",
+  "unread": "Belum dibaca",
+  "toggleNotification": "Alihkan notifikasi",
+  "filterUnread": "Belum dibaca",
+  "emptyUnread": "Tidak ada pesan yang belum dibaca"
+}

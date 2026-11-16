@@ -1,0 +1,12 @@
+{
+  "title": "Etiquetas",
+  "empty": "Aún no hay etiquetas",
+  "loadFailed": "Error al cargar las etiquetas",
+  "create": "Nueva etiqueta",
+  "createTitle": "Crear etiqueta",
+  "tagName": "Nombre de la etiqueta",
+  "targetSha": "SHA del commit de destino",
+  "delete": "Eliminar",
+  "deleteTitle": "Eliminar etiqueta",
+  "deleteBody": "¿Está seguro de que desea eliminar «{name}»? Esta acción no se puede deshacer."
+}

@@ -1,0 +1,12 @@
+{
+  "create": "Depo oluştur",
+  "createFailed": "Oluşturulamadı: {error}",
+  "created": "Oluşturuldu",
+  "creating": "Oluşturuluyor…",
+  "description": "Açıklama (isteğe bağlı)",
+  "nameLabel": "Depo adı",
+  "nameRequired": "Lütfen önce depo adını girin",
+  "private": "Özel depo",
+  "privateDesc": "Yalnızca siz görebilirsiniz",
+  "title": "Yeni depo"
+}
