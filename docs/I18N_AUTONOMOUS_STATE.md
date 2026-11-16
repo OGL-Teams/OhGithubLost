@@ -24,9 +24,14 @@
 命令参考：`tool/i18n_scan.py --check`（接线后）、Python 逐分片脚本（接线前）。
 
 ## 进度
-- [进行中·试点] ja 精译（job 0a8356ab）、zh_Hant 润色（job 15a93422）、ko 精译（job 5f9dc9a7）——当前 3 并发已满
-- [待派] es pt it nl pl tr ar hi th vi id ms uk cs sv da fi no hu ro he el（精译）
-- [待派] en de fr ru（润色）
+- [done] ja 精译、ko 精译、zh_Hant 润色（自检 problems=0；zh_Hant 改动已在主干，i18n_scan 通过）
+- [进行中·3并发] es（ef22e864）、pt（2de1da95）、it（1f775087）——es/pt 首次因 provider 限流失败，已重派
+- [待派精译] nl pl tr ar hi th vi id ms uk cs sv da fi no hu ro he el（18 种）
+- [待派润色] en de fr ru（4 种）
+
+## 教训
+- 子代理长任务易撞 provider 限流（503 / 6004 频率限制）：派发时明确「逐分片落盘」而非一次性读完再写。
+- 失败 job 需重派，重派时收紧任务描述 + 指向自检工具。
 - [待做] 接线 4 处：og_l_i18n.dart(locales+设备检测) / settings.dart(languageCodes) / pubspec.yaml(资源声明)；og_l_app.dart 自动从 locales 生成。
 - [待做] 门禁：i18n_scan + 十一门禁 + gate_of_gates。
 - [待做] 发布：dispatch build.yml stable；跟踪构建；确认 Release；归档 releases.json + generate_posts.py。
