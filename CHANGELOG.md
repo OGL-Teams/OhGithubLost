@@ -1,5 +1,19 @@
 # 更新日志 / Changelog
 
+## 13.0.2（2026-11-17）
+
+### 新增 / Added
+
+- 界面语言从 6 种扩展至 30 种，新增 24 种语言全部逐分片精译，覆盖 28 分片 / 1272 键。
+  Interface languages expanded from 6 to 30; 24 new languages fully translated across 28 shards / 1272 keys.
+- 新增逐分片译文校验工具，强制键集合、顺序与占位符一致。
+  Added a shard-level checker enforcing key set, order and placeholder parity.
+
+### 润色 / Polished
+
+- 繁中／德／法／俄全量润色，清除英文占位，统一术语与占位符。
+  Traditional Chinese / German / French / Russian polished; English placeholders cleared, terminology and placeholders unified.
+
 ## 13.0.1（2026-11-16）
 
 ### 新增 / Added
