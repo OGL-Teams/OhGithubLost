@@ -2,7 +2,7 @@
   "copyAll": "全部複製",
   "downloadFailed": "日誌下載失敗：{error}",
   "downloadLog": "下載日誌到本機",
-  "downloadUnavailable": "目前儲存方案不可寫，無法保存日誌",
+  "downloadUnavailable": "目前儲存方案不可寫，無法儲存日誌",
   "downloaded": "日誌已儲存",
   "downloadedAt": "日誌已儲存到 {path}",
   "linesCount": "{count} 行",
