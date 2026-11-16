@@ -1,5 +1,19 @@
 # 更新日志 / Changelog
 
+## 13.0.1（2026-11-16）
+
+### 新增 / Added
+
+- 增量翻译基础设施：任务书、差值提取与校验工具，记录源文快照以保持译文一致。
+  Incremental translation infrastructure: task brief, delta extraction and verification tools, with source snapshots for consistency.
+- 校验增加跨语言一致性检查，可发现同一键的词性或句式漂移。
+  Verification adds a cross-language consistency check for part-of-speech and sentence-pattern drift.
+
+### 修复 / Fixed
+
+- 清理翻译工作流配置的文本污染，登记官方 setup-python 动作版本；质量门与全平台构建通过。
+  Removed stray text from the translation workflow and registered the setup-python action; quality gates and builds pass.
+
 ## 13.0.0（2026-11-15）
 
 ### 新增 / Added
