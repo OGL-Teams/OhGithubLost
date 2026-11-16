@@ -37,3 +37,69 @@
 - 自检：8/8 文件键集合与 zh 分片完全一致、键序相同；DELTA 键 `create` 已译且非空；占位符多重集与 zh 一致；值均为字符串；JSON 为 ensure_ascii=False / indent=2 + 尾换行。
 - 门禁：`python3 tool/i18n_delta.py check --langs ar,hi,th,vi,id,ms,uk,cs` → OK（8 语言 × 1 键，脚本已支持优先校验暂存区）。
 - 未 commit / push，未执行任何 git 写操作，`assets/i18n/` 与 `assets/i18n/zh/` 未改动。
+
+## 第 3 批（sv, da, fi, no, hu, ro, he, el）· 分片 repo_tags · 键 create / empty
+
+源值快照（delta.json）：`create` = 「新建标签」（按钮标签，名词），`empty` = 「暂无标签」（空态提示，名词短语）——均按名词/名词短语处理，未译成动词。
+
+| lang | create | empty | 术语（标签） |
+|---|---|---|---|
+| sv | Ny tagg | Inga taggar ännu | tagg / taggar |
+| da | Nyt mærke | Ingen mærker endnu | mærke / mærker |
+| fi | Uusi tunniste | Ei tunnisteita vielä | tunniste |
+| no | Nytt merke | Ingen merker ennå | merke / merker |
+| hu | Új címke | Még nincs címke | címke / címkék |
+| ro | Etichetă nouă | Nicio etichetă | etichetă / etichete |
+| he | תגית חדשה | אין תגיות עדיין | תגית / תגיות |
+| el | Νέα ετικέτα | Δεν υπάρχουν ετικέτες ακόμη | ετικέτα / ετικέτες |
+
+- 执行：8 个语言在 `assets/i18n/` 下均无该分片，先用仓库自带 `tool/i18n_translate.py`（`OGL_ROOT` 指向临时目录，输出未落入仓库 `assets/i18n/`）生成机翻基线占位，再对 DELTA 两键做三步式精翻（初稿 → 准确性/流畅性/风格/术语一致四维反思 → 精稿）并统一术语后覆写整片；键顺序与 zh 一致。
+- 风格：正式、简洁、严谨的移动端 UI 文案；commit / SHA 保留原文或当地惯用拼写；引号统一为当地惯用形式（«»／„”／「」），占位符 `{name}` 原样保留。
+- 产出：`.translate-work/i18n/{sv,da,fi,no,hu,ro,he,el}/repo_tags.json`（暂存区，ensure_ascii=False / indent=2 + 尾换行）。
+- 自检：8/8 文件键集合与 zh 分片完全一致、键序相同、值均为非空字符串；DELTA 两键已译且非空；占位符多重集与 zh 一致；`assets/i18n/` 未改动（`git status` 干净）。
+- 门禁：`python3 tool/i18n_delta.py check --langs sv,da,fi,no,hu,ro,he,el` → OK（8 语言 × 2 键）。
+- 未 commit / push，未执行任何 git 写操作。
+
+## 第 4 轮 · 24 语言 repo_tags 分片「句式 + 术语」对齐精修（ar cs da el es fi he hi hu id it ja ko ms nl no pl pt ro sv th tr uk vi）
+
+背景：前三批只精翻了 DELTA 键（`create` / `empty`），其余键仍是机翻基线，因此暴露出**跨语言句式不统一**（名词句「还没有标签」/ 存在否定句「まだ〜がありません」/ 被动进展句「尚未添加」）与**术语漂移**（同一语言内 tag 被译成 3 种词）。本轮按上游指示**放开「只改 DELTA 键」限制**，对 24 语言的 `repo_tags` 既有键做句式与术语对齐。
+
+对齐规则（24 语言统一）：
+1. **空态句式**：一律采用「（尚）无 X」的存在否定 + 尚未 的陈述式，不使用被动/进展句（如 cs 旧「Zatím nebyly přidány žádné štítky」= 尚未被添加）。
+2. **`create` 词性**：一律名词式按钮标签「New X」，与 delta 源值快照「新建标签」一致；`delete` 一律动词式。
+3. **术语单一化**：同一语言内 tag 只允许一个词；凡机翻把 tag 混成 label/标签/标识符的，一律统一为该语言的 tag 本地惯用词。
+4. **标题与正文一致**：`title`（复数）/ `create`（单数）/ `tagName` / `loadFailed` / `deleteTitle` 用同一术语。
+5. 引号统一 `«{name}»`（本地惯用 «»／„”／「」 保留者不改）；`{name}`、SHA、commit 等技术词与占位符原样保留。
+
+| lang | title | create | empty | tagName | 本轮改动要点 |
+|---|---|---|---|---|---|
+| ja | タグ | 新規タグ | まだタグはありません | タグ名 | 无（已合规） |
+| ko | 태그 | 새 태그 | 아직 태그가 없습니다 | 태그 이름 | 无（已合规） |
+| es | Etiquetas | Nueva etiqueta | Aún no hay etiquetas | Nombre de la etiqueta | 无（已合规） |
+| pt | Etiquetas | Nova etiqueta | Ainda não há etiquetas | Nombre de la etiqueta | delete「Excluir」(排除义)→「Eliminar」，deleteBody 同步 |
+| it | Tag | Nuovo tag | Ancora nessun tag | Nome del tag | 术语统一 Tag（原 Etichette/Nuovo tag 混用）；empty 补「Ancora」 |
+| nl | Tags | Nieuwe tag | Nog geen tags | Naam van de tag | 术语统一 Tag（原 Labels/label 混用） |
+| pl | Tagi | Nowy tag | Nie ma jeszcze tagów | Nazwa tagu | 术语统一 tag（原 Etykiety/etykiety 混用） |
+| tr | Etiketler | Yeni etiket | Henüz etiket yok | Etiket adı | 标题大小写统一句式（Etiket Oluştur→Etiket oluştur、Etiket Adı→Etiket adı、Etiketi sil） |
+| ar | الوسوم | وسم جديد | لا توجد وسوم بعد | اسم الوسم | 术语统一 وسم（原 تسمية/علامة/وسم 三词混用） |
+| hi | टैग | नया टैग | अभी तक कोई टैग नहीं है | टैग का नाम | 引号统一 «{name}» |
+| th | แท็ก | สร้างแท็กใหม่ | ยังไม่มีแท็ก | ชื่อแท็ก | 术语统一 แท็ก（原 tagName 用 ป้ายกำกับ=标签） |
+| vi | Nhãn | Nhãn mới | Chưa có nhãn nào | Tên nhãn | 术语统一 nhãn（原 create/deleteTitle 用 thẻ=卡片）；loadFailed 同步 |
+| id | Tag | Tag baru | Belum ada tag | Nama tag | 术语统一 Tag（原 Label/label 混用）；大小写句式化 |
+| ms | Tag | Tag baharu | Belum ada tag | Nama tag | 同 id；引号统一 «{name}» |
+| uk | Теги | Новий тег | Тегів поки ще немає | Назва тегу | 术语统一 тег（原 мітка=标签）；empty 句式对齐 |
+| cs | Štítky | Nový štítek | Zatím žádné štítky | Název štítku | 术语统一 štítek（原 tagName 用 značky）；empty 去被动句；deleteBody smazat→odstranit |
+| sv | Taggar | Ny tagg | Inga taggar ännu | Tagnamn | 无（已合规） |
+| da | Tags | Nyt tag | Ingen tags endnu | Tagnavn | 术语统一 tag（原 mærke=标签） |
+| fi | Tunnisteet | Uusi tunniste | Ei tunnisteita vielä | Tunnisteen nimi | 无（已合规） |
+| no | Merker | Nytt merke | Ingen merker ennå | Merkenavn | 无（已合规） |
+| hu | Címkék | Új címke | Még nincs címke | Címke neve | 无（已合规） |
+| ro | Etichete | Etichetă nouă | Încă nicio etichetă | Numele etichetei | empty 补「Încă」（补 yet 语义） |
+| he | תגיות | תגית חדשה | אין עדיין תגיות | שם התגית | empty 语序自然化（אין עדיין תגיות） |
+| el | Ετικέτες | Νέα ετικέτα | Δεν υπάρχουν ακόμη ετικέτες | Όνομα ετικέτας | empty 语序自然化；deleteBody 句中大写修正 |
+
+- 执行：对 `.translate-work/i18n/<lang>/repo_tags.json` 逐语言覆写（脚本 `.translate-work/refine_align.py`，键序不变、键集合不变、仅改本表「改动要点」所列键），共改动 24 语言 / 99 键次。
+- **未改** `assets/i18n/`（主干 6 语言保持干净），未 commit / push；`git status` 仅 `docs/i18n_delta_report.md` 被修改。
+- 自检：24/24 文件键集合与键序与 `assets/i18n/zh/repo_tags.json` 完全一致；所有值为非空字符串；占位符多重集与 zh 一致；无与 zh 同形的未翻译值。
+- 门禁：`python3 tool/i18n_delta.py check --langs <24 语言>` → **OK（24 语言 × 2 键）**；`python3 tool/i18n_scan.py --check` → 通过（界面文案 0 处未本地化；分片键集合一致；语言清单三处一致）。
+- 遗留说明（交上游决策）：zh 当前工作区 `create` = 「创建」、`empty` = 「还没有标签」，而 delta 源值快照为「新建标签」/「暂无标签」；本轮以 delta 快照（名词式按钮标签 + 名词短语空态）为准，保持 24 语言 `create` 均为名词式「New X」。若上游最终确定 zh 用动词「创建」，则 24 语言 `create` 需同步改为动词式（一轮即可，改动面同上表 create 列）。
