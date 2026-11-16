@@ -2,7 +2,7 @@
   "title": "Tags",
   "empty": "No tags",
   "loadFailed": "Failed to load tags",
-  "create": "Create",
+  "create": "New tag",
   "createTitle": "Create tag",
   "tagName": "Tag name",
   "targetSha": "Target commit SHA",

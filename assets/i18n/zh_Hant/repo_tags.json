@@ -2,7 +2,7 @@
   "title": "標籤",
   "empty": "還沒有標籤",
   "loadFailed": "標籤載入失敗",
-  "create": "建立",
+  "create": "新增標籤",
   "createTitle": "建立標籤",
   "tagName": "標籤名稱",
   "targetSha": "目標提交 SHA",

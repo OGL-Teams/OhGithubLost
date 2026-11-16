@@ -2,7 +2,7 @@
   "title": "标签",
   "empty": "还没有标签",
   "loadFailed": "标签加载失败",
-  "create": "创建",
+  "create": "新建标签",
   "createTitle": "创建标签",
   "tagName": "标签名",
   "targetSha": "目标提交 SHA",
