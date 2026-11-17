@@ -27,7 +27,9 @@
 - [done] ja、ko、es、pt、it、nl、pl、tr、ar、th、hi、vi、id、ms、cs、uk、sv、da、fi、no、hu、he、ro 精译，zh_Hant 润色（全部自检 problems=0；zh_Hant 已在主干，i18n_scan 通过）
 - [done] 24 语言全部精译完成并总闸验证 problems=0；zh_Hant 润色完成
 - [进行中·3并发] de 润色（928d9c18）、fr 润色（6350169c）、ru 润色（d01bb4f5）
-- [待做] 接线 → 门禁 → 发版 v13.0.2 → 归档
+- [done] 接线 4 处完成，30 语言三处清单一致，十一门禁通过；提交 7c832df
+- [done] 发版准备 commit 3251f77 已推，dispatch stable 13.0.2 已触发（HTTP 204）
+- [进行中] 发布构建 + 归档（定时器 c790d791）
 - en 为基线不润色
 
 ## 教训
