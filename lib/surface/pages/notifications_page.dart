@@ -26,7 +26,6 @@ import '../util/og_l_font.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
-import '../widgets/settings/settings_group.dart';
 
 /// 取 `notifications_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -313,7 +312,7 @@ class _NotificationTile extends StatelessWidget {
         onTap: onToggle,
         // 横向 padding 与 kOgLSettingsRowPadding 同源（lg/md），行距统一。
         child: Padding(
-          padding: const EdgeInsetsDirectional.fromLTRB(
+          padding: const EdgeInsets.fromLTRB(
               OgLSpace.lg, OgLSpace.md, OgLSpace.sm, OgLSpace.md),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

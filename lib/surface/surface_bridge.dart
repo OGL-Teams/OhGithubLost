@@ -13,6 +13,7 @@
 /// 设置里的明暗偏好 + 系统亮度 → 唯一一次 `ThemeData` 编译。
 library;
 
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 
 import '../base/base_bridge.dart';
@@ -535,7 +536,7 @@ class SurfaceBridge {
       brightness,
       seedColor: ogLSeedColorOf(seed),
       density: ogLDensityOf(density),
-      overrideScheme: useDynamic ? dynamicScheme?.harmonized() : null,
+      overrideScheme: useDynamic ? dynamicScheme!.harmonized() : null,
     );
     // ★ 外观字体（v11.4）：按 uiFontId 决定正文族。
     //   · system：平台默认（不动 textTheme）；
