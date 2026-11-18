@@ -113,6 +113,7 @@ class OgLSettings {
   const OgLSettings({
     this.mode = OgLThemeMode.system,
     this.seedColorId = 'github',
+    this.dynamicColor = false,
     this.fontScale = 1.0,
     this.density = 'comfortable',
     this.reduceMotion = false,
@@ -180,6 +181,8 @@ class OgLSettings {
     return OgLSettings(
       mode: OgLThemeMode.parse(raw['mode']),
       seedColorId: seed is String && seed.isNotEmpty ? seed : 'github',
+      dynamicColor:
+          raw['dynamicColor'] is bool ? raw['dynamicColor'] as bool : false,
       fontScale: _clampDouble(
         raw['fontScale'],
         fallback: 1.0,
@@ -409,6 +412,13 @@ class OgLSettings {
   /// 主题种子色 id（映射见展示层 `theme.dart`）。
   final String seedColorId;
 
+  /// 是否跟随系统动态配色（Android 12+ Material You / 桌面平台系统强调色）。
+  ///
+  /// 开启且系统支持时，[seedColorId] 为品牌色（`github`）的场景下
+  /// 整个 ColorScheme 改用系统动态取色；手动选了其它种子色则视为
+  /// 用户明确要手动配色，动态色让位。
+  final bool dynamicColor;
+
   /// 全局文字缩放（相对系统字号的额外倍数）。
   final double fontScale;
 
@@ -620,10 +630,12 @@ class OgLSettings {
     int? motionLevel,
     String? uiFontId,
     List<OgLCustomFont>? customFonts,
+    bool? dynamicColor,
   }) =>
       OgLSettings(
         mode: mode ?? this.mode,
         seedColorId: seedColorId ?? this.seedColorId,
+        dynamicColor: dynamicColor ?? this.dynamicColor,
         fontScale: fontScale ?? this.fontScale,
         density: density ?? this.density,
         reduceMotion: reduceMotion ?? this.reduceMotion,
@@ -670,6 +682,7 @@ class OgLSettings {
   Map<String, Object?> toJson() => <String, Object?>{
         'mode': mode.name,
         'seedColorId': seedColorId,
+        'dynamicColor': dynamicColor,
         'fontScale': fontScale,
         'density': density,
         'reduceMotion': reduceMotion,
@@ -955,6 +968,10 @@ class OgLSettingsController extends ChangeNotifier {
   /// 便捷：设置主题色。
   Future<void> setSeedColor(String id) =>
       apply(_settings.copyWith(seedColorId: id));
+
+  /// 便捷：开/关跟随系统动态配色（MD3 Material You）。
+  Future<void> setDynamicColor(bool enabled) =>
+      apply(_settings.copyWith(dynamicColor: enabled));
 
   /// 便捷：设置全局文字缩放。
   Future<void> setFontScale(double scale) => apply(_settings.copyWith(

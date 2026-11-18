@@ -9,7 +9,7 @@
 /// - `sm`(8)  ：小控件 —— 输入框、次级按钮、缩略图；
 /// - `md`(12) ：默认 —— 卡片、列表项、对话框内块；
 /// - `lg`(16) ：大块 —— 主卡片、底部弹层上沿；
-/// - `xl`(24) ：浮层 —— 对话框、大圆角面板；
+/// - `xl`(28) ：浮层 —— 对话框、大圆角面板（对齐 M3 extra-large 28dp）；
 /// - `pill`   ：胶囊 —— 全圆按钮、标签、头像。
 ///
 /// ## 替换原则
@@ -33,8 +33,8 @@ abstract final class OgLRadius {
   /// 大（主卡片 / 底部弹层上沿）。
   static const double lg = 16;
 
-  /// 浮层（对话框 / 大圆角面板）。
-  static const double xl = 24;
+  /// 浮层（对话框 / 大圆角面板，对齐 M3 extra-large 28dp）。
+  static const double xl = 28;
 
   /// 胶囊（全圆）。
   static const double pill = 999;
@@ -54,10 +54,6 @@ abstract final class OgLRadius {
   /// 仅上沿圆角 · 对话框尺寸。
   static const BorderRadius verticalTopXl =
       BorderRadius.vertical(top: Radius.circular(xl));
-
-  /// 按半径取 [BorderRadius]。
-  static BorderRadius circular(double value) =>
-      BorderRadius.all(Radius.circular(value));
 }
 
 /// 图标尺度令牌。

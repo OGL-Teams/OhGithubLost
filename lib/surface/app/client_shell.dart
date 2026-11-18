@@ -27,6 +27,7 @@ import '../pages/search_page.dart';
 import '../pages/settings_page.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/og_l_window_widths.dart';
 import '../widgets/anim/anim_preload.dart';
 import 'animations.dart';
 import 'back_guard.dart';
@@ -310,17 +311,19 @@ class _OgLClientShellState extends State<OgLClientShell> {
     );
     // ★ SZ-02：宽屏一级页内容限宽——桌面拖到 2560 时列表行不再被
     //   拉成全屏长条。手机（<600）保持全宽，不改触控与滚动语义。
-    final Widget body = width < 600
+    final Widget body = width < OgLWindowWidths.compact
         ? slide
         : Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
+              constraints: const BoxConstraints(
+                maxWidth: OgLWindowWidths.contentMax,
+              ),
               child: slide,
             ),
           );
 
     // ── 手机：底栏 ──
-    if (width < 600) {
+    if (width < OgLWindowWidths.compact) {
       return Scaffold(
         key: _scaffoldKey,
         body: body,
@@ -356,7 +359,7 @@ class _OgLClientShellState extends State<OgLClientShell> {
     }
 
     // ── 平板 / 桌面：导航轨 ──
-    final bool extended = width >= 1200;
+    final bool extended = width >= OgLWindowWidths.expanded;
     return Scaffold(
       key: _scaffoldKey,
       body: Row(

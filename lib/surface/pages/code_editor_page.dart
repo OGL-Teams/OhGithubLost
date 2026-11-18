@@ -494,16 +494,13 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
             ),
             const SizedBox(width: OgLSpace.md),
             // ★ MT 式快捷跳转：点击行:列弹出行号输入，直达定位。
-            InkWell(
-              onTap: _showGoToLineDialog,
-              borderRadius: OgLRadius.cXs,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xxs),
-                child: Text(
-                  '${_t('line')} $line · ${_t('column')} $column',
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                ),
+            // M3 原生 TextButton 替代手写 InkWell 文本按钮壳（视觉多 pill hover，M3 正统）。
+            TextButton(
+              onPressed: _showGoToLineDialog,
+              child: Text(
+                '${_t('line')} $line · ${_t('column')} $column',
+                style: theme.textTheme.labelSmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
             ),
             const SizedBox(width: OgLSpace.md),

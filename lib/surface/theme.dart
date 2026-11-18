@@ -145,15 +145,21 @@ class OgLSemanticColors extends ThemeExtension<OgLSemanticColors> {
 /// 除 `ColorScheme` 外，这里**显式定义**十四类组件的形状 / 内边距 / 高度：
 /// 卡片、对话框、底部弹层、SnackBar、应用栏、导航栏、列表项、分割线、
 /// Chip、输入框、FilledButton、TextButton、OutlinedButton、IconButton。
+///
+/// [overrideScheme] 传入系统动态配色（Android 12+ Material You）时，
+/// 整个 [ColorScheme] 用它替换 `fromSeed` 结果——组件主题全部照常生效，
+/// 只是配色来源换成系统壁纸动态取色（MD3 dynamic color）。
 ThemeData buildOgLTheme(
   Brightness brightness, {
   Color seedColor = kOgLSeedColor,
   VisualDensity density = VisualDensity.standard,
+  ColorScheme? overrideScheme,
 }) {
-  final ColorScheme scheme = ColorScheme.fromSeed(
-    seedColor: seedColor,
-    brightness: brightness,
-  );
+  final ColorScheme scheme = overrideScheme ??
+      ColorScheme.fromSeed(
+        seedColor: seedColor,
+        brightness: brightness,
+      );
 
   // 统一的边框形状（按组件体量分三档，与 OgLRadius 对齐）。
   final RoundedRectangleBorder shapeSm = RoundedRectangleBorder(
@@ -172,9 +178,16 @@ ThemeData buildOgLTheme(
     borderRadius: OgLRadius.cPill,
   );
 
-  // 触摸目标下限：44×44（Material 建议 48，视觉上 44 更紧凑且仍可点）。
-  const Size minTouch = Size(44, 44);
-  const Size minButton = Size(64, 44);
+  // ★ MD3 Typography：组件主题字号一律从 textTheme 派生（audit Fix #1），
+  //   不写裸 fontSize —— 主题字体缩放调整时全站联动。
+  //   映射：对话框标题=titleLarge、正文=bodyMedium；应用栏=titleLarge；
+  //   SnackBar=bodyMedium；导航栏标签=labelMedium；Chip=labelSmall；
+  //   按钮=labelLarge（M3 规范值）。
+  final TextTheme tt = ThemeData(brightness: brightness).textTheme;
+
+  // 触摸目标下限：48×48（MD3 / WCAG 2.1 推荐，audit Recommended Fix #3）。
+  const Size minTouch = Size(48, 48);
+  const Size minButton = Size(64, 48);
 
   return ThemeData(
     useMaterial3: true,
@@ -218,17 +231,15 @@ ThemeData buildOgLTheme(
         horizontal: OgLSpace.xl,
         vertical: OgLSpace.xl,
       ),
-      titleTextStyle: TextStyle(
+      titleTextStyle: tt.titleLarge?.copyWith(
         // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
         color: scheme.onSurface,
-        fontSize: 20,
         fontWeight: FontWeight.w600,
         height: 1.3,
       ),
-      contentTextStyle: TextStyle(
+      contentTextStyle: tt.bodyMedium?.copyWith(
         // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
         color: scheme.onSurfaceVariant,
-        fontSize: 14,
         height: 1.5,
       ),
     ),
@@ -252,12 +263,11 @@ ThemeData buildOgLTheme(
       backgroundColor: brightness == Brightness.dark
           ? scheme.surfaceContainerHighest
           : scheme.inverseSurface,
-      contentTextStyle: TextStyle(
+      contentTextStyle: tt.bodyMedium?.copyWith(
         // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
         color: brightness == Brightness.dark
             ? scheme.onSurface
             : scheme.onInverseSurface,
-        fontSize: 14,
         height: 1.4,
       ),
       insetPadding: const EdgeInsets.all(OgLSpace.md),
@@ -276,10 +286,9 @@ ThemeData buildOgLTheme(
       scrolledUnderElevation: 0,
       backgroundColor: scheme.surface,
       surfaceTintColor: Colors.transparent,
-      titleTextStyle: TextStyle(
+      titleTextStyle: tt.titleLarge?.copyWith(
         // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
         color: scheme.onSurface,
-        fontSize: 18,
         fontWeight: FontWeight.w600,
       ),
     ),
@@ -304,7 +313,7 @@ ThemeData buildOgLTheme(
           WidgetStateProperty.resolveWith((Set<WidgetState> states) {
         return TextStyle(
           // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
-          fontSize: 12,
+          fontSize: (tt.labelMedium?.fontSize ?? 12),
           fontWeight: states.contains(WidgetState.selected)
               ? FontWeight.w600
               : FontWeight.w500,
@@ -349,10 +358,9 @@ ThemeData buildOgLTheme(
         horizontal: OgLSpace.sm,
         vertical: OgLSpace.xxs,
       ),
-      labelStyle: TextStyle(
+      labelStyle: tt.labelSmall?.copyWith(
         // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
         color: scheme.onSurfaceVariant,
-        fontSize: 12,
         fontWeight: FontWeight.w500,
       ),
     ),
@@ -402,7 +410,7 @@ ThemeData buildOgLTheme(
         borderRadius: OgLRadius.cSm,
         borderSide: BorderSide(color: scheme.error, width: 1.5),
       ),
-      hintStyle: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
+      hintStyle: tt.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
     ),
 
     // ── 按钮 ────────────────────────────────────────────────────────────
@@ -411,9 +419,8 @@ ThemeData buildOgLTheme(
         shape: shapePill,
         minimumSize: minButton,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
-        textStyle: TextStyle(
+        textStyle: tt.labelLarge?.copyWith(
           // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
-          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -423,9 +430,8 @@ ThemeData buildOgLTheme(
         shape: shapePill,
         minimumSize: minTouch,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.md),
-        textStyle: TextStyle(
+        textStyle: tt.labelLarge?.copyWith(
           // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
-          fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -436,9 +442,8 @@ ThemeData buildOgLTheme(
         minimumSize: minButton,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
         side: BorderSide(color: scheme.outline),
-        textStyle: TextStyle(
+        textStyle: tt.labelLarge?.copyWith(
           // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
-          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),

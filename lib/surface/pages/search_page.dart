@@ -28,6 +28,7 @@ import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
+import '../util/og_l_window_widths.dart';
 import '../widgets/discover_rows.dart';
 import 'issue_page.dart';
 import 'repo_page.dart';
@@ -866,8 +867,9 @@ class _DiscoverPageState extends State<DiscoverPage>
             },
             child: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
-                // ★ 宽屏（≥600）双列拉满信息密度；窄屏单列。
-                final int columns = constraints.maxWidth >= 600 ? 2 : 1;
+                // ★ 宽屏（≥compact 断点）双列拉满信息密度；窄屏单列。
+                final int columns =
+                    constraints.maxWidth >= OgLWindowWidths.compact ? 2 : 1;
                 final int rows = (_repos.length + columns - 1) ~/ columns;
                 return ListView.builder(
                   key: ValueKey<String>('repos-$_repoCategory-$columns'),

@@ -28,6 +28,7 @@ import 'error_surface.dart';
 import 'keyboard_guard.dart';
 import 'motion.dart';
 import 'shortcuts.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 
 /// 取 `shell` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
@@ -62,7 +63,21 @@ class OgLApp extends StatelessWidget {
         ]),
         builder: (BuildContext context, Widget? _) {
           final OgLSettings current = surface.settings.settings;
-          return MaterialApp(
+          // ★ MD3 dynamic color（Material You）：DynamicColorBuilder 取系统
+          //   动态配色（Android 12+ / 部分桌面平台）；不支持的平台回调 null，
+          //   主题自然回落种子色。用户开启「跟随系统配色」且种子色为品牌色
+          //   时生效（手动选其它种子色 = 明确要手动配色，动态色让位）。
+          return DynamicColorBuilder(
+            builder: (ColorScheme? dynamicLight, ColorScheme? dynamicDark) {
+              final Brightness platformBrightness =
+                  MediaQuery.platformBrightnessOf(context);
+              final ColorScheme? dynamicScheme =
+                  current.dynamicColor && dynamicLight != null
+                      ? (platformBrightness == Brightness.dark
+                          ? dynamicDark
+                          : dynamicLight)
+                      : null;
+              return MaterialApp(
             title: 'OhGithubLost',
             debugShowCheckedModeBanner: false,
             navigatorKey: navigatorKey,
@@ -84,6 +99,7 @@ class OgLApp extends StatelessWidget {
             theme: surface.themeFor(
               MediaQuery.platformBrightnessOf(context),
               motionLevel: current.motionLevel,
+              dynamicScheme: dynamicScheme,
             ),
             // ⚠️ 文字缩放必须在 `builder` 里覆盖：
             // 该层位于 `WidgetsApp` 自建的 MediaQuery **之内**，
@@ -124,7 +140,9 @@ class OgLApp extends StatelessWidget {
             home: OgLWindowFrame(
               child: OgLClientShell(surface: surface, report: report),
             ),
-          );
+            );
+            }, // DynamicColorBuilder.builder
+          ); // DynamicColorBuilder
         },
       );
 }

@@ -630,37 +630,30 @@ class _RepoPageState extends State<RepoPage> {
           // 否则用户只看到一行分支名，不知道可以点。
           button: true,
           label: _t('selectBranch'),
-          child: InkWell(
-            onTap: _pickBranch,
-            // 触控目标 ≥ 48dp（原 ~34dp，密集点按容易点偏）；
-            // 内容垂直居中，视觉上只是略微变高。
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 48),
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.fromLTRB(
-                  OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.md),
-              child: Row(
-                children: <Widget>[
-                  const Icon(Icons.account_tree_outlined, size: OgLIconSize.md),
-                  const SizedBox(width: OgLSpace.sm),
-                  Expanded(
-                    child: Text(
-                      _branch.isEmpty ? _t('defaultBranch') : _branch,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelLarge,
-                    ),
-                  ),
-                  if (_branch == _repo.defaultBranch)
-                    Padding(
-                      padding: const EdgeInsets.only(right: OgLSpace.sm),
-                      child: Text(_t('defaultLabel'),
-                          style: theme.textTheme.bodySmall),
-                    ),
-                  const Icon(Icons.expand_more),
-                ],
-              ),
+          child: ListTile(
+            // M3 原生 ListTile 替代手写 InkWell+Container 行壳（行高 ≥56 为 M3 标准）。
+            leading: const Icon(Icons.account_tree_outlined, size: OgLIconSize.md),
+            title: Text(
+              _branch.isEmpty ? _t('defaultBranch') : _branch,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelLarge,
             ),
+            contentPadding: const EdgeInsets.symmetric(
+                horizontal: OgLSpace.lg, vertical: OgLSpace.md),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                if (_branch == _repo.defaultBranch)
+                  Padding(
+                    padding: const EdgeInsets.only(right: OgLSpace.sm),
+                    child: Text(_t('defaultLabel'),
+                        style: theme.textTheme.bodySmall),
+                  ),
+                const Icon(Icons.expand_more),
+              ],
+            ),
+            onTap: _pickBranch,
           ),
         ),
       );

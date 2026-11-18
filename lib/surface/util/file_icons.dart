@@ -7,6 +7,9 @@
 ///
 /// 颜色采用固定调色板而非主题色：类型色是"语义色"，
 /// 不应随明暗主题漂移，否则深色下某些色会糊成一团。
+///
+/// 本文件 Color(0xFF…) 是 GitHub 语言品牌色（TS 蓝 / Rust 橙等），非 UI 表面色，
+/// 不参与 ColorScheme / 动态配色，后续审计勿判回潮。
 library;
 
 import 'package:flutter/material.dart';

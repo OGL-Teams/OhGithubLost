@@ -48,6 +48,11 @@ dependencies:
   flutter_markdown: ^0.7.7+1       # README / 议题 / 评论渲染
   url_launcher: ^6.3.2             # 外链 / 打开文件
 
+  # ── 展示层 · MD3 动态取色（Android 12+ Material You）────────────────
+  # 只在 Android 12+ / macOS / Windows 提供动态配色；不支持的平台返回 null，
+  # 主题自动回落种子色 ColorScheme。纯 Dart+平台通道，无原生构建依赖。
+  dynamic_color: ^1.7.0            # ColorScheme.fromSeed 的系统动态配色
+
   # ── 展示层 · 矢量图预览（SVG）───────────────────────────────────────
   # 只有 SVG 需要它：位图直接用 Flutter 自带的 Image，XML 走 re_highlight 的
   # 语法高亮即可，音频交给系统播放器（见 file_preview.dart 的说明）。

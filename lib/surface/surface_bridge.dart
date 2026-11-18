@@ -496,6 +496,9 @@ class SurfaceBridge {
   String? _themeCacheDensity;
   int? _themeCacheMotion;
   String? _themeCacheUiFont;
+
+  /// 动态配色是否参与上次编译（参与缓存键）。
+  bool _themeCacheDynamic = false;
   ThemeData? _themeCache;
 
   /// 当前主题（**带缓存**）。
@@ -503,25 +506,36 @@ class SurfaceBridge {
   /// `ThemeData` 构造不便宜，而每次设置 / 语言 / 通知变化都会走到这里；
   /// 键不变就复用同一实例——顺带让 `AnimatedTheme` 不再把"等价主题"当成变化。
   /// [motionLevel] 参与缓存键，因为过渡主题随档位变化。
-  ThemeData themeFor(Brightness systemBrightness, {int motionLevel = 1}) {
+  /// [dynamicScheme] 为系统动态配色（Android 12+ Material You，经
+  /// `DynamicColorBuilder` 取得）；仅当用户开启「跟随系统配色」时传入生效。
+  ThemeData themeFor(
+    Brightness systemBrightness, {
+    int motionLevel = 1,
+    ColorScheme? dynamicScheme,
+  }) {
     final OgLSettings current = settings.settings;
     final Brightness brightness = brightnessFor(systemBrightness);
     final String seed = current.seedColorId;
     final String density = current.density;
     final String uiFontId = current.uiFontId;
+    // 动态配色参与缓存键：开/关或系统配色变化都要重编译。
+    final bool useDynamic =
+        current.dynamicColor && dynamicScheme != null && seed == 'github';
     final ThemeData? cached = _themeCache;
     if (cached != null &&
         _themeCacheBrightness == brightness &&
         _themeCacheSeed == seed &&
         _themeCacheDensity == density &&
         _themeCacheMotion == motionLevel &&
-        _themeCacheUiFont == uiFontId) {
+        _themeCacheUiFont == uiFontId &&
+        _themeCacheDynamic == useDynamic) {
       return cached;
     }
     final ThemeData base = buildOgLTheme(
       brightness,
       seedColor: ogLSeedColorOf(seed),
       density: ogLDensityOf(density),
+      overrideScheme: useDynamic ? dynamicScheme?.harmonized() : null,
     );
     // ★ 外观字体（v11.4）：按 uiFontId 决定正文族。
     //   · system：平台默认（不动 textTheme）；
@@ -560,6 +574,7 @@ class SurfaceBridge {
     _themeCacheDensity = density;
     _themeCacheMotion = motionLevel;
     _themeCacheUiFont = uiFontId;
+    _themeCacheDynamic = useDynamic;
     return built;
   }
 
