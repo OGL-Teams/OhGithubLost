@@ -78,69 +78,69 @@ class OgLApp extends StatelessWidget {
                           : dynamicLight)
                       : null;
               return MaterialApp(
-            title: 'OhGithubLost',
-            debugShowCheckedModeBanner: false,
-            navigatorKey: navigatorKey,
-            // 界面语言：由 i18n 内核决定（JSON 分片）；系统组件文案交给 delegates。
-            locale: ogLMaterialLocaleOf(OgLI18n.instance.locale),
-            supportedLocales: ogLMaterialSupportedLocales(),
-            localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            // 桌面：鼠标 / 触控板可拖拽滚动（Flutter 默认只认触摸）。
-            scrollBehavior: const OgLScrollBehavior(),
-            // R7：主题切换也带动画（设置里换明暗/主题色时不再"硬切"）。
-            // 档位质量表：主题切换影响面大 → 用「慢」档；低档位自动更短、0 档为 0。
-            themeAnimationDuration: OgLAnim.slow(context),
-            themeAnimationCurve: OgLAnim.curve(context),
-            // 主题由桥缓存（含动效档位）；这里只读，不再每次 build 重新 copyWith。
-            theme: surface.themeFor(
-              MediaQuery.platformBrightnessOf(context),
-              motionLevel: current.motionLevel,
-              dynamicScheme: dynamicScheme,
-            ),
-            // ⚠️ 文字缩放必须在 `builder` 里覆盖：
-            // 该层位于 `WidgetsApp` 自建的 MediaQuery **之内**，
-            // 若在外层包 MediaQuery，会被 WidgetsApp 的 MediaQuery 覆盖掉。
-            builder: (BuildContext context, Widget? child) {
-              final MediaQueryData query = MediaQuery.of(context);
-              // 系统字号 × 用户系数，再夹紧到 [0.85, 2.0]：
-              // 既尊重系统无障碍设置，又允许用户再微调。
-              final double systemScale = query.textScaler.scale(1.0);
-              final double scale =
-                  (systemScale * current.fontScale).clamp(0.85, 2.0).toDouble();
-              return OgLMotionScope(
-                level: current.motionLevel,
-                child: MediaQuery(
-                  data: query.copyWith(
-                    textScaler: TextScaler.linear(scale),
-                    disableAnimations:
-                        OgLMotion.disableAnimations(query, current),
-                  ),
-                  // 键盘 inset 守卫：无文本焦点时的"幽灵键盘"一律归零，
-                  // 并把窗口指标写进日志（真机复现时"半屏从哪来"有第一手数据）。
-                  child: OgLKeyboardGuard(
-                    // ★ IN-01：桌面快捷键骨架（Ctrl+S / Ctrl+F / Ctrl+R / Esc）。
-                    //   挂在 NoticeHost 外层：Navigator 动作需要根上下文。
-                    child: OgLShortcuts(
-                      // 全局错误呈现层：未捕获异常 → 弹窗；一般告警 → 横幅。
-                      child: OgLNoticeHost(
-                        navigatorKey: navigatorKey,
-                        child: child ?? const SizedBox.shrink(),
+                title: 'OhGithubLost',
+                debugShowCheckedModeBanner: false,
+                navigatorKey: navigatorKey,
+                // 界面语言：由 i18n 内核决定（JSON 分片）；系统组件文案交给 delegates。
+                locale: ogLMaterialLocaleOf(OgLI18n.instance.locale),
+                supportedLocales: ogLMaterialSupportedLocales(),
+                localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                // 桌面：鼠标 / 触控板可拖拽滚动（Flutter 默认只认触摸）。
+                scrollBehavior: const OgLScrollBehavior(),
+                // R7：主题切换也带动画（设置里换明暗/主题色时不再"硬切"）。
+                // 档位质量表：主题切换影响面大 → 用「慢」档；低档位自动更短、0 档为 0。
+                themeAnimationDuration: OgLAnim.slow(context),
+                themeAnimationCurve: OgLAnim.curve(context),
+                // 主题由桥缓存（含动效档位）；这里只读，不再每次 build 重新 copyWith。
+                theme: surface.themeFor(
+                  MediaQuery.platformBrightnessOf(context),
+                  motionLevel: current.motionLevel,
+                  dynamicScheme: dynamicScheme,
+                ),
+                // ⚠️ 文字缩放必须在 `builder` 里覆盖：
+                // 该层位于 `WidgetsApp` 自建的 MediaQuery **之内**，
+                // 若在外层包 MediaQuery，会被 WidgetsApp 的 MediaQuery 覆盖掉。
+                builder: (BuildContext context, Widget? child) {
+                  final MediaQueryData query = MediaQuery.of(context);
+                  // 系统字号 × 用户系数，再夹紧到 [0.85, 2.0]：
+                  // 既尊重系统无障碍设置，又允许用户再微调。
+                  final double systemScale = query.textScaler.scale(1.0);
+                  final double scale =
+                      (systemScale * current.fontScale).clamp(0.85, 2.0).toDouble();
+                  return OgLMotionScope(
+                    level: current.motionLevel,
+                    child: MediaQuery(
+                      data: query.copyWith(
+                        textScaler: TextScaler.linear(scale),
+                        disableAnimations:
+                            OgLMotion.disableAnimations(query, current),
+                      ),
+                      // 键盘 inset 守卫：无文本焦点时的"幽灵键盘"一律归零，
+                      // 并把窗口指标写进日志（真机复现时"半屏从哪来"有第一手数据）。
+                      child: OgLKeyboardGuard(
+                        // ★ IN-01：桌面快捷键骨架（Ctrl+S / Ctrl+F / Ctrl+R / Esc）。
+                        //   挂在 NoticeHost 外层：Navigator 动作需要根上下文。
+                        child: OgLShortcuts(
+                          // 全局错误呈现层：未捕获异常 → 弹窗；一般告警 → 横幅。
+                          child: OgLNoticeHost(
+                            navigatorKey: navigatorKey,
+                            child: child ?? const SizedBox.shrink(),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  );
+                },
+                // 桌面端：自绘标题栏（不用系统默认装饰）。
+                // 非桌面平台 / 用户选择系统装饰时，本组件原样返回子组件。
+                home: OgLWindowFrame(
+                  child: OgLClientShell(surface: surface, report: report),
                 ),
-              );
-            },
-            // 桌面端：自绘标题栏（不用系统默认装饰）。
-            // 非桌面平台 / 用户选择系统装饰时，本组件原样返回子组件。
-            home: OgLWindowFrame(
-              child: OgLClientShell(surface: surface, report: report),
-            ),
-            );
+              ); // MaterialApp
             }, // DynamicColorBuilder.builder
           ); // DynamicColorBuilder
         },

@@ -522,11 +522,9 @@ class SurfaceBridge {
     // 动态配色参与缓存键：开/关或系统配色变化都要重编译。
     final bool useDynamic =
         current.dynamicColor && dynamicScheme != null && seed == 'github';
-    // 局部非空化：流分析无法从 useDynamic 传播可空性，这里显式收窄。
+    // 流分析已从 useDynamic 传播 dynamicScheme 非空，此处不必再判空。
     final ColorScheme? dynamicOverride =
-        (useDynamic && dynamicScheme != null)
-            ? dynamicScheme.harmonized()
-            : null;
+        useDynamic ? dynamicScheme.harmonized() : null;
     final ThemeData? cached = _themeCache;
     if (cached != null &&
         _themeCacheBrightness == brightness &&
