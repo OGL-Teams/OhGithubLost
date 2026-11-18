@@ -109,8 +109,9 @@ class OgLApp extends StatelessWidget {
                   // 系统字号 × 用户系数，再夹紧到 [0.85, 2.0]：
                   // 既尊重系统无障碍设置，又允许用户再微调。
                   final double systemScale = query.textScaler.scale(1.0);
-                  final double scale =
-                      (systemScale * current.fontScale).clamp(0.85, 2.0).toDouble();
+                  final double scale = (systemScale * current.fontScale)
+                      .clamp(0.85, 2.0)
+                      .toDouble();
                   return OgLMotionScope(
                     level: current.motionLevel,
                     child: MediaQuery(

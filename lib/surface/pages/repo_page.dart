@@ -632,7 +632,8 @@ class _RepoPageState extends State<RepoPage> {
           label: _t('selectBranch'),
           child: ListTile(
             // M3 原生 ListTile 替代手写 InkWell+Container 行壳（行高 ≥56 为 M3 标准）。
-            leading: const Icon(Icons.account_tree_outlined, size: OgLIconSize.md),
+            leading:
+                const Icon(Icons.account_tree_outlined, size: OgLIconSize.md),
             title: Text(
               _branch.isEmpty ? _t('defaultBranch') : _branch,
               maxLines: 1,

@@ -36,9 +36,35 @@ class OgLLocale {
 String ogLDetectDeviceLocale() {
   final String language = PlatformDispatcher.instance.locale.languageCode;
   const Set<String> supported = <String>{
-    'zh', 'en', 'de', 'fr', 'ru', 'ja', 'ko', 'es', 'pt', 'it', 'nl', 'pl',
-    'tr', 'ar', 'hi', 'th', 'vi', 'id', 'ms', 'uk', 'cs', 'sv', 'da', 'fi',
-    'no', 'hu', 'ro', 'he', 'el',
+    'zh',
+    'en',
+    'de',
+    'fr',
+    'ru',
+    'ja',
+    'ko',
+    'es',
+    'pt',
+    'it',
+    'nl',
+    'pl',
+    'tr',
+    'ar',
+    'hi',
+    'th',
+    'vi',
+    'id',
+    'ms',
+    'uk',
+    'cs',
+    'sv',
+    'da',
+    'fi',
+    'no',
+    'hu',
+    'ro',
+    'he',
+    'el',
   };
   if (!supported.contains(language)) {
     return 'zh';
