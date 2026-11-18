@@ -522,6 +522,11 @@ class SurfaceBridge {
     // 动态配色参与缓存键：开/关或系统配色变化都要重编译。
     final bool useDynamic =
         current.dynamicColor && dynamicScheme != null && seed == 'github';
+    // 局部非空化：流分析无法从 useDynamic 传播可空性，这里显式收窄。
+    final ColorScheme? dynamicOverride =
+        (useDynamic && dynamicScheme != null)
+            ? dynamicScheme.harmonized()
+            : null;
     final ThemeData? cached = _themeCache;
     if (cached != null &&
         _themeCacheBrightness == brightness &&
@@ -536,7 +541,7 @@ class SurfaceBridge {
       brightness,
       seedColor: ogLSeedColorOf(seed),
       density: ogLDensityOf(density),
-      overrideScheme: useDynamic ? dynamicScheme!.harmonized() : null,
+      overrideScheme: dynamicOverride,
     );
     // ★ 外观字体（v11.4）：按 uiFontId 决定正文族。
     //   · system：平台默认（不动 textTheme）；

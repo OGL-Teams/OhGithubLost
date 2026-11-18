@@ -11,6 +11,7 @@
 /// - 组件：全部 Material 3（不再有自绘 Kit / 自研滚动行为以外的定制）。
 library;
 
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -28,7 +29,6 @@ import 'error_surface.dart';
 import 'keyboard_guard.dart';
 import 'motion.dart';
 import 'shortcuts.dart';
-import 'package:dynamic_color/dynamic_color.dart';
 
 /// 取 `shell` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
