@@ -1,5 +1,14 @@
 # 更新日志 / Changelog
 
+## 13.1.0（2026-11-19 · beta）
+
+### 变更 / Changed
+
+- UX 文案重写：22 键修正（错误消息写明后果与可逆性、空态给下一步、按钮动词式），zh+en 同步。
+  UX copy rewrite: 22 keys corrected (errors state consequences and reversibility, empty states guide next steps, verb-first buttons); zh and en updated in sync.
+- 技术文档重组：docs/README.md 按 Diátaxis 重组，AGENTS.md 四处过时项核实更新，ARCHITECTURE.md 收敛项改写。
+  Documentation reorganized: docs index restructured by Diátaxis, AGENTS.md verified and updated, architecture document reconciled.
+
 ## 13.0.2（2026-11-17）
 
 ### 新增 / Added
