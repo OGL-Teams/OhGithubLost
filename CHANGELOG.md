@@ -1,5 +1,19 @@
 # 更新日志 / Changelog
 
+## 14.0.0（2026-11-20）
+
+### 新增 / Added
+
+- 授权登录改用浏览器授权（OAuth App 网页流程 + 本地回环回调），点一次 Continue 完成；设备码方式回落；经典令牌登录不变。
+  Browser-based authorization sign-in (OAuth App web flow + local loopback callback); device-code fallback; classic token sign-in unchanged.
+- 语义色对比度门禁（WCAG 2.1 正文 4.5:1 / 图形 3.0:1）。
+  Semantic-color contrast gate (WCAG 2.1 4.5:1 text / 3.0:1 graphics).
+
+### 变更 / Changed
+
+- 30 种界面语言全量接入；文案按 UX 写作规范重写并同步全部语言；README 与技术文档按专业规范重写；Material 3 全面执行（审计 97/100）。
+  30 interface languages complete; copy rewritten to UX standards across languages; README and docs professionally rewritten; full Material 3 execution (audit 97/100).
+
 ## 13.3.0（2026-11-19 · rc）
 
 ### 翻译 / Translation
