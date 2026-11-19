@@ -58,10 +58,8 @@ class _LoginPageState extends State<LoginPage> {
   String? _error;
   String _phase = '';
 
-  /// OAuth Web Flow 状态（null = 未启动）。
-  GhOAuthStatus? _webFlowStatus;
-
   /// OAuth Device Flow 状态（null = 未启动）。
+  /// Web Flow 状态直接写 `_phase`（复用页面现有提示行，无独立字段）。
   GhOAuthStatus? _oauthStatus;
   GhOAuthCode? _oauthCode;
   String? _oauthError;
@@ -107,11 +105,13 @@ class _LoginPageState extends State<LoginPage> {
       _oauthError = null;
       _error = null;
       _phase = '';
-      _webFlowStatus = GhOAuthStatus.pending;
       _oauthStatus = null;
     });
     try {
       // ── 第一优先：Web Flow（本地回环回调）───────────────────────────
+      if (mounted) {
+        setState(() => _phase = OgLI18n.instance.t('login', 'oauthWaiting'));
+      }
       final GhOAuthWebFlow webFlow = GhOAuthWebFlow(clientId: clientId);
       final String raw = await webFlow.authorize(
         openUrl: (String url) async {
@@ -126,16 +126,11 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
         },
-        onStatus: (GhOAuthStatus status) {
-          if (mounted) {
-            setState(() => _webFlowStatus = status);
-          }
-        },
+        onStatus: null,
       );
       if (!mounted) {
         return;
       }
-      setState(() => _webFlowStatus = null);
       await _finishLogin(GhToken(raw));
     } on UnsupportedError {
       // Web 平台无本地监听能力 → 直接走 Device Flow。
@@ -154,7 +149,6 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _oauthError = error.message;
         _busy = false;
-        _webFlowStatus = null;
       });
     } catch (error) {
       if (!mounted) {
@@ -163,7 +157,6 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _oauthError = '$error';
         _busy = false;
-        _webFlowStatus = null;
       });
     }
   }
@@ -178,7 +171,6 @@ class _LoginPageState extends State<LoginPage> {
       _busy = true;
       _oauthError = null;
       _phase = '';
-      _webFlowStatus = null;
       _oauthStatus = GhOAuthStatus.pending;
     });
     try {

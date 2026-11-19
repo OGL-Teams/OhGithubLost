@@ -24,7 +24,6 @@ import 'dart:io';
 
 import '../../kernel/log/og_l_log_file.dart';
 import 'gh_client.dart';
-import 'gh_oauth_types.dart';
 
 const String _authorizeUrl = 'https://github.com/login/oauth/authorize';
 const String _tokenUrl = 'https://github.com/login/oauth/access_token';

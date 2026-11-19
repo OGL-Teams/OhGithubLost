@@ -79,20 +79,17 @@ class GhOAuthWebFlow {
   Future<String> authorize({
     required Future<void> Function(String url) openUrl,
     void Function(GhOAuthStatus status)? onStatus,
-  }) =>
-      impl
-          .startWebFlow(
+  }) async {
+    try {
+      final String token = await impl.startWebFlow(
         clientId: clientId,
         openUrl: openUrl,
-      )
-          .then<void>(
-        (String token) {
-          onStatus?.call(GhOAuthStatus.granted);
-          return token;
-        },
-        onError: (Object error) {
-          onStatus?.call(GhOAuthStatus.failed);
-          throw error;
-        },
       );
+      onStatus?.call(GhOAuthStatus.granted);
+      return token;
+    } on Object {
+      onStatus?.call(GhOAuthStatus.failed);
+      rethrow;
+    }
+  }
 }
