@@ -56,3 +56,43 @@ class GhOAuthDeviceFlow {
   }) =>
       impl.pollDeviceFlow(clientId, code, onStatus: onStatus);
 }
+
+/// GitHub OAuth **Web Flow**（浏览器授权 + 本地回环回调）。
+///
+/// 一次跳转完成：打开系统浏览器 → 用户点 Continue → GitHub 回跳
+/// `127.0.0.1` 本地端口 → 直接换 token。失败（平台不支持 / 用户取消 /
+/// 超时）由调用方回落 [GhOAuthDeviceFlow]。
+class GhOAuthWebFlow {
+  /// 创建流程。`clientId` 为空抛 [ArgumentError]。
+  GhOAuthWebFlow({required this.clientId}) {
+    if (clientId.isEmpty) {
+      throw ArgumentError('缺少 OGL_GITHUB_CLIENT_ID（--dart-define 注入）');
+    }
+  }
+
+  /// OAuth App 的 Client ID。
+  final String clientId;
+
+  /// 发起：打开浏览器等待授权，返回 `gho_…` 原始令牌。
+  ///
+  /// [openUrl] 由展示层注入（系统浏览器打开能力）。
+  Future<String> authorize({
+    required Future<void> Function(String url) openUrl,
+    void Function(GhOAuthStatus status)? onStatus,
+  }) =>
+      impl
+          .startWebFlow(
+        clientId: clientId,
+        openUrl: openUrl,
+      )
+          .then<void>(
+        (String token) {
+          onStatus?.call(GhOAuthStatus.granted);
+          return token;
+        },
+        onError: (Object error) {
+          onStatus?.call(GhOAuthStatus.failed);
+          throw error;
+        },
+      );
+}

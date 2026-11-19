@@ -16,3 +16,13 @@ Future<String> pollDeviceFlow(
 }) async {
   throw UnsupportedError('OAuth 登录暂不支持网页版，请使用令牌登录');
 }
+
+/// Web Flow 起步（Web 版无本地监听能力，不支持）。
+Future<String> startWebFlow({
+  required String clientId,
+  required Future<void> Function(String url) openUrl,
+  String scope = 'repo read:user',
+  Duration timeout = const Duration(minutes: 10),
+}) async {
+  throw UnsupportedError('OAuth 网页授权暂不支持网页版，请使用令牌登录');
+}

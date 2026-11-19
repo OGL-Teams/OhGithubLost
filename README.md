@@ -2,11 +2,11 @@
 
 # OhGithubLost
 
-**GitHub 仓库管理客户端 · 当前版本见 [Releases](https://github.com/OGL-Teams/OhGithubLost/releases)**
+**给每天都要跟仓库打交道的人：本地 GitHub 仓库管理客户端 · 当前版本见 [Releases](https://github.com/OGL-Teams/OhGithubLost/releases)**
 
 Android · Windows · Linux · Web
 
-浏览与编辑仓库、处理 Issues / Pull Requests / Releases / Actions、管理 Gist —— 不必打开浏览器。
+在一个桌面窗口里浏览与提交仓库、处理 Issue / PR / Release / Actions、管理 Gist —— 常用操作不必再切浏览器。令牌只存本机、失败如实可见，不静默降级。
 
 [![Release](https://img.shields.io/github/v/release/OGL-Teams/OhGithubLost?label=release&color=blue)](https://github.com/OGL-Teams/OhGithubLost/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
@@ -28,17 +28,18 @@ Android · Windows · Linux · Web
 
 > 截图待补：主界面（首页 / 仓库页 / 代码编辑器）三联图，置于本文件中部。
 
-## 贡献！
+## 贡献
 
-如果您有代码贡献意愿，联系QQ3449776312，我们会为您单开分支，在一个星期的质量审查后决定是否将您加入主线开发中。
-
-其次，有意愿宣发或提供 Apple 平台构建方式的也可联系，我们将会将您加入致谢名单。
+想写代码？联系 QQ 3449776312 —— 我们会为你单开分支，经过一周质量审查后再决定是否纳入主线开发。
+也欢迎参与宣发或提供 Apple 平台构建方式；这类贡献者会列入致谢名单。
 
 > 提交前请阅读 [`AGENTS.md`](AGENTS.md) 与 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)：分层违规、未本地化文案、动效绕档与质量反模式均由 CI 拦截。
 
 ## 关于本项目
 
-OhGithubLost（简称 OGL）是基于 Flutter 的 GitHub 客户端，把仓库浏览与提交、Issue 与 PR 处理、Release 与 Action 监控、Gist 管理放进本地应用窗口，日常操作不必打开浏览器。工程底线是「数据可靠性」与「失败如实可见」：不静默降级、不预置加速通道、不掩盖版本冲突。
+OhGithubLost（简称 OGL）把 GitHub 的日常操作收进一个本地应用窗口：仓库浏览与提交、Issue / PR 处理、Release / Action 监控、Gist 管理。你要改一个文件或回一条 Issue，不必再为此打开浏览器标签。
+
+两条工程底线决定了它的行为 —— 数据可靠、失败可见：不静默降级、不预置加速通道、不掩盖版本冲突。出问题时你看到的是真实原因，而不是被吞掉的错误。
 
 使用者从发行产物安装；开发者可阅读 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) 了解分层结构与依赖门禁。
 
@@ -58,7 +59,7 @@ OhGithubLost（简称 OGL）是基于 Flutter 的 GitHub 客户端，把仓库�
 | Android | 支持 | 4 架构 APK（arm64-v8a / armeabi-v7a / x86_64 / universal）+ AAB |
 | Windows | 支持 | x64 / arm64 |
 | Linux | 支持 | x64 / arm64；deb / rpm / AppImage；**glibc ≥ 2.35** |
-| Web | 支持 | <https://oghapp.344977.xyz/>（dart2wasm 主载，dart2js 兜底） |
+| Web | 支持 | <https://oghapp.344977.xyz/> (dart2wasm 主载，dart2js 兜底) |
 | macOS / iOS | 弃用 | 最后支持版本 v5.3.0 |
 
 不支持桌面 32 位、musl-libc、Windows 7 / 8.1。
@@ -123,9 +124,9 @@ lib/
 - [`docs/CI_BUILD_BASELINE.md`](docs/CI_BUILD_BASELINE.md) —— CI 构建实测基线
 - [`release_notes/`](release_notes/) —— 逐版本发布说明（中英对照）
 
-## 许可证
+## 许可证与致谢
 
-本项目使用 [Apache License 2.0](LICENSE)。第三方依赖声明见 [`NOTICE`](NOTICE) 与应用内「许可」页面。
+本项目使用 [Apache License 2.0](LICENSE)。第三方运行时依赖共 18 项，按协议分组：BSD-3-Clause 8 项、MIT 9 项、Apache-2.0 1 项，全部为宽松协议、无 copyleft（GPL / AGPL / LGPL）；完整清单（含随包字体与 SDK 的许可说明）见 [`NOTICE`](NOTICE) 与应用内「许可」页面。
 
 <br>
 

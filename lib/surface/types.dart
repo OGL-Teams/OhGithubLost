@@ -24,6 +24,7 @@ export '../domain/gh/gh_models.dart';
 export '../domain/gh/gh_oauth.dart'
     show
         GhOAuthDeviceFlow,
+        GhOAuthWebFlow,
         GhOAuthCode,
         GhOAuthStatus,
         // 登录页用 `const String clientId = kOgLGitHubClientId;`

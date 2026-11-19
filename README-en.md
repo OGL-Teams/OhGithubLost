@@ -2,11 +2,11 @@
 
 # OhGithubLost
 
-**GitHub repository manager · Current version: see [Releases](https://github.com/OGL-Teams/OhGithubLost/releases)**
+**For anyone who works in repositories every day: a local GitHub repository manager · Current version: see [Releases](https://github.com/OGL-Teams/OhGithubLost/releases)**
 
 Android · Windows · Linux · Web
 
-Browse and edit repositories, handle Issues / Pull Requests / Releases / Actions, manage Gists — without opening a browser.
+Browse and commit repositories, handle Issues / PRs / Releases / Actions, and manage Gists in one desktop window — without switching to a browser tab for routine work. Tokens stay on your machine; failures are reported as they are, never silently swallowed.
 
 [![Release](https://img.shields.io/github/v/release/OGL-Teams/OhGithubLost?label=release&color=blue)](https://github.com/OGL-Teams/OhGithubLost/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
@@ -28,17 +28,18 @@ Browse and edit repositories, handle Issues / Pull Requests / Releases / Actions
 
 > Screenshots pending: main interface (home / repository / code editor) as a triptych, placed mid-file.
 
-## Contributing!
+## Contributing
 
-If you would like to contribute code, contact us on QQ 3449776312. We will open a dedicated branch for you, and after one week of quality review decide whether to bring you into mainline development.
-
-We are also looking for help with outreach and with Apple-platform builds — reach out and we will add you to the acknowledgements.
+Want to write code? Contact us on QQ 3449776312 — we will open a dedicated branch for you, and after one week of quality review decide whether to bring you into mainline development.
+We also welcome help with outreach and with Apple-platform builds; those contributors are added to the acknowledgements.
 
 > Before submitting, read [`AGENTS.md`](AGENTS.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): layering violations, non-localized strings, motion bypasses and quality anti-patterns are all blocked by CI.
 
 ## About
 
-OhGithubLost (OGL) is a GitHub client built with Flutter. It puts repository browsing and commits, Issue and PR handling, Release and Action monitoring, and Gist management into a native app window, so day-to-day work no longer needs a browser tab. Two engineering rules anchor the project: data reliability and failures must be visible — no silent degradation, no bundled acceleration proxies, no hiding merge conflicts.
+OhGithubLost (OGL) brings everyday GitHub work into a local app window: repository browsing and commits, Issue / PR handling, Release / Action monitoring, and Gist management. Editing a file or replying to an Issue no longer means opening another browser tab.
+
+Two engineering rules govern its behavior — data reliability and visible failures: no silent degradation, no bundled acceleration proxies, no hiding merge conflicts. When something fails you see the real cause, not a swallowed error.
 
 Users install from release artifacts; developers can read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the layer structure and dependency gates.
 
@@ -123,9 +124,9 @@ First-time users: [`docs/USAGE.md`](docs/USAGE.md) covers sign-in, first-run per
 - [`docs/CI_BUILD_BASELINE.md`](docs/CI_BUILD_BASELINE.md) — measured CI build baseline
 - [`release_notes/`](release_notes/) — per-version release notes (bilingual)
 
-## License
+## License and acknowledgements
 
-Licensed under the [Apache License 2.0](LICENSE). Third-party dependency notices live in [`NOTICE`](NOTICE) and the in-app Licenses page.
+Licensed under the [Apache License 2.0](LICENSE). There are 18 third-party runtime dependencies, grouped by licence: 8 BSD-3-Clause, 9 MIT, 1 Apache-2.0 — all permissive, with no copyleft (GPL / AGPL / LGPL) dependency; the full list (including bundled font and SDK licence notes) lives in [`NOTICE`](NOTICE) and the in-app Licenses page.
 
 <br>
 

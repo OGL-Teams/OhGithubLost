@@ -17,6 +17,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
+import '../util/link_opener.dart';
 import '../util/og_l_space.dart';
 import 'onboarding_page.dart';
 import 'repo_page.dart';
@@ -57,6 +58,9 @@ class _LoginPageState extends State<LoginPage> {
   String? _error;
   String _phase = '';
 
+  /// OAuth Web Flow 状态（null = 未启动）。
+  GhOAuthStatus? _webFlowStatus;
+
   /// OAuth Device Flow 状态（null = 未启动）。
   GhOAuthStatus? _oauthStatus;
   GhOAuthCode? _oauthCode;
@@ -87,7 +91,9 @@ class _LoginPageState extends State<LoginPage> {
     await _finishLogin(token);
   }
 
-  /// OAuth Device Flow 登录（Client ID 未注入时按钮不显示，见 build）。
+  /// OAuth 登录：**Web Flow 优先**（浏览器点一次 Continue 即完成，无抄码
+  /// 无轮询），平台不支持或用户取消时回落 Device Flow（手动输码）。
+  /// 两者产出的都是 OAuth App `gho_…` 令牌（永不过期，除非手动撤销）。
   Future<void> _loginWithOAuth() async {
     const String clientId = kOgLGitHubClientId;
     if (clientId.isEmpty) {
@@ -101,6 +107,78 @@ class _LoginPageState extends State<LoginPage> {
       _oauthError = null;
       _error = null;
       _phase = '';
+      _webFlowStatus = GhOAuthStatus.pending;
+      _oauthStatus = null;
+    });
+    try {
+      // ── 第一优先：Web Flow（本地回环回调）───────────────────────────
+      final GhOAuthWebFlow webFlow = GhOAuthWebFlow(clientId: clientId);
+      final String raw = await webFlow.authorize(
+        openUrl: (String url) async {
+          final bool ok = await openExternalLink(
+            Uri.parse(url),
+            tag: '登录',
+          );
+          if (!ok) {
+            throw const GhAuthException(
+              '无法打开浏览器完成授权',
+              statusCode: 400,
+            );
+          }
+        },
+        onStatus: (GhOAuthStatus status) {
+          if (mounted) {
+            setState(() => _webFlowStatus = status);
+          }
+        },
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() => _webFlowStatus = null);
+      await _finishLogin(GhToken(raw));
+    } on UnsupportedError {
+      // Web 平台无本地监听能力 → 直接走 Device Flow。
+      await _loginWithDeviceFlow();
+    } on GhAuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      // 用户在浏览器点了取消 / 回调失败 → 回落 Device Flow（还能救）。
+      // 判定用 statusCode（domain 层语义），不匹配中文字面量。
+      final bool userCancelled = error.statusCode == 401;
+      if (userCancelled) {
+        await _loginWithDeviceFlow();
+        return;
+      }
+      setState(() {
+        _oauthError = error.message;
+        _busy = false;
+        _webFlowStatus = null;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _oauthError = '$error';
+        _busy = false;
+        _webFlowStatus = null;
+      });
+    }
+  }
+
+  /// OAuth Device Flow 登录（抄码轮询，Web Flow 的回落通道）。
+  Future<void> _loginWithDeviceFlow() async {
+    const String clientId = kOgLGitHubClientId;
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _oauthError = null;
+      _phase = '';
+      _webFlowStatus = null;
       _oauthStatus = GhOAuthStatus.pending;
     });
     try {
