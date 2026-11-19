@@ -17,7 +17,7 @@
 2. 法律/声明文本与 README 一致性核对。
 3. 发 v13.2.0-beta（prerelease）。
 
-## 第 3 步 · v13.3.0-rc —— 功能收口（主会话 + 代理）
+## 第 3 步 · v13.3.0-rc —— 功能收口（主会话 + 代理）✅ 已完成（Release v13.3.0-beta，prerelease=true，23 产物）
 1. MD3_AUDIT_V2 未闭环项：Layout（WindowSizeClass 官方 API 或注释决策）、Navigation（list-detail 评估）、Accessibility（对比度自查工具）。
 2. i18n：ux-writing 改动产生的 delta 走增量翻译管线（源值快照）。
 3. 全门禁 + 全测试 + 发 v13.3.0-rc（prerelease）。
