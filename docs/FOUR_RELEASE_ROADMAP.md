@@ -12,7 +12,7 @@
 2. **sota-docs-workflow**（子代理）：审计 docs/ 与 AGENTS.md，重写技术文档（Diátaxis 结构、README、runbook）。
 3. 门禁 + 提交 + 发 v13.1.0-beta（prerelease）。
 
-## 第 2 步 · v13.2.0-beta —— README 与品牌（skill 代理批）
+## 第 2 步 · v13.2.0-beta —— README 与品牌（skill 代理批）✅ 已完成（Release v13.2.0-beta，prerelease=true，23 产物）
 1. **sota-copywriting**（子代理）：按 skill 重写 README.md / README-en.md（定位/价值主张/首屏/CTA）。
 2. 法律/声明文本与 README 一致性核对。
 3. 发 v13.2.0-beta（prerelease）。

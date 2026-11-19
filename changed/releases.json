@@ -8382,5 +8382,129 @@
         "size": 9232852
       }
     ]
+  },
+  "v13.2.0-beta": {
+    "tag": "v13.2.0-beta",
+    "name": "v13.2.0-beta",
+    "html_url": "https://github.com/OGL-Teams/OhGithubLost/releases/tag/v13.2.0-beta",
+    "published_at": "2026-11-19T15:13:57Z",
+    "prerelease": true,
+    "assets": [
+      {
+        "name": "OGL-v13.2.0-Android.AAB.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Android.AAB.7z",
+        "size": 61521491
+      },
+      {
+        "name": "OGL-v13.2.0-Android.AAB.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Android.AAB.zip",
+        "size": 63393688
+      },
+      {
+        "name": "OGL-v13.2.0-Android.arm64-v8a.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Android.arm64-v8a.7z",
+        "size": 9130689
+      },
+      {
+        "name": "OGL-v13.2.0-Android.arm64-v8a.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Android.arm64-v8a.zip",
+        "size": 11748570
+      },
+      {
+        "name": "OGL-v13.2.0-Android.armeabi-v7a.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Android.armeabi-v7a.7z",
+        "size": 9110424
+      },
+      {
+        "name": "OGL-v13.2.0-Android.armeabi-v7a.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Android.armeabi-v7a.zip",
+        "size": 11426436
+      },
+      {
+        "name": "OGL-v13.2.0-Android.universal-APK.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Android.universal-APK.7z",
+        "size": 20757545
+      },
+      {
+        "name": "OGL-v13.2.0-Android.universal-APK.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Android.universal-APK.zip",
+        "size": 30142975
+      },
+      {
+        "name": "OGL-v13.2.0-Android.x86_64.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Android.x86_64.7z",
+        "size": 9637556
+      },
+      {
+        "name": "OGL-v13.2.0-Android.x86_64.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Android.x86_64.zip",
+        "size": 11912954
+      },
+      {
+        "name": "OGL-v13.2.0-boot-manifest.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-boot-manifest.7z",
+        "size": 605
+      },
+      {
+        "name": "OGL-v13.2.0-boot-manifest.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-boot-manifest.zip",
+        "size": 960
+      },
+      {
+        "name": "OGL-v13.2.0-Linux.arm64.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Linux.arm64.7z",
+        "size": 8487517
+      },
+      {
+        "name": "OGL-v13.2.0-Linux.arm64.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Linux.arm64.zip",
+        "size": 13540898
+      },
+      {
+        "name": "OGL-v13.2.0-Linux.x64.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Linux.x64.7z",
+        "size": 9260850
+      },
+      {
+        "name": "OGL-v13.2.0-Linux.x64.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Linux.x64.zip",
+        "size": 13976719
+      },
+      {
+        "name": "OGL-v13.2.0-Windows.arm64.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Windows.arm64.7z",
+        "size": 8883107
+      },
+      {
+        "name": "OGL-v13.2.0-Windows.arm64.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Windows.arm64.zip",
+        "size": 14353822
+      },
+      {
+        "name": "OGL-v13.2.0-Windows.x64.7z",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Windows.x64.7z",
+        "size": 10090837
+      },
+      {
+        "name": "OGL-v13.2.0-Windows.x64.zip",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/OGL-v13.2.0-Windows.x64.zip",
+        "size": 15286052
+      },
+      {
+        "name": "ohgithublost-13.2.0-1.x86_64.rpm",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/ohgithublost-13.2.0-1.x86_64.rpm",
+        "size": 10123893
+      },
+      {
+        "name": "ohgithublost_13.2.0_amd64.deb",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/ohgithublost_13.2.0_amd64.deb",
+        "size": 10081072
+      },
+      {
+        "name": "ohgithublost_13.2.0_arm64.deb",
+        "url": "https://github.com/OGL-Teams/OhGithubLost/releases/download/v13.2.0-beta/ohgithublost_13.2.0_arm64.deb",
+        "size": 9235752
+      }
+    ]
   }
 }
