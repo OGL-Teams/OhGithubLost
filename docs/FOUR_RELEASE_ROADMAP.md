@@ -7,7 +7,7 @@
 - V2 审计 97/100（docs/MD3_AUDIT_V2.md，V1 90）。
 - 30 语言 i18n、dynamic color、48dp、断点常量、原生组件替换全部落地。
 
-## 第 1 步 · v13.1.0-beta —— 文案与文档（skill 代理批）
+## 第 1 步 · v13.1.0-beta —— 文案与文档（skill 代理批）✅ 已完成（Release v13.1.0-beta，prerelease=true，23 产物）
 1. **sota-ux-writing**（子代理）：读 skill 字典，审计全 UI 文案（i18n zh 源 + 页面内文案），产出问题清单并重写（微文案/空态/错误/按钮标签）。30 语言键集合不动，只改 zh 源值 + en 对齐，其余语言由 i18n 增量管线跟进。
 2. **sota-docs-workflow**（子代理）：审计 docs/ 与 AGENTS.md，重写技术文档（Diátaxis 结构、README、runbook）。
 3. 门禁 + 提交 + 发 v13.1.0-beta（prerelease）。
