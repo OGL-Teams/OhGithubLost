@@ -22,7 +22,7 @@
 2. i18n：ux-writing 改动产生的 delta 走增量翻译管线（源值快照）。
 3. 全门禁 + 全测试 + 发 v13.3.0-rc（prerelease）。
 
-## 第 4 步 · v14.0.0 正式版
+## 第 4 步 · v14.0.0 正式版 ✅ 已完成（Release v14.0.0，prerelease=false，23 产物）
 1. 回归总检：四层架构审计 + 十一门禁 + 元验证 + 全平台 Build。
 2. release_notes / CHANGELOG / _content / 归档（releases.json + _posts）。
 3. **发 v14.0.0 正式版（prerelease=false，23 产物）**。
