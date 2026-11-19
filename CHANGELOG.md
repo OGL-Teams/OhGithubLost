@@ -1,5 +1,17 @@
 # 更新日志 / Changelog
 
+## 13.2.0（2026-11-19 · beta）
+
+### 变更 / Changed
+
+- README 按品牌文案规范重写（中英对齐、事实保全、链接集合一致）。
+  README rewritten to brand voice (bilingual alignment, facts preserved, identical link sets).
+
+### 新增 / Added
+
+- 授权登录改用浏览器授权（OAuth App 网页流程 + 本地回环回调），点一次 Continue 完成；设备码方式自动回落；经典令牌登录不变。
+  Authorization sign-in moves to browser-based authorization (OAuth App web flow with local loopback callback): one Continue press completes sign-in; the device-code flow remains as fallback; classic token sign-in is unchanged.
+
 ## 13.1.0（2026-11-19 · beta）
 
 ### 变更 / Changed
