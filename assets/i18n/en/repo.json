@@ -232,7 +232,7 @@
   "typeDir": "Directory",
   "typeFile": "File",
   "typeLabel": "Type",
-  "unarchiveConfirm": "Unarchiving makes the repository writable again. Continue?",
+  "unarchiveConfirm": "Unarchive this repository? It will become writable again.",
   "unarchiveRepo": "Unarchive repository",
   "unstar": "Unstar",
   "unstarred": "Unstarred",

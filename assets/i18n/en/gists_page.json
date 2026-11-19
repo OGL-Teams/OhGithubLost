@@ -1,9 +1,9 @@
 {
   "created": "Gist created",
-  "empty": "No Gists yet",
+  "empty": "No Gists yet — tap New to create one",
   "fileCount": "{count} files · ",
   "missingId": "This Gist is missing an id and cannot be opened",
-  "new": "New",
+  "new": "New Gist",
   "noDescription": "(No description)",
   "noOpenLink": "This Gist has no openable link",
   "openInBrowser": "Open in browser",

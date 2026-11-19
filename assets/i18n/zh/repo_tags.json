@@ -8,5 +8,5 @@
   "targetSha": "目标提交 SHA",
   "delete": "删除",
   "deleteTitle": "删除标签",
-  "deleteBody": "确定删除「{name}」吗？此操作不可撤销。"
+  "deleteBody": "将删除标签「{name}」，提交本身不受影响。此操作不可撤销。"
 }

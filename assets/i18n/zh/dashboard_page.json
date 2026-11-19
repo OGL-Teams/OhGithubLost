@@ -1,7 +1,7 @@
 {
   "downloads": "下载管理",
-  "emptyMine": "还没有仓库",
-  "emptyStarred": "还没有星标仓库",
+  "emptyMine": "还没有仓库。点「新建仓库」创建第一个",
+  "emptyStarred": "还没有星标仓库。在仓库页点「加星」即可收藏",
   "home": "首页",
   "loadMore": "加载更多（已 {count} 条）",
   "mine": "我的",

@@ -20,9 +20,9 @@ CI 由 `tool/layer_audit.py --fatal` + `tool/contract_audit.py --fatal` 强制�
 | domain L2 | `lib/domain/` | GitHub API 客户端、OAuth、下载与预签名、冲突编排、设备信息 | `DomainBridge`、`GhApi`、`GhClient`、`RepoFileService`、`IxDownloadManager` |
 | surface L3 | `lib/surface/` | 页面、控件、i18n、主题、动效分级、Async 四态构件 | `SurfaceBridge`、`OgLSettingsController`、`AsyncController/AsyncView`、`OgLAnim` |
 
-**桥（bridge）机制**：每层一座层桥（`*bridge.dart`）注册进 `KernelBridgeRegistry`，上层只许 `XxxBridge.of(bridges)` resolve 层桥，禁止直接 import 下层内部文件。合法例外仅 3 文件（layer_audit `ALLOW`）：`domain/domain_bridge.dart`、`surface/surface_bridge.dart`（装配根）、`surface/types.dart`（唯一可 re-export domain DTO/异常的门面）。`KNOWN` 白名单恰 2 项待收敛：`gh_api.dart → base/disk/disk_cache.dart`、`gh_client.dart → base/net/net_bridge.dart`（正解：在 `kernel/contract/` 定义抽象）。
+**桥（bridge）机制**：每层一座层桥（`*bridge.dart`）注册进 `KernelBridgeRegistry`，上层只许 `XxxBridge.of(bridges)` resolve 层桥，禁止直接 import 下层内部文件。合法例外仅 3 文件（layer_audit `ALLOW`，以脚本内登记为准）：`domain/domain_bridge.dart`、`surface/surface_bridge.dart`（装配根）、`surface/types.dart`（唯一可 re-export domain DTO/异常的门面）。历史 `KNOWN` 白名单（`gh_api.dart → disk_cache.dart`、`gh_client.dart → net_bridge.dart`）已于批 11 全部收敛：L2 现改依赖 L0 契约（`ConsistencyCache`、`NetTransport`），由装配根注入 L1 实现，`KNOWN` 字典现为空。
 
-**命名约定**：页面 `*_page.dart`（100% 合规，违者无法被识别为页面）；桥 `*bridge.dart`；平台实现 `*_io.dart` / `*_web.dart`（条件 import，编译期解析 —— 现状：`lib/platform/` 下无条件 import，见 ARCHITECTURE §6.2）；服务 `*service.dart` / `*manager.dart` / `*api.dart` 为**新增时的建议后缀**（不被脚本强制，存量部分不吻合，见 ARCHITECTURE §5）；共用构件放 `surface/app/`（一件事一个文件）。
+**平台判定门面**：`defaultTargetPlatform` 的约定出处为 `lib/platform/platform.dart`；`contract_audit.py` 的 `PLATFORM_ALLOW` 显式登记了 5 个允许直接判平台的文件（platform 门面 2 个、`surface/app/permissions.dart` 与 `surface/app/system_notifier.dart` 两个历史适配分派、组合根 `main.dart`），白名单外即违规。**新增代码不得直接判平台**，应经 platform 层门面。**命名约定**：页面 `*_page.dart`（100% 合规，违者无法被识别为页面）；桥 `*bridge.dart`；平台实现 `*_io.dart` / `*_web.dart`（条件 import，编译期解析 —— 现状：`lib/platform/` 按平台名分文件由门面分发，无 `*_web.dart`，见 ARCHITECTURE §6.2）；服务 `*service.dart` / `*manager.dart` / `*api.dart` 为**新增时的建议后缀**（不被脚本强制，存量部分不吻合，见 ARCHITECTURE §5）；共用构件放 `surface/app/`（一件事一个文件）。
 
 **非门禁层**：`dart analyze lib/kernel lib/base lib/domain lib/platform` 必须 0 问题（不依赖 Flutter SDK）；surface 无 SDK 环境用 `dart format --output=none lib` 兜底。
 
@@ -39,6 +39,8 @@ CI 由 `tool/layer_audit.py --fatal` + `tool/contract_audit.py --fatal` 强制�
 8. **boot_manifest.py**：四层目录逐文件 sha256 聚合 → coreDigest，Ed25519 签名（私钥仅 CI）；canonical JSON 与 `boot_manifest.dart` 的 `canonicalJsonEncode` 逐字节一致，改动须跑 `test/kernel/boot_release_chain_test.dart`。
 9. **inject_platform_spec.py + platform_spec.yaml**：平台私有文件注入（每条必须写 why；**spec 没写的能力必须在 lib/platform/ 用 Dart 实现，注入不是逃生舱**）。
 10. **verify_apk_cert.py**：发布后 APK 证书校验。
+
+CI 严格模式（`.github/workflows/ci.yml`）在上述门禁之外还强制：**gate_of_gates.py --fatal**（门禁之门禁：切到临时空 CWD 验证每支门禁确实扫到了对象、并能拦下注入缺陷）、**facade_audit.py --fatal**（门面类型面审计）、**motion_coverage_audit.py --fatal**（动效档位覆盖守卫）、**action_pin_audit.py --fatal**（GitHub Actions 版本钉死）、**ci_config_audit.py --fatal**（workflow 配置契约）、**stats_chart.py --selftest**、**inject_platform_spec_selftest.py**、**sort_imports.py --dry-run --fatal**、**flutter analyze --fatal-infos --fatal-warnings**。各门禁以脚本内登记为准，本文不复制计数。
 
 ## 3. 组合根（lib/main.dart）
 
@@ -85,7 +87,7 @@ BootLoader 五阶段：清单自检 → Ed25519 验签（公钥内嵌，私钥�
 - 分片 `assets/i18n/<locale>/<page>.json`（一语言一目录一页面一分片），2 空格缩进 + 键排序 + 末尾换行。
 - 取文案 `_t(page, key)` / `t(page, key, {args})`；兜底：当前语言 → 英文基线 → 键名，绝不返回空串。
 - 新增文案：zh 分片加键 → 代码 `_t('键')`（去掉所在行 const）→ 翻译 en（GitHub/Release/Actions/PR/Token/Commit 等术语**不译**）→ `i18n_scan.py --check` 0 失败。
-- 新增页面：文案全走 `_t` → `og_l_i18n.dart` pages 列表注册 → 建 **六语言**分片（zh / zh_Hant / en / de / fr / ru；Web 分支为 zh_TW）→ pubspec 加目录 → `i18n_scan.py --check` 三处清单一致 → 跑 i18n_test.dart。
+- 新增页面：文案全走 `_t` → `og_l_i18n.dart` pages 列表注册 → 为 `assets/i18n/` 下**全部已接入语言**建分片（当前 31 个语言目录；以 `ls assets/i18n/` 与 `i18n_scan.py --check` 的三处清单一致为准，不在此维护语言清单）→ pubspec 加目录 → `i18n_scan.py --check` 0 失败 → 跑 i18n_test.dart。
 
 ## 7. 测试规范
 
@@ -103,4 +105,4 @@ BootLoader 五阶段：清单自检 → Ed25519 验签（公钥内嵌，私钥�
 
 ## 9. 文档索引
 
-`docs/ARCHITECTURE.md`（五层架构与门禁）、`docs/PERF.md`（性能与动效）、`docs/I18N.md`、`docs/COLD_START.md`（冷启动）、`docs/NETWORK.md`（出口主机与加速通道）、`docs/USAGE.md`、`docs/5layer-audit-todo.md`（语义审计待办）。
+文档索引以 [`docs/README.md`](docs/README.md) 为唯一权威入口（按 Diátaxis 四类组织，标注类型与状态）；`docs/ARCHITECTURE.md`（架构说明 / explanation）、`docs/QUALITY_STANDARD.md`（质量原则 / reference）、`docs/CONSISTENCY.md`（缓存一致性权威描述 / reference）、`docs/PERF.md`（性能 / explanation）、`docs/I18N.md`（i18n 手册 / how-to）、`docs/NETWORK.md`（网络出口 / reference）、`docs/USAGE.md`（使用说明 / tutorial+how-to）为主要入口文档。

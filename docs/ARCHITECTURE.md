@@ -71,11 +71,16 @@ python3 tool/layer_audit.py --fatal     # 有违规即退出 1（CI 门禁）
 1. **装配根**：`domain/domain_bridge.dart`、`surface/surface_bridge.dart` —— 各层的装配入口，其职责为将下层接入本层，允许导入下层桥；
 2. **类型门面**：`surface/types.dart` —— 展示层（L3）唯一允许 re-export 逻辑层（L2）DTO / 异常的位置；页面仅导入该门面，因此无法取得 domain 的服务类。
 
-### 4.3 已知待收敛项（`KNOWN`）
+### 4.3 历史待收敛项（已全部收敛）
 
-逻辑层目前直接依赖底座层的两个具体类型 —— `GhApi` → `RepositoryCache`、`GhClient` → `NetBridge`。正确做法是在 `kernel/contract/` 定义抽象、由 kernel 实现、逻辑层仅依赖抽象。
+逻辑层曾直接依赖底座层的两个具体类型 —— `GhApi` → `RepositoryCache`、`GhClient` → `NetBridge`（旧称 `KNOWN` 白名单，恰 2 项）。该两项已于批 11 按本文方案收敛：
 
-平台判定现状：`defaultTargetPlatform` 的**约定出处**为 `lib/platform/platform.dart`（本文即该约定的说明），但项目中仍有若干处按平台分流（`base/disk/app_dirs.dart`、`surface/app/permissions.dart` / `system_notifier.dart`、`domain/sys/sys_info.dart`）；将其统一收敛到 platform 层属待办事项。**新增代码不得直接进行平台判定**，应经 platform 层门面。
+1. `GhClient` 改依赖 L0 契约 `NetTransport`（`kernel/contract/`），`NetBridge implements NetTransport`；
+2. `GhApi` 改依赖 L0 契约 `ConsistencyCache`（`kernel/contract/consistency_cache.dart`），`RepositoryCache implements ConsistencyCache`，`DraftRepositoryAdapter` 把 D9 草稿仓储适配为只读视图。
+
+两处均由装配根注入 L1 实现，L2 不再认识任何底座实现类；`tool/layer_audit.py` 的 `KNOWN` 字典现为空（以脚本内登记为准，新增待收敛项须先登记于此）。D1–D9 一致性语义不变，权威描述见 [`CONSISTENCY.md`](CONSISTENCY.md)。
+
+平台判定现状：`defaultTargetPlatform` 的**约定出处**为 `lib/platform/platform.dart`。历史残留的散落调用已收敛：`tool/contract_audit.py` 的 `PLATFORM_ALLOW` 现仅登记 5 个文件 —— platform 门面（`platform.dart`、`window_capability.dart`）、两个历史适配分派（`surface/app/permissions.dart`、`surface/app/system_notifier.dart`）与组合根 `main.dart`（诊断展示平台名）；白名单外使用 `defaultTargetPlatform` 即违规。**新增代码不得直接进行平台判定**，应经 platform 层门面。
 
 ## 5. 命名约定
 
@@ -114,8 +119,8 @@ Web 端在文件系统、权限网关、网络出口三方面与原生端差异�
 
 ## 7. 后续工作
 
-1. **完成 §4.3 的已知收敛项**：将 `GhApi` / `GhClient` 对 `base` 层具体类型的依赖迁移至 `kernel/contract/` 抽象；
-2. **统一平台判定路径**：消除 `base` / `surface` / `domain` 中残留的 `defaultTargetPlatform` 调用，全部经 platform 层门面；
+1. ~~完成 §4.3 的已知收敛项~~（已完成，批 11）：`GhApi` / `GhClient` 已改依赖 `kernel/contract/` 抽象，`KNOWN` 白名单归零；
+2. **统一平台判定路径**（部分完成）：`base` / `domain` 中的散落调用已消除；`PLATFORM_ALLOW` 中两个历史适配分派（`permissions.dart`、`system_notifier.dart`）可继续评估迁入 platform 层；
 3. **桥接层 ABI 文档化**：为各 `*bridge.dart` 维护接口清单与版本号，纳入 CI 卡点。
 
 ## 8. 附录
@@ -152,6 +157,7 @@ dart analyze lib/kernel lib/base lib/domain lib/platform     # 四个不依赖 F
 
 | 版本 | 日期 | 修订摘要 |
 | --- | --- | --- |
+| 2026-11-19 | — | §4.3 改写为「历史待收敛项（已全部收敛）」，§7 同步：KNOWN 白名单归零、PLATFORM_ALLOW 收敛至 5 文件 |
 | v9.0.0 | 2026-10 | 重构为标准架构文档：增加摘要、设计目标、决策记录、后续工作、修订历史；架构图改为代码块定义 |
 | v6.x | 2024 | 建立五层架构与 `layer_audit.py` 门禁 |
 | v5.x | 2023 | 早期扁平结构；分层重构前的基线 |

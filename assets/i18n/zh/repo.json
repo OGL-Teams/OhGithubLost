@@ -232,7 +232,7 @@
   "typeDir": "目录",
   "typeFile": "文件",
   "typeLabel": "类型",
-  "unarchiveConfirm": "取消归档后仓库恢复可写。确定？",
+  "unarchiveConfirm": "取消归档？取消后仓库恢复可写。",
   "unarchiveRepo": "取消归档",
   "unstar": "取消星标",
   "unstarred": "已取消星标",

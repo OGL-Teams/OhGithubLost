@@ -1,7 +1,7 @@
 {
   "advanced": "Advanced: Type directly",
-  "dispatchHint": "Note: Only workflows declaring workflow_dispatch can be triggered;",
-  "dispatchHint2": "otherwise GitHub returns 422 (this page will show the error).",
+  "dispatchHint": "Note: only workflows declaring workflow_dispatch can be triggered;",
+  "dispatchHint2": "otherwise GitHub returns 422 (this page shows the error).",
   "eachLineKeyValue": "Each line must be in key=value format",
   "inputs": "Parameters",
   "inputsNotObject": "inputs must be a JSON object",

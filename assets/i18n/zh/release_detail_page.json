@@ -13,7 +13,7 @@
   "copyLink": "复制链接",
   "copyNotes": "复制说明",
   "delete": "删除",
-  "deleteDesc": "将删除发布 {tag}。该操作不易撤销。",
+  "deleteDesc": "将删除发布 {tag}，删除后无法恢复。",
   "deleteFailed": "删除失败：{error}",
   "deleteTitle": "删除发布",
   "deleted": "已删除",

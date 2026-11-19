@@ -1,46 +1,58 @@
 # docs · 文档目录 / Documentation Index
 
-本目录分四类 / Four categories：**规范 / Normative**（长期有效、裁决依据 / long-lived, decisive）、**设计 / Design**（结构与方案 / structure and plans）、**审计 / Audit**（一次性产物，全部登记在总索引 / one-off reports, all indexed）、**运维 / Operations**（CI、构建、发布 / CI, build, release）。完整审计台账见 / Full audit ledger: [`AUDIT_INDEX.md`](AUDIT_INDEX.md)。
+> 本索引是文档域唯一入口，按 **Diátaxis 四型**组织：**教程 / Tutorial**（照做即成）、
+> **操作 / How-to**（完成任务）、**参考 / Reference**（事实查询）、**阐释 / Explanation**（理解设计）。
+> 历史审计报告不属四型，归**审计档案**类，全部登记于 [`AUDIT_INDEX.md`](AUDIT_INDEX.md)。
+> 状态标注 / Status marks：✅ 现行有效 · 🕒 状态快照（结论有日期，引用前先核对现状）。
 
-## 规范（长期有效 / Normative）
+## 规范 / Normative（长期裁决依据，本域最高权威）
 
-| 文件 / File | 内容 / Content | 读者 / Audience |
+| 文件 / File | 类型 / Type | 状态 / Status |
 | --- | --- | --- |
-| [`DOCUMENT_STYLE.md`](DOCUMENT_STYLE.md) | **文档体系统一契约**：中英双语格式、目录职责、历史分界 / Unified documentation convention: bilingual format, directory roles, historical boundary | 全体 / All |
-| [`QUALITY_STANDARD.md`](QUALITY_STANDARD.md) | 质量标准：原则性条款，不谈实现，裁决依据 / Quality principles, implementation-agnostic | 贡献者 / Contributors |
-| [`CONSISTENCY.md`](CONSISTENCY.md) | 缓存一致性 D1–D9 权威描述：防线语义、合法例外、失效路径 / Cache-consistency semantics, exceptions, failure paths | 贡献者 / Contributors |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | 四层架构 L0–L3：层职责、依赖方向、命名约定 / Four-layer architecture: responsibilities, dependency direction, naming | 贡献者 / Contributors |
-| [`I18N.md`](I18N.md) | 多语言维护手册：新增文案、翻译流程 / Multilingual maintenance | 贡献者 / Contributors |
+| [`DOCUMENT_STYLE.md`](DOCUMENT_STYLE.md) | 文档体例契约 / Style contract | ✅ 自 v12.6.10 生效 |
+| [`QUALITY_STANDARD.md`](QUALITY_STANDARD.md) | 质量原则（参考） / Reference | ✅ |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | 架构说明（阐释+参考） / Explanation+Reference | ✅ 2026-11-19 修订（KNOWN 归零） |
+| [`CONSISTENCY.md`](CONSISTENCY.md) | 缓存一致性 D1–D9（参考） / Reference | ✅ |
+| [`I18N.md`](I18N.md) | i18n 维护手册（操作） / How-to | ✅ |
+| [`AUDIT_INDEX.md`](AUDIT_INDEX.md) | 审计总账（参考） / Reference | ✅ 持续登记 |
+| [`CONVERGENCE_STATUS.md`](CONVERGENCE_STATUS.md) | 待收敛条现状总表（参考） / Reference | 🕒 实测快照 |
 
-## 设计与方案
+## 使用者文档 / User-facing
 
-| 文件 | 内容 | 读者 |
+| 文件 | 类型 / Type | 状态 / Status |
 | --- | --- | --- |
-| [`NETWORK.md`](NETWORK.md) | 网络连接总览：出口主机 / 资源取法 / 加速适用范围 / web 端限制 | 面向使用者的技术说明 |
-| [`WEB_LITE_PLAN.md`](WEB_LITE_PLAN.md) | Web 版裁剪与方案 | 贡献者 |
-| [`USAGE.md`](USAGE.md) | 使用说明：安装 / 登录 / 主要功能（含故障排除） | 使用者 |
-| [`COLD_START.md`](COLD_START.md) | 冷启动路径说明 | 贡献者 |
-| [`OAUTH_ORG_SETUP.md`](OAUTH_ORG_SETUP.md) | 组织名下 GitHub OAuth App（Device Flow）创建与 Secret 注入指引 | 维护者 |
+| [`USAGE.md`](USAGE.md) | 使用说明（教程+操作） / Tutorial+How-to | ✅ |
+| [`NETWORK.md`](NETWORK.md) | 网络出口与加速（参考） / Reference | ✅ |
+| [`PERF.md`](PERF.md) | 性能三线现状（阐释） / Explanation | ✅ |
+| [`COLD_START.md`](COLD_START.md) | 冷启动路径（阐释） / Explanation | ✅ |
+| [`OAUTH_ORG_SETUP.md`](OAUTH_ORG_SETUP.md) | OAuth App 创建指引（操作） / How-to | ✅ |
+| [`I18N.md`](I18N.md) | 新增文案与页面（操作） / How-to | ✅ |
 
-## 审计（一次性产物，按批归档）
+## 计划与状态 / Plans & Status（一次性或周期性产物）
 
-| 文件 | 内容 |
+| 文件 | 类型 / Type | 状态 / Status |
+| --- | --- | --- |
+| [`FOUR_RELEASE_ROADMAP.md`](FOUR_RELEASE_ROADMAP.md) | v13.x→v14 发布路线（操作计划） / Plan | 🕒 2026-11-19 |
+| [`TAGS_FEATURE_PLAN.md`](TAGS_FEATURE_PLAN.md) | Tags 功能分层计划 / Plan | ✅ 双语正式 |
+| [`WEB_LITE_PLAN.md`](WEB_LITE_PLAN.md) | Web 版裁剪方案 / Plan | ✅ |
+| [`LTS_1260_CHECKLIST.md`](LTS_1260_CHECKLIST.md) | LTS 12.6.0 验收清单 / Checklist | 🕒 发布前快照 |
+| [`CI_BUILD_BASELINE.md`](CI_BUILD_BASELINE.md) | CI 实测基线 / Status snapshot | 🕒 实测快照 |
+| [`MD3_AUDIT.md`](MD3_AUDIT.md) | MD3 审计 V1（90/100） / Audit | 🕒 已被 V2 取代 |
+| [`MD3_AUDIT_V2.md`](MD3_AUDIT_V2.md) | MD3 审计 V2（97/100，HEAD `03767f4`） / Audit | 🕒 2026-11-19 现行 |
+| [`REPO_HYGIENE.md`](REPO_HYGIENE.md) | 文档整理报告 / Historical report | 🕒 含勘误注记 |
+
+## 翻译管线 / Translation pipeline（子代理任务书与报告）
+
+| 文件 | 说明 |
 | --- | --- |
-| [`AUDIT_PLAN.md`](AUDIT_PLAN.md) | 八批三视角交叉审计的计划（每批 A 实现 / B 安全 / C 契约，只审不改） |
-| [`AUDIT_INDEX.md`](AUDIT_INDEX.md) | **九批审计总索引**：各批范围、三份报告 + 交叉结论、状态与 P0/P1 口径 |
-| [`audit_b1_*.md`](AUDIT_INDEX.md) … [`audit_b8_*.md`](AUDIT_INDEX.md)、[`audit_spec_*.md`](AUDIT_INDEX.md) | 第 1–8 批与规范专项（批 9）原始记录与交叉结论，索引统一见 `AUDIT_INDEX.md` |
-| [`audit_206.md`](audit_206.md) · [`audit_submit_download.md`](audit_submit_download.md) · [`audit_ui.md`](audit_ui.md) · [`audit_net_data.md`](audit_net_data.md) · [`audit_debug_empty_fail.md`](audit_debug_empty_fail.md) · [`5layer-audit-todo.md`](5layer-audit-todo.md) · [`fonts.md`](fonts.md) | 批外专项审计与遗留待办（均在 `AUDIT_INDEX.md` 登记） |
+| [`INDEX_TRANSLATE_API.md`](INDEX_TRANSLATE_API.md) | B 站 Index-Translate API 契约（机翻管线调用方文档，双语正式） |
+| [`I18N_AUTONOMOUS_STATE.md`](I18N_AUTONOMOUS_STATE.md) · [`I18N_DELTA_BRIEF.md`](I18N_DELTA_BRIEF.md) · [`I18N_SHARD_TRANSLATION_BRIEF.md`](I18N_SHARD_TRANSLATION_BRIEF.md) | i18n 迭代状态与子代理任务书（一次性） |
+| [`i18n_delta_report.md`](i18n_delta_report.md) · [`i18n_polish_report.md`](i18n_polish_report.md) · [`i18n_shard_report.md`](i18n_shard_report.md) | i18n 增量 / 润色 / 分片翻译报告（一次性，未入总账，见下「删除建议」） |
 
-## 运维（CI / 构建 / 发布 / 整理）
+## 审计档案 / Audit archive（历史记录，按契约不改写）
 
-| 文件 | 内容 |
-| --- | --- |
-| [`CI_BUILD_BASELINE.md`](CI_BUILD_BASELINE.md) | CI 实测基线（各门禁在当前基线的实测结果） |
-| [`MD3_AUDIT.md`](MD3_AUDIT.md) | Material 3 合规只读审计（十类评分；零气泡为合法用户约束） |
-| [`REPO_HYGIENE.md`](REPO_HYGIENE.md) | 仓库文档整理报告（2026-11，本次产出） |
-| [`CONVERGENCE_STATUS.md`](CONVERGENCE_STATUS.md) | **待收敛条权威现状总表**（分层/门禁/UI/下载/DNS/供应链，实测口径） |
-| [`audit_layering_principles.md`](audit_layering_principles.md) | 层级桥接与模块独立原则只读专项审查（2026-11，含路线图） |
-| [`LTS_1260_CHECKLIST.md`](LTS_1260_CHECKLIST.md) | LTS 发布前验收清单（真机项留用户执行） |
+九批 + 规范专项 + 批外专项：见 [`AUDIT_INDEX.md`](AUDIT_INDEX.md)（`audit_b1_*` … `audit_b8_*`、`audit_spec_*`、`postrelease_*`、`audit_ui_full.md`、`audit_206.md` 等）；
+批外修复笔记：[`discover_polish_notes.md`](discover_polish_notes.md)、[`download_fix_notes.md`](download_fix_notes.md)；遗留待办：[`5layer-audit-todo.md`](5layer-audit-todo.md)、[`fonts.md`](fonts.md)。
 
 ## 相关文档（仓库根目录）
 
@@ -54,8 +66,7 @@
 
 ## 约定
 
-- **发布说明**放在根目录 [`release_notes/`](../release_notes)，每版本一个文件；
-- **完整版本历史**在根目录 [`CHANGELOG.md`](../CHANGELOG.md)；
-- 一次性审计报告**不删除、不移动**（历史链接很多），保留原位并由 [`AUDIT_INDEX.md`](AUDIT_INDEX.md) 统一索引；
-- **新增审计报告必须同时更新 [`AUDIT_INDEX.md`](AUDIT_INDEX.md)**；
-- 文档所引用的符号必须**真实存在**（改名时一并更新），路径尽量写成可点击链接。
+- **发布说明**放在根目录 [`release_notes/`](../release_notes)，每版本一个文件；完整版本历史在根目录 [`CHANGELOG.md`](../CHANGELOG.md)；
+- 一次性审计报告**不删除、不移动**（历史链接很多），保留原位并由 [`AUDIT_INDEX.md`](AUDIT_INDEX.md) 统一索引；**新增审计报告必须同时更新该总账**；
+- 文档所引用的符号必须**真实存在**（改名时一并更新），路径写成可点击链接；不写死版本 / 计数等量值，以工具实测为准（见 [`DOCUMENT_STYLE.md`](DOCUMENT_STYLE.md)）；
+- 新增文档先判定本表归属（含类型标注），再落盘。

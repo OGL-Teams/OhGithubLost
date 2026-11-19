@@ -13,7 +13,7 @@
   "copyLink": "Copy Link",
   "copyNotes": "Copy Notes",
   "delete": "Delete",
-  "deleteDesc": "Deletes release {tag}. This action is difficult to undo.",
+  "deleteDesc": "Release {tag} will be deleted. This cannot be undone.",
   "deleteFailed": "Deletion failed: {error}",
   "deleteTitle": "Delete Release",
   "deleted": "Deleted",

@@ -8,5 +8,5 @@
   "targetSha": "Target commit SHA",
   "delete": "Delete",
   "deleteTitle": "Delete tag",
-  "deleteBody": "Delete \"{name}\"? This cannot be undone."
+  "deleteBody": "Delete tag \"{name}\"? Commits are not affected. This cannot be undone."
 }

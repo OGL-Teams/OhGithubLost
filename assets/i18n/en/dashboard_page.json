@@ -1,7 +1,7 @@
 {
   "downloads": "Downloads",
-  "emptyMine": "No repositories yet",
-  "emptyStarred": "No starred repositories yet",
+  "emptyMine": "No repositories yet — create one to get started",
+  "emptyStarred": "No starred repos yet — tap Star on a repo to add one",
   "home": "Home",
   "loadMore": "Load more ({count} so far)",
   "mine": "Mine",

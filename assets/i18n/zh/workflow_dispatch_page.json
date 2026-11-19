@@ -1,7 +1,7 @@
 {
   "advanced": "高级：直接输入",
-  "dispatchHint": "提示：仅声明了 workflow_dispatch 的工作流可被触发；",
-  "dispatchHint2": "否则 GitHub 会返回 422（本页会如实提示）。",
+  "dispatchHint": "只有声明了 workflow_dispatch 的工作流才能手动触发；",
+  "dispatchHint2": "否则 GitHub 会返回 422，本页会如实提示。",
   "eachLineKeyValue": "每行需形如 key=value",
   "inputs": "参数",
   "inputsNotObject": "inputs 需为 JSON 对象",

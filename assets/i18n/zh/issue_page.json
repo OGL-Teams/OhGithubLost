@@ -10,7 +10,7 @@
   "closeIssue": "关闭议题 #{number}",
   "closeIssueTitle": "关闭议题",
   "closed": "已关闭",
-  "commentDeleteConfirm": "确认删除这条评论？删除后不可恢复。",
+  "commentDeleteConfirm": "删除这条评论？删除后无法恢复。",
   "commentDeleteFailed": "评论删除失败：{error}",
   "commentDeleted": "评论已删除",
   "commentEdit": "编辑评论",
