@@ -1,9 +1,9 @@
 {
   "created": "Gist oprettet",
-  "empty": "Ingen Gists endnu",
+  "empty": "Ingen Gists endnu. Tryk på »Ny« for at oprette din første",
   "fileCount": "{count} filer · ",
   "missingId": "Denne Gist mangler et id og kan ikke åbnes",
-  "new": "Ny",
+  "new": "Nyt Gist",
   "noDescription": "(Ingen beskrivelse)",
   "noOpenLink": "Denne Gist har intet link, der kan åbnes",
   "openInBrowser": "Åbn i browser",

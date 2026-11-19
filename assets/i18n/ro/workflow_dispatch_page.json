@@ -1,7 +1,7 @@
 {
   "advanced": "Avansat: introduceți direct",
-  "dispatchHint": "Sfat: numai workflow-urile care declară workflow_dispatch pot fi declanșate;",
-  "dispatchHint2": "în caz contrar GitHub returnează 422 (această pagină va afișa eroarea).",
+  "dispatchHint": "Numai workflow-urile care declară workflow_dispatch pot fi declanșate manual;",
+  "dispatchHint2": "în caz contrar GitHub returnează 422, iar această pagină afișează eroarea ca atare.",
   "eachLineKeyValue": "Fiecare linie trebuie să fie de forma key=value",
   "inputs": "Parametri",
   "inputsNotObject": "inputs trebuie să fie un obiect JSON",

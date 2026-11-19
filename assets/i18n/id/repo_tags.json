@@ -8,5 +8,5 @@
   "targetSha": "SHA commit target",
   "delete": "Hapus",
   "deleteTitle": "Hapus tag",
-  "deleteBody": "Apakah Anda yakin ingin menghapus «{name}»? Tindakan ini tidak dapat dibatalkan."
+  "deleteBody": "Tag «{name}» akan dihapus; commit tidak terpengaruh. Tindakan ini tidak dapat dibatalkan."
 }

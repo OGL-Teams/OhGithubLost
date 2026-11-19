@@ -1,7 +1,7 @@
 {
   "downloads": "Unduhan",
-  "emptyMine": "Belum ada repositori",
-  "emptyStarred": "Belum ada repositori berbintang",
+  "emptyMine": "Belum ada repositori. Ketuk «Repositori baru» untuk membuat yang pertama",
+  "emptyStarred": "Belum ada repositori berbintang. Ketuk «Beri bintang» di halaman repositori untuk menyimpannya",
   "home": "Beranda",
   "loadMore": "Muat lebih banyak ({count} item)",
   "mine": "Milik saya",

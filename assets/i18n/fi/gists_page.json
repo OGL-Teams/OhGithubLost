@@ -1,9 +1,9 @@
 {
   "created": "Gist luotu",
-  "empty": "Ei vielä Gist-pätkiä",
+  "empty": "Ei vielä Gist-pätkiä. Napauta ”Uusi” luodaksesi ensimmäisen",
   "fileCount": "{count} tiedostoa · ",
   "missingId": "Tältä Gistiltä puuttuu id, eikä sitä voi avata",
-  "new": "Luo uusi",
+  "new": "Uusi Gist",
   "noDescription": "(ei kuvausta)",
   "noOpenLink": "Tällä Gistillä ei ole avattavaa linkkiä",
   "openInBrowser": "Avaa selaimessa",

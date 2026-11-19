@@ -8,5 +8,5 @@
   "targetSha": "Célkommit SHA-ja",
   "delete": "Törlés",
   "deleteTitle": "Címke törlése",
-  "deleteBody": "Biztosan törölni szeretné a(z) „{name}” elemet? Ezt a műveletet nem lehet visszavonni."
+  "deleteBody": "A(z) „{name}” tag törlődik. Maguk a commitok nem érintettek. A művelet nem vonható vissza."
 }

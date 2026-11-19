@@ -1,9 +1,9 @@
 {
   "created": "Gist बन गया",
-  "empty": "अभी कोई Gist नहीं है",
+  "empty": "अभी कोई Gist नहीं है। पहला Gist बनाने के लिए «नया» पर टैप करें",
   "fileCount": "{count} फ़ाइलें · ",
   "missingId": "इस Gist में id नहीं है, इसे नहीं खोला जा सकता",
-  "new": "नया",
+  "new": "नया Gist",
   "noDescription": "(कोई विवरण नहीं)",
   "noOpenLink": "इस Gist में खोलने के लिए कोई लिंक नहीं है",
   "openInBrowser": "ब्राउज़र में खोलें",

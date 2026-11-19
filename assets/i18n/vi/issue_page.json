@@ -10,7 +10,7 @@
   "closeIssue": "Đóng Issue #{number}",
   "closeIssueTitle": "Đóng Issue",
   "closed": "Đã đóng",
-  "commentDeleteConfirm": "Xác nhận xóa bình luận này? Sau khi xóa không thể khôi phục.",
+  "commentDeleteConfirm": "Xóa bình luận này? Sau khi xóa không thể khôi phục.",
   "commentDeleteFailed": "Xóa bình luận thất bại: {error}",
   "commentDeleted": "Đã xóa bình luận",
   "commentEdit": "Chỉnh sửa bình luận",

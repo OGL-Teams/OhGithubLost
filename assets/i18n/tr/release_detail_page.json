@@ -13,7 +13,7 @@
   "copyLink": "Bağlantıyı kopyala",
   "copyNotes": "Notları kopyala",
   "delete": "Sil",
-  "deleteDesc": "{tag} Release'i silinecek. Bu işlemin geri alınması zordur.",
+  "deleteDesc": "{tag} Release'i silinecek. Silindikten sonra geri alınamaz.",
   "deleteFailed": "Silinemedi: {error}",
   "deleteTitle": "Release'i sil",
   "deleted": "Silindi",

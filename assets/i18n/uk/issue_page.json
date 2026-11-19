@@ -10,7 +10,7 @@
   "closeIssue": "Закрити Issue №{number}",
   "closeIssueTitle": "Закрити Issue",
   "closed": "Закрито",
-  "commentDeleteConfirm": "Видалити цей коментар? Дію не можна скасувати.",
+  "commentDeleteConfirm": "Видалити цей коментар? Після видалення його не можна відновити.",
   "commentDeleteFailed": "Не вдалося видалити коментар: {error}",
   "commentDeleted": "Коментар видалено",
   "commentEdit": "Редагувати коментар",

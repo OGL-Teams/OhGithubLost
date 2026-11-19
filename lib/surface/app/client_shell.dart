@@ -311,6 +311,13 @@ class _OgLClientShellState extends State<OgLClientShell> {
     );
     // ★ SZ-02：宽屏一级页内容限宽——桌面拖到 2560 时列表行不再被
     //   拉成全屏长条。手机（<600）保持全宽，不改触控与滚动语义。
+    //
+    // ★ 断点决策（M3 Layout 收口说明）：这里用自研 OgLWindowWidths 三档
+    //   （600/720/1200，注释映射 WindowSizeClass compact/medium/expanded），
+    //   而非官方 material_window_size_class / calculateWindowSizeClass——
+    //   后者仅在 Android 可用（依赖 Activity 窗口类别回调），本项目全平台
+    //   （桌面三平台 + Web）需统一口径，且零额外依赖；行为与 M3 canonical
+    //   断点一致，foldable hinge 适配留待真实设备需求出现再评估。
     final Widget body = width < OgLWindowWidths.compact
         ? slide
         : Center(

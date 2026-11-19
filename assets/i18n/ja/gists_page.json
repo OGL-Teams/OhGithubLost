@@ -1,9 +1,9 @@
 {
   "created": "Gist を作成しました",
-  "empty": "Gist スニペットはまだありません",
+  "empty": "Gist がまだありません。「新規作成」から最初の Gist を作成しましょう",
   "fileCount": "{count} ファイル · ",
   "missingId": "この Gist には id がなく、開けません",
-  "new": "新規",
+  "new": "新規 Gist",
   "noDescription": "（説明なし）",
   "noOpenLink": "この Gist には開けるリンクがありません",
   "openInBrowser": "ブラウザで開く",

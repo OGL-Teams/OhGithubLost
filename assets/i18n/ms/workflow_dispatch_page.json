@@ -1,7 +1,7 @@
 {
   "advanced": "Lanjutan: taip terus",
-  "dispatchHint": "Petua: Hanya aliran kerja yang mengisytiharkan workflow_dispatch boleh dicetuskan;",
-  "dispatchHint2": "jika tidak, GitHub akan mengembalikan 422 (halaman ini akan memaparkannya sebenarnya).",
+  "dispatchHint": "Hanya aliran kerja yang mengisytiharkan workflow_dispatch boleh dicetuskan secara manual;",
+  "dispatchHint2": "jika tidak, GitHub akan mengembalikan 422, dan halaman ini akan memaparkannya sebenarnya.",
   "eachLineKeyValue": "Setiap baris perlu berbentuk key=value",
   "inputs": "Parameter",
   "inputsNotObject": "inputs perlu berupa objek JSON",

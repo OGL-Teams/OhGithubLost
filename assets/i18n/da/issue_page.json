@@ -10,7 +10,7 @@
   "closeIssue": "Luk Issue #{number}",
   "closeIssueTitle": "Luk Issue",
   "closed": "Lukket",
-  "commentDeleteConfirm": "Slette denne kommentar? Det kan ikke fortrydes.",
+  "commentDeleteConfirm": "Vil du slette denne kommentar? Den kan ikke gendannes efter sletning.",
   "commentDeleteFailed": "Kunne ikke slette kommentar: {error}",
   "commentDeleted": "Kommentar slettet",
   "commentEdit": "Rediger kommentar",

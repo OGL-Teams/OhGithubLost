@@ -10,7 +10,7 @@
   "closeIssue": "Tutup Issue #{number}",
   "closeIssueTitle": "Tutup Issue",
   "closed": "Ditutup",
-  "commentDeleteConfirm": "Yakin ingin menghapus komentar ini? Setelah dihapus tidak dapat dikembalikan.",
+  "commentDeleteConfirm": "Hapus komentar ini? Setelah dihapus tidak dapat dikembalikan.",
   "commentDeleteFailed": "Gagal menghapus komentar: {error}",
   "commentDeleted": "Komentar dihapus",
   "commentEdit": "Edit komentar",

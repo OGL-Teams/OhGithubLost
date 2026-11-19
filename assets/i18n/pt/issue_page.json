@@ -10,7 +10,7 @@
   "closeIssue": "Fechar Issue #{number}",
   "closeIssueTitle": "Fechar Issue",
   "closed": "Fechada",
-  "commentDeleteConfirm": "Tem certeza de que deseja eliminar este comentário? Não será possível recuperá-lo.",
+  "commentDeleteConfirm": "Eliminar este comentário? Depois de eliminado não pode ser recuperado.",
   "commentDeleteFailed": "Falha ao eliminar o comentário: {error}",
   "commentDeleted": "Comentário eliminado",
   "commentEdit": "Editar comentário",

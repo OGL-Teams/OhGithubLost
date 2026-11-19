@@ -232,7 +232,7 @@
   "typeDir": "Cartella",
   "typeFile": "File",
   "typeLabel": "Tipo",
-  "unarchiveConfirm": "Dopo l'annullamento dell'archiviazione la repository torna scrivibile. Confermi?",
+  "unarchiveConfirm": "Annullare l'archiviazione? La repository tornerà scrivibile.",
   "unarchiveRepo": "Annulla archiviazione",
   "unstar": "Rimuovi stella",
   "unstarred": "Stella rimossa",

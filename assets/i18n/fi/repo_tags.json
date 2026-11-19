@@ -8,5 +8,5 @@
   "targetSha": "Kohdecommitin SHA",
   "delete": "Poista",
   "deleteTitle": "Poista tunniste",
-  "deleteBody": "Haluatko varmasti poistaa tunnisteen »{name}»? Toimintoa ei voi peruuttaa."
+  "deleteBody": "Tunniste »{name}» poistetaan. Itse commitit eivät muutu. Toimintoa ei voi peruuttaa."
 }

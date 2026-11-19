@@ -1,7 +1,7 @@
 {
   "advanced": "Σύνθετα: άμεση εισαγωγή",
-  "dispatchHint": "Υπόδειξη: μπορούν να ενεργοποιηθούν μόνο τα workflows που δηλώνουν workflow_dispatch·",
-  "dispatchHint2": "διαφορετικά το GitHub επιστρέφει 422 (η σελίδα αυτή θα το εμφανίσει όπως είναι).",
+  "dispatchHint": "Μπορούν να ενεργοποιηθούν χειροκίνητα μόνο τα workflows που δηλώνουν workflow_dispatch·",
+  "dispatchHint2": "διαφορετικά το GitHub επιστρέφει 422, και αυτή η σελίδα το εμφανίζει ως έχει.",
   "eachLineKeyValue": "Κάθε γραμμή πρέπει να έχει τη μορφή key=value",
   "inputs": "Παράμετροι",
   "inputsNotObject": "Τα inputs πρέπει να είναι αντικείμενο JSON",

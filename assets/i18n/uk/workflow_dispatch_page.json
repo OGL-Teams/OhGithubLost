@@ -1,7 +1,7 @@
 {
   "advanced": "Додатково: ввести напряму",
-  "dispatchHint": "Порада: запускати можна лише ті workflow, у яких оголошено workflow_dispatch;",
-  "dispatchHint2": "інакше GitHub поверне 422 (ця сторінка покаже помилку).",
+  "dispatchHint": "Запускати вручну можна лише ті workflow, у яких оголошено workflow_dispatch;",
+  "dispatchHint2": "інакше GitHub поверне 422, і ця сторінка покаже це як є.",
   "eachLineKeyValue": "Кожен рядок має бути у форматі key=value",
   "inputs": "Параметри",
   "inputsNotObject": "inputs має бути JSON-об'єктом",

@@ -8,5 +8,5 @@
   "targetSha": "Cílový SHA commitu",
   "delete": "Odstranit",
   "deleteTitle": "Odstranit štítek",
-  "deleteBody": "Opravdu chcete odstranit „{name}“? Tuto akci nelze vrátit zpět."
+  "deleteBody": "Štítek „{name}“ bude odstraněn; commity tím nebudou ovlivněny. Tuto akci nelze vrátit zpět."
 }

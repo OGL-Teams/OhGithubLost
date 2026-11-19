@@ -1,7 +1,7 @@
 {
   "downloads": "다운로드 관리",
-  "emptyMine": "아직 저장소가 없습니다",
-  "emptyStarred": "아직 스타를 표시한 저장소가 없습니다",
+  "emptyMine": "아직 저장소가 없습니다. 「저장소 만들기」를 눌러 첫 저장소를 만들어 보세요",
+  "emptyStarred": "아직 star 표시한 저장소가 없습니다. 저장소 페이지에서 「star 표시」를 누르면 여기에 저장됩니다",
   "home": "홈",
   "loadMore": "더 불러오기({count}개)",
   "mine": "내 저장소",

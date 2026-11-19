@@ -1,9 +1,9 @@
 {
   "created": "Gist creat",
-  "empty": "Nu aveți încă Gist-uri",
+  "empty": "Nu aveți încă Gist-uri. Apăsați „Nou” pentru a crea primul",
   "fileCount": "{count} fișiere · ",
   "missingId": "Acest Gist nu are un id și nu poate fi deschis",
-  "new": "Nou",
+  "new": "Gist nou",
   "noDescription": "(Fără descriere)",
   "noOpenLink": "Acest Gist nu are un link care să poată fi deschis",
   "openInBrowser": "Deschide în browser",

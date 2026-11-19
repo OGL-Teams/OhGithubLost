@@ -1,9 +1,9 @@
 {
   "created": "สร้าง Gist แล้ว",
-  "empty": "ยังไม่มี Gist",
+  "empty": "ยังไม่มี Gist แตะ «สร้างใหม่» เพื่อสร้างรายการแรก",
   "fileCount": "{count} ไฟล์ · ",
   "missingId": "Gist นี้ไม่มี id จึงเปิดไม่ได้",
-  "new": "สร้างใหม่",
+  "new": "สร้าง Gist ใหม่",
   "noDescription": "(ไม่มีคำอธิบาย)",
   "noOpenLink": "Gist นี้ไม่มีลิงก์ที่เปิดได้",
   "openInBrowser": "เปิดในเบราว์เซอร์",

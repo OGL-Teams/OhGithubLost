@@ -1,7 +1,7 @@
 {
   "advanced": "Nâng cao: nhập trực tiếp",
-  "dispatchHint": "Mẹo: chỉ những workflow khai báo workflow_dispatch mới có thể kích hoạt;",
-  "dispatchHint2": "nếu không, GitHub sẽ trả về 422 (trang này sẽ thông báo rõ ràng).",
+  "dispatchHint": "Chỉ những workflow khai báo workflow_dispatch mới có thể kích hoạt thủ công;",
+  "dispatchHint2": "nếu không, GitHub sẽ trả về 422, và trang này sẽ thông báo rõ ràng.",
   "eachLineKeyValue": "Mỗi dòng phải có dạng key=value",
   "inputs": "Tham số",
   "inputsNotObject": "inputs phải là một đối tượng JSON",

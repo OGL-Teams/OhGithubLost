@@ -13,7 +13,7 @@
   "copyLink": "Link kopiëren",
   "copyNotes": "Notities kopiëren",
   "delete": "Verwijderen",
-  "deleteDesc": "Release {tag} wordt verwijderd. Deze actie is moeilijk ongedaan te maken.",
+  "deleteDesc": "Release {tag} wordt verwijderd. Na verwijdering kan deze niet worden hersteld.",
   "deleteFailed": "Verwijderen mislukt: {error}",
   "deleteTitle": "Release verwijderen",
   "deleted": "Verwijderd",

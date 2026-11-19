@@ -1,7 +1,7 @@
 {
   "downloads": "İndirmeler",
-  "emptyMine": "Henüz depo yok",
-  "emptyStarred": "Henüz yıldızlanmış depo yok",
+  "emptyMine": "Henüz depo yok. İlk depoyu oluşturmak için «Yeni depo» öğesine dokunun",
+  "emptyStarred": "Henüz yıldızlanmış depo yok. Buraya kaydetmek için depo sayfasında «Yıldızla» öğesine dokunun",
   "home": "Ana sayfa",
   "loadMore": "Daha fazla yükle ({count} kayıt)",
   "mine": "Depolarım",

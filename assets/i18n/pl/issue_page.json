@@ -10,7 +10,7 @@
   "closeIssue": "Zamknij Issue #{number}",
   "closeIssueTitle": "Zamknij Issue",
   "closed": "Zamknięty",
-  "commentDeleteConfirm": "Czy na pewno usunąć ten komentarz? Po usunięciu nie można go przywrócić.",
+  "commentDeleteConfirm": "Usunąć ten komentarz? Po usunięciu nie można go przywrócić.",
   "commentDeleteFailed": "Nie udało się usunąć komentarza: {error}",
   "commentDeleted": "Komentarz usunięty",
   "commentEdit": "Edytuj komentarz",

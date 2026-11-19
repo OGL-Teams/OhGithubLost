@@ -232,7 +232,7 @@
   "typeDir": "Thư mục",
   "typeFile": "Tệp",
   "typeLabel": "Loại",
-  "unarchiveConfirm": "Sau khi hủy lưu trữ, kho lưu trữ có thể ghi lại. Xác nhận?",
+  "unarchiveConfirm": "Hủy lưu trữ? Sau khi hủy, kho lưu trữ có thể ghi lại như cũ.",
   "unarchiveRepo": "Hủy lưu trữ",
   "unstar": "Bỏ đánh dấu sao",
   "unstarred": "Đã bỏ đánh dấu sao",

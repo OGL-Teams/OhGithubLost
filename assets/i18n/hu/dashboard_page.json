@@ -1,7 +1,7 @@
 {
   "downloads": "Letöltések kezelése",
-  "emptyMine": "Még nincs repository",
-  "emptyStarred": "Még nincs csillagozott repository",
+  "emptyMine": "Még nincs repository. Az első létrehozásához koppintson az „Új repository” gombra",
+  "emptyStarred": "Még nincs csillagozott repository. A repository oldalán koppintson a „Csillagozás” gombra a gyűjtéshez",
   "home": "Kezdőlap",
   "loadMore": "Tovább betöltése (már {count} db)",
   "mine": "Saját",

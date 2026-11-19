@@ -10,7 +10,7 @@
   "closeIssue": "Zavřít Issue #{number}",
   "closeIssueTitle": "Zavřít Issue",
   "closed": "Uzavřeno",
-  "commentDeleteConfirm": "Opravdu smazat tento komentář? Po smazání jej nelze obnovit.",
+  "commentDeleteConfirm": "Smazat tento komentář? Po smazání jej nelze obnovit.",
   "commentDeleteFailed": "Smazání komentáře selhalo: {error}",
   "commentDeleted": "Komentář byl smazán",
   "commentEdit": "Upravit komentář",

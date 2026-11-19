@@ -1,7 +1,7 @@
 {
   "downloads": "Downloads",
-  "emptyMine": "Ingen repositories endnu",
-  "emptyStarred": "Ingen stjernemarkerede repositories endnu",
+  "emptyMine": "Ingen repositories endnu. Tryk på »Nyt repository« for at oprette dit første",
+  "emptyStarred": "Ingen stjernemarkerede repositories endnu. Tryk på »Stjernemarkér« på repository-siden for at samle dem her",
   "home": "Hjem",
   "loadMore": "Indlæs flere ({count} indtil nu)",
   "mine": "Mine",

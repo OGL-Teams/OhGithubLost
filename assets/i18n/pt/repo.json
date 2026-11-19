@@ -232,7 +232,7 @@
   "typeDir": "Diretório",
   "typeFile": "Arquivo",
   "typeLabel": "Tipo",
-  "unarchiveConfirm": "Ao desarquivar, o repositório volta a ser gravável. Confirmar?",
+  "unarchiveConfirm": "Desarquivar? O repositório voltará a ser gravável.",
   "unarchiveRepo": "Desarquivar",
   "unstar": "Remover estrela",
   "unstarred": "Estrela removida",

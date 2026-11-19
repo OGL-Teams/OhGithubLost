@@ -1,7 +1,7 @@
 {
   "downloads": "Pengurusan muat turun",
-  "emptyMine": "Tiada repositori lagi",
-  "emptyStarred": "Tiada repositori berbintang lagi",
+  "emptyMine": "Tiada repositori lagi. Ketuk «Repositori baharu» untuk mencipta yang pertama",
+  "emptyStarred": "Tiada repositori berbintang lagi. Ketuk «Bintangkan» di halaman repositori untuk menyimpannya",
   "home": "Laman utama",
   "loadMore": "Muat lebih banyak ({count} telah dimuatkan)",
   "mine": "Milik saya",

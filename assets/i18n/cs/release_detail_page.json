@@ -13,7 +13,7 @@
   "copyLink": "Kopírovat odkaz",
   "copyNotes": "Kopírovat popis",
   "delete": "Smazat",
-  "deleteDesc": "Bude smazáno vydání {tag}. Tuto akci nelze snadno vrátit zpět.",
+  "deleteDesc": "Bude smazáno vydání {tag}. Po smazání jej nelze obnovit.",
   "deleteFailed": "Smazání selhalo: {error}",
   "deleteTitle": "Smazat Release",
   "deleted": "Smazáno",

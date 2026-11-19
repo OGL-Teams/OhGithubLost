@@ -10,7 +10,7 @@
   "closeIssue": "#{number} Issue bezárása",
   "closeIssueTitle": "Issue bezárása",
   "closed": "Bezárva",
-  "commentDeleteConfirm": "Biztosan törli ezt a megjegyzést? A törlés után nem állítható vissza.",
+  "commentDeleteConfirm": "Törli ezt a megjegyzést? Törlés után nem állítható helyre.",
   "commentDeleteFailed": "A megjegyzés törlése nem sikerült: {error}",
   "commentDeleted": "Megjegyzés törölve",
   "commentEdit": "Megjegyzés szerkesztése",

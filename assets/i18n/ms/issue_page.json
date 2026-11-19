@@ -10,7 +10,7 @@
   "closeIssue": "Tutup Issue #{number}",
   "closeIssueTitle": "Tutup Issue",
   "closed": "Ditutup",
-  "commentDeleteConfirm": "Padam komen ini? Tindakan ini tidak boleh dibuat asal.",
+  "commentDeleteConfirm": "Padam komen ini? Selepas dipadam ia tidak boleh dipulihkan.",
   "commentDeleteFailed": "Gagal memadam komen: {error}",
   "commentDeleted": "Komen telah dipadam",
   "commentEdit": "Edit komen",

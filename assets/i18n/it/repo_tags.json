@@ -8,5 +8,5 @@
   "targetSha": "SHA del commit di destinazione",
   "delete": "Elimina",
   "deleteTitle": "Elimina tag",
-  "deleteBody": "Sei sicuro di voler eliminare «{name}»? Questa azione non può essere annullata."
+  "deleteBody": "Il tag «{name}» verrà eliminato; i commit non sono interessati. Questa azione non può essere annullata."
 }

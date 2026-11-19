@@ -13,7 +13,7 @@
   "copyLink": "リンクをコピー",
   "copyNotes": "説明をコピー",
   "delete": "削除",
-  "deleteDesc": "リリース {tag} を削除します。この操作は元に戻しにくいものです。",
+  "deleteDesc": "リリース {tag} を削除します。削除すると元に戻せません。",
   "deleteFailed": "削除に失敗しました：{error}",
   "deleteTitle": "リリースを削除",
   "deleted": "削除しました",

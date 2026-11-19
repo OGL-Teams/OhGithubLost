@@ -1,7 +1,7 @@
 {
   "advanced": "उन्नत: सीधे दर्ज करें",
-  "dispatchHint": "सुझाव: केवल workflow_dispatch घोषित करने वाले वर्कफ़्लो ही ट्रिगर किए जा सकते हैं;",
-  "dispatchHint2": "अन्यथा GitHub 422 लौटाएगा (यह पेज सचमुच संकेत दिखाएगा)।",
+  "dispatchHint": "केवल workflow_dispatch घोषित करने वाले वर्कफ़्लो ही मैन्युअल रूप से ट्रिगर किए जा सकते हैं;",
+  "dispatchHint2": "अन्यथा GitHub 422 लौटाएगा, और यह पेज यह स्पष्ट रूप से दिखाएगा।",
   "eachLineKeyValue": "हर पंक्ति key=value के रूप में होनी चाहिए",
   "inputs": "पैरामीटर",
   "inputsNotObject": "inputs JSON ऑब्जेक्ट होना चाहिए",

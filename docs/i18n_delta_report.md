@@ -103,3 +103,45 @@
 - 自检：24/24 文件键集合与键序与 `assets/i18n/zh/repo_tags.json` 完全一致；所有值为非空字符串；占位符多重集与 zh 一致；无与 zh 同形的未翻译值。
 - 门禁：`python3 tool/i18n_delta.py check --langs <24 语言>` → **OK（24 语言 × 2 键）**；`python3 tool/i18n_scan.py --check` → 通过（界面文案 0 处未本地化；分片键集合一致；语言清单三处一致）。
 - 遗留说明（交上游决策）：zh 当前工作区 `create` = 「创建」、`empty` = 「还没有标签」，而 delta 源值快照为「新建标签」/「暂无标签」；本轮以 delta 快照（名词式按钮标签 + 名词短语空态）为准，保持 24 语言 `create` 均为名词式「New X」。若上游最终确定 zh 用动词「创建」，则 24 语言 `create` 需同步改为动词式（一轮即可，改动面同上表 create 列）。
+
+## 第 5 批-1（ja ko es pt it nl pl tr）
+
+- 范围：DELTA 22 键 × 8 语言（dashboard_page 2 / gists_page 2 / issue_page 1 / release_detail_page 1 / repo 1 / repo_tags 1 / search_page 6 / settings 6 / workflow_dispatch_page 2），以 `.translate-work/delta.json` 的 source 快照为准。
+- 落点：按本批任务指令直接写入主干 `assets/i18n/<lang>/<shard>.json`（其余键与键序不动；脚本 `.translate-work/b5_8lang.py`），共覆写 176 键次。
+- 术语与风格：术语沿用各语言既有译文（ja スター/リポジトリ、ko star 표시/저장소、es/pt dar una estrella/con estrella、it mettere in stella、nl ster geven、pl dać gwiazdkę、tr yıldızla/depo）；错误消息写明后果与不可逆性（如 ja「削除すると元に戻せません」、ko「삭제하면 복구할 수 없습니다」）；空态给出下一步（点「新建」创建第一个）；按钮动词式（新建 Gist / Nuevo gist / Novo Gist / Nieuwe Gist / Nowy Gist / Yeni Gist）。
+- 占位符：{tag}/{name}/{repo}/{error} 逐字节保留，多重集校验通过。
+- 门禁：`python3 tool/i18n_delta.py check --langs ja ko es pt it nl pl tr` → **OK: 8 语言 × 22 键 全部通过（占位符一致、无缺键）**。
+- 未 commit / push。
+
+
+## 第 5 批（第 3 子批：sv, da, fi, no, hu, ro, he, el）· 9 分片 · 22 键
+
+以 delta.json 的 source 快照为准精翻（andrew-translate 三步式），直接覆写主干 `assets/i18n/<lang>/<shard>.json`（本次任务落点为主干，非暂存区）。分片：dashboard_page(2)、gists_page(2)、issue_page(1)、release_detail_page(1)、repo(1)、repo_tags(1)、search_page(6)、settings(6)、workflow_dispatch_page(2)。
+
+要点：
+- 仅改 DELTA 22 键，键序与其余键不动；占位符 {tag}/{name}/{repo}/{error} 逐字节保留。
+- 错误消息写明后果与可逆性（errorSave 补「重启后改动丢失」因果句式）；空态补下一步动作（emptyMine/emptyStarred/empty 指引按钮）；按钮用动词式（Ny Gist / Új Gist / חדש→原保留，Gist-nya 未动）。
+- 术语沿用既有译文：sv repositorie/stjärnmärk、da stjernemarkér、fi tähdittää/tunniste、no stjernemerke、hu csillagozás、ro da stea、he כוכבית/מאגר、el αστέρι/ετικέτα；release/commit/tag/workflow_dispatch 等技术词保留。
+- he dispatchHint2 修正了原文病句（«הדבר יודע באופן כן»→«יציג זאת כמו שהוא»）。
+- 自检：`python3 tool/i18n_delta.py check --langs <lang>`（逐语言运行）→ 8 语言全部 **OK: 1 语言 x 22 键**（占位符一致、无缺键）。未 commit / push。
+
+## 第 5 批 · 第 2 批（ar, hi, th, vi, id, ms, uk, cs）· 9 分片 22 键精翻
+
+处理范围：`dashboard_page`(emptyMine/emptyStarred)、`gists_page`(empty/new)、`issue_page`(commentDeleteConfirm)、`release_detail_page`(deleteDesc)、`repo`(unarchiveConfirm)、`repo_tags`(deleteBody)、`search_page`(issuesStar/releaseFromStarred/releaseNone/releasesSection/starred/starredEmpty)、`settings`(alreadyStarred/donateDesc2/donateTileDesc/errorSave/starLoginFirst/starredThanks)、`workflow_dispatch_page`(dispatchHint/dispatchHint2)。翻译一律以 delta.json `source` 源值快照为准。
+
+| lang | 处理键数 | 术语/风格要点 |
+|---|---|---|
+| ar | 22 | 仓库 مستودع、标签 وسم、star 保留原词；错误消息写明后果（ستُفقد/لا يمكن استرجاعه）；空态给下一步动作（انقر…） |
+| hi | 22 | star वाली रिपॉजिटरी 沿用既有组合；commit कमिट；errorSave 明示重启后丢失 |
+| th | 22 | คลังเก็บ、แท็ก、ติดดาว；Gist 新键 gists_page.new 用动词式「สร้าง Gist ใหม่」 |
+| vi | 22 | kho lưu trữ、nhãn、đánh dấu sao；deleteDesc 明示「Sau khi xóa không thể khôi phục」 |
+| id | 22 | repositori、tag、bintang；donateDesc2 与 donateTileDesc 统一动词式「Beri star」 |
+| ms | 22 | repositori、tag、bintangkan；releaseNone/releasesSection 沿用 Release 保留原词 |
+| uk | 22 | репозиторій、тег、зірка；issuesStar/starred 与 dashboard 既有术语对齐 |
+| cs | 22 | repozitář、štítek、hvězdička；repo_tags.deleteBody 补「commity tím nebudou ovlivněny」（提交本身不受影响） |
+
+- 执行：直接改主干 `assets/i18n/<lang>/<shard>.json`，每分片仅覆写 DELTA 列出的键（脚本 `.translate-work/batch5_b.py`，逐键 assert 键存在），键序与其余键一字未动；JSON `ensure_ascii=False, indent=2` + 尾换行。
+- 风格：错误消息写明后果与可逆性（如 cs「po restartu se změny ztratí」、ar「لا يمكن استرجاعه بعد الحذف」）；空态一律给下一步动作；按钮动词式；占位符 `{tag}/{name}/{repo}/{error}/{login}` 逐字节保留。
+- 自检：8 语言 × 9 分片仅 DELTA 键变化；占位符多重集与源快照一致；无未翻译残留。
+- 门禁：`python3 tool/i18n_delta.py check --langs ar,hi,th,vi,id,ms,uk,cs` → **OK: 8 语言 x 22 键 全部通过（占位符一致、无缺键）**。
+- 未 commit / push，未执行任何 git 写操作。

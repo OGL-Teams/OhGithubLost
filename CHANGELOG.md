@@ -1,5 +1,17 @@
 # 更新日志 / Changelog
 
+## 13.3.0（2026-11-19 · rc）
+
+### 翻译 / Translation
+
+- 22 个重写文案键补齐到其余 24 种语言（源值快照精翻，占位符逐字节保留）。
+  The 22 rewritten copy keys land in the remaining 24 languages (snapshot-guided, byte-exact placeholders).
+
+### 新增 / Added
+
+- 语义色对比度门禁（第 12 支门禁，WCAG 2.1 正文 4.5:1 / 图形 3.0:1）。
+  Semantic-color contrast gate (twelfth gate; WCAG 2.1 4.5:1 text / 3.0:1 graphics).
+
 ## 13.2.0（2026-11-19 · beta）
 
 ### 变更 / Changed

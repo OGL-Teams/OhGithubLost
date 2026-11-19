@@ -1,9 +1,9 @@
 {
   "created": "تم إنشاء Gist",
-  "empty": "لا توجد مقتطفات Gist بعد",
+  "empty": "لا توجد مقتطفات Gist بعد. انقر «جديد» لإنشاء أول مقتطف",
   "fileCount": "‏{count} ملف · ",
   "missingId": "هذا Gist يفتقد المعرّف id، لذا يتعذّر فتحه",
-  "new": "جديد",
+  "new": "Gist جديد",
   "noDescription": "(بلا وصف)",
   "noOpenLink": "لا يوجد في هذا Gist رابط يمكن فتحه",
   "openInBrowser": "فتح في المتصفح",

@@ -1,7 +1,7 @@
 {
   "downloads": "Quản lý tải xuống",
-  "emptyMine": "Chưa có kho lưu trữ nào",
-  "emptyStarred": "Chưa có kho lưu trữ nào được đánh dấu sao",
+  "emptyMine": "Chưa có kho lưu trữ nào. Nhấn «Kho lưu trữ mới» để tạo kho đầu tiên",
+  "emptyStarred": "Chưa đánh dấu sao kho lưu trữ nào. Nhấn «Đánh dấu sao» trên trang kho lưu trữ để lưu lại",
   "home": "Trang chủ",
   "loadMore": "Tải thêm (đã có {count})",
   "mine": "Của tôi",

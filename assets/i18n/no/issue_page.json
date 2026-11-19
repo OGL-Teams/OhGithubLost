@@ -10,7 +10,7 @@
   "closeIssue": "Lukk Issue #{number}",
   "closeIssueTitle": "Lukk Issue",
   "closed": "Lukket",
-  "commentDeleteConfirm": "Vil du slette denne kommentaren? Den kan ikke hentes tilbake etterpå.",
+  "commentDeleteConfirm": "Vil du slette denne kommentaren? Den kan ikke gjenopprettes etter sletting.",
   "commentDeleteFailed": "Kunne ikke slette kommentaren: {error}",
   "commentDeleted": "Kommentaren er slettet",
   "commentEdit": "Rediger kommentar",

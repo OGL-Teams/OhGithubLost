@@ -1,7 +1,7 @@
 {
   "advanced": "Geavanceerd: direct invoeren",
-  "dispatchHint": "Tip: alleen workflows met een workflow_dispatch-declaratie kunnen worden getriggerd;",
-  "dispatchHint2": "andere workflows leveren een 422-fout op (deze pagina geeft dat eerlijk aan).",
+  "dispatchHint": "Alleen workflows met een workflow_dispatch-declaratie kunnen handmatig worden getriggerd;",
+  "dispatchHint2": "anders geeft GitHub een 422 terug; deze pagina meldt dat eerlijk.",
   "eachLineKeyValue": "Elke regel moet de vorm key=value hebben",
   "inputs": "Parameters",
   "inputsNotObject": "inputs moet een JSON-object zijn",

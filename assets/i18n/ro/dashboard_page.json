@@ -1,7 +1,7 @@
 {
   "downloads": "Descărcări",
-  "emptyMine": "Nu aveți încă repository-uri",
-  "emptyStarred": "Nu aveți încă repository-uri cu stea",
+  "emptyMine": "Nu aveți încă repository-uri. Apăsați „Repository nou” pentru a crea primul",
+  "emptyStarred": "Nu aveți încă repository-uri cu stea. Apăsați „Dă stea” pe pagina repository-ului pentru a le colecta aici",
   "home": "Acasă",
   "loadMore": "Încarcă mai multe ({count} până acum)",
   "mine": "Ale mele",

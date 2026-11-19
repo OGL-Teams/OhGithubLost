@@ -1,7 +1,7 @@
 {
   "downloads": "Správa stahování",
-  "emptyMine": "Zatím žádné repozitáře",
-  "emptyStarred": "Zatím žádné repozitáře s hvězdičkou",
+  "emptyMine": "Zatím žádné repozitáře. Klepnutím na „Nový repozitář“ vytvořte první",
+  "emptyStarred": "Zatím žádné repozitáře s hvězdičkou. Klepněte na „Označit hvězdičkou“ na stránce repozitáře a uložte si jej",
   "home": "Domů",
   "loadMore": "Načíst další (celkem {count})",
   "mine": "Moje",

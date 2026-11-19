@@ -13,7 +13,7 @@
   "copyLink": "Kopiera länk",
   "copyNotes": "Kopiera anteckningar",
   "delete": "Ta bort",
-  "deleteDesc": "Release {tag} tas bort. Åtgärden är svår att ångra.",
+  "deleteDesc": "Release {tag} tas bort. Den kan inte återställas efter borttagning.",
   "deleteFailed": "Det gick inte att ta bort: {error}",
   "deleteTitle": "Ta bort Release",
   "deleted": "Borttagen",

@@ -1,7 +1,7 @@
 {
   "advanced": "Avanzado: escribir directamente",
-  "dispatchHint": "Nota: solo se pueden ejecutar los workflows que declaran workflow_dispatch;",
-  "dispatchHint2": "si no, GitHub devolverá un 422 (esta página te lo indicará con claridad).",
+  "dispatchHint": "Solo se pueden ejecutar manualmente los workflows que declaran workflow_dispatch;",
+  "dispatchHint2": "si no, GitHub devolverá un 422 y esta página te lo mostrará tal cual.",
   "eachLineKeyValue": "Cada línea debe tener la forma clave=valor",
   "inputs": "Parámetros",
   "inputsNotObject": "inputs debe ser un objeto JSON",

@@ -1,7 +1,7 @@
 {
   "advanced": "Gelişmiş: doğrudan giriş",
-  "dispatchHint": "İpucu: Yalnızca workflow_dispatch bildirmiş iş akışları tetiklenebilir;",
-  "dispatchHint2": "aksı halde GitHub 422 döndürür (bu sayfa durumu olduğu gibi gösterir).",
+  "dispatchHint": "Yalnızca workflow_dispatch bildirmiş iş akışları elle tetiklenebilir;",
+  "dispatchHint2": "aksi halde GitHub 422 döndürür ve bu sayfa bunu olduğu gibi gösterir.",
   "eachLineKeyValue": "Her satır key=value biçiminde olmalıdır",
   "inputs": "Parametreler",
   "inputsNotObject": "inputs bir JSON nesnesi olmalıdır",

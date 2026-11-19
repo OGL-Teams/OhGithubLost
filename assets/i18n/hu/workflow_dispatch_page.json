@@ -1,7 +1,7 @@
 {
   "advanced": "Speciális: közvetlen megadás",
-  "dispatchHint": "Tipp: csak a workflow_dispatch deklarációval rendelkező munkafolyamatok indíthatók;",
-  "dispatchHint2": "ellenkező esetben a GitHub 422-es hibát ad vissza (ezen az oldalon ez pontosan jelenik meg).",
+  "dispatchHint": "Csak a workflow_dispatch deklarációval rendelkező munkafolyamatok indíthatók manuálisan;",
+  "dispatchHint2": "ellenkező esetben a GitHub 422-es hibát ad vissza, és az oldal ezt tünteti fel.",
   "eachLineKeyValue": "Minden sornak key=value alakúnak kell lennie",
   "inputs": "Paraméterek",
   "inputsNotObject": "Az inputs JSON objektum kell legyen",

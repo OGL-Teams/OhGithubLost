@@ -1,9 +1,9 @@
 {
   "created": "Gist aangemaakt",
-  "empty": "Nog geen Gist-fragmenten",
+  "empty": "Nog geen Gist-fragmenten. Tik op «Nieuw» om de eerste aan te maken",
   "fileCount": "{count} bestanden · ",
   "missingId": "Deze Gist mist een id en kan niet worden geopend",
-  "new": "Nieuw",
+  "new": "Nieuwe Gist",
   "noDescription": "(geen beschrijving)",
   "noOpenLink": "Deze Gist heeft geen link om te openen",
   "openInBrowser": "Openen in browser",

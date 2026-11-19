@@ -1,7 +1,7 @@
 {
   "advanced": "Avansert: skriv inn direkte",
-  "dispatchHint": "Tips: Bare arbeidsflyter som erklærer workflow_dispatch kan utløses;",
-  "dispatchHint2": "ellers returnerer GitHub 422 (siden viser dette slik det faktisk er).",
+  "dispatchHint": "Bare arbeidsflyter som erklærer workflow_dispatch kan utløses manuelt;",
+  "dispatchHint2": "ellers returnerer GitHub 422, og denne siden viser det slik det faktisk er.",
   "eachLineKeyValue": "Hver linje må ha formen key=value",
   "inputs": "Parametere",
   "inputsNotObject": "inputs må være et JSON-objekt",

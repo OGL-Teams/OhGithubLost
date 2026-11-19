@@ -10,7 +10,7 @@
   "closeIssue": "Issue #{number} sluiten",
   "closeIssueTitle": "Issue sluiten",
   "closed": "Gesloten",
-  "commentDeleteConfirm": "Deze reactie verwijderen? Dit kan niet ongedaan worden gemaakt.",
+  "commentDeleteConfirm": "Deze reactie verwijderen? Na verwijdering kan deze niet worden hersteld.",
   "commentDeleteFailed": "Verwijderen van reactie mislukt: {error}",
   "commentDeleted": "Reactie verwijderd",
   "commentEdit": "Reactie bewerken",

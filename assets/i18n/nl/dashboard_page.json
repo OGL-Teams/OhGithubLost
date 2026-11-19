@@ -1,7 +1,7 @@
 {
   "downloads": "Downloads",
-  "emptyMine": "Nog geen repositories",
-  "emptyStarred": "Nog geen repositories met een ster",
+  "emptyMine": "Nog geen repositories. Tik op «Nieuwe repository» om de eerste aan te maken",
+  "emptyStarred": "Nog geen repositories met een ster. Tik op de repositorypagina op «Ster geven» om die hier te bewaren",
   "home": "Start",
   "loadMore": "Meer laden ({count} geladen)",
   "mine": "Mijn",

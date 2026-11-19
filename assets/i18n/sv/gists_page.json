@@ -1,9 +1,9 @@
 {
   "created": "Gist har skapats",
-  "empty": "Inga Gist-fragment ännu",
+  "empty": "Inga Gist-fragment ännu. Tryck på ”Ny” för att skapa ditt första",
   "fileCount": "{count} filer · ",
   "missingId": "Den här Gisten saknar ett id och kan inte öppnas",
-  "new": "Ny",
+  "new": "Nytt Gist",
   "noDescription": "(Ingen beskrivning)",
   "noOpenLink": "Den här Gisten har ingen länk som kan öppnas",
   "openInBrowser": "Öppna i webbläsaren",

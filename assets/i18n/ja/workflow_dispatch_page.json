@@ -1,7 +1,7 @@
 {
   "advanced": "詳細：直接入力",
-  "dispatchHint": "ヒント：workflow_dispatch を宣言したワークフローのみトリガーできます。",
-  "dispatchHint2": "そうでない場合、GitHub は 422 を返します（本ページにはそのまま表示されます）。",
+  "dispatchHint": "workflow_dispatch を宣言したワークフローのみ手動でトリガーできます。",
+  "dispatchHint2": "それ以外の場合、GitHub は 422 を返します。本ページがその旨を正確に表示します。",
   "eachLineKeyValue": "各行は key=value の形式で入力してください",
   "inputs": "パラメーター",
   "inputsNotObject": "inputs は JSON オブジェクトである必要があります",

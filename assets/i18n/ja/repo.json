@@ -232,7 +232,7 @@
   "typeDir": "ディレクトリ",
   "typeFile": "ファイル",
   "typeLabel": "種類",
-  "unarchiveConfirm": "アーカイブを解除するとリポジトリは書き込み可能に戻ります。実行しますか？",
+  "unarchiveConfirm": "アーカイブを解除しますか？解除するとリポジトリは再び書き込み可能になります。",
   "unarchiveRepo": "アーカイブを解除",
   "unstar": "スターを外す",
   "unstarred": "スターを外しました",

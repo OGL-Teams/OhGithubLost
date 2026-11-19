@@ -10,7 +10,7 @@
   "closeIssue": "Κλείσιμο Issue #{number}",
   "closeIssueTitle": "Κλείσιμο Issue",
   "closed": "Κλειστό",
-  "commentDeleteConfirm": "Επιβεβαίωση διαγραφής αυτής της επεξεργασίας; Μετά τη διαγραφή δεν μπορεί να ανακτηθεί.",
+  "commentDeleteConfirm": "Διαγραφή αυτού του σχολίου; Μετά τη διαγραφή δεν μπορεί να ανακτηθεί.",
   "commentDeleteFailed": "Η διαγραφή του σχολίου απέτυχε: {error}",
   "commentDeleted": "Το σχόλιο διαγράφηκε",
   "commentEdit": "Επεξεργασία σχολίου",

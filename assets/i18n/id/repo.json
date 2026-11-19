@@ -232,7 +232,7 @@
   "typeDir": "Direktori",
   "typeFile": "Berkas",
   "typeLabel": "Jenis",
-  "unarchiveConfirm": "Setelah pembatalan arsip, repositori dapat ditulis kembali. Yakin?",
+  "unarchiveConfirm": "Batalkan pengarsipan? Setelah dibatalkan, repositori dapat ditulis kembali.",
   "unarchiveRepo": "Batalkan arsip",
   "unstar": "Hapus bintang",
   "unstarred": "Bintang dihapus",

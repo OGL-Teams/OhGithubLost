@@ -1,9 +1,9 @@
 {
   "created": "Gist opprettet",
-  "empty": "Du har ingen Gist-snippets ennå",
+  "empty": "Du har ingen Gist-snippets ennå. Trykk på «Ny» for å opprette den første",
   "fileCount": "{count} filer · ",
   "missingId": "Denne Gisten mangler id og kan ikke åpnes",
-  "new": "Ny",
+  "new": "Ny Gist",
   "noDescription": "(ingen beskrivelse)",
   "noOpenLink": "Denne Gisten har ingen lenke som kan åpnes",
   "openInBrowser": "Åpne i nettleser",

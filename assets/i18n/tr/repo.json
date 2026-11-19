@@ -232,7 +232,7 @@
   "typeDir": "Dizin",
   "typeFile": "Dosya",
   "typeLabel": "Tür",
-  "unarchiveConfirm": "Arşiv kaldırıldığında depo yeniden yazılabilir olur. Tamam mı?",
+  "unarchiveConfirm": "Arşiv kaldırılsın mı? Kaldırıldığında depo yeniden yazılabilir olur.",
   "unarchiveRepo": "Arşivi kaldır",
   "unstar": "Yıldızı kaldır",
   "unstarred": "Yıldız kaldırıldı",

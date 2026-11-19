@@ -232,7 +232,7 @@
   "typeDir": "Directorio",
   "typeFile": "Archivo",
   "typeLabel": "Tipo",
-  "unarchiveConfirm": "Al desarchivar, el repositorio vuelve a ser editable. ¿Seguro?",
+  "unarchiveConfirm": "¿Desarchivar? El repositorio volverá a ser editable.",
   "unarchiveRepo": "Desarchivar",
   "unstar": "Quitar la estrella",
   "unstarred": "Estrella quitada",

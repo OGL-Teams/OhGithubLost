@@ -13,7 +13,7 @@
   "copyLink": "Sao chép liên kết",
   "copyNotes": "Sao chép ghi chú",
   "delete": "Xóa",
-  "deleteDesc": "Bản phát hành {tag} sẽ bị xóa. Thao tác này khó có thể hoàn tác.",
+  "deleteDesc": "Bản phát hành {tag} sẽ bị xóa. Sau khi xóa không thể khôi phục.",
   "deleteFailed": "Xóa thất bại: {error}",
   "deleteTitle": "Xóa phát hành",
   "deleted": "Đã xóa",

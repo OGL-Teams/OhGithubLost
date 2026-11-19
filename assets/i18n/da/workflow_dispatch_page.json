@@ -1,7 +1,7 @@
 {
   "advanced": "Avanceret: Skriv direkte",
-  "dispatchHint": "Bemærk: Kun workflows, der deklarerer workflow_dispatch, kan udløses;",
-  "dispatchHint2": "ellers returnerer GitHub 422 (denne side viser fejlen).",
+  "dispatchHint": "Kun workflows, der deklarerer workflow_dispatch, kan udløses manuelt;",
+  "dispatchHint2": "ellers returnerer GitHub 422, og denne side viser det, som det faktisk er.",
   "eachLineKeyValue": "Hver linje skal være i formen key=value",
   "inputs": "Parametre",
   "inputsNotObject": "inputs skal være et JSON-objekt",

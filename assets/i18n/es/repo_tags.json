@@ -8,5 +8,5 @@
   "targetSha": "SHA del commit de destino",
   "delete": "Eliminar",
   "deleteTitle": "Eliminar etiqueta",
-  "deleteBody": "¿Está seguro de que desea eliminar «{name}»? Esta acción no se puede deshacer."
+  "deleteBody": "Se eliminará la etiqueta «{name}»; los commits no se ven afectados. Esta acción no se puede deshacer."
 }

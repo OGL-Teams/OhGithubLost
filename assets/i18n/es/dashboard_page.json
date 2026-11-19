@@ -1,7 +1,7 @@
 {
   "downloads": "Gestor de descargas",
-  "emptyMine": "Todavía no tienes repositorios",
-  "emptyStarred": "Todavía no tienes repositorios con estrella",
+  "emptyMine": "Todavía no tienes repositorios. Toca «Nuevo repositorio» para crear el primero",
+  "emptyStarred": "Todavía no tienes repositorios con estrella. Toca «Con estrella» en la página del repositorio para guardarlo aquí",
   "home": "Inicio",
   "loadMore": "Cargar más ({count} en total)",
   "mine": "Mis repositorios",

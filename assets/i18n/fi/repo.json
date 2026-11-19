@@ -232,7 +232,7 @@
   "typeDir": "Hakemisto",
   "typeFile": "Tiedosto",
   "typeLabel": "Tyyppi",
-  "unarchiveConfirm": "Arkistoinnin peruuttaminen palauttaa repositorion kirjoitettavaksi. Varmistetaanko?",
+  "unarchiveConfirm": "Perutaanko arkistointi? Sen jälkeen repositorio muuttuu taas kirjoitettavaksi.",
   "unarchiveRepo": "Peruuta arkistointi",
   "unstar": "Poista tähti",
   "unstarred": "Tähti poistettu",

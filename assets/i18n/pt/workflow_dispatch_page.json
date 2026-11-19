@@ -1,7 +1,7 @@
 {
   "advanced": "Avançado: digitar diretamente",
-  "dispatchHint": "Dica: só podem ser disparados fluxos que declarem workflow_dispatch;",
-  "dispatchHint2": "caso contrário, o GitHub retornará 422 (esta página informará o erro).",
+  "dispatchHint": "Só podem ser disparados manualmente os fluxos que declarem workflow_dispatch;",
+  "dispatchHint2": "caso contrário, o GitHub retornará 422 e esta página mostrará o erro tal como é.",
   "eachLineKeyValue": "Cada linha deve ter o formato key=value",
   "inputs": "Parâmetros",
   "inputsNotObject": "inputs deve ser um objeto JSON",

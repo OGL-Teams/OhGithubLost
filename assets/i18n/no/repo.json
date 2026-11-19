@@ -232,7 +232,7 @@
   "typeDir": "Katalog",
   "typeFile": "Fil",
   "typeLabel": "Type",
-  "unarchiveConfirm": "Når du av-arkiverer repoet, blir det skrivbart igjen. Er du sikker?",
+  "unarchiveConfirm": "Vil du fjerne arkiveringen? Deretter blir repoet skrivbart igjen.",
   "unarchiveRepo": "Av-arkiver repo",
   "unstar": "Fjern stjernemerke",
   "unstarred": "Stjernemerket er fjernet",

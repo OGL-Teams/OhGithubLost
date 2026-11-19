@@ -31,7 +31,7 @@
   "recommended": "Recomendados em alta",
   "recommendedEmpty": "Nenhuma recomendação",
   "releaseFromStarred": "Dos seus repositórios com estrela",
-  "releaseNone": "Nenhum lançamento em repositórios com estrela",
+  "releaseNone": "Os seus repositórios com estrela ainda não têm lançamentos",
   "releasesSection": "Lançamentos de repositórios com estrela",
   "repoResults": "Resultados de repositórios para «{q}»: {count}",
   "repoSearch": "Busca de repositórios",

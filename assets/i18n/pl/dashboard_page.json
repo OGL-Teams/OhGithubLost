@@ -1,7 +1,7 @@
 {
   "downloads": "Pobrane",
-  "emptyMine": "Nie masz jeszcze repozytoriów",
-  "emptyStarred": "Nie masz jeszcze repozytoriów oznaczonych gwiazdką",
+  "emptyMine": "Nie masz jeszcze repozytoriów. Stuknij „Nowe repozytorium”, aby utworzyć pierwsze",
+  "emptyStarred": "Nie masz jeszcze repozytoriów z gwiazdką. Stuknij „Daj gwiazdkę” na stronie repozytorium, aby zapisać je tutaj",
   "home": "Strona główna",
   "loadMore": "Wczytaj więcej (jest już {count})",
   "mine": "Moje",

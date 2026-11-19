@@ -13,7 +13,7 @@
   "copyLink": "Copiază linkul",
   "copyNotes": "Copiază notele",
   "delete": "Șterge",
-  "deleteDesc": "Va șterge release-ul {tag}. Această operație este greu de anulat.",
+  "deleteDesc": "Release-ul {tag} va fi șters. După ștergere nu poate fi recuperat.",
   "deleteFailed": "Ștergerea a eșuat: {error}",
   "deleteTitle": "Șterge Release-ul",
   "deleted": "Șters",

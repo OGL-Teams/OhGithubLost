@@ -1,7 +1,7 @@
 {
   "downloads": "Gestione download",
-  "emptyMine": "Non hai ancora repository",
-  "emptyStarred": "Non hai ancora repository con stella",
+  "emptyMine": "Non hai ancora repository. Tocca «Nuova repository» per crearne la prima",
+  "emptyStarred": "Non hai ancora repository in stella. Tocca «In stella» nella pagina della repository per salvarla qui",
   "home": "Home",
   "loadMore": "Carica altri (già {count})",
   "mine": "Mie",

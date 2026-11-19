@@ -1,7 +1,7 @@
 {
   "advanced": "Avancerat: skriv direkt",
-  "dispatchHint": "Tips: bara workflows som deklarerar workflow_dispatch kan utlösas;",
-  "dispatchHint2": "annars returnerar GitHub 422 (den här sidan visar felet öppet).",
+  "dispatchHint": "Bara workflows som deklarerar workflow_dispatch kan utlösas manuellt;",
+  "dispatchHint2": "annars returnerar GitHub 422, och den här sidan visar det som det är.",
   "eachLineKeyValue": "Varje rad måste ha formen key=value",
   "inputs": "Parametrar",
   "inputsNotObject": "inputs måste vara ett JSON-objekt",

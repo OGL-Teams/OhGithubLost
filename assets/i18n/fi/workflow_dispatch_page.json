@@ -1,7 +1,7 @@
 {
   "advanced": "Lisäasetukset: syötä suoraan",
-  "dispatchHint": "Huomio: vain työnkulut, joissa on workflow_dispatch, voidaan käynnistää;",
-  "dispatchHint2": "muuten GitHub palauttaa 422 (tämä sivu ilmoittaa virheen rehellisesti).",
+  "dispatchHint": "Vain työnkulut, joissa on workflow_dispatch, voidaan käynnistää manuaalisesti;",
+  "dispatchHint2": "muuten GitHub palauttaa 422, ja tämä sivu ilmoittaa sen sellaisenaan.",
   "eachLineKeyValue": "Jokaisen rivin on oltava muodossa key=value",
   "inputs": "Parametrit",
   "inputsNotObject": "inputs on oltava JSON-objekti",

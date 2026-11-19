@@ -1,9 +1,9 @@
 {
   "created": "Gist oluşturuldu",
-  "empty": "Henüz Gist yok",
+  "empty": "Henüz Gist yok. İlk Gist'i oluşturmak için «Yeni» öğesine dokunun",
   "fileCount": "{count} dosya · ",
   "missingId": "Bu Gist'te id yok, açılamıyor",
-  "new": "Yeni",
+  "new": "Yeni Gist",
   "noDescription": "(Açıklama yok)",
   "noOpenLink": "Bu Gist'in açılabilir bir bağlantısı yok",
   "openInBrowser": "Tarayıcıda aç",

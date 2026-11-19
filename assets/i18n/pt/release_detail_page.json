@@ -13,7 +13,7 @@
   "copyLink": "Copiar link",
   "copyNotes": "Copiar notas",
   "delete": "Eliminar",
-  "deleteDesc": "A Release {tag} será eliminada. Essa operação não é fácil de anular.",
+  "deleteDesc": "A Release {tag} será eliminada. Depois de eliminada não pode ser recuperada.",
   "deleteFailed": "Falha ao eliminar: {error}",
   "deleteTitle": "Eliminar Release",
   "deleted": "Eliminada",

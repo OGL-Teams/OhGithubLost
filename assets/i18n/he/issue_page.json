@@ -10,7 +10,7 @@
   "closeIssue": "סגירת ה-Issue #{number}",
   "closeIssueTitle": "סגירת Issue",
   "closed": "נסגר",
-  "commentDeleteConfirm": "לאשר את מחיקת התגובה? לאחר המחיקה לא ניתן לשחזר אותה.",
+  "commentDeleteConfirm": "למחוק את התגובה הזו? לאחר המחיקה לא ניתן לשחזר אותה.",
   "commentDeleteFailed": "מחיקת התגובה נכשלה: {error}",
   "commentDeleted": "התגובה נמחקה",
   "commentEdit": "עריכת התגובה",

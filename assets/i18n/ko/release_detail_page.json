@@ -13,7 +13,7 @@
   "copyLink": "링크 복사",
   "copyNotes": "설명 복사",
   "delete": "삭제",
-  "deleteDesc": "발표 {tag}을(를) 삭제합니다. 취소가 쉽지 않습니다.",
+  "deleteDesc": "발표 {tag}을(를) 삭제합니다. 삭제하면 복구할 수 없습니다.",
   "deleteFailed": "삭제 실패: {error}",
   "deleteTitle": "발표 삭제",
   "deleted": "삭제되었습니다",

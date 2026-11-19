@@ -8,5 +8,5 @@
   "targetSha": "SHA của commit mục tiêu",
   "delete": "Xóa",
   "deleteTitle": "Xóa nhãn",
-  "deleteBody": "Bạn có chắc chắn muốn xóa nhãn «{name}» không? Thao tác này không thể hoàn tác."
+  "deleteBody": "Nhãn «{name}» sẽ bị xóa; commit không bị ảnh hưởng. Thao tác này không thể hoàn tác."
 }

@@ -13,7 +13,7 @@
   "copyLink": "Kopioi linkki",
   "copyNotes": "Kopioi tiedot",
   "delete": "Poista",
-  "deleteDesc": "Julkaisu {tag} poistetaan. Toimintoa on vaikea peruuttaa.",
+  "deleteDesc": "Julkaisu {tag} poistetaan. Poistamisen jälkeen sitä ei voi palauttaa.",
   "deleteFailed": "Poisto epäonnistui: {error}",
   "deleteTitle": "Poista julkaisu",
   "deleted": "Poistettu",

@@ -1,7 +1,7 @@
 {
   "advanced": "متقدم: إدخال مباشر",
-  "dispatchHint": "ملاحظة: لا يمكن تشغيل سوى المسارات التي تعلن workflow_dispatch؛",
-  "dispatchHint2": "وإلا أعاد GitHub الخطأ 422 (وستُظهر هذه الصفحة ذلك كما هو).",
+  "dispatchHint": "لا يمكن التشغيل اليدوي إلا للمسارات التي تعلن workflow_dispatch؛",
+  "dispatchHint2": "وإلا أعاد GitHub الخطأ 422، وستُظهر هذه الصفحة ذلك كما هو.",
   "eachLineKeyValue": "كل سطر يجب أن يكون بصيغة key=value",
   "inputs": "المعاملات",
   "inputsNotObject": "يجب أن يكون inputs كائن JSON",

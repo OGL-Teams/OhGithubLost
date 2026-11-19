@@ -1,7 +1,7 @@
 {
   "downloads": "Nedladdningar",
-  "emptyMine": "Inga repositorier ännu",
-  "emptyStarred": "Inga stjärnmärkta repositorier ännu",
+  "emptyMine": "Inga repositorier ännu. Tryck på ”Nytt repositorie” för att skapa ditt första",
+  "emptyStarred": "Inga stjärnmärkta repositorier ännu. Tryck på ”Stjärnmärk” på repositoriesidan för att samla dem här",
   "home": "Hem",
   "loadMore": "Ladda fler ({count} hittills)",
   "mine": "Mina",

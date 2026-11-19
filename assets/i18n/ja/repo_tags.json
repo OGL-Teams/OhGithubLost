@@ -8,5 +8,5 @@
   "targetSha": "ターゲットコミットSHA",
   "delete": "削除",
   "deleteTitle": "タグを削除",
-  "deleteBody": "「{name}」を削除してもよろしいですか？この操作は元に戻せません。"
+  "deleteBody": "タグ「{name}」を削除します。コミット自体には影響しません。この操作は元に戻せません。"
 }

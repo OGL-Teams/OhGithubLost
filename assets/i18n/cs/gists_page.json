@@ -1,9 +1,9 @@
 {
   "created": "Gist byl vytvořen",
-  "empty": "Zatím žádné úryvky Gist",
+  "empty": "Zatím žádné úryvky Gist. Klepnutím na „Nový“ vytvořte první",
   "fileCount": "Počet souborů: {count} · ",
   "missingId": "Tento Gist nemá id, nelze jej otevřít",
-  "new": "Nový",
+  "new": "Nový Gist",
   "noDescription": "(bez popisu)",
   "noOpenLink": "Tento Gist nemá žádný otevíratelný odkaz",
   "openInBrowser": "Otevřít v prohlížeči",

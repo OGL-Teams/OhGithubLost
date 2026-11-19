@@ -13,7 +13,7 @@
   "copyLink": "Kopier lenke",
   "copyNotes": "Kopier notater",
   "delete": "Slett",
-  "deleteDesc": "Dette sletter Release {tag}. Handlingen er vanskelig å angres.",
+  "deleteDesc": "Release {tag} slettes. Den kan ikke gjenopprettes etter sletting.",
   "deleteFailed": "Kunne ikke slette: {error}",
   "deleteTitle": "Slett Release",
   "deleted": "Slettet",

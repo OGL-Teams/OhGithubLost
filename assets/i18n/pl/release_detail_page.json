@@ -13,7 +13,7 @@
   "copyLink": "Kopiuj link",
   "copyNotes": "Kopiuj opis",
   "delete": "Usuń",
-  "deleteDesc": "Wydanie {tag} zostanie usunięte. Tej operacji nie można łatwo cofnąć.",
+  "deleteDesc": "Wydanie {tag} zostanie usunięte. Po usunięciu nie można go przywrócić.",
   "deleteFailed": "Nie udało się usunąć: {error}",
   "deleteTitle": "Usuń wydanie",
   "deleted": "Usunięto",

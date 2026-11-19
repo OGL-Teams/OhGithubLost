@@ -232,7 +232,7 @@
   "typeDir": "Katalog",
   "typeFile": "Fil",
   "typeLabel": "Typ",
-  "unarchiveConfirm": "När arkiveringen hävs blir repositoriet skrivbart igen. Vill du fortsätta?",
+  "unarchiveConfirm": "Vill du häva arkiveringen? Därefter blir repositoriet skrivbart igen.",
   "unarchiveRepo": "Häv arkivering",
   "unstar": "Ta bort stjärnmärkning",
   "unstarred": "Stjärnmärkningen har tagits bort",

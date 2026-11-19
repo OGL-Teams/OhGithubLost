@@ -1,9 +1,9 @@
 {
   "created": "Utworzono Gist",
-  "empty": "Nie ma jeszcze Gistów",
+  "empty": "Nie masz jeszcze Gistów. Stuknij „Nowy”, aby utworzyć pierwszy",
   "fileCount": "{count} plików · ",
   "missingId": "Ten Gist nie ma id i nie może zostać otwarty",
-  "new": "Nowy",
+  "new": "Nowy Gist",
   "noDescription": "(brak opisu)",
   "noOpenLink": "Ten Gist nie ma linku, który można otworzyć",
   "openInBrowser": "Otwórz w przeglądarce",

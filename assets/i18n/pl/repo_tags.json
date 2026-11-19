@@ -8,5 +8,5 @@
   "targetSha": "Docelowy skrót SHA commita",
   "delete": "Usuń",
   "deleteTitle": "Usuń tag",
-  "deleteBody": "Czy na pewno chcesz usunąć „{name}”? Tej operacji nie można cofnąć."
+  "deleteBody": "Tag „{name}” zostanie usunięty; same commity nie zostaną naruszone. Tej operacji nie można cofnąć."
 }

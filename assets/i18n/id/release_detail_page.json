@@ -13,7 +13,7 @@
   "copyLink": "Salin tautan",
   "copyNotes": "Salin catatan",
   "delete": "Hapus",
-  "deleteDesc": "Release {tag} akan dihapus. Tindakan ini sulit dibatalkan.",
+  "deleteDesc": "Release {tag} akan dihapus. Setelah dihapus tidak dapat dikembalikan.",
   "deleteFailed": "Gagal menghapus: {error}",
   "deleteTitle": "Hapus Release",
   "deleted": "Dihapus",

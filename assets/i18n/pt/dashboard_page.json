@@ -1,7 +1,7 @@
 {
   "downloads": "Gerenciar downloads",
-  "emptyMine": "Nenhum repositório ainda",
-  "emptyStarred": "Nenhum repositório com estrela ainda",
+  "emptyMine": "Nenhum repositório ainda. Toque em «Novo repositório» para criar o primeiro",
+  "emptyStarred": "Nenhum repositório com estrela ainda. Toque em «Dar estrela» na página do repositório para o guardar aqui",
   "home": "Início",
   "loadMore": "Carregar mais ({count} itens)",
   "mine": "Meus",

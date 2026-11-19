@@ -10,7 +10,7 @@
   "closeIssue": "إغلاق Issue ‎#{number}",
   "closeIssueTitle": "إغلاق Issue",
   "closed": "مُغلق",
-  "commentDeleteConfirm": "تأكيد حذف هذا التعليق؟ لا يمكن استرجاعه بعد الحذف.",
+  "commentDeleteConfirm": "حذف هذا التعليق؟ لا يمكن استرجاعه بعد الحذف.",
   "commentDeleteFailed": "تعذّر حذف التعليق: {error}",
   "commentDeleted": "تم حذف التعليق",
   "commentEdit": "تحرير التعليق",

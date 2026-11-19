@@ -232,7 +232,7 @@
   "typeDir": "Katalog",
   "typeFile": "Plik",
   "typeLabel": "Typ",
-  "unarchiveConfirm": "Po cofnięciu archiwizacji repozytorium znów będzie możliwy zapis. Czy na pewno?",
+  "unarchiveConfirm": "Cofnąć archiwizację? Repozytorium będzie znowu zapisywalne.",
   "unarchiveRepo": "Cofnij archiwizację",
   "unstar": "Usuń gwiazdkę",
   "unstarred": "Gwiazdka usunięta",

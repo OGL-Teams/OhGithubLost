@@ -13,7 +13,7 @@
   "copyLink": "Salin pautan",
   "copyNotes": "Salin nota",
   "delete": "Padam",
-  "deleteDesc": "Release {tag} akan dipadamkan. Tindakan ini sukar untuk dibuat asal.",
+  "deleteDesc": "Release {tag} akan dipadamkan. Selepas dipadam ia tidak boleh dipulihkan.",
   "deleteFailed": "Gagal dipadam: {error}",
   "deleteTitle": "Padam Release",
   "deleted": "Telah dipadam",

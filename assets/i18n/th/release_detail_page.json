@@ -13,7 +13,7 @@
   "copyLink": "คัดลอกลิงก์",
   "copyNotes": "คัดลอกคำอธิบาย",
   "delete": "ลบ",
-  "deleteDesc": "จะลบ Release {tag} การดำเนินการนี้ย้อนกลับได้ยาก",
+  "deleteDesc": "จะลบ Release {tag} เมื่อลบแล้วกู้คืนไม่ได้",
   "deleteFailed": "ลบไม่สำเร็จ: {error}",
   "deleteTitle": "ลบ Release",
   "deleted": "ลบแล้ว",

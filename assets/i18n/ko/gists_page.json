@@ -1,9 +1,9 @@
 {
   "created": "Gist가 생성되었습니다",
-  "empty": "아직 Gist 조각이 없습니다",
+  "empty": "아직 Gist가 없습니다. 「새로 만들기」를 눌러 첫 Gist를 만들어 보세요",
   "fileCount": "파일 {count}개 · ",
   "missingId": "이 Gist에 id가 없어 열 수 없습니다",
-  "new": "새로 만들기",
+  "new": "새 Gist",
   "noDescription": "(설명 없음)",
   "noOpenLink": "이 Gist에 열 수 있는 링크가 없습니다",
   "openInBrowser": "브라우저에서 열기",

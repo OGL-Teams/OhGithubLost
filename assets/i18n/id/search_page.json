@@ -22,7 +22,7 @@
   "issuesEmpty": "Tidak ada issue baru",
   "issuesFeed": "Agregasi Issues",
   "issuesMine": "Dibuat saya",
-  "issuesStar": "Star repositori",
+  "issuesStar": "Repositori yang saya star",
   "noRepoForResult": "Hasil ini tidak memiliki repositori yang dapat dibuka (indeks mungkin belum siap)",
   "noResults": "Tidak ada hasil untuk «{query}»",
   "openFileHint": "Ketuk untuk langsung ke berkas",

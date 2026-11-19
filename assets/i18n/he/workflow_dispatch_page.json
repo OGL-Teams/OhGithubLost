@@ -1,7 +1,7 @@
 {
   "advanced": "מתקדם: הזנה ידנית",
-  "dispatchHint": "טיפ: ניתן להפעיל רק תהליכים שהצהירו על workflow_dispatch;",
-  "dispatchHint2": "אחרת GitHub יחזיר 422 (הדבר יודע באופן כן בעמוד הזה).",
+  "dispatchHint": "ניתן להפעיל ידנית רק תהליכים שהצהירו על workflow_dispatch;",
+  "dispatchHint2": "אחרת GitHub יחזיר 422, והעמוד הזה יציג זאת כמו שהוא.",
   "eachLineKeyValue": "כל שורה חייבת להיות בצורה key=value",
   "inputs": "פרמטרים",
   "inputsNotObject": "הערך inputs חייב להיות אובייקט JSON",

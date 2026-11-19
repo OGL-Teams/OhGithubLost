@@ -31,7 +31,7 @@
   "recommended": "Recomendados",
   "recommendedEmpty": "Todavía no hay recomendaciones",
   "releaseFromStarred": "De los repositorios que tienes con estrella",
-  "releaseNone": "Los repositorios con estrella que sigues aún no tienen publicaciones",
+  "releaseNone": "Tus repositorios con estrella aún no tienen publicaciones",
   "releasesSection": "Publicaciones de tus repositorios con estrella",
   "repoResults": "Repositorios para «{q}»: {count}",
   "repoSearch": "Búsqueda de repositorios",

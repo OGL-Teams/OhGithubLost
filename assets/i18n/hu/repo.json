@@ -232,7 +232,7 @@
   "typeDir": "Könyvtár",
   "typeFile": "Fájl",
   "typeLabel": "Típus",
-  "unarchiveConfirm": "Az archiválás feloldása után a repository újra írhatóvá válik. Biztos benne?",
+  "unarchiveConfirm": "Feloldja az archiválást? Ezután a repository újra írhatóvá válik.",
   "unarchiveRepo": "Archiválás feloldása",
   "unstar": "Csillagozás megszüntetése",
   "unstarred": "Csillagozás megszüntetve",

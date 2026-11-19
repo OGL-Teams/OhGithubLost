@@ -232,7 +232,7 @@
   "typeDir": "Adresář",
   "typeFile": "Soubor",
   "typeLabel": "Typ",
-  "unarchiveConfirm": "Po zrušení archivace se repozitář stane opět zapisovatelný. Potvrdit?",
+  "unarchiveConfirm": "Zrušit archivaci? Po zrušení se repozitář opět stane zapisovatelným.",
   "unarchiveRepo": "Zrušit archivaci",
   "unstar": "Odebrat hvězdičku",
   "unstarred": "Hvězdička odebrána",

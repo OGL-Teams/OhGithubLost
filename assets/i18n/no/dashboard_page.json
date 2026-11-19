@@ -1,7 +1,7 @@
 {
   "downloads": "Nedlastingsbehandling",
-  "emptyMine": "Du har ingen repos ennå",
-  "emptyStarred": "Du har ingen stjernemerke-repos ennå",
+  "emptyMine": "Du har ingen repos ennå. Trykk på «Nytt repo» for å opprette det første",
+  "emptyStarred": "Du har ingen stjernemerkede repos ennå. Trykk på «Stjernemerk» på reposiden for å samle dem her",
   "home": "Hjem",
   "loadMore": "Last inn flere ({count} lastet)",
   "mine": "Mine",

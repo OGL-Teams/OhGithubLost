@@ -22,7 +22,7 @@
   "issuesEmpty": "ไม่มี Issue ใหม่",
   "issuesFeed": "รวม Issues",
   "issuesMine": "ที่ฉันเปิด",
-  "issuesStar": "คลังเก็บที่ติดดาว",
+  "issuesStar": "คลังเก็บที่ฉันติดดาว",
   "noRepoForResult": "ผลลัพธ์นี้ไม่มีคลังเก็บที่เปิดได้ (อาจเพราะดัชนียังไม่พร้อม)",
   "noResults": "«{query}» ไม่พบผลลัพธ์ที่ตรงกัน",
   "openFileHint": "แตะเพื่อเปิดไปยังไฟล์นั้นทันที",

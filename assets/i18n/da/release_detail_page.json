@@ -13,7 +13,7 @@
   "copyLink": "Kopiér link",
   "copyNotes": "Kopiér noter",
   "delete": "Slet",
-  "deleteDesc": "Sletter Release {tag}. Denne handling er svær at fortryde.",
+  "deleteDesc": "Release {tag} slettes. Den kan ikke gendannes efter sletning.",
   "deleteFailed": "Sletning mislykkedes: {error}",
   "deleteTitle": "Slet Release",
   "deleted": "Slettet",

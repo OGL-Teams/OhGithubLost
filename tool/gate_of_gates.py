@@ -47,6 +47,8 @@ GATES: list[tuple[str, list[str], str]] = [
     # ★ 整理仓库时补：version_sync 曾依赖 CWD 且未被纳入元验证；
     #   现已 __file__ 定根，并要求输出带真实版本号证据。
     ('version_sync', [], '[version_sync] 一致：'),
+    # ★ M3 Accessibility 收口：语义色 WCAG 对比度门禁（调色回归拦截）。
+    ('contrast_audit', [], '语义色对比度审计'),
 ]
 
 # 期望「扫描对象数 > 0」的关键字。layer/i18n/motion 的输出里带数量，

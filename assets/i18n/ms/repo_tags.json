@@ -8,5 +8,5 @@
   "targetSha": "SHA komit sasaran",
   "delete": "Padam",
   "deleteTitle": "Hapus tag",
-  "deleteBody": "Adakah anda pasti ingin memadamkan «{name}»? Tindakan ini tidak boleh dibatalkan."
+  "deleteBody": "Tag «{name}» akan dipadamkan; komit tidak terjejas. Tindakan ini tidak boleh dibatalkan."
 }

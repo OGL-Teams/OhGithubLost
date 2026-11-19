@@ -1,7 +1,7 @@
 {
   "downloads": "Latausten hallinta",
-  "emptyMine": "Ei vielä repositorioita",
-  "emptyStarred": "Ei vielä tähtisessä olevia repositorioita",
+  "emptyMine": "Ei vielä repositorioita. Napauta ”Luo uusi repositorio” luodaksesi ensimmäisen",
+  "emptyStarred": "Ei vielä tähditettyjä repositorioita. Napauta repositoriosivulla ”Tähditä” lisätäksesi niitä tänne",
   "home": "Etusivu",
   "loadMore": "Lataa lisää ({count} kpl)",
   "mine": "Omat",

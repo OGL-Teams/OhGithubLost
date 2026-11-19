@@ -1,7 +1,7 @@
 {
   "advanced": "ขั้นสูง: ป้อนเอง",
-  "dispatchHint": "เคล็ดลับ: เฉพาะเวิร์กโฟลว์ที่ประกาศ workflow_dispatch เท่านั้นที่จะเรียกใช้ได้",
-  "dispatchHint2": "ไม่เช่นนั้น GitHub จะตอบกลับ 422 (หน้านี้จะแจ้งตามจริง)",
+  "dispatchHint": "เฉพาะเวิร์กโฟลว์ที่ประกาศ workflow_dispatch เท่านั้นจึงจะเรียกใช้ด้วยมือได้;",
+  "dispatchHint2": "ไม่เช่นนั้น GitHub จะตอบกลับ 422 และหน้านี้จะแจ้งตามจริง",
   "eachLineKeyValue": "แต่ละบรรทัดต้องอยู่ในรูปแบบ key=value",
   "inputs": "พารามิเตอร์",
   "inputsNotObject": "inputs ต้องเป็น JSON object",

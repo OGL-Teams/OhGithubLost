@@ -13,7 +13,7 @@
   "copyLink": "העתקת הקישור",
   "copyNotes": "העתקת ההערות",
   "delete": "מחיקה",
-  "deleteDesc": "ה-Release {tag} יימחק. הפעולה אינה ניתנת לביטול בקלות.",
+  "deleteDesc": "ה-Release {tag} יימחק. לאחר המחיקה לא ניתן לשחזר אותו.",
   "deleteFailed": "המחיקה נכשלה: {error}",
   "deleteTitle": "מחיקת Release",
   "deleted": "נמחק",

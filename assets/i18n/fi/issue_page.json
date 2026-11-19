@@ -10,7 +10,7 @@
   "closeIssue": "Sulje keskustelu #{number}",
   "closeIssueTitle": "Sulje keskustelu",
   "closed": "Suljettu",
-  "commentDeleteConfirm": "Varmistetaanko tämän kommentin poistaminen? Poistamista ei voi palauttaa.",
+  "commentDeleteConfirm": "Poistetaanko tämä kommentti? Poistamisen jälkeen sitä ei voi palauttaa.",
   "commentDeleteFailed": "Kommentin poisto epäonnistui: {error}",
   "commentDeleted": "Kommentti poistettu",
   "commentEdit": "Muokkaa kommenttia",

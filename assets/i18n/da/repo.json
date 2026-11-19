@@ -232,7 +232,7 @@
   "typeDir": "Mappe",
   "typeFile": "Fil",
   "typeLabel": "Type",
-  "unarchiveConfirm": "Ophævelse af arkivering gør repositoryet skrivbart igen. Fortsætte?",
+  "unarchiveConfirm": "Vil du ophæve arkiveringen? Derefter bliver repositoryet skrivbart igen.",
   "unarchiveRepo": "Ophæv arkivering",
   "unstar": "Fjern stjerne",
   "unstarred": "Stjerne fjernet",

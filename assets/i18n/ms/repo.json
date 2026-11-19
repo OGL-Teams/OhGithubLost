@@ -232,7 +232,7 @@
   "typeDir": "Direktori",
   "typeFile": "Fail",
   "typeLabel": "Jenis",
-  "unarchiveConfirm": "Selepas dinyaharkibkan, repositori menjadi boleh ditulis semula. Sahkan?",
+  "unarchiveConfirm": "Nyaharkib? Selepas dinyaharkibkan, repositori kembali boleh ditulis.",
   "unarchiveRepo": "Nyaharkibkan",
   "unstar": "Buang bintang",
   "unstarred": "Bintang telah dibuang",

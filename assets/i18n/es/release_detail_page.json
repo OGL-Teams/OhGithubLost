@@ -13,7 +13,7 @@
   "copyLink": "Copiar el enlace",
   "copyNotes": "Copiar la descripción",
   "delete": "Eliminar",
-  "deleteDesc": "Se eliminará el release {tag}. La acción no se puede deshacer fácilmente.",
+  "deleteDesc": "Se eliminará el release {tag}. Una vez eliminado no se puede recuperar.",
   "deleteFailed": "No se ha podido eliminar: {error}",
   "deleteTitle": "Eliminar el release",
   "deleted": "Eliminado",

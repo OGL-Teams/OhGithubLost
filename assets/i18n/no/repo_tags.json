@@ -8,5 +8,5 @@
   "targetSha": "SHA for målcommit",
   "delete": "Slett",
   "deleteTitle": "Slett merke",
-  "deleteBody": "Er du sikker på at du vil slette »{name}»? Denne handlingen kan ikke angres."
+  "deleteBody": "Taggen «{name}» slettes. Selve commitsene påvirkes ikke. Handlingen kan ikke angres."
 }

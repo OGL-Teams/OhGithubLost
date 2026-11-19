@@ -8,5 +8,5 @@
   "targetSha": "Hedef commit SHA'sı",
   "delete": "Sil",
   "deleteTitle": "Etiketi sil",
-  "deleteBody": "「{name}」 öğesini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+  "deleteBody": "「{name}」 etiketi silinecek; commit'lerin kendisi etkilenmez. Bu işlem geri alınamaz."
 }

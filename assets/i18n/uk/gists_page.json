@@ -1,9 +1,9 @@
 {
   "created": "Gist створено",
-  "empty": "Gist-ів ще немає",
+  "empty": "Gist-ів ще немає. Торкніться «Новий», щоб створити перший",
   "fileCount": "Файлів: {count} · ",
   "missingId": "Цей Gist не має id і не може бути відкритий",
-  "new": "Новий",
+  "new": "Новий Gist",
   "noDescription": "(без опису)",
   "noOpenLink": "Цей Gist не має посилання для відкриття",
   "openInBrowser": "Відкрити у браузері",

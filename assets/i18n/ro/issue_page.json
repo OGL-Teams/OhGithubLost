@@ -10,7 +10,7 @@
   "closeIssue": "Închide Issue-ul #{number}",
   "closeIssueTitle": "Închide Issue-ul",
   "closed": "Închis",
-  "commentDeleteConfirm": "Sigur ștergeți acest comentariu? Ștergerea nu poate fi anulată.",
+  "commentDeleteConfirm": "Ștergeți acest comentariu? După ștergere nu poate fi recuperat.",
   "commentDeleteFailed": "Ștergerea comentariului a eșuat: {error}",
   "commentDeleted": "Comentariu șters",
   "commentEdit": "Editează comentariul",

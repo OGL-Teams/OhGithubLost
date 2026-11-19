@@ -1,7 +1,7 @@
 {
   "advanced": "Lanjutan: masukkan langsung",
-  "dispatchHint": "Tips: hanya workflow dengan workflow_dispatch yang dapat dipicu;",
-  "dispatchHint2": "jika tidak, GitHub akan mengembalikan 422 (halaman ini menampilkannya apa adanya).",
+  "dispatchHint": "Hanya workflow dengan workflow_dispatch yang dapat dipicu secara manual;",
+  "dispatchHint2": "jika tidak, GitHub akan mengembalikan 422, dan halaman ini menampilkannya apa adanya.",
   "eachLineKeyValue": "Setiap baris harus berbentuk key=value",
   "inputs": "Parameter",
   "inputsNotObject": "inputs harus berupa objek JSON",

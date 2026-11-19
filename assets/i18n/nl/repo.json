@@ -232,7 +232,7 @@
   "typeDir": "Map",
   "typeFile": "Bestand",
   "typeLabel": "Type",
-  "unarchiveConfirm": "Na opheffing van de archivering is de repository weer beschrijfbaar. Toch doen?",
+  "unarchiveConfirm": "Archivering opheffen? De repository wordt daarna weer beschrijfbaar.",
   "unarchiveRepo": "Archivering opheffen",
   "unstar": "Ster verwijderen",
   "unstarred": "Ster verwijderd",

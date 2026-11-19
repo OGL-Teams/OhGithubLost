@@ -232,7 +232,7 @@
   "typeDir": "مجلد",
   "typeFile": "ملف",
   "typeLabel": "النوع",
-  "unarchiveConfirm": "بعد إلغاء الأرشفة يعود المستودع قابلًا للكتابة. هل أنت متأكد؟",
+  "unarchiveConfirm": "إلغاء الأرشفة؟ بعد الإلغاء يعود المستودع قابلًا للكتابة.",
   "unarchiveRepo": "إلغاء الأرشفة",
   "unstar": "إلغاء star",
   "unstarred": "تم إلغاء star",

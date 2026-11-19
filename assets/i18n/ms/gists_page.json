@@ -1,9 +1,9 @@
 {
   "created": "Gist telah dicipta",
-  "empty": "Tiada Gist lagi",
+  "empty": "Tiada Gist lagi. Ketuk «Baharu» untuk mencipta yang pertama",
   "fileCount": "{count} fail · ",
   "missingId": "Gist ini tidak mempunyai id dan tidak boleh dibuka",
-  "new": "Baharu",
+  "new": "Cipta Gist baharu",
   "noDescription": "（Tiada penerangan）",
   "noOpenLink": "Gist ini tidak mempunyai pautan yang boleh dibuka",
   "openInBrowser": "Buka dalam penyemak imbas",

@@ -1,7 +1,7 @@
 {
   "advanced": "Zaawansowane: wpisz bezpośrednio",
-  "dispatchHint": "Wskazówka: wyzwolić można tylko workflow zadeklarowane jako workflow_dispatch;",
-  "dispatchHint2": "w przeciwnym razie GitHub zwróci błąd 422 (ta strona pokaże go wprost).",
+  "dispatchHint": "Ręcznie wyzwolić można tylko workflow zadeklarowane jako workflow_dispatch;",
+  "dispatchHint2": "w przeciwnym razie GitHub zwróci błąd 422, a ta strona pokaże to wprost.",
   "eachLineKeyValue": "Każdy wiersz musi mieć postać key=value",
   "inputs": "Parametry",
   "inputsNotObject": "inputs musi być obiektem JSON",

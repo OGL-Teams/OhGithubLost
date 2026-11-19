@@ -232,7 +232,7 @@
   "typeDir": "Dosar",
   "typeFile": "Fișier",
   "typeLabel": "Tip",
-  "unarchiveConfirm": "După anularea arhivării repository-ul redevine scriabil. Sigur?",
+  "unarchiveConfirm": "Anulați arhivarea? După aceasta repository-ul redevine scriabil.",
   "unarchiveRepo": "Anulează arhivarea",
   "unstar": "Elimină steaua",
   "unstarred": "Stea eliminată",

@@ -1,7 +1,7 @@
 {
   "advanced": "Avanzate: inserisci direttamente",
-  "dispatchHint": "Suggerimento: possono essere attivati solo i workflow che dichiarano workflow_dispatch;",
-  "dispatchHint2": "in caso contrario GitHub restituisce 422 (questa pagina lo segnalerà fedelmente).",
+  "dispatchHint": "Possono essere attivati manualmente solo i workflow che dichiarano workflow_dispatch;",
+  "dispatchHint2": "in caso contrario GitHub restituisce 422 e questa pagina lo segnalerà fedelmente.",
   "eachLineKeyValue": "Ogni riga deve essere nella forma chiave=valore",
   "inputs": "Parametri",
   "inputsNotObject": "inputs deve essere un oggetto JSON",

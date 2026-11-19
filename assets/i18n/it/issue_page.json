@@ -10,7 +10,7 @@
   "closeIssue": "Chiudi l'Issue #{number}",
   "closeIssueTitle": "Chiudi Issue",
   "closed": "Chiuso",
-  "commentDeleteConfirm": "Confermi di voler eliminare questo commento? L'eliminazione non è reversibile.",
+  "commentDeleteConfirm": "Eliminare questo commento? Una volta eliminato non è recuperabile.",
   "commentDeleteFailed": "Eliminazione del commento non riuscita: {error}",
   "commentDeleted": "Commento eliminato",
   "commentEdit": "Modifica commento",

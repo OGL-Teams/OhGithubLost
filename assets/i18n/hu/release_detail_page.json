@@ -13,7 +13,7 @@
   "copyLink": "Hivatkozás másolása",
   "copyNotes": "Megjegyzések másolása",
   "delete": "Törlés",
-  "deleteDesc": "Ez törli a(z) {tag} kiadást. Ez a művelet csak nehezen vonható vissza.",
+  "deleteDesc": "A(z) {tag} kiadás törlődik. Törlés után nem állítható helyre.",
   "deleteFailed": "Törlés nem sikerült: {error}",
   "deleteTitle": "Kiadás törlése",
   "deleted": "Törölve",

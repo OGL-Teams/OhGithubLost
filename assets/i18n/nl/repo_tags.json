@@ -8,5 +8,5 @@
   "targetSha": "Doelcommit-SHA",
   "delete": "Verwijderen",
   "deleteTitle": "Tag verwijderen",
-  "deleteBody": "Weet u zeker dat u «{name}» wilt verwijderen? Deze actie kan niet worden ongedaan gemaakt."
+  "deleteBody": "Tag «{name}» wordt verwijderd; de commits zelf worden niet gewijzigd. Deze actie kan niet worden ongedaan gemaakt."
 }

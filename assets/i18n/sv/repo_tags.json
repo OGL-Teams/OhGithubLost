@@ -8,5 +8,5 @@
   "targetSha": "Målcommitens SHA",
   "delete": "Ta bort",
   "deleteTitle": "Ta bort tagg",
-  "deleteBody": "Är du säker på att du vill ta bort ”{name}”? Åtgärden kan inte ångras."
+  "deleteBody": "Taggen ”{name}” tas bort. Själva commiterna påverkas inte. Åtgärden kan inte ångras."
 }

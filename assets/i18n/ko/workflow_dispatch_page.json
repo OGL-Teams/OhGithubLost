@@ -1,7 +1,7 @@
 {
   "advanced": "고급: 직접 입력",
-  "dispatchHint": "팁: workflow_dispatch가 선언된 워크플로만 트리거할 수 있습니다.",
-  "dispatchHint2": "그렇지 않으면 GitHub가 422를 반환합니다(이 페이지에 있는 그대로 표시합니다).",
+  "dispatchHint": "workflow_dispatch가 선언된 워크플로만 수동으로 트리거할 수 있습니다.",
+  "dispatchHint2": "그렇지 않으면 GitHub가 422를 반환하며, 이 페이지가 그 사실을 그대로 표시합니다.",
   "eachLineKeyValue": "각 줄은 key=value 형태여야 합니다",
   "inputs": "입력값",
   "inputsNotObject": "inputs는 JSON 객체여야 합니다",

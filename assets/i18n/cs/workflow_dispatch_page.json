@@ -1,7 +1,7 @@
 {
   "advanced": "Pokročilé: přímý zadání",
-  "dispatchHint": "Tip: spustit lze pouze workflow, které má nadeklarovaný workflow_dispatch;",
-  "dispatchHint2": "jinak GitHub vrátí 422 (tato stránka na to upozorní).",
+  "dispatchHint": "Ručně spustit lze pouze workflow, který má nadeklarovaný workflow_dispatch;",
+  "dispatchHint2": "jinak GitHub vrátí 422 a tato stránka to zobrazí tak, jak je.",
   "eachLineKeyValue": "Na každém řádku tvar key=value",
   "inputs": "Parametry",
   "inputsNotObject": "inputs musí být JSON objekt",

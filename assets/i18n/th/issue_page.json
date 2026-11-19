@@ -10,7 +10,7 @@
   "closeIssue": "ปิด Issue #{number}",
   "closeIssueTitle": "ปิด Issue",
   "closed": "ปิดแล้ว",
-  "commentDeleteConfirm": "ยืนยันการลบความคิดเห็นนี้หรือไม่? เมื่อลบแล้วกู้คืนไม่ได้",
+  "commentDeleteConfirm": "ลบความคิดเห็นนี้หรือไม่? เมื่อลบแล้วกู้คืนไม่ได้",
   "commentDeleteFailed": "ลบความคิดเห็นไม่สำเร็จ: {error}",
   "commentDeleted": "ลบความคิดเห็นแล้ว",
   "commentEdit": "แก้ไขความคิดเห็น",
