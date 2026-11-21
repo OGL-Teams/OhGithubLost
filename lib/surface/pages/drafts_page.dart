@@ -213,6 +213,12 @@ class _DraftsPageState extends State<DraftsPage> {
         controller: _controller(),
         emptyIcon: Icons.edit_note,
         emptyText: _t('empty'),
+        emptyAction: FilledButton.tonal(
+          // 待核实：草稿页无通用「新建草稿」路由（仅对已有草稿进编辑器），
+          // 暂不接 onTap，避免触碰未验证的导航调用。
+          onPressed: null,
+          child: Text(OgLI18n.instance.t('common', 'emptyActionGoCreate')),
+        ),
         builder: (BuildContext context, List<GhDraft> drafts) =>
             OgLRefreshIndicator(
           onRefresh: () => _controller().load(),

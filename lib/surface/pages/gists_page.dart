@@ -143,6 +143,10 @@ class _GistsPageState extends State<GistsPage> {
         controller: _gistsC(),
         emptyIcon: Icons.article_outlined,
         emptyText: _t('empty'),
+        emptyAction: FilledButton.tonal(
+          onPressed: _create,
+          child: Text(OgLI18n.instance.t('common', 'emptyActionGoCreate')),
+        ),
         builder: (
           BuildContext context,
           List<Map<String, dynamic>> gists,

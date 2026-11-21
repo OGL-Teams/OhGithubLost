@@ -130,5 +130,13 @@
   "tokenExitCancel": "取消",
   "tokenExitLogConfirmed": "使用者確認將權杖傳送給主機 {host}（TOKEN-EXIT-01）",
   "tokenExitLogCancelled": "使用者取消下載：權杖不出裝置，目標主機 {host}（TOKEN-EXIT-01）",
-  "tokenExitCancelled": "已取消下載：權杖不會傳送給主機 {host}"
+  "tokenExitCancelled": "已取消下載：權杖不會傳送給主機 {host}",
+  "emptyActionGoCreate": "去新建",
+  "emptyActionGoDiscover": "去发现",
+  "emptyActionRetry": "重新加载",
+  "emptyActionClearFilter": "清除筛选",
+  "emptyActionWriteComment": "写评论",
+  "emptyActionViewOnWeb": "在网页查看",
+  "emptyActionRefresh": "刷新",
+  "emptyActionAddAccount": "添加账号"
 }

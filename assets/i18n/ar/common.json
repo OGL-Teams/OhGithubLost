@@ -130,5 +130,13 @@
   "tokenExitCancel": "إلغاء",
   "tokenExitLogConfirmed": "أكد المستخدم إرسال Token إلى المضيف {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "ألغى المستخدم التنزيل: لن يغادر Token الجهاز، المضيف الهدف {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "أُلغي التنزيل: لن يُرسل Token إلى المضيف {host}"
+  "tokenExitCancelled": "أُلغي التنزيل: لن يُرسل Token إلى المضيف {host}",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

@@ -222,6 +222,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         ? Icons.mark_email_read_outlined
                         : Icons.notifications_none,
                     text: _filter == 1 ? _t('emptyUnread') : _t('empty'),
+                    action: FilledButton.tonal(
+                      // 复用本页已有的筛选状态：非空筛选才给「清除筛选」。
+                      onPressed: () => setState(() => _filter = 0),
+                      child: Text(
+                        OgLI18n.instance.t('common', 'emptyActionClearFilter'),
+                      ),
+                    ),
                   );
                 }
                 return ListView.separated(

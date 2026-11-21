@@ -130,5 +130,13 @@
   "tokenExitCancel": "キャンセル",
   "tokenExitLogConfirmed": "ユーザーがトークンをホスト {host} に送信することを確認しました（TOKEN-EXIT-01）",
   "tokenExitLogCancelled": "ユーザーがダウンロードをキャンセルしました。トークンは端末から出ていません。対象ホスト {host}（TOKEN-EXIT-01）",
-  "tokenExitCancelled": "ダウンロードをキャンセルしました。トークンはホスト {host} に送信されません"
+  "tokenExitCancelled": "ダウンロードをキャンセルしました。トークンはホスト {host} に送信されません",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

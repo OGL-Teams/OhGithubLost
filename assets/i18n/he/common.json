@@ -130,5 +130,13 @@
   "tokenExitCancel": "ביטול",
   "tokenExitLogConfirmed": "המשתמש אישר שליחת האסימון למארח {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "המשתמש ביטל את ההורדה: האסימון אינו עוזב את המכשיר, מארח היעד {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "ההורדה בוטלה: האסימון לא יישלח למארח {host}"
+  "tokenExitCancelled": "ההורדה בוטלה: האסימון לא יישלח למארח {host}",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

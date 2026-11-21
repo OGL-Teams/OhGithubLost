@@ -130,5 +130,13 @@
   "tokenExitCancel": "Ακύρωση",
   "tokenExitLogConfirmed": "Ο χρήστης επιβεβαίωσε την αποστολή του Token στον διακομιστή {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "Ο χρήστης ακύρωσε τη λήψη· το Token δεν φεύγει από τη συσκευή, διακομιστής-στόχος {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "Η λήψη ακυρώθηκε· το Token δεν θα σταλεί στον διακομιστή {host}"
+  "tokenExitCancelled": "Η λήψη ακυρώθηκε· το Token δεν θα σταλεί στον διακομιστή {host}",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

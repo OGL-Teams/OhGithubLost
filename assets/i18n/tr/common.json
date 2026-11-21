@@ -130,5 +130,13 @@
   "tokenExitCancel": "İptal",
   "tokenExitLogConfirmed": "Kullanıcı token'ı {host} ana makinesine göndermeyi onayladı (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "Kullanıcı indirmeyi iptal etti: token cihazdan çıkmadı, hedef ana makine {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "İndirme iptal edildi: token {host} ana makinesine gönderilmeyecek"
+  "tokenExitCancelled": "İndirme iptal edildi: token {host} ana makinesine gönderilmeyecek",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

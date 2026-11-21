@@ -130,5 +130,13 @@
   "tokenExitCancel": "취소",
   "tokenExitLogConfirmed": "사용자가 호스트 {host}에 토큰 전송을 확인함(TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "사용자가 다운로드를 취소함: 토큰이 기기를 벗어나지 않음, 대상 호스트 {host}(TOKEN-EXIT-01)",
-  "tokenExitCancelled": "다운로드를 취소했습니다. 토큰이 호스트 {host}로 전송되지 않습니다"
+  "tokenExitCancelled": "다운로드를 취소했습니다. 토큰이 호스트 {host}로 전송되지 않습니다",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

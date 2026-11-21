@@ -130,5 +130,13 @@
   "tokenExitCancel": "Anuluj",
   "tokenExitLogConfirmed": "Użytkownik potwierdził wysłanie tokenu do hosta {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "Użytkownik anulował pobieranie: token nie opuścił urządzenia, host docelowy {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "Anulowano pobieranie: token nie zostanie wysłany do hosta {host}"
+  "tokenExitCancelled": "Anulowano pobieranie: token nie zostanie wysłany do hosta {host}",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

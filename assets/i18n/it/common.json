@@ -130,5 +130,13 @@
   "tokenExitCancel": "Annulla",
   "tokenExitLogConfirmed": "Utente ha confermato l'invio del token all'host {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "Utente ha annullato il download: il token resta sul dispositivo, host di destinazione {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "Download annullato: il token non verrà inviato all'host {host}"
+  "tokenExitCancelled": "Download annullato: il token non verrà inviato all'host {host}",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

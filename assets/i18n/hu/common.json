@@ -130,5 +130,13 @@
   "tokenExitCancel": "Mégse",
   "tokenExitLogConfirmed": "A felhasználó engedélyezte a Token elküldésének a(z) {host} gazdagépnek (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "A felhasználó megszakította a letöltést: a Token nem hagyja el a készüléket, célgazdagép: {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "A letöltés megszakítva: a Token nem kerül elküldésre a(z) {host} gazdagépnek"
+  "tokenExitCancelled": "A letöltés megszakítva: a Token nem kerül elküldésre a(z) {host} gazdagépnek",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

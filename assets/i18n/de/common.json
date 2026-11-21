@@ -130,5 +130,13 @@
   "tokenExitCancel": "Abbrechen",
   "tokenExitLogConfirmed": "Benutzer hat das Senden des Tokens an Host {host} bestätigt (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "Benutzer hat den Download abgebrochen: Token bleibt auf dem Gerät, Ziel-Host {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "Download abgebrochen: Das Token wird nicht an Host {host} gesendet"
+  "tokenExitCancelled": "Download abgebrochen: Das Token wird nicht an Host {host} gesendet",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

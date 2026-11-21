@@ -130,5 +130,13 @@
   "tokenExitCancel": "Annuleren",
   "tokenExitLogConfirmed": "Gebruiker bevestigde verzending van Token naar host {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "Gebruiker annuleerde download: Token verlaat het apparaat niet, doelhost {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "Download geannuleerd: het Token wordt niet naar host {host} verstuurd"
+  "tokenExitCancelled": "Download geannuleerd: het Token wordt niet naar host {host} verstuurd",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

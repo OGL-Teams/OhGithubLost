@@ -168,6 +168,11 @@ class _PullPageState extends State<PullPage> {
                     _fileTile(files[index]),
                 emptyIcon: Icons.description_outlined,
                 emptyText: _t('noChangedFiles'),
+                emptyAction: FilledButton.tonal(
+                  onPressed: () => unawaited(_filesC().load()),
+                  child:
+                      Text(OgLI18n.instance.t('common', 'emptyActionRefresh')),
+                ),
               ),
               const SliverToBoxAdapter(child: SizedBox(height: OgLSpace.xl)),
             ],

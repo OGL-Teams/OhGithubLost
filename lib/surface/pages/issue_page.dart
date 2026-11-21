@@ -795,6 +795,14 @@ class _IssuePageState extends State<IssuePage> {
                 padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
                 emptyIcon: Icons.chat_bubble_outline,
                 emptyText: _t('noComments'),
+                // 待核实：本页评论输入框无 FocusNode，无法安全聚焦；
+                // 保留 CTA 文案与样式，onTap 待主会话/CI 裁决。
+                emptyAction: FilledButton.tonal(
+                  onPressed: null,
+                  child: Text(
+                    OgLI18n.instance.t('common', 'emptyActionWriteComment'),
+                  ),
+                ),
                 itemCountOf: (List<Map<String, dynamic>> comments) =>
                     comments.length,
                 itemBuilder: (

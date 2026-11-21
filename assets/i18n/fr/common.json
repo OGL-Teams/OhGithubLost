@@ -130,5 +130,13 @@
   "tokenExitCancel": "Annuler",
   "tokenExitLogConfirmed": "L'utilisateur a confirmé l'envoi du jeton à l'hôte {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "L'utilisateur a annulé le téléchargement : le jeton reste sur l'appareil, hôte cible {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "Téléchargement annulé : le jeton ne sera pas envoyé à l'hôte {host}"
+  "tokenExitCancelled": "Téléchargement annulé : le jeton ne sera pas envoyé à l'hôte {host}",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

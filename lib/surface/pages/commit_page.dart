@@ -158,6 +158,14 @@ class _CommitPageState extends State<CommitPage> {
                 emptyText: (widget.commit.parentShas.isEmpty
                     ? _t('initialCommit')
                     : _t('noChanges')),
+                // 待核实：CommitPage 未消费 html_url，网页查看路由无验证调用；
+                // 保留次级动作文案，onTap 待主会话/CI 裁决。
+                emptyAction: TextButton(
+                  onPressed: null,
+                  child: Text(
+                    OgLI18n.instance.t('common', 'emptyActionViewOnWeb'),
+                  ),
+                ),
               ),
               const SliverToBoxAdapter(child: SizedBox(height: OgLSpace.xl)),
             ],

@@ -130,5 +130,13 @@
   "tokenExitCancel": "Anulează",
   "tokenExitLogConfirmed": "Utilizatorul a confirmat trimiterea tokenului către gazda {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "Utilizatorul a anulat descărcarea: tokenul rămâne pe dispozitiv, gazdă țintă {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "Descărcare anulată: tokenul nu va fi trimis către gazda {host}"
+  "tokenExitCancelled": "Descărcare anulată: tokenul nu va fi trimis către gazda {host}",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

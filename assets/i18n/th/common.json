@@ -130,5 +130,13 @@
   "tokenExitCancel": "ยกเลิก",
   "tokenExitLogConfirmed": "ผู้ใช้ยืนยันการส่ง Token ไปยังโฮสต์ {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "ผู้ใช้ยกเลิกการดาวน์โหลด: Token ไม่ออกจากเครื่อง โฮสต์เป้าหมาย {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "ยกเลิกการดาวน์โหลดแล้ว: Token จะไม่ถูกส่งไปยังโฮสต์ {host}"
+  "tokenExitCancelled": "ยกเลิกการดาวน์โหลดแล้ว: Token จะไม่ถูกส่งไปยังโฮสต์ {host}",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

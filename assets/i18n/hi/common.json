@@ -130,5 +130,13 @@
   "tokenExitCancel": "रद्द करें",
   "tokenExitLogConfirmed": "उपयोगकर्ता ने टोकन होस्ट {host} को भेजने की पुष्टि की (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "उपयोगकर्ता ने डाउनलोड रद्द किया: टोकन डिवाइस से बाहर नहीं गया, लक्ष्य होस्ट {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "डाउनलोड रद्द किया गया: टोकन होस्ट {host} को नहीं भेजा जाएगा"
+  "tokenExitCancelled": "डाउनलोड रद्द किया गया: टोकन होस्ट {host} को नहीं भेजा जाएगा",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

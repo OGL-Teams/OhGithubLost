@@ -230,6 +230,10 @@ class _ProfilePageState extends State<ProfilePage> {
         controller: controller,
         emptyIcon: Icons.key_outlined,
         emptyText: _t('notLoggedIn'),
+        emptyAction: FilledButton.tonal(
+          onPressed: _addAccount,
+          child: Text(OgLI18n.instance.t('common', 'emptyActionAddAccount')),
+        ),
         builder: (BuildContext context, List<GhAccount> accounts) =>
             OgLRefreshIndicator(
           onRefresh: _refresh,

@@ -130,5 +130,13 @@
   "tokenExitCancel": "Batal",
   "tokenExitLogConfirmed": "Pengguna mengonfirmasi pengiriman Token ke host {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "Pengguna membatalkan unduhan: Token tidak keluar dari perangkat, host tujuan {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "Unduhan dibatalkan: Token tidak akan dikirim ke host {host}"
+  "tokenExitCancelled": "Unduhan dibatalkan: Token tidak akan dikirim ke host {host}",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

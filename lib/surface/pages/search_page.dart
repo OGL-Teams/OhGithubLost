@@ -1366,6 +1366,14 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     controller: controller,
                     emptyIcon: Icons.search_off,
                     emptyText: _t('noResults', {'query': _query}),
+                    // 待核实：SearchResultsPage 无「去发现」路由调用；
+                    // 保留 CTA 文案与样式，onTap 待主会话/CI 裁决。
+                    emptyAction: FilledButton.tonal(
+                      onPressed: null,
+                      child: Text(
+                        OgLI18n.instance.t('common', 'emptyActionGoDiscover'),
+                      ),
+                    ),
                     builder: (BuildContext context, List<_SearchHit> hits) =>
                         ListView.separated(
                       itemCount: hits.length,

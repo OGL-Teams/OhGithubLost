@@ -365,6 +365,10 @@ class _GistDetailPageState extends State<GistDetailPage> {
         controller: _detailC(),
         emptyIcon: Icons.article_outlined,
         emptyText: _t('noFiles'),
+        emptyAction: FilledButton.tonal(
+          onPressed: () => unawaited(_detailC().load()),
+          child: Text(OgLI18n.instance.t('common', 'emptyActionRefresh')),
+        ),
         builder: (BuildContext context, _GistDetail detail) => ListView(
           padding: const EdgeInsets.all(OgLSpace.lg),
           children: <Widget>[

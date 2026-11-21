@@ -130,5 +130,13 @@
   "tokenExitCancel": "Cancelar",
   "tokenExitLogConfirmed": "Usuário confirmou o envio do Token ao host {host} (TOKEN-EXIT-01)",
   "tokenExitLogCancelled": "Usuário cancelou o download: Token não sai do dispositivo, host de destino {host} (TOKEN-EXIT-01)",
-  "tokenExitCancelled": "Download cancelado: o Token não será enviado ao host {host}"
+  "tokenExitCancelled": "Download cancelado: o Token não será enviado ao host {host}",
+  "emptyActionGoCreate": "Create now",
+  "emptyActionGoDiscover": "Explore",
+  "emptyActionRetry": "Reload",
+  "emptyActionClearFilter": "Clear filter",
+  "emptyActionWriteComment": "Write a comment",
+  "emptyActionViewOnWeb": "View on web",
+  "emptyActionRefresh": "Refresh",
+  "emptyActionAddAccount": "Add account"
 }

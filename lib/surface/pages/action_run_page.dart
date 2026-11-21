@@ -563,6 +563,10 @@ class _ActionRunPageState extends State<ActionRunPage> {
       body: AsyncView<_RunDetail>(
         controller: _detailC(),
         emptyText: _t('noRunDetail'),
+        emptyAction: FilledButton.tonal(
+          onPressed: () => unawaited(_detailC().load()),
+          child: Text(OgLI18n.instance.t('common', 'emptyActionRefresh')),
+        ),
         builder: (BuildContext context, _RunDetail detail) {
           final Map<String, dynamic> run = detail.run;
           final String status = ghStr(run, 'status');

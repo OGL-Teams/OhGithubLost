@@ -5,6 +5,7 @@
 /// 仍保留“高级：直接输入”的入口，兼容无法解析（或私有语法）的情况。
 library;
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -422,6 +423,10 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
           controller: _workflowsC(),
           emptyIcon: Icons.play_circle_outline,
           emptyText: _t('noWorkflows'),
+          emptyAction: FilledButton.tonal(
+            onPressed: () => unawaited(_workflowsC().load()),
+            child: Text(OgLI18n.instance.t('common', 'emptyActionRetry')),
+          ),
           builder:
               (BuildContext context, List<Map<String, dynamic>> workflows) {
             if (_selected == null && workflows.isNotEmpty) {

@@ -372,6 +372,13 @@ class _ActionLogPageState extends State<ActionLogPage> {
                   return OgLAsyncEmptyPane(
                     icon: Icons.filter_alt_off_outlined,
                     text: _t('noMatchingJob'),
+                    action: FilledButton.tonal(
+                      // 复用本页 _filter 字段（空串 = 全部），无新路由。
+                      onPressed: () => setState(() => _filter = ''),
+                      child: Text(
+                        OgLI18n.instance.t('common', 'emptyActionClearFilter'),
+                      ),
+                    ),
                   );
                 }
                 // 结论表：jobs 数据可用则对齐运行详情页；不可用则全按"未知"。

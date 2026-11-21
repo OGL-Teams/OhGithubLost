@@ -130,5 +130,13 @@
   "tokenExitCancel": "取消",
   "tokenExitLogConfirmed": "用户确认将令牌发给主机 {host}（TOKEN-EXIT-01）",
   "tokenExitLogCancelled": "用户取消下载：令牌不出设备，目标主机 {host}（TOKEN-EXIT-01）",
-  "tokenExitCancelled": "已取消下载：令牌不会发给主机 {host}"
+  "tokenExitCancelled": "已取消下载：令牌不会发给主机 {host}",
+  "emptyActionGoCreate": "去新建",
+  "emptyActionGoDiscover": "去发现",
+  "emptyActionRetry": "重新加载",
+  "emptyActionClearFilter": "清除筛选",
+  "emptyActionWriteComment": "写评论",
+  "emptyActionViewOnWeb": "在网页查看",
+  "emptyActionRefresh": "刷新",
+  "emptyActionAddAccount": "添加账号"
 }
