@@ -159,7 +159,10 @@ def scan() -> list[tuple[str, str, int, str]]:
 
             # 6) 动画时长（motion.dart 是令牌来源，已白名单外）
             if RULES[5][1].search(line):
-                hits.append(('裸动画时长', r, i, stripped[:110]))
+                # 行内豁免：等待/防抖时长不是动画，显式标注后可放行。
+                ctx = '\n'.join(lines[max(0, i - 3):i])
+                if 'ui-allow: debounce' not in ctx:
+                    hits.append(('裸动画时长', r, i, stripped[:110]))
 
             # 7) 曲线
             m = RULES[6][1].search(line)

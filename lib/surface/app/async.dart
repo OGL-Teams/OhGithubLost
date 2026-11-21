@@ -16,6 +16,8 @@
 /// ```
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../i18n/og_l_i18n.dart';
@@ -47,6 +49,16 @@ class AsyncController<T> extends ChangeNotifier {
 
   /// 判定"空结果"的规则。
   final bool Function(T value) isEmpty;
+
+  /// 请求发起前的短延迟：抑制输入/点击抖动带来的无意义请求，
+  /// 并让"加载态"有一个稳定的起点（避免一闪而过的裸转圈）。
+  /// ui-allow: debounce；motion-allow: 等待/防抖时长（非动画）。
+  static const Duration loadDebounce = Duration(milliseconds: 300);
+
+  /// 加载态最小显示时长：快速返回时也让骨架展示足够时间，
+  /// 避免"闪一下就没"的视觉抖动。
+  /// ui-allow: debounce；motion-allow: 等待时长（非动画）。
+  static const Duration minLoadingDuration = Duration(milliseconds: 300);
 
   T? _data;
   String? _error;
@@ -114,6 +126,9 @@ class AsyncController<T> extends ChangeNotifier {
   }
 
   /// 加载 / 刷新（**并发抑制**：上一次没回来之前不再发第二次）。
+  ///
+  /// 300ms 前置延迟 + 300ms 最小显示时长：防止快速返回时骨架/转圈一闪而过，
+  /// 也让连续触发（如切换筛选）不会发出无意义的请求。
   Future<void> load() async {
     if (_disposed || _loading) {
       return;
@@ -122,32 +137,47 @@ class AsyncController<T> extends ChangeNotifier {
     _notify();
 
     final int gen = _generation;
+    final DateTime started = DateTime.now();
+    T? value;
+    Object? loadError;
     try {
-      final T value = await loader();
-      if (gen != _generation) {
-        // 旧世代结果：reset() 已换数据维度，回写会造成数据撕裂，丢弃。
+      await Future<void>.delayed(loadDebounce);
+      if (_disposed || gen != _generation) {
         return;
       }
-      _data = value;
-      _empty = isEmpty(value);
-      _error = null;
-      OgLAppLog.instance.result(
-          _t('loading'), _t('done', {'label': label}), _summarize(value));
+      value = await loader();
     } catch (error) {
-      if (gen != _generation) {
-        return;
-      }
-      _error = _describe(error);
-      OgLAppLog.instance.add(
-        _t('loading'),
-        _error!,
-        severity: OgLNoticeSeverity.critical,
-      );
+      loadError = error;
     } finally {
-      if (gen == _generation) {
-        _loading = false;
-        _everLoaded = true;
+      // 保证加载态至少显示 minLoadingDuration：与请求是否快速返回无关。
+      final Duration shown = DateTime.now().difference(started);
+      if (shown < minLoadingDuration) {
+        await Future<void>.delayed(minLoadingDuration - shown);
       }
+    }
+    if (_disposed || gen != _generation) {
+      // 释放或已换数据维度：在途结果一律丢弃（连日志也不写）。
+      return;
+    }
+    try {
+      if (loadError == null) {
+        final T result = value as T;
+        _data = result;
+        _empty = isEmpty(result);
+        _error = null;
+        OgLAppLog.instance.result(
+            _t('loading'), _t('done', {'label': label}), _summarize(result));
+      } else {
+        _error = ogLDescribeError(label, loadError);
+        OgLAppLog.instance.add(
+          _t('loading'),
+          _error!,
+          severity: OgLNoticeSeverity.critical,
+        );
+      }
+    } finally {
+      _loading = false;
+      _everLoaded = true;
       _notify();
     }
   }
@@ -192,40 +222,39 @@ class AsyncController<T> extends ChangeNotifier {
     }
     return value.runtimeType.toString();
   }
+}
 
-  /// 分类关键词（中文异常来自本地提示，英文来自系统层）。
-  /// i18n-allow: 这些是**匹配用的关键词**，不是界面文案。
-  static const String _mentionsNetwork = '网络';
-  static const String _mentionsAuth = '权限';
-  static const String _mentionsMissing = '不存在';
-
-  /// 用户提示只保留可理解的原因，原始异常与堆栈由日志负责。
-  ///
-  /// 分类依据**同时看中文与英文**：本项目的异常来源既有系统级英文
-  /// （SocketException / timeout），也有本地中文提示。
-  String _describe(Object error) {
-    final String text = error.toString().replaceFirst('Exception: ', '');
-    final String lower = text.toLowerCase();
-    final bool network = lower.contains('socket') ||
-        lower.contains('network') ||
-        lower.contains('timeout') ||
-        text.contains(_mentionsNetwork);
-    final bool auth = lower.contains('401') ||
-        lower.contains('403') ||
-        lower.contains('auth') ||
-        lower.contains('permission') ||
-        text.contains(_mentionsAuth);
-    final bool missing =
-        lower.contains('404') || text.contains(_mentionsMissing);
-    final String reason = network
-        ? _t('errorNetwork')
-        : auth
-            ? _t('errorAuth')
-            : missing
-                ? _t('errorNotFound')
-                : _t('errorUnknown');
-    return _t('failedWith', {'label': label, 'text': reason});
-  }
+/// 用户提示只保留可理解的原因，原始异常与堆栈由日志负责。
+///
+/// 顶层版供页面直接复用（`_describe` 原为 [AsyncController] 私有方法，
+/// 页面拿到原始异常后只能裸显示；调用方替换留给后续任务）。
+/// 分类依据**同时看中文与英文**：既有系统级英文（SocketException / timeout），
+/// 也有本地中文提示。
+String ogLDescribeError(String label, Object error) {
+  final String text = error.toString().replaceFirst('Exception: ', '');
+  final String lower = text.toLowerCase();
+  // i18n-allow: 这些是**匹配用的关键词**，不是界面文案。
+  const String mentionsNetwork = '网络';
+  const String mentionsAuth = '权限';
+  const String mentionsMissing = '不存在';
+  final bool network = lower.contains('socket') ||
+      lower.contains('network') ||
+      lower.contains('timeout') ||
+      text.contains(mentionsNetwork);
+  final bool auth = lower.contains('401') ||
+      lower.contains('403') ||
+      lower.contains('auth') ||
+      lower.contains('permission') ||
+      text.contains(mentionsAuth);
+  final bool missing = lower.contains('404') || text.contains(mentionsMissing);
+  final String reason = network
+      ? _t('errorNetwork')
+      : auth
+          ? _t('errorAuth')
+          : missing
+              ? _t('errorNotFound')
+              : _t('errorUnknown');
+  return _t('failedWith', {'label': label, 'text': reason});
 }
 
 /// 把 [AsyncController] 的四态渲染成 Material 组件（页面不再自己判状态）。
@@ -293,10 +322,7 @@ class AsyncView<T> extends StatelessWidget {
               context,
               'loading',
               const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(OgLSpace.xxl),
-                  child: CircularProgressIndicator(),
-                ),
+                child: OgLAsyncSkeleton(),
               ),
             );
           }
@@ -335,6 +361,46 @@ class AsyncView<T> extends StatelessWidget {
   /// 会把 `Expanded` 撑爆。这样「加载态 → 数据态」也有动画。
   Widget _enterData(Widget child) =>
       OgLReveal(delay: Duration.zero, child: child);
+}
+
+/// 二段式矩形骨架：标题块 + 元信息块，用主题色阶代替裸转圈。
+///
+/// 来自 `search_page.dart` 的 `_SkeletonBox`/`_SkeletonRow` 模式，提到统一出口，
+/// 供 [AsyncView] 与页面共用（D-06）。色阶按第一批主题 token 取
+/// `surfaceContainerHighest`，与列表底色同调、不发亮。
+class OgLAsyncSkeleton extends StatelessWidget {
+  /// 创建。
+  const OgLAsyncSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.all(OgLSpace.xl),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _block(scheme, height: OgLSpace.md, width: 160),
+          const SizedBox(height: OgLSpace.sm),
+          _block(scheme, height: OgLSpace.sm, width: 220),
+        ],
+      ),
+    );
+  }
+
+  /// 单个圆角骨架块（色阶来自主题 token）。
+  Widget _block(ColorScheme scheme,
+      {required double height, required double width}) {
+    return Container(
+      height: height,
+      width: width,
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: OgLRadius.cSm,
+      ),
+    );
+  }
 }
 
 /// 失败面板：原因 + 重试（错误不许无声消失）。
@@ -380,37 +446,54 @@ class OgLAsyncErrorPane extends StatelessWidget {
   }
 }
 
-/// 空态面板：图标 + 一句话 + 可选动作。
+/// 空态面板：图标 + 一句话（可选副标题）+ 可选动作。
 class OgLAsyncEmptyPane extends StatelessWidget {
   /// 创建。
   const OgLAsyncEmptyPane({
     required this.icon,
     required this.text,
+    this.subtitle,
     this.action,
     super.key,
   });
 
   final IconData icon;
   final String text;
+
+  /// 可选副标题：给"下一步做什么"留一行解释（可选，兼容既有调用方）。
+  final String? subtitle;
+
+  /// 可选动作（保持可选，避免大面积调用方编译错）。
   final Widget? action;
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(OgLSpace.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(icon, size: OgLIconSize.avatar, color: scheme.outline),
-            const SizedBox(height: OgLSpace.md),
-            Text(text, textAlign: TextAlign.center),
-            if (action != null) ...<Widget>[
-              const SizedBox(height: OgLSpace.lg),
-              action!,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: Padding(
+          padding: const EdgeInsets.all(OgLSpace.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(icon, size: OgLIconSize.xl, color: scheme.outline),
+              const SizedBox(height: OgLSpace.md),
+              Text(text, textAlign: TextAlign.center),
+              if (subtitle != null) ...<Widget>[
+                const SizedBox(height: OgLSpace.xs),
+                Text(
+                  subtitle!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: scheme.onSurfaceVariant),
+                ),
+              ],
+              if (action != null) ...<Widget>[
+                const SizedBox(height: OgLSpace.lg),
+                action!,
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -490,6 +573,7 @@ class OgLAsyncSliver<T> extends StatelessWidget {
     required this.itemBuilder,
     required this.emptyIcon,
     this.emptyText,
+    this.emptyAction,
     this.padding = EdgeInsets.zero,
     super.key,
   });
@@ -508,6 +592,9 @@ class OgLAsyncSliver<T> extends StatelessWidget {
 
   /// 空态文案（缺省用 `noContent`）。
   final String? emptyText;
+
+  /// 空态动作（可选，透传给 [OgLAsyncEmptyPane]）。
+  final Widget? emptyAction;
 
   /// 行内边距。
   final EdgeInsets padding;
@@ -541,6 +628,7 @@ class OgLAsyncSliver<T> extends StatelessWidget {
             stateChild = OgLAsyncEmptyPane(
               icon: emptyIcon,
               text: emptyText ?? _t('noContent'),
+              action: emptyAction,
             );
           } else {
             final String? failure = controller.error;
