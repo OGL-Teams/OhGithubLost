@@ -34,6 +34,10 @@ void _loadZh() {
 /// 控制器现在有前置防抖与最小加载时长（见 `AsyncController.loadDebounce` /
 /// `minLoadingDuration`），widget 测试里假时钟不会自己走，必须显式推进。
 Future<void> _settleAsync(WidgetTester tester) async {
+  // AsyncController 用 DateTime.now()（真实时间）判最小显示时长，
+  // 假时钟 pump 不会推进它——必须 runAsync 让真实 Future.delayed 完成。
+  await tester.runAsync<void>(
+      () => Future<void>.delayed(const Duration(milliseconds: 650)));
   await tester.pump(const Duration(milliseconds: 350));
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 350));

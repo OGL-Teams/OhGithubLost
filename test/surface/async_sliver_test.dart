@@ -17,6 +17,9 @@ import 'package:ohgithublost/surface/app/async.dart';
 /// 加载态用的是 CircularProgressIndicator（无限动画），`pumpAndSettle` 在加载
 /// 期间永远等不到"没有待绘制帧"，只会超时——所以这里只做定长推进。
 Future<void> _settleAsync(WidgetTester tester) async {
+  // AsyncController 用真实时间判最小显示时长，runAsync 让真实 timer 完成。
+  await tester.runAsync<void>(
+      () => Future<void>.delayed(const Duration(milliseconds: 650)));
   await tester.pump(const Duration(milliseconds: 350));
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 350));
