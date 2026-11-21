@@ -6,8 +6,9 @@
 /// 1. 过渡必须包 `RepaintBoundary`（过渡期间只重合成，不重绘页面）；
 /// 2. 过渡的**视觉窗口**：实际运动只占用路线时间线的前一段
 ///    （档位越高窗口越大，观感都很快）。
-/// 3. 最保守的档位 1 **不带缩放**；档位 2 / 3 允许"极轻"缩放（≤1%），
-///    且同样必须包在 `RepaintBoundary` 里。不得引用 Flutter 默认的整页缩放过渡。
+/// 3. **所有档位一律不做整页缩放**（M3 稳定性收敛 3-2：取消 0.975 缩放，
+///    整页重光栅化是「漂浮感」与卡顿的双重根源）；不得引用 Flutter 默认的
+///    `ZoomPageTransitionsBuilder`。
 ///
 /// 档位 `0`（关闭动画）例外：直接返回 child，不做任何包装。
 library;
@@ -58,7 +59,7 @@ void main() {
   });
 
   for (final int level in <int>[1, 2, 3]) {
-    testWidgets('档位 $level：必须包 RepaintBoundary，缩放按档位分级',
+    testWidgets('档位 $level：必须包 RepaintBoundary，且无整页缩放',
         (WidgetTester tester) async {
       late BuildContext context;
       await tester.pumpWidget(
@@ -76,15 +77,11 @@ void main() {
       // ① 最外层就是 RepaintBoundary：过渡只做图层合成。
       expect(result, isA<RepaintBoundary>(),
           reason: '档位 $level 的过渡最外层必须是 RepaintBoundary');
-      // ② 真的挂进树里跑一遍：最保守的档位 1 不缩放；2 / 3 允许极轻缩放。
+      // ② 挂进树里跑一遍：M3 稳定性收敛后，所有档位一律**不做整页缩放**
+      //   （整页重光栅化是「漂浮感」与卡顿的根因，3-2 已取消 0.975 缩放）。
       await tester.pumpWidget(MaterialApp(home: result));
-      if (level == 1) {
-        expect(find.byType(ScaleTransition), findsNothing,
-            reason: '最保守的档位不做缩放（整页重光栅化的根源）');
-      } else {
-        expect(find.byType(ScaleTransition), findsOneWidget,
-            reason: '档位 $level 允许极轻缩放（≤1%）');
-      }
+      expect(find.byType(ScaleTransition), findsNothing,
+          reason: '所有档位都不做整页缩放（整页重光栅化的根源）');
       expect(find.byType(RepaintBoundary), findsWidgets);
       // ③ 也不得回退到 Flutter 的整页缩放过渡。
       expect(_builderFor(level), isNot(isA<ZoomPageTransitionsBuilder>()));

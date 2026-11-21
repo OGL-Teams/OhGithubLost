@@ -33,6 +33,7 @@ import '../settings.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
+import '../util/og_l_icons.dart';
 import '../util/accel.dart';
 import '../util/clipboard_x.dart';
 import '../util/download_proxy.dart';
@@ -589,7 +590,7 @@ class _RepoPageState extends State<RepoPage> {
                   child: ListTile(
                     dense: true,
                     contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.link),
+                    leading: const Icon(OgLIcons.copy),
                     title: Text(_t('copyCloneUrl')),
                   ),
                 ),

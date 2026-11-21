@@ -173,8 +173,10 @@ class _OgLClientShellState extends State<OgLClientShell> {
     _backHandling = true;
     try {
       final NavigatorState? navigator = Navigator.maybeOf(context);
+      // ★ 返回链接力（G-11/F-13）：用 maybePop() 让目标路由自己的 PopScope
+      //（如 dirty 表单的「放弃修改？」确认）决定是否可退，而不是硬 pop 绕过。
       if (navigator != null && navigator.canPop()) {
-        navigator.pop();
+        await navigator.maybePop();
         return;
       }
       // `atHome` 只在**真正的壳**（四页导航已可见）里才算成立：引导页 /
@@ -243,17 +245,26 @@ class _OgLClientShellState extends State<OgLClientShell> {
   }
 
   @override
-  Widget build(BuildContext context) => PopScope(
-        // 统一接管返回键：二级页 / 弹窗 / 抽屉 / tab / 退出（见 [_handleBack]）。
-        canPop: false,
-        onPopInvokedWithResult: (bool didPop, Object? result) {
-          if (didPop) {
-            return;
-          }
-          unawaited(_handleBack());
-        },
-        child: _buildShell(context),
-      );
+  Widget build(BuildContext context) {
+    // ★ F-13 / G-11：不再全局硬编码 `canPop: false`。
+    // 只有当**上方还有可退路由**时才置 true —— 此时返回键应交给该路由自己的
+    // PopScope 处理（含 dirty 表单确认），系统预测性返回手势也能 1:1 跟手；
+    // 壳本身是根路由（navigator 无可退项）时才置 false，由 [_handleBack]
+    // 接管「回上一个 tab / 双击退出」状态机。
+    // 注：push 子路由不会重建本 widget；但子路由在栈顶时由它自己的 PopScope
+    // 接管返回，本壳的 canPop 不参与，故此处取值不会造成手势被吞。
+    final bool navigatorCanPop = Navigator.maybeOf(context)?.canPop() ?? false;
+    return PopScope(
+      canPop: navigatorCanPop,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (didPop) {
+          return;
+        }
+        unawaited(_handleBack());
+      },
+      child: _buildShell(context),
+    );
+  }
 
   /// 原 shell 构建（被 [build] 包在 `PopScope` 里）。
   Widget _buildShell(BuildContext context) {

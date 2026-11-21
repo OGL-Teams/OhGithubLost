@@ -25,6 +25,7 @@ import '../app/token_exit_warning.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/og_l_icons.dart';
 import '../util/accel.dart';
 import '../util/download_proxy.dart';
 import '../util/file_preview.dart';
@@ -405,7 +406,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
             const SizedBox(height: OgLSpace.xl),
             FilledButton.icon(
               onPressed: () => setState(() => _useRaw = true),
-              icon: const Icon(Icons.link),
+              icon: const Icon(OgLIcons.openExternal),
               label: Text(_t('useRawLink')),
             ),
             const SizedBox(height: OgLSpace.sm),

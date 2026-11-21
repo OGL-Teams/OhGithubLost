@@ -6,8 +6,8 @@
 ///
 /// - 档位 `0`：**静默**（时长归零、无位移、无缩放）——无障碍 / 省电场景；
 /// - 档位 `1`：**最保守**（只淡入、最短时长、错峰只覆盖前几项、无缩放）；
-/// - 档位 `2`：**标准**（淡入 + 小位移、中等时长、错峰适度、缩放 0.99）；
-/// - 档位 `3`：**拉满**（淡入 + 较大位移 + 轻微缩放、最长时长、错峰最广）。
+/// - 档位 `2`：**标准**（淡入 + 小位移、中等时长、错峰适度、无整页缩放）；
+/// - 档位 `3`：**拉满**（淡入 + 较大位移、最长时长、错峰最广、无整页缩放）。
 ///
 /// 关键约定：**1 < 2 < 3 逐级更"重"**，即每一档的时长 / 位移 / 参与动画的项数
 /// 都**不减少**、缩放只可能出现在更高档。这样"降档"=降质量，而不是丢功能。
@@ -221,7 +221,7 @@ class OgLOAnimQuality {
           revealOffset: 0,
           revealScaleFrom: 1,
           transitionOffset: 0.03,
-          transitionScaleFrom: 0.99,
+          transitionScaleFrom: 1,
           blurSigma: 0,
           curve: Curves.easeOutCubic,
           largeCurve: Curves.easeOutQuart,
@@ -246,8 +246,8 @@ class OgLOAnimQuality {
           revealAll: true, // 每个控件都动（且效果拉满）
           revealOffset: 0.04,
           revealScaleFrom: 0.985,
-          transitionOffset: 0.05,
-          transitionScaleFrom: 0.975,
+          transitionOffset: 0.03,
+          transitionScaleFrom: 1,
           blurSigma: 6,
           curve: Curves.easeOutQuart,
           largeCurve: Curves.easeOutQuint,
@@ -312,8 +312,9 @@ abstract final class OgLMotion {
   /// 而小控件动画不受影响，于是表现为"只有页面过渡卡"。
   ///
   /// ## 5.2：按档位给**质量**
-  /// - 位移距离逐档增大（`0.012 → 0.03 → 0.05`）；
-  /// - **标准档起**允许轻微缩放（`0.99 → 0.975`），且同样包在 `RepaintBoundary` 里；
+  /// - 位移距离逐档增大（`0.012 → 0.03 → 0.03`）；
+  /// - **不做整页缩放**（7.x 结论）：缩放只在 `RepaintBoundary` 内也仍要
+  ///   反复重新光栅化；转场只用横向 shared-axis 位移 + 淡入淡出；
   /// - 过渡始终包 `RepaintBoundary`：过渡期间只重合成、不重绘页面内容。
   ///
   /// ## 7.4.1：**有界**记忆化
@@ -341,9 +342,15 @@ abstract final class OgLMotion {
         ? const _OgLInstantTransitionsBuilder()
         : _OgLSlideFadeTransitionsBuilder(
             offset: quality.transitionOffset,
-            scaleFrom: quality.transitionScaleFrom,
             curve: quality.largeCurve,
             window: quality.transitionWindow,
+            // 旧页退场比入场短：窗口 = 入场窗口 × (fast / medium)，
+            // 全部由档位表推得（不写裸时长），退场运动时长≈入场的 74–77%。
+            exitWindow: quality.medium > Duration.zero
+                ? quality.transitionWindow *
+                    quality.fast.inMicroseconds /
+                    quality.medium.inMicroseconds
+                : 0,
           );
     final PageTransitionsTheme built = PageTransitionsTheme(
       builders: <TargetPlatform, PageTransitionsBuilder>{
@@ -374,25 +381,32 @@ class _OgLInstantTransitionsBuilder extends PageTransitionsBuilder {
       child;
 }
 
-/// 统一页面过渡：淡入（+ 可选轻微缩放）+ 可选轻位移，**强制 `RepaintBoundary`**。
+/// 统一页面过渡：淡入 + 横向 shared-axis 位移 + 旧页对向退场。
+///
+/// - **方向语义**：前进（push）时新页从右向左入场，旧页向左退场；
+///   返回（pop）时由 `animation` 自身反向驱动，两页始终对向接力。
+/// - **不做整页缩放**：缩放要求整页在过渡期间反复重新光栅化（见
+///   [OgLMotion.pageTransitions] 的说明），只保留 `SlideTransition` +
+///   `FadeTransition`，强制 `RepaintBoundary`。
 class _OgLSlideFadeTransitionsBuilder extends PageTransitionsBuilder {
   /// 创建。
   ///
-  /// 注意：本类**不是** `const` 构造 —— 它缓存两条"被动曲线求值器"
+  /// 注意：本类**不是** `const` 构造 —— 它缓存被动曲线求值器
   ///（见 [_movedTween]）；实例本身由 [OgLMotion.pageTransitions] 的**有界**
   /// 缓存在每个档位上复用一份。
   _OgLSlideFadeTransitionsBuilder({
     required this.offset,
-    required this.scaleFrom,
     required this.curve,
     required this.window,
+    required this.exitWindow,
   });
 
-  /// 起始垂直位移（占页高比例；0 = 不位移）。
+  /// 起始横向位移（占页宽比例；0 = 不位移）。
   final double offset;
 
-  /// 起始缩放（1 = 不缩放；**标准档起** < 1：0.99 → 0.975）。
-  final double scaleFrom;
+  /// 旧页退场占路线时间线的窗口（由档位表 `fast / medium` 推得，
+  /// 保证退场比入场短；0 = 不做退场动画）。
+  final double exitWindow;
 
   /// 缓动。
   final Curve curve;
@@ -415,9 +429,9 @@ class _OgLSlideFadeTransitionsBuilder extends PageTransitionsBuilder {
   late final CurveTween _movedTween =
       CurveTween(curve: Interval(0.0, _windowEnd, curve: curve));
 
-  /// 淡入比落位再早一点结束（"先亮起来、再落定"），观感更灵动。
+  /// 淡入与位移**同窗结束**（不再"先亮后滑"的错位）。
   late final CurveTween _fadedTween =
-      CurveTween(curve: Interval(0.0, _windowEnd * 0.8, curve: Curves.easeOut));
+      CurveTween(curve: Interval(0.0, _windowEnd, curve: Curves.easeOut));
 
   @override
   Widget buildTransitions<T>(
@@ -448,21 +462,38 @@ class _OgLSlideFadeTransitionsBuilder extends PageTransitionsBuilder {
     //
     // 换成 `CurveTween(...).animate(animation)`（见 [_movedTween]）后：不注册
     // 监听、不留死对象；曲线取值与 `CurvedAnimation`（未传 `reverseCurve` 时）
-    // **逐点一致**，所以各档位的窗口 / 位移 / 缩放 / 曲线观感零变化。
+    // **逐点一致**，所以各档位的窗口 / 位移 / 曲线观感零变化。
+    //
+    // ## 方向语义（shared-axis X）
+    // `animation` 在 push 时 0→1、pop 时 1→0：同一条 Tween
+    // `Offset(offset, 0) → 0` 天然给出「push 从右入、pop 向右退」的相反方向，
+    // 不再像旧实现那样 push/pop 同为纵向下沉（方向不编码前进/返回）。
     final Animation<double> moved = _movedTween.animate(animation);
     final Animation<double> faded = _fadedTween.animate(animation);
     Widget result = child;
     if (offset > 0) {
       result = SlideTransition(
-        position: Tween<Offset>(begin: Offset(0, offset), end: Offset.zero)
+        position: Tween<Offset>(begin: Offset(offset, 0), end: Offset.zero)
             .animate(moved),
         child: result,
       );
     }
-    if (scaleFrom < 1) {
-      result = ScaleTransition(
-        scale: Tween<double>(begin: scaleFrom, end: 1).animate(moved),
-        child: result,
+    // 旧页退场：用 secondaryAnimation 给被覆盖/被返回的页叠一段**对向**位移
+    // + 淡出。push 时 secondary 0→1，旧页从 0 → -offset（向左被推走）；
+    // pop 时 secondary 1→0，旧页从 -offset → 0（向右滑回）——与新页始终对向
+    // 接力。退场窗口 `exitWindow` 由档位表 `fast / medium` 推得（退场比入场短），
+    // 曲线 easeIn（M3 emphasized accelerate），不写裸时长。
+    if (offset > 0 && exitWindow > 0) {
+      final Animation<double> secondaryMoved = CurveTween(
+        curve: Interval(0.0, exitWindow, curve: Curves.easeIn),
+      ).animate(secondaryAnimation);
+      result = SlideTransition(
+        position: Tween<Offset>(begin: Offset.zero, end: Offset(-offset, 0))
+            .animate(secondaryMoved),
+        child: FadeTransition(
+          opacity: Tween<double>(begin: 1, end: 0.65).animate(secondaryMoved),
+          child: result,
+        ),
       );
     }
     return RepaintBoundary(

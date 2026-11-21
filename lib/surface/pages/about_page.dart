@@ -23,6 +23,7 @@ import '../app/permissions.dart';
 import '../app/project_info.dart';
 import '../i18n/og_l_i18n.dart';
 import '../theme.dart';
+import '../util/og_l_icons.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_font.dart';
 import '../util/og_l_radius.dart';
@@ -131,7 +132,7 @@ class AboutPage extends StatelessWidget {
               ),
               ListTile(
                 contentPadding: kOgLFlatRowPadding,
-                leading: const Icon(Icons.link),
+                leading: const Icon(OgLIcons.openExternal),
                 title: Text(_t('repo')),
                 subtitle: Text(OgLProjectInfo.repositoryUrl),
                 // 整行可点：仓库地址是"想去看一眼"的东西，只能复制太别扭。

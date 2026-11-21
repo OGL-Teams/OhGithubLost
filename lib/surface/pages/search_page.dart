@@ -23,6 +23,7 @@ import '../app/refresh_indicator.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/og_l_icons.dart';
 import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
@@ -946,7 +947,7 @@ class _DiscoverPageState extends State<DiscoverPage>
               onTap: () => Navigator.of(sheetContext).pop('open'),
             ),
             ListTile(
-              leading: const Icon(Icons.copy),
+              leading: const Icon(OgLIcons.copy),
               title: Text(_t('actionCopyClone')),
               subtitle: Text(
                 'https://github.com/${repo.fullName}.git',
@@ -956,7 +957,7 @@ class _DiscoverPageState extends State<DiscoverPage>
               onTap: () => Navigator.of(sheetContext).pop('clone'),
             ),
             ListTile(
-              leading: const Icon(Icons.language),
+              leading: const Icon(OgLIcons.openExternal),
               title: Text(_t('actionOpenBrowser')),
               onTap: () => Navigator.of(sheetContext).pop('browser'),
             ),

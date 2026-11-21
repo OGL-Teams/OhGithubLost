@@ -21,6 +21,7 @@ import '../app/token_exit_warning.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/og_l_icons.dart';
 import '../util/accel.dart';
 import '../util/clipboard_x.dart';
 import '../util/download_proxy.dart';
@@ -352,7 +353,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
                         Navigator.of(sheetContext).pop();
                         unawaited(_copyAssetLink(asset));
                       },
-                      icon: const Icon(Icons.link),
+                      icon: const Icon(OgLIcons.copy),
                       label: Text(_t('copyLink')),
                     ),
                   ),
@@ -386,7 +387,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.link),
+              leading: const Icon(OgLIcons.copy),
               title: Text(_t('copyDownloadLink')),
               onTap: () {
                 Navigator.of(sheetContext).pop();

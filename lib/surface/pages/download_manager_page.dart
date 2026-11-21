@@ -16,6 +16,7 @@ import '../app/og_l_app.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/og_l_icons.dart';
 import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
 import '../util/og_l_radius.dart';
@@ -208,7 +209,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
           // 失败/取消的任务逐个点「重试」太累：一键重来全部失败项。
           IconButton(
             tooltip: _t('retryAllFailed'),
-            icon: const Icon(Icons.restart_alt),
+            icon: const Icon(OgLIcons.retryAll),
             onPressed: () => _retryAllFailed(surface),
           ),
           IconButton(
