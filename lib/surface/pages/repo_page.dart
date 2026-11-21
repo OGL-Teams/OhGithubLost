@@ -4328,7 +4328,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             const SizedBox(height: OgLSpace.sm),
             OgLSettingsActionRow(
               title: _t('description'),
-              onTap: _busy ? null : () => unawaited(_editDescription()),
+              onTap: _busy ? () {} : () => unawaited(_editDescription()),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -4344,7 +4344,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             ),
             OgLSettingsActionRow(
               title: _t('homepageLabel'),
-              onTap: _busy ? null : () => unawaited(_editHomepage()),
+              onTap: _busy ? () {} : () => unawaited(_editHomepage()),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -4360,7 +4360,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             ),
             OgLSettingsActionRow(
               title: _t('topicsLabel'),
-              onTap: _busy ? null : () => unawaited(_editTopics()),
+              onTap: _busy ? () {} : () => unawaited(_editTopics()),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -4556,7 +4556,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
                     OgLSettingsActionRow(
                       title: _t('transfer'),
                       icon: Icons.drive_file_move_outline,
-                      onTap: _busy ? null : () => unawaited(_transferRepo()),
+                      onTap: _busy ? () {} : () => unawaited(_transferRepo()),
                     ),
                     const SizedBox(height: OgLSpace.sm),
                     // A1：删除仓库需要 **admin** 权限——仅 push 的协作者此前
