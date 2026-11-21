@@ -83,7 +83,6 @@ void main() {
       loader: () async => const <int>[],
       isEmpty: (List<int> value) => value.isEmpty,
     );
-    unawaited(c.load());
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -96,6 +95,9 @@ void main() {
         ),
       ),
     );
+    // load 必须在 pumpWidget 之后发起（与"加载中骨架屏"用例同序），
+    // 否则防抖在假时钟推进前就已用真实 DateTime 进入最小显示时长分支。
+    unawaited(c.load());
     await _settleAsync(tester);
     expect(find.text('空空如也'), findsOneWidget);
     expect(find.byType(OgLAsyncSkeleton), findsNothing);
