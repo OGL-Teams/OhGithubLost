@@ -2651,6 +2651,9 @@ class _IssuesTab extends StatefulWidget {
 class _IssuesTabState extends State<_IssuesTab> {
   String _state = 'open';
 
+  /// 写操作防重入（close/lock 等；4-2 反馈闭环）。
+  bool _busy = false;
+
   /// 列表滚动位置：`ScrollAwareAction` 读它判定「收边 / 弹回 / 近底部」。
   final ScrollController _scroll = ScrollController();
   late final PagedController<Map<String, dynamic>> _paged =
@@ -4325,7 +4328,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             const SizedBox(height: OgLSpace.sm),
             OgLSettingsActionRow(
               title: _t('description'),
-              onTap: _busy ? null : _editDescription,
+              onTap: _busy ? null : () => unawaited(_editDescription()),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -4341,7 +4344,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             ),
             OgLSettingsActionRow(
               title: _t('homepageLabel'),
-              onTap: _busy ? null : _editHomepage,
+              onTap: _busy ? null : () => unawaited(_editHomepage()),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -4357,7 +4360,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             ),
             OgLSettingsActionRow(
               title: _t('topicsLabel'),
-              onTap: _busy ? null : _editTopics,
+              onTap: _busy ? null : () => unawaited(_editTopics()),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -4553,7 +4556,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
                     OgLSettingsActionRow(
                       title: _t('transfer'),
                       icon: Icons.drive_file_move_outline,
-                      onTap: _busy ? null : _transferRepo,
+                      onTap: _busy ? null : () => unawaited(_transferRepo()),
                     ),
                     const SizedBox(height: OgLSpace.sm),
                     // A1：删除仓库需要 **admin** 权限——仅 push 的协作者此前
