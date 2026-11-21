@@ -152,7 +152,7 @@ class OgLNotifier {
         // 时长只从本文件的常量取（等待语义，非动画档位）。
         duration: hasAction ? kNotifierActionDuration : kNotifierDuration,
         action: hasAction
-            ? SnackBarAction(label: actionLabel, onPressed: onAction!)
+            ? SnackBarAction(label: actionLabel, onPressed: onAction)
             : null,
       ),
     );

@@ -253,13 +253,10 @@ class _IssuePageState extends State<IssuePage> {
         dialogBusy: _dialogBusy,
       );
       if (ok) {
-        if (mounted) {
-          setState(() => _title = newTitle);
-          OgLNotifier.of(context).info(_t('issueEdited'));
-        }
-        if (context.mounted) {
-          Navigator.of(context).pop(true);
-        }
+        if (!mounted) return;
+        setState(() => _title = newTitle);
+        OgLNotifier.of(context).info(_t('issueEdited'));
+        Navigator.of(context).pop(true);
       }
     }
 
@@ -314,13 +311,10 @@ class _IssuePageState extends State<IssuePage> {
         dialogBusy: _dialogBusy,
       );
       if (ok) {
-        if (mounted) {
-          setState(() => _labels = target);
-          OgLNotifier.of(context).info(_t('labelsUpdated'));
-        }
-        if (context.mounted) {
-          Navigator.of(context).pop(true);
-        }
+        if (!mounted) return;
+        setState(() => _labels = target);
+        OgLNotifier.of(context).info(_t('labelsUpdated'));
+        Navigator.of(context).pop(true);
       }
     }
 
@@ -361,13 +355,10 @@ class _IssuePageState extends State<IssuePage> {
         dialogBusy: _dialogBusy,
       );
       if (ok) {
-        if (mounted) {
-          setState(() => _assignees = target);
-          OgLNotifier.of(context).info(_t('assigneesUpdated'));
-        }
-        if (context.mounted) {
-          Navigator.of(context).pop(true);
-        }
+        if (!mounted) return;
+        setState(() => _assignees = target);
+        OgLNotifier.of(context).info(_t('assigneesUpdated'));
+        Navigator.of(context).pop(true);
       }
     }
 
@@ -415,7 +406,8 @@ class _IssuePageState extends State<IssuePage> {
           ? widget.surface.domain.api.lockIssue(widget.fullName, _number)
           : widget.surface.domain.api.unlockIssue(widget.fullName, _number),
     );
-    if (ok && mounted && context.mounted) {
+    if (ok) {
+      if (!mounted) return;
       setState(() => _locked = locking);
       OgLNotifier.of(context).info(locking ? _t('locked') : _t('unlocked'));
     }
@@ -500,11 +492,11 @@ class _IssuePageState extends State<IssuePage> {
         dialogBusy: _dialogBusy,
       );
       if (ok) {
-        if (mounted && context.mounted) {
-          OgLNotifier.of(context).info(_t('commentEdited'));
-          await _commentsC().load();
-          Navigator.of(context).pop(true);
-        }
+        if (!mounted) return;
+        OgLNotifier.of(context).info(_t('commentEdited'));
+        await _commentsC().load();
+        if (!mounted) return;
+        Navigator.of(context).pop(true);
       }
     }
 
@@ -538,7 +530,8 @@ class _IssuePageState extends State<IssuePage> {
       () => widget.surface.domain.api
           .deleteIssueComment(widget.fullName, commentId),
     );
-    if (ok && mounted && context.mounted) {
+    if (ok) {
+      if (!mounted) return;
       OgLNotifier.of(context).info(_t('commentDeleted'));
       await _commentsC().load();
     }
@@ -585,7 +578,8 @@ class _IssuePageState extends State<IssuePage> {
         state: closingState ? 'closed' : 'open',
       ),
     );
-    if (ok && mounted && context.mounted) {
+    if (ok) {
+      if (!mounted) return;
       setState(() => _state = closingState ? 'closed' : 'open');
     }
   }
@@ -628,9 +622,8 @@ class _IssuePageState extends State<IssuePage> {
       }
       _comment.clear();
       await _commentsC().load();
-      if (mounted) {
-        OgLNotifier.of(context).info(_t('commentPosted'));
-      }
+      if (!mounted) return;
+      OgLNotifier.of(context).info(_t('commentPosted'));
     } catch (error) {
       OgLAppLog.instance.add(
         // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
