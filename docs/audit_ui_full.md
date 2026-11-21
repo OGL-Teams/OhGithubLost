@@ -1,5 +1,7 @@
 # UI 全面审查（语义 / 动效 / 操作逻辑 / 屏幕尺寸 / 输入方式适配）
 
+
+> **更新时间 / Last Updated**：2026-11-14 13:09:09　**对应版本 / Version**：v14.0.0
 仓库 HEAD `e32cd53`（v12.6.7 已发布）。**只读专项，未修改任何源码 / i18n / 配置**；本报告是本次唯一写入。
 方法：完整阅读 `theme.dart`、`app/motion.dart`、`app/animations.dart`、`app/client_shell.dart`、`app/back_guard.dart`、`app/refresh_indicator.dart`、`app/async.dart`（状态切换段）、`app/og_l_app.dart`、`platform/window_capability.dart`；抽查全部 27 个 pages 的关键字段（手势、时长、字号、断点、tooltip、mounted、dispose）；运行 `tool/motion_audit.py`、`tool/ui_audit.py`、`tool/i18n_scan.py` 三个 CI 门禁取基线。严重级别：P1（桌面端核心输入不可用 / 功能不可达）> P2（明显缺陷，可用但有损）> P3（打磨项）。
 

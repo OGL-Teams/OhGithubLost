@@ -1,5 +1,7 @@
 # 审计报告 · 视角 A：分层与桥接制度的实现正确性
 
+
+> **更新时间 / Last Updated**：2026-11-11 23:16:41　**对应版本 / Version**：v14.0.0
 - 仓库：/root/OhGithubLost（main，v12.5.2，kOgLAppVersion 与 pubspec 一致）
 - 范围：AGENTS.md、docs/ARCHITECTURE.md、docs/QUALITY_STANDARD.md 第一章、tool/layer_audit.py、tool/contract_audit.py，及 lib/ 全部 import/export 边（静态逐边提取，非仅跑脚本）
 - 基线实测：`python3 tool/layer_audit.py --fatal` → 文件 154（find 实为 161 个 .dart，见 A-11）、KNOWN 2、违规 0；`contract_audit.py --fatal` → 4 项 0 处，exit 0。

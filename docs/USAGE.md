@@ -4,6 +4,8 @@
 > **适用读者**：OGL 的终端使用者
 > **约定**：每节均按「前置条件 → 步骤 → 预期结果」组织；故障排查统一收录于文末「故障排除」。
 
+> **更新时间 / Last Updated**：2026-11-02 22:58:45　**对应版本 / Version**：v14.0.0
+
 ## 关于本应用
 
 OhGithubLost（OGL）是一款 GitHub 仓库管理客户端，支持 Android、Windows、Linux 与 Web。读者可借助 OGL 浏览与编辑仓库、处理 Issues 与 Pull Requests、查看 Releases 与 Actions、管理 Gist，而无需打开浏览器。

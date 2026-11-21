@@ -4,6 +4,8 @@
 > 只审不改。逐文件完整阅读，非 rg 摘要。裁决依据：docs/QUALITY_STANDARD.md、AGENTS.md、docs/CONSISTENCY.md（均已完整读）。
 > 每条含：编号 / 文件:行号 / 问题 / 用户可见后果 / 级别 / 原则编号 / 确证情况与代码证据。
 
+> **更新时间 / Last Updated**：2026-11-09 04:38:22　**对应版本 / Version**：v14.0.0
+
 ---
 
 ## 发现

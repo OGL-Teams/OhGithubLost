@@ -1,5 +1,7 @@
 # i18n 分片级精译任务书（子代理 + andrew-translate skill）
 
+
+> **更新时间 / Last Updated**：2026-11-17 06:44:44　**对应版本 / Version**：v14.0.0
 ## 目标
 按 andrew-translate skill 的核心纪律，把简体中文界面文案精译成目标语言，产出可直接接入应用的完整语言包。
 禁止调用任何机翻接口（`i18n_translate.py`、B 站 Index-Translate 等一律不用），全部由你的语言能力精译。

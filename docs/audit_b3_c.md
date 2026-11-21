@@ -4,6 +4,8 @@
 >
 > **审计时点说明（跨批合并时请对齐）**：本报告依据各文件在本批 `file_read` 完成时刻的内容。收尾复核时观察到共享工作区被其它批次并发改动：`lib/domain/gh/gh_api.dart` 的 `lockIssue` 头注释与方法由 `NetMethod.patch` 改为 `NetMethod.put`，并新增 `test/domain/gh_write_endpoints_test.dart`；`docs/audit_b3_a.md` / `audit_b3_b.md` 亦被并行写入。这些改动**不是本视角所做**（本任务只写 `docs/audit_b3_c.md`，未写 `lib/`），且未在本批范围内完整阅读，**不并入本批结论、不据此改判**。故 B3-C-05（lockIssue 头注释）与 B3-C-09（测试覆盖缺口）的证据与行号以各自读取时点快照为准；若其它批次已补端点测试，请将该条理解为「本批读取时点无断言」，不要当成对最终工作区的断言。
 
+> **更新时间 / Last Updated**：2026-11-09 04:30:52　**对应版本 / Version**：v14.0.0
+
 ---
 
 ### B3-C-01 [P1] CONSISTENCY.md 的 206 回执描述落后于实现

@@ -1,5 +1,7 @@
 # 第 4 批 · 视角 C（契约与规范一致性）· 下载管理链路审计
 
+
+> **更新时间 / Last Updated**：2026-11-09 04:46:59　**对应版本 / Version**：v14.0.0
 - 目标：`/root/OhGithubLost`（v12.0.0 LTS 工作区）
 - 范围：`lib/domain/ix/` 全部 13 文件 + `lib/base/net/range_download*.dart`（2 文件）+
   `lib/kernel/contract/download_engine.dart` + `lib/surface/pages/download_manager_page.dart` +

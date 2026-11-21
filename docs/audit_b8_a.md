@@ -1,5 +1,7 @@
 # 第8批 · 视角A：i18n 门禁实现正确性审计（v12.0.0 LTS）
 
+
+> **更新时间 / Last Updated**：2026-11-09 07:00:53　**对应版本 / Version**：v14.0.0
 审计方式：范围内文件全部 `file_read` 完整读（含 677 行 `inject_platform_spec.py` 分两段读、134 行 common.json 全文读），未以 rg 正则代替阅读；裁决依据 `docs/QUALITY_STANDARD.md`（59 条原则）、`AGENTS.md`（95 行）均完整读。只审不改，**未写 lib/**；python 门禁与 CLI 探针只在 `/tmp` 或临时目录运行，未改动仓库任何受审文件。
 实测环境：Alpine Linux aarch64 / Python 3；`dart`、`flutter` 均不在 PATH（`which` 返回空），故所有 Dart 运行时行为由源码静态推导，需运行时的条目一律标「待议」。
 

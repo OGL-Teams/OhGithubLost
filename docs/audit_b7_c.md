@@ -3,6 +3,8 @@
 > 范围：lib/surface/theme.dart、app/font_loader.dart、font_pick.dart、og_l_app_bar.dart、motion.dart、settings.dart（外观段）、widgets/anim/anim_preload.dart、tool/ui_audit.py / motion_audit.py / perf_audit.py、test/surface/ 相关测试、AGENTS.md / docs/QUALITY_STANDARD.md / docs/USAGE.md（外观章节）。
 > 只审不改。三个门禁脚本已实际运行：ui_audit 0 处、motion_audit 0 处（扫描 73 文件）、perf_audit 未登记例外 0 处。提交基线 05b683a（v12.0.0+120000）。
 
+> **更新时间 / Last Updated**：2026-11-09 06:05:34　**对应版本 / Version**：v14.0.0
+
 ---
 
 ## 发现清单

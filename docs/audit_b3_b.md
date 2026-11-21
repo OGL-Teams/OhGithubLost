@@ -4,6 +4,8 @@
 > 裁决依据：docs/QUALITY_STANDARD.md（原则 10/11/12/39/40/41/42/44/52）、AGENTS.md（令牌安全 / 重定向守卫 / D1–D7）、docs/CONSISTENCY.md、docs/NETWORK.md。
 > 范围内全部文件已 file_read 完整阅读（非 rg 抽样）。涉及端点实测的条目标「待议」。
 
+> **更新时间 / Last Updated**：2026-11-09 04:30:52　**对应版本 / Version**：v14.0.0
+
 ---
 
 ## 确证发现

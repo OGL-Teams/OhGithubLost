@@ -1,5 +1,7 @@
 # 网络层 + 数据层 代码审计（audit_net_data.md）
 
+
+> **更新时间 / Last Updated**：2026-11-07 13:31:42　**对应版本 / Version**：v14.0.0
 审计范围：lib/base/net/（12 文件）、lib/base/disk/（12 文件）、lib/domain/gh/（gh_api/gh_client/repo_file_service）、lib/domain/ix/（ix_presign/ix_download/ix_conflict）、lib/kernel/contract/。
 依据：docs/QUALITY_STANDARD.md（59 条）+ AGENTS.md。
 

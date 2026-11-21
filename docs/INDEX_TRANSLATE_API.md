@@ -1,5 +1,7 @@
 # B站 Index-Translate 翻译 API · Agent 集成文档 / Bilibili Index-Translate API · Agent Integration
 
+
+> **更新时间 / Last Updated**：2026-11-16 00:49:40　**对应版本 / Version**：v14.0.0
 版本 / Version：基于 2026-11 公开接口现状 / Based on the public API as of 2026-11
 定位 / Scope：面向 Agent 调用方的技术契约与质量调优指南 / Technical contract and quality guide for Agent callers
 适用模型 / Models：Index-Translate-35B-A3B / 9B / 2B，音节控制专项 / syllable-controlled Index-Homura-9B / 2B

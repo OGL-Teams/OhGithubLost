@@ -3,6 +3,8 @@
 > 项目：OhGithubLost v12.0.0 LTS · 只审不改 · 依据 docs/QUALITY_STANDARD.md / AGENTS.md / docs/NETWORK.md
 > 审计日期：本批静态审计（未连真机，运行时项标「待议」）。
 
+> **更新时间 / Last Updated**：2026-11-09 04:58:23　**对应版本 / Version**：v14.0.0
+
 ---
 
 ## 发现清单

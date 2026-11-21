@@ -4,6 +4,8 @@
 > **生效 / Effective**：自 v12.6.10 起 / Since v12.6.10  
 > **适用 / Scope**：本仓库全部 Markdown 文档 / All Markdown documents in this repository
 
+> **更新时间 / Last Updated**：2026-11-15 12:27:34　**对应版本 / Version**：v14.0.0
+
 本文件确立唯一的文档体例。各目录既有规范（如 `changed/_content/_STYLE.md`、
 `release_notes/README.md`）不得与本文件冲突；冲突时以本文件为准。
 This document establishes the single documentation convention. Directory-level
@@ -12,6 +14,15 @@ guides shall not conflict with it; where they do, this document prevails.
 ---
 
 ## 一、通用文风 / General Style
+
+**文档戳 / Document stamp**：每篇技术文档在标题（及既有引言引用块）之后、正文之前，
+必须标注一行引用块戳：**更新时间精确到秒**（取该文档在 git 中的最后提交时间）与
+**对应版本**。历史审计报告的戳反映其撰写时刻，不随版本重写。新文档创建时即加戳。
+**Document stamp**: every technical document carries, immediately after its title
+(and any existing lead quote block) and before the body, a quote-block stamp with
+**last-updated time to the second** (from the document's latest git commit) and the
+**corresponding version**. Stamps on historical audit reports reflect their writing
+time and are not rewritten per release. New documents are stamped at creation.
 
 | 项 / Item | 规范 / Rule |
 | --- | --- |

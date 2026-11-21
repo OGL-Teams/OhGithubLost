@@ -1,5 +1,7 @@
 # MD3 Compliance Audit Report
 
+
+> **更新时间 / Last Updated**：2026-11-15 10:32:39　**对应版本 / Version**：v14.0.0
 Target: `/root/OhGithubLost`（Flutter 多平台 GitHub 客户端，v12.6.9，HEAD `40b7831`）
 Date: 2026-11-15
 Method: 只读源码审计（grep 证据 + 关键文件通读 + 运行 `tool/motion_audit.py` / `tool/motion_coverage_audit.py`）

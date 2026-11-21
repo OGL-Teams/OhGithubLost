@@ -3,6 +3,8 @@
 > 仓库：OhGithubLost v12.0.0 LTS · 只审不改 · 裁决依据：docs/QUALITY_STANDARD.md / AGENTS.md
 > 审计范围：tool/boot_manifest.py、tool/inject_platform_spec.py、tool/pin_min_sdk.py、.github/workflows/build.yml、lib/surface/i18n/og_l_i18n.dart、assets/i18n/zh/shell.json、test/kernel/boot_release_chain_test.dart（另核对 lib/main.dart、lib/kernel/boot/boot_loader.dart、gh_oauth.dart 以确证后门与注入面）。
 
+> **更新时间 / Last Updated**：2026-11-09 06:53:04　**对应版本 / Version**：v14.0.0
+
 ---
 
 ## 发现清单

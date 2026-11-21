@@ -1,5 +1,7 @@
 # 第 1 批 · 视角 C（契约与规范一致性）· 网络传输层审计
 
+
+> **更新时间 / Last Updated**：2026-11-08 18:00:29　**对应版本 / Version**：v14.0.0
 - 目标：`/root/OhGithubLost`，main 分支 `dfd867f`（工作区 HEAD 与之一致）
 - 范围：`lib/base/net/` 全部 12 文件 + `lib/kernel/contract/net_types.dart` + `test/base/` 网络相关测试
   + `docs/NETWORK.md` + `docs/ARCHITECTURE.md`

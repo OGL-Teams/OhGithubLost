@@ -4,6 +4,8 @@
 > 基线：main 分支 `dfd867f`（v11.2.0，CI/Build 全绿）；质量依据
 > `docs/QUALITY_STANDARD.md`（59 条原则）+ `AGENTS.md`（分层与门禁数字）。
 
+> **更新时间 / Last Updated**：2026-11-08 23:05:32　**对应版本 / Version**：v14.0.0
+
 ## 机制
 
 | 项 | 约定 |

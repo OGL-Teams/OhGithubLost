@@ -5,6 +5,8 @@
 > 历史审计报告不属四型，归**审计档案**类，全部登记于 [`AUDIT_INDEX.md`](AUDIT_INDEX.md)。
 > 状态标注 / Status marks：✅ 现行有效 · 🕒 状态快照（结论有日期，引用前先核对现状）。
 
+> **更新时间 / Last Updated**：2026-11-19 21:32:49　**对应版本 / Version**：v14.0.0
+
 ## 规范 / Normative（长期裁决依据，本域最高权威）
 
 | 文件 / File | 类型 / Type | 状态 / Status |

@@ -6,6 +6,8 @@
 > 端点语义核查：拉取 GitHub 官方 OpenAPI 描述 `descriptions/api.github.com/api.github.com.json`（14.2 MB）解析 `paths[].*.operationId` / 请求体 / 响应；对 `lock` 端点、`/readme` 的 `Accept`、`/releases/latest`、游客 `/notifications` 做匿名实测。实测受限处一律标「待议」，不冒充确证。
 > 每条格式：编号 · 文件:行号 · 问题一句话 · 用户可见后果 · P0/P1/P2 · 违反原则编号 · 是否确证 + 代码证据。
 
+> **更新时间 / Last Updated**：2026-11-09 04:30:52　**对应版本 / Version**：v14.0.0
+
 ---
 
 ## B3-A-01 · `lockIssue` 用了 PATCH，GitHub 官方端点是 PUT（P0，确证）

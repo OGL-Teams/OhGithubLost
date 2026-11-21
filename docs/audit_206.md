@@ -8,6 +8,8 @@
 > 以及写链路 `lib/domain/gh/gh_api.dart` / `lib/base/disk/disk_cache.dart`
 > 均已完整 `file_read`（非 rg 摘要）。行号以本工作区当前内容为准。
 
+> **更新时间 / Last Updated**：2026-11-08 12:32:17　**对应版本 / Version**：v14.0.0
+
 ## A-206-01 · 代理截断写响应体：206 的分段体被当完整 JSON 回执解析（P0，已修复）
 
 ### 编号

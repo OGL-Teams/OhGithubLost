@@ -2,6 +2,8 @@
 
 > 用户指令（2026-11-19）：sota-ux-writing 读字典重写界面文案；sota-docs-workflow 重写技术文档；sota-copywriting 重写 README；三个 skill 交子代理执行审计+修改；计划书追加同时写入记忆；在 MD3 工作完成后，分四步（四个小版本）实现全部功能，发布 v14 正式版。
 
+> **更新时间 / Last Updated**：2026-11-20 02:39:36　**对应版本 / Version**：v14.0.0
+
 ## 前置（已完成）
 - MD3 全面执行：commit 0851f7f + 三轮 CI 修复（71ca2d4），CI 绿 / Build 收尾中。
 - V2 审计 97/100（docs/MD3_AUDIT_V2.md，V1 90）。

@@ -1,5 +1,7 @@
 # v12.6.0 LTS 发布后 · DNS / 网络功能专项复核
 
+
+> **更新时间 / Last Updated**：2026-11-12 22:12:07　**对应版本 / Version**：v14.0.0
 - 审查对象：HEAD `5c84d6f`（v12.6.0 LTS），只读审查，未修改任何源码/文档（本文件除外），未执行任何 git 写操作。
 - 权威口径：`docs/NETWORK.md`、`AGENTS.md` 网络章节、`docs/QUALITY_STANDARD.md` 第七章（§39–44）、批 1 审计（`docs/audit_b1_*.md`）、`docs/audit_debug_empty_fail.md`（DBG-04）、TOKEN-EXIT-01 / B7-B-01。
 - 环境限制：本地无 Flutter/Dart SDK，未跑 `flutter test` / `dart analyze`；结论来自静态代码路径核对。凡「库内部行为」类结论一律放入「推测」章节。

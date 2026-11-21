@@ -1,3 +1,5 @@
+> **更新时间 / Last Updated**：2026-11-20 02:12:22　**对应版本 / Version**：v14.0.0
+
 
 ## 第 1 批（ja, ko, es, pt, it, nl, pl, tr）· 分片 repo_tags · 键 create
 

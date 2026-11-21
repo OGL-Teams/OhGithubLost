@@ -1,5 +1,7 @@
 # UI 层（lib/surface/）代码审查记录
 
+
+> **更新时间 / Last Updated**：2026-11-07 09:24:20　**对应版本 / Version**：v14.0.0
 依据：docs/QUALITY_STANDARD.md（59 条）与 AGENTS.md。逐条含编号、位置、问题、违反原则、严重级别、用户可见后果；已修复项附「修复：」段落。
 
 ## UI-01 · lib/surface/app/async.dart:96-141

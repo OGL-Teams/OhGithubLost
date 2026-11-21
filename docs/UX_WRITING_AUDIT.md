@@ -1,5 +1,7 @@
 # UX 文案审计报告（zh 源 + en 基线同步）
 
+
+> **更新时间 / Last Updated**：2026-11-19 21:32:49　**对应版本 / Version**：v14.0.0
 审计依据：sota-ux-writing skill（rules/01–04 全部 Audit checklist）。
 范围：assets/i18n/zh 全部 28 分片（1272 键）；en 仅同步被改键。
 约束遵守：未改键名/键集合/键顺序/占位符多重集；未动其余 28 语言；未 commit；未动 lib/。

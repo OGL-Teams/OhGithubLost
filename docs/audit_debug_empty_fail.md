@@ -1,5 +1,7 @@
 # 排查报告：仓库列表为空 & 下载经常失败（2026-11-07）
 
+
+> **更新时间 / Last Updated**：2026-11-07 09:24:20　**对应版本 / Version**：v14.0.0
 ## DBG-01 · P0（已修复）· 编译错误：`_kUnset` 未定义 → 带 Authorization 的所有 API 请求全灭
 
 - 文件：`lib/base/net/io_net_transport.dart`（重定向守卫新代码）

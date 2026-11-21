@@ -7,6 +7,8 @@
 > 裁决依据：docs/QUALITY_STANDARD.md、AGENTS.md、docs/CONSISTENCY.md（均已完整读）。
 > 只审不改。每条含：文件:行号、一句话问题、用户可见后果、优先级、原则编号、确证状态。
 
+> **更新时间 / Last Updated**：2026-11-09 04:58:23　**对应版本 / Version**：v14.0.0
+
 ---
 
 ## B5-A-01 · client_shell.dart:126-128 — 游客态被 `_check` 的同步段强行保留（_guest 置 false 链条，B3-A-04 同源）

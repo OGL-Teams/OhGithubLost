@@ -1,5 +1,7 @@
 # 视角 B 审查报告：UI 动画补全 + UI 细节打磨（v12.5.2，只审不改）
 
+
+> **更新时间 / Last Updated**：2026-11-11 23:16:41　**对应版本 / Version**：v14.0.0
 审计人：视角 B。方法：静态通读 `lib/surface/app/animations.dart` / `motion.dart`、`tool/motion_audit.py`、`tool/ui_audit.py`、`tool/perf_audit.py`，逐页扫描 `lib/surface/pages/`、`lib/surface/widgets/`，并实际运行三个审计脚本复核门禁现状。
 所有行号基于 main @ v12.5.2。
 

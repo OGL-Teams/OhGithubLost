@@ -3,6 +3,8 @@
 > 目标层级与分阶段计划 / Target layers and staged plan.
 > 体例从属于 / Convention: [`DOCUMENT_STYLE.md`](DOCUMENT_STYLE.md).
 
+> **更新时间 / Last Updated**：2026-11-15 19:29:40　**对应版本 / Version**：v14.0.0
+
 ## 一、目标 / Goal
 
 补齐仓库 Git tags 的读取与管理，并据此扩展设置页的可配置内容，作为下一个

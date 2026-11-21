@@ -1,5 +1,7 @@
 # 第 1 批 · 视角 A（实现正确性）· 网络传输层审计
 
+
+> **更新时间 / Last Updated**：2026-11-08 18:00:29　**对应版本 / Version**：v14.0.0
 - 目标：`/root/OhGithubLost`，main 分支 `dfd867f`，范围 `lib/base/net/*` + `lib/kernel/contract/net_types.dart`
 - 裁决依据：`docs/QUALITY_STANDARD.md`（下称「原则 N」）、`AGENTS.md`
 - 纪律：只审不改；`lib/` 未改动；范围文件全部用 file_read 完整读取

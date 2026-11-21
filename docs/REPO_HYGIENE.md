@@ -10,6 +10,8 @@
 > 相对链接死链实测 0。下方数字与结论保留原样作为历史记录，不代表当前口径；
 > 当前权威现状见 [`CONVERGENCE_STATUS.md`](CONVERGENCE_STATUS.md)。
 
+> **更新时间 / Last Updated**：2026-11-15 23:45:21　**对应版本 / Version**：v14.0.0
+
 ## 一、docs/ 文件总数与分类统计
 
 共 **56** 个 `.md` 文件：

@@ -4,6 +4,8 @@
 > 方法：AGENTS.md / QUALITY_STANDARD.md / CONSISTENCY.md / ARCHITECTURE.md / release_notes/README.md / changed/_content/_STYLE.md 全文读；全部门禁脚本实跑（仓库根 + /tmp 双 CWD）；release 四方（release_notes/ _content/ releases.json/ _posts/）脚本比对；test/ 全清单 + 抽读。
 > 行号以当前工作区（v12.5.2）为准。区分【确证】（静态+实跑）与【推测】。
 
+> **更新时间 / Last Updated**：2026-11-11 23:16:41　**对应版本 / Version**：v14.0.0
+
 **统计：共 17 条 —— P0×1，P1×7，P2×9。**（另有 3 项正面确认，不计入缺陷。）
 
 ---

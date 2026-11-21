@@ -3,6 +3,8 @@
 > 依据：docs/QUALITY_STANDARD.md（原则 8–14、15–21、22–29）、AGENTS.md §3/§5。
 > 纪律：只审不改；发现一条立即追加。编号 B2-A-xx；含文件:行号、问题描述、修复前 vs 修复后行为差异、用户可见后果、优先级、违反原则编号、确证/待议（附代码证据）。
 
+> **更新时间 / Last Updated**：2026-11-08 19:11:46　**对应版本 / Version**：v14.0.0
+
 ## B2-A-01 · `putContent` 回退失效 `_cache!.invalidate` 在键锁内自锁（P0，确证）
 
 - **文件:行号**：`lib/domain/gh/gh_api.dart:816-823`（`putContent` 写成功后"同步失效底座缓存"），配合 `lib/base/disk/disk_cache.dart:686-693`（`_writeLocked` 持锁调用 `_remote.write`）、`lib/domain/gh/gh_api.dart:1993-2007`（`CacheRemote.write → putContent`）、`disk_cache.dart:284-287`（`invalidate` 也进同一把 `_mutex.run`）、`disk_cache.dart:107-123`（`_KeyedMutex.run` 等待前序 `completer.future`）。

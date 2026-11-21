@@ -3,6 +3,8 @@
 > 排查范围：提交链（code_editor_page → gh_api.putContentLocked → disk_cache D1–D7 → gh_client → io_net_transport / net_transport）与下载链（repo_page / release_detail_page / action_run_page / gist_detail_page / file_preview_page → token_exit_warning / download_proxy → ix_download / ix_download_backend_io / ix_presign / range_download_io）。
 > 纪律：全部文件已完整阅读（非 rg 摘要）；每条含 文件:行号 / 根因 / 用户可见后果 / 违反的质量原则 / 修复方法。
 
+> **更新时间 / Last Updated**：2026-11-08 00:46:53　**对应版本 / Version**：v14.0.0
+
 ## SD-01 · 空串 baseSha 使新建文件被 D1/D2 拦死（P0，已修复）
 
 - 位置：`lib/base/disk/disk_cache.dart:870-905`（`_writeLocked` 的 D1/D2/D2′ 判定）；触发源 `lib/surface/pages/drafts_page.dart:152`（`baseSha: record.baseSha ?? ''`）。
