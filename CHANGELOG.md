@@ -1,5 +1,12 @@
 # 更新日志 / Changelog
 
+## 15.0.0（2026-11-22）
+
+### 变更 / Changed
+
+- UX 稳定性大版本：15 席交叉审计 61 条确证问题分四批修复（主题层接地/骨架与空态/外壳与转场/反馈闭环），直指空、漂浮感与不稳定感。
+  UX stability release: 61 confirmed issues from fifteen cross-audits fixed in four batches (theme grounding / skeletons and states / shell and transitions / feedback closure), targeting emptiness, floating feel and instability.
+
 ## 14.0.0（2026-11-20）
 
 ### 新增 / Added
