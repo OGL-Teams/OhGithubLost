@@ -481,7 +481,7 @@ class OgLAsyncEmptyPane extends StatelessWidget {
               const SizedBox(height: OgLSpace.md),
               Text(text, textAlign: TextAlign.center),
               if (subtitle != null) ...<Widget>[
-                const SizedBox(height: OgLSpace.xs),
+                const SizedBox(height: OgLSpace.sm),
                 Text(
                   subtitle!,
                   textAlign: TextAlign.center,

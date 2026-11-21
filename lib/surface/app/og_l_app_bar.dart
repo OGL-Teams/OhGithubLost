@@ -113,14 +113,15 @@ class _OgLAppBarState extends State<OgLAppBar> {
       //   pixels 有界夹紧，避免异常负值/超大值。
       for (final ScrollPosition position in controller.positions) {
         if (position.axis == Axis.vertical && position.hasPixels) {
-          final double offset =
-              (position.pixels - position.minScrollExtent).clamp(0.0, 1 << 20);
-          next = (offset / _kRange).clamp(0.0, 1.0);
+          final double offset = (position.pixels - position.minScrollExtent)
+              .clamp(0.0, 1 << 20)
+              .toDouble();
+          next = (offset / OgLAppBar._kRange).clamp(0.0, 1.0).toDouble();
           break;
         }
       }
     }
-    if ((next - _progress.value).abs() >= _kStep ||
+    if ((next - _progress.value).abs() >= OgLAppBar._kStep ||
         (next == 0 && _progress.value != 0) ||
         (next == 1 && _progress.value != 1)) {
       _progress.value = next;
