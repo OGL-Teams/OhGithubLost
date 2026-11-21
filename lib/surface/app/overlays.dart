@@ -84,25 +84,75 @@ Future<T?> ogLShowDialog<T>({
   );
 }
 
-/// 所有编辑页共用的放弃修改确认；按钮明确说明结果，不使用泛化的“确定”。
-Future<bool?> ogLConfirmDiscardChanges(BuildContext context) =>
-    ogLShowDialog<bool>(
+/// 统一确认对话框。
+///
+/// [danger] 为 `true` 时（删除 / 归档 / 移除账号 / 清日志等**不可逆**操作），
+/// 确认按钮用 `colorScheme.error` 打底；普通操作用 `FilledButton.tonal`，
+/// 两级视觉从此不再混淆。按钮文案一律由调用方给（已 i18n 的串），
+/// 不在这里做任何硬编码。
+Future<bool?> ogLConfirm({
+  required BuildContext context,
+  required String title,
+  required String body,
+  required String confirmText,
+  String? cancelText,
+  bool danger = false,
+}) {
+  final OgLI18n i18n = OgLI18n.instance;
+  return ogLShowDialog<bool>(
+    context: context,
+    builder: (BuildContext dialogContext) => AlertDialog(
+      title: Text(title),
+      content: Text(body),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(cancelText ?? i18n.t('common', 'cancel')),
+        ),
+        danger
+            ? FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(dialogContext).colorScheme.error,
+                ),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(confirmText),
+              )
+            : FilledButton.tonal(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(confirmText),
+              ),
+      ],
+    ),
+  );
+}
+
+/// 危险操作确认（[ogLConfirm] 的 `danger: true` 快捷方式）。
+Future<bool?> ogLDangerConfirm({
+  required BuildContext context,
+  required String title,
+  required String body,
+  required String actionText,
+  String? cancelText,
+}) =>
+    ogLConfirm(
       context: context,
-      builder: (BuildContext dialogContext) {
-        final OgLI18n i18n = OgLI18n.instance;
-        return AlertDialog(
-          title: Text(i18n.t('code_editor_page', 'discardTitle')),
-          content: Text(i18n.t('code_editor_page', 'discardDesc')),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(i18n.t('code_editor_page', 'continueEditing')),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(i18n.t('code_editor_page', 'discardChanges')),
-            ),
-          ],
-        );
-      },
+      title: title,
+      body: body,
+      confirmText: actionText,
+      cancelText: cancelText,
+      danger: true,
     );
+
+/// 所有编辑页共用的放弃修改确认；按钮明确说明结果，不使用泛化的“确定”。
+///
+/// 放弃修改同样是数据丢失操作，确认钮走 [ogLDangerConfirm] 的 error 配色。
+Future<bool?> ogLConfirmDiscardChanges(BuildContext context) {
+  final OgLI18n i18n = OgLI18n.instance;
+  return ogLDangerConfirm(
+    context: context,
+    title: i18n.t('code_editor_page', 'discardTitle'),
+    body: i18n.t('code_editor_page', 'discardDesc'),
+    actionText: i18n.t('code_editor_page', 'discardChanges'),
+    cancelText: i18n.t('code_editor_page', 'continueEditing'),
+  );
+}

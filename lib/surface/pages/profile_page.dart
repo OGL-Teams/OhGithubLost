@@ -134,24 +134,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _remove(GhAccount account) async {
-    final bool? confirmed = await ogLShowDialog<bool>(
+    final bool? confirmed = await ogLDangerConfirm(
       context: context,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        title: Text(_t('removeTitle')),
-        content: Text(
-          _t('removeDesc', {'login': account.login}) + _t('removeDesc2'),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(_t('cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(_t('remove')),
-          ),
-        ],
-      ),
+      title: _t('removeTitle'),
+      body: _t('removeDesc', {'login': account.login}) + _t('removeDesc2'),
+      actionText: _t('remove'),
     );
     if (confirmed != true || !mounted) {
       return;

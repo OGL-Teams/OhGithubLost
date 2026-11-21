@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/animations.dart';
+import '../app/notifier.dart';
 import '../app/og_l_app.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
@@ -82,18 +83,14 @@ class OgLDownloadNotice {
     _lastSignature = signature;
     _lastShownMs = now;
 
-    final messenger = ScaffoldMessenger.of(context);
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-    final Color? bg = switch (kind) {
-      DownloadNoticeKind.queued => null, // 默认（依赖动作色块）
-      DownloadNoticeKind.success => scheme.tertiaryContainer,
-      DownloadNoticeKind.warning => scheme.errorContainer,
-      DownloadNoticeKind.info => null,
-    };
-    final Color? fg = switch (kind) {
-      DownloadNoticeKind.queued || DownloadNoticeKind.info => null,
-      DownloadNoticeKind.success => scheme.onTertiaryContainer,
-      DownloadNoticeKind.warning => scheme.onErrorContainer,
+    // 三色映射 / 图标 / 时长 / 悬浮留隙全部收编到 OgLNotifier 统一出口：
+    // 下载页不再自建 SnackBar（queued/info → info，success/warning 原样）。
+    final OgLNoticeTone tone = switch (kind) {
+      DownloadNoticeKind.queued ||
+      DownloadNoticeKind.info =>
+        OgLNoticeTone.info,
+      DownloadNoticeKind.success => OgLNoticeTone.success,
+      DownloadNoticeKind.warning => OgLNoticeTone.warning,
     };
     final String? label = actionLabel ??
         ((kind == DownloadNoticeKind.queued)
@@ -107,24 +104,12 @@ class OgLDownloadNotice {
                   rootContext: rootContext,
                 )
             : null);
-    messenger.hideCurrentSnackBar(reason: SnackBarClosedReason.timeout);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(message, style: fg != null ? TextStyle(color: fg) : null),
-        // motion-allow: 下载提示驻留时长（用户需要时间读到「已入队/失败」
-        //   与操作按钮，不是动画；Material 默认 4s 过短）。非动效令牌。
-        duration: const Duration(seconds: 8),
-        backgroundColor: bg,
-        // 与 OgLNotifier 同款规格：悬浮 + 统一留隙（宽度只有一处出处）。
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.symmetric(
-          horizontal: OgLSpace.lg,
-          vertical: OgLSpace.md,
-        ),
-        action: (label != null && handler != null)
-            ? SnackBarAction(label: label, onPressed: handler)
-            : null,
-      ),
+    OgLNotifier.of(context).notice(
+      message,
+      tone: tone,
+      actionLabel: label,
+      onAction: handler,
+      replace: true, // 替代原先 hideCurrentSnackBar 的强拆。
     );
   }
 

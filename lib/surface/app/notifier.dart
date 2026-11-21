@@ -11,6 +11,16 @@
 /// - [OgLNotifier.warning]：失败与"被拦下"——权限不足、目标不存在 /
 ///   不可操作、写回失败、参数校验不通过（error 配色）。
 ///
+/// 三者在视觉上**三重区分**（不是只改文字色）：`backgroundColor` /
+/// `content` 前置图标 / 文字色。下载页那套自建三色 SnackBar 已收编到
+/// [OgLNotifier.notice]，颜色映射只留本文件一处。
+///
+/// ## 时长约定
+/// SnackBar 的驻留时长是**等待语义**而非动画（用户需要时间读到提示与操作
+/// 按钮），因此不套用 `OgLAnim` 的动画档位；全局唯一常量
+/// [kNotifierDuration]（4s，带 action 的下载提示见 [kNotifierActionDuration]）
+/// 定义在此，页面侧不再私写裸时长。
+///
 /// ## 收敛结果（Phase 5 后半已完成）
 /// 7 份私有 `_toast` 实现已**全部删除**，各页面在 `_toast` 原位置只留一行入口：
 /// ```dart
@@ -32,6 +42,19 @@ import 'package:flutter/material.dart';
 import '../util/og_l_space.dart';
 import 'error_surface.dart';
 
+// motion-allow: 提示驻留时长是等待语义（非动画），全局唯一常量定义处。
+const Duration kNotifierDuration = Duration(seconds: 4);
+
+// motion-allow: 带动作按钮的提示驻留时长（用户需要时间点按），非动画。
+const Duration kNotifierActionDuration = Duration(seconds: 8);
+
+/// SnackBar 语气：与 [OgLNotifier] 的三种方法一一对应。
+///
+/// 下载页原有的 `queued/success/warning/info` 四色实现收编后，
+/// `queued`/`info` → [OgLNoticeTone.info]，`success` → [OgLNoticeTone.success]，
+/// `warning` → [OgLNoticeTone.warning]。
+enum OgLNoticeTone { success, info, warning }
+
 /// 统一用户反馈（SnackBar）。
 ///
 /// 替代散落在各页面的 7 份 `_toast` 私有实现。
@@ -49,15 +72,27 @@ class OgLNotifier {
       OgLNotifier(ScaffoldMessenger.of(context));
 
   /// 普通提示。
-  void info(String message) => _show(message);
+  void info(String message) => notice(message, tone: OgLNoticeTone.info);
 
   /// 成功提示。
-  void success(String message) => _show(message);
+  void success(String message) => notice(message, tone: OgLNoticeTone.success);
 
   /// 失败 / 风险提示（error 配色）。
-  void warning(String message) => _show(message, isError: true);
+  void warning(String message) => notice(message, tone: OgLNoticeTone.warning);
 
-  void _show(String message, {bool isError = false}) {
+  /// 带语气 / 动作 / 时长的统一出口。
+  ///
+  /// 下载页等自带配色的调用方一律经此方法，颜色 / 图标 / 时长映射只在本文件
+  /// 一处定义。[actionLabel] 与 [onAction] 同时给出时显示动作按钮，时长切到
+  /// [kNotifierActionDuration]（需时间让用户点按）；否则 [kNotifierDuration]。
+  /// [replace] 为 `true` 时先清掉当前条（下载提示抢占旧提示）。
+  void notice(
+    String message, {
+    OgLNoticeTone tone = OgLNoticeTone.info,
+    String? actionLabel,
+    VoidCallback? onAction,
+    bool replace = false,
+  }) {
     if (!_messenger.mounted) {
       // ★ LG-03：页面已退出 / 组件已卸载——不再向已销毁的树写状态，
       //   但**绝不静默**：留痕后重抛给下一帧（操作结果提示丢了 = 用户
@@ -69,12 +104,43 @@ class OgLNotifier {
       );
       return;
     }
+    if (replace) {
+      _messenger.clearSnackBars();
+    }
     final ColorScheme scheme = Theme.of(_messenger.context).colorScheme;
+    final (Color background, Color foreground, IconData icon) = switch (tone) {
+      OgLNoticeTone.success => (
+          scheme.primaryContainer,
+          scheme.onPrimaryContainer,
+          Icons.check_circle_outline
+        ),
+      OgLNoticeTone.info => (
+          scheme.secondaryContainer,
+          scheme.onSecondaryContainer,
+          Icons.info_outline
+        ),
+      OgLNoticeTone.warning => (
+          scheme.error,
+          scheme.onError,
+          Icons.error_outline
+        ),
+    };
+    final bool hasAction = actionLabel != null && onAction != null;
     _messenger.showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: isError ? TextStyle(color: scheme.onError) : null,
+        // 三重区分：底色 + 前景色 + 前置图标（不是只改文字色）。
+        backgroundColor: background,
+        content: Row(
+          children: <Widget>[
+            Icon(icon, color: foreground, size: OgLSpace.lg),
+            SizedBox(width: OgLSpace.sm),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(color: foreground),
+              ),
+            ),
+          ],
         ),
         // 悬浮样式：不压住底部导航栏（也符合 Material 3 的默认推荐）。
         behavior: SnackBarBehavior.floating,
@@ -83,7 +149,11 @@ class OgLNotifier {
         // 这里一处定义——发现页与设置页同款（左右 16 / 上下 12）。
         margin: const EdgeInsets.symmetric(
             horizontal: OgLSpace.lg, vertical: OgLSpace.md),
-        backgroundColor: isError ? scheme.error : null,
+        // 时长只从本文件的常量取（等待语义，非动画档位）。
+        duration: hasAction ? kNotifierActionDuration : kNotifierDuration,
+        action: hasAction
+            ? SnackBarAction(label: actionLabel, onPressed: onAction!)
+            : null,
       ),
     );
   }

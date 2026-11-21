@@ -90,25 +90,11 @@ class _DraftsPageState extends State<DraftsPage> {
   ///
   /// 删除草稿**无法恢复**（内容不落任何远端），所以必须先问一句。
   Future<void> _confirmDelete(GhDraft draft) async {
-    final bool? confirmed = await ogLShowDialog<bool>(
+    final bool? confirmed = await ogLDangerConfirm(
       context: context,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        title: Text(_t('deleteDraft')),
-        content: Text(_t('deleteDraftDesc')),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(OgLI18n.instance.t('common', 'cancel')),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogContext).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(OgLI18n.instance.t('common', 'delete')),
-          ),
-        ],
-      ),
+      title: _t('deleteDraft'),
+      body: _t('deleteDraftDesc'),
+      actionText: OgLI18n.instance.t('common', 'delete'),
     );
     if (confirmed == true && mounted) {
       await _delete(draft);

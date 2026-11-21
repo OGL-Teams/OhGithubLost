@@ -130,23 +130,11 @@ class _RepoTagsPageState extends State<RepoTagsPage> {
 
   Future<void> _delete(GhTag tag) async {
     if (widget.surface.settings.settings.tagDeleteConfirm) {
-      final bool ok = (await ogLShowDialog<bool>(
+      final bool ok = (await ogLDangerConfirm(
             context: context,
-            builder: (BuildContext dialogContext) => AlertDialog(
-              title: Text(_t('deleteTitle')),
-              content:
-                  Text(_t('deleteBody', <String, String>{'name': tag.name})),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: Text(OgLI18n.instance.t('common', 'cancel')),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                  child: Text(_t('delete')),
-                ),
-              ],
-            ),
+            title: _t('deleteTitle'),
+            body: _t('deleteBody', <String, String>{'name': tag.name}),
+            actionText: _t('delete'),
           )) ??
           false;
       if (!ok) {

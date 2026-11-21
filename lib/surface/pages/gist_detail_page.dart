@@ -244,25 +244,11 @@ class _GistDetailPageState extends State<GistDetailPage> {
   }
 
   Future<void> _deleteGist() async {
-    final bool? confirmed = await ogLShowDialog<bool>(
+    final bool? confirmed = await ogLDangerConfirm(
       context: context,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        title: Text(_t('deleteTitle')),
-        content: Text(_t('deleteDesc')),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(_t('cancel')),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogContext).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(_t('delete')),
-          ),
-        ],
-      ),
+      title: _t('deleteTitle'),
+      body: _t('deleteDesc'),
+      actionText: _t('delete'),
     );
     if (confirmed != true || !mounted) {
       return;

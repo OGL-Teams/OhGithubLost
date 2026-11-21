@@ -463,22 +463,11 @@ class _IssuePageState extends State<IssuePage> {
 
   Future<void> _deleteComment(Map<String, dynamic> comment) async {
     final int commentId = ghInt(comment, 'id');
-    final bool? confirmed = await ogLShowDialog<bool>(
+    final bool? confirmed = await ogLDangerConfirm(
       context: context,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        title: Text(_t('delete')),
-        content: Text(_t('commentDeleteConfirm')),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(_t('cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(_t('delete')),
-          ),
-        ],
-      ),
+      title: _t('delete'),
+      body: _t('commentDeleteConfirm'),
+      actionText: _t('delete'),
     );
     if (confirmed != true || !mounted) {
       return;

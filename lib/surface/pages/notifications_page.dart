@@ -138,22 +138,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<void> _confirmReset() async {
-    final bool? ok = await ogLShowDialog<bool>(
+    final bool? ok = await ogLDangerConfirm(
       context: context,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        title: Text(_t('resetTitle')),
-        content: Text(_t('resetDesc')),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(_t('cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(_t('reset')),
-          ),
-        ],
-      ),
+      title: _t('resetTitle'),
+      body: _t('resetDesc'),
+      actionText: _t('reset'),
     );
     if (ok == true) {
       OgLAppLog.instance.clear();
