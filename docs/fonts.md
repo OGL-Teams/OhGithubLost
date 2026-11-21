@@ -1,60 +1,60 @@
-# 字体 CDN 加速（fonts.md）
+# 字体现状决策 / Font Status Decision
 
+> 状态 / Status：决策记录（现行） · 面向技术人员 / For engineers
+> 范围 / Scope：`assets/fonts/`、`pubspec.yaml`、`lib/surface/theme.dart`
 
-> **更新时间 / Last Updated**：2026-11-02 22:58:45　**对应版本 / Version**：v14.0.0
-## 结论（Decision：无需 CDN 加速）
+> **更新时间 / Last Updated**：2026-11-21 16:01:16　**对应版本 / Version**：v14.0.0
 
-截至 **v8.2.0**，本项目 **没有自定义字体文件**：
+## 1. 现行结论 / Current decision
 
-- `find assets/fonts -type f` → 无结果（`assets/fonts/` 目录不存在）。
-- `rg "google_fonts|fonts.gstatic|fonts.googleapis" lib/ pubspec.yaml` → 无匹配。
-- 代码中仅出现 `fontFamily: 'monospace'`（5 处）——属于平台通用等宽字体族，
-  **不带具体名称**，因此**不触发任何字体下载**。
+旧稿（v8.2.0 时代）称「`assets/fonts/` 目录不存在；仅 5 处 `fontFamily: 'monospace'`；
+建议接入 google_fonts CDN」——该结论已被后续改动推翻，**整节作废**。
+The earlier v8.2.0-era decision (no `assets/fonts/`, five `'monospace'` references,
+google_fonts CDN recommendation) has been superseded and is void.
 
-所有正文走 Material 3 TextTheme 默认 Roboto（Android / 桌面 / iOS 自带；Web 端由浏览器提供）。
+现行事实由以下命令实测 / Facts verified with these commands：
 
----
-
-## 何时需要启用此方案
-
-当出现以下任一情况时（且仅当出现时）：
-
-1. AI 聊天 / 代码显示 / 通知正文需要在 Web 端有更可读的等宽字体（如 JetBrains Mono、
-   Fira Code），且当前 Web 端的 `monospace` 映射影响观感。
-2. CJK 字符质量在某些平台（或 Web 端）需统一为 Noto Sans CJK 等开源字体族。
-
----
-
-## 启用时的推荐做法（保留备查）
-
-依赖：
-```yaml
-dependencies:
-  google_fonts: ^6.2.1   # 见 pub.dev/google_fonts
+```bash
+ls -la assets/fonts/                                   # UbuntuMono-Bold.ttf / UbuntuMono-Regular.ttf
+rg -n "assets/fonts" pubspec.yaml                      # 第 129–130 行，两项字体资产声明
+rg -n "monospace" lib/ -g '*.dart' | wc -l             # 0
+rg -n "kOglMonoFamily" lib/ | wc -l                    # 多处引用
 ```
 
-代码：
-```dart
-import 'package:google_fonts/google_fonts.dart';
+实测结果 / Measured results：
 
-// 一次性获得（按需缓存到文件系统）
-final TextStyle body = GoogleFonts.notoSansSc();    // 中文正文
-final TextStyle mono = GoogleFonts.jetBrainsMono(); // 等宽
-```
-
-Web 端的 google_fonts 默认通过 `fonts.googleapis.com` 拉取；在中国大陆境内构建建议：
-
-| 镜像 | 域名 | 备注 |
+| 项 / Item | 现状 / Current state | 证据 / Evidence |
 | --- | --- | --- |
-| jsDelivr | `cdn.jsdelivr.net/gh/google/fonts@main/ofl/notosanssc/NotoSansSC[wght].ttf` | 同步 google/fonts 仓库，自动跟进新版本 |
-| 字节跳动 | `fonts.googleapis.cn` | 官方国内镜像，仅替换主域 |
+| 字体文件 / Font files | `UbuntuMono-Regular.ttf`（205748 字节）、`UbuntuMono-Bold.ttf`（191400 字节） | `ls -la assets/fonts/` |
+| 资产声明 / Asset declarations | `pubspec.yaml` 第 126–130 行 `flutter.fonts`，家族 `OgLMono`；Regular 无 weight，Bold 标 `weight: 700`（见 `lib/surface/theme.dart:29`） | `sed -n '124,134p' pubspec.yaml` |
+| 等宽调用 / Mono call sites | `kOglMonoFamily`（`const String kOglMonoFamily = 'OgLMono'`，`theme.dart:29`）在 `about_page.dart`、`code_editor_page.dart`、`commit_page.dart`、`gist_detail_page.dart`、`repo_page.dart`、`settings_page.dart`、`workflow_dispatch_page.dart` 等处使用 | `rg -n "kOglMonoFamily" lib/` |
+| `monospace` 字面量 / literal | 0 处 | `rg -n "monospace" lib/ -g '*.dart' \| wc -l` |
+| 网络字体 / Web fonts | `google_fonts` / `fonts.gstatic` / `fonts.googleapis` 不在字体加载路径；字体随产物打包，不依赖 CDN | `rg -n "google_fonts\|fonts.gstatic\|fonts.googleapis" lib/ pubspec.yaml` |
 
-切换方式：在 `MaterialApp` 之上放置一个自定义 `Theme`，**不**进入 google_fonts 的 `request` 钩子。
-也可在 `web/index.html` 里以 `<link rel="stylesheet" href="https://cdn.jsdelivr.net/...">` 一次性预取。
+## 2. 加载与调用 / Loading and usage
 
----
+`pubspec.yaml` 的 `flutter.fonts` 段把两个 TTF 注册为家族 `OgLMono`；
+`lib/surface/theme.dart` 第 29 行 `const String kOglMonoFamily = 'OgLMono'` 是展示层唯一入口常量。
+代码编辑器、代码预览、日志、diff、令牌文本等通过该常量取等宽字体，字号经 `OgLFont.monoSm` /
+`OgLFont.monoMd` 等令牌控制（见 `ui_audit.py` 的等宽上下文豁免）。
 
-## 对当前版本无影响
+UI 正文字体由 `lib/surface/surface_bridge.dart` 的 `_uiFontFamilyOf(uiFontId)` 按用户外观设置选择，
+`theme.dart` 多处注释明确「fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）」。
+可选项包含系统字体与自托管等宽字体（`surface_bridge.dart:596` 返回 `kOglMonoFamily`）。
 
-- 本版本（8.2.0）**无任何字体改动**。
-- 上述方案作为「未来工作」保留，不在 8.2.0 范围内执行。
+## 3. 为何不接 CDN / Why no CDN
+
+1. 自托管 TTF 已随产物打包，离线可用；CDN 会引入网络依赖与不可用时的回退分叉。
+2. 现有字体文件仅两份、体积合计约 400 KB，不构成包体瓶颈。
+3. `monospace` 字面已在代码中归零，旧稿设想的「Web 端 monospace 映射不佳」问题不复存在。
+4. 引入 `google_fonts` 会与 `kOglMonoFamily` 的既有调用面并存，产生两套等宽字体来源。
+
+若未来确需新增字体（例如 CJK 统一字族），应：把 TTF 放入 `assets/fonts/`、
+在 `pubspec.yaml` 的 `flutter.fonts` 注册、在 `theme.dart` 增加常量并经 `OgLFont` 令牌取字号；
+不得直接引入 CDN 依赖绕过打包链路。
+
+## 4. 历史记录 / History
+
+旧稿「字体 CDN 加速（v8.2.0）」为当时事实记录，结论已被推翻，不再作为决策依据；
+本次按实际字体目录重写。原始文本可从本文件 git 历史读取，不在本文复述。
+The superseded v8.2.0 CDN note is retained only in git history and is not reproduced here.
