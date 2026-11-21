@@ -416,6 +416,9 @@ class _OgLSettingsSliderRowState extends State<OgLSettingsSliderRow> {
         padding: EdgeInsetsDirectional.only(
           start: kOgLSettingsRowPadding.start + widget.indent,
           end: 16,
+          // ★ 上下留白：此前标题紧贴上下分隔线（垂直 0），观感拥挤。
+          top: OgLSpace.xxs,
+          bottom: OgLSpace.xxs,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,7 +428,6 @@ class _OgLSettingsSliderRowState extends State<OgLSettingsSliderRow> {
                 Expanded(
                   child: Text(widget.title, style: theme.textTheme.labelLarge),
                 ),
-                Text(widget.display(current), style: theme.textTheme.bodySmall),
               ],
             ),
             Slider(
@@ -433,6 +435,11 @@ class _OgLSettingsSliderRowState extends State<OgLSettingsSliderRow> {
               min: widget.min,
               max: widget.max,
               divisions: widget.divisions,
+              // ★ 值并入滑块语义；不再显示右侧 bodySmall 小字
+              //   （用户反馈"不要那个小字"——拖动时的读数交给
+              //   Semantics/liveRegion，视觉上只留标题与滑块）。
+              label: widget.display(current),
+              semanticFormatterCallback: widget.display,
               onChanged: (double v) => setState(() => _draft = v),
               onChangeEnd: (double v) {
                 setState(() => _draft = null);

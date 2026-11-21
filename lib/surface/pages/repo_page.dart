@@ -607,7 +607,10 @@ class _RepoPageState extends State<RepoPage> {
           ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(96),
+            // ★ stretch：Column 默认 center 会让分支条按内容收缩（右侧留白
+            //   不满宽，同编辑器工具栏灰带问题）；拉伸到 AppBar 全宽。
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 _branchBar(theme),
                 TabBar(
