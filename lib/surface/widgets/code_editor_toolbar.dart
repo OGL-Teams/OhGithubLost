@@ -115,44 +115,65 @@ class OgLCodeEditorToolbar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 IconButton(
-                  visualDensity: VisualDensity.compact,
+                  // a11y：显式锁 48dp 触控目标（不再用 compact 压到 40dp，B-05）。
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                  ),
                   icon: const Icon(Icons.undo),
                   tooltip: undoTooltip,
                   onPressed: canUndo ? onUndo : null,
                 ),
                 IconButton(
-                  visualDensity: VisualDensity.compact,
+                  // a11y：显式锁 48dp 触控目标（不再用 compact 压到 40dp，B-05）。
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                  ),
                   icon: const Icon(Icons.redo),
                   tooltip: redoTooltip,
                   onPressed: canRedo ? onRedo : null,
                 ),
                 IconButton(
-                  visualDensity: VisualDensity.compact,
+                  // a11y：显式锁 48dp 触控目标（不再用 compact 压到 40dp，B-05）。
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                  ),
                   icon: const Icon(Icons.search),
                   tooltip: findTooltip,
                   onPressed: onToggleFind,
                 ),
                 const VerticalDivider(width: OgLSpace.lg),
                 IconButton(
-                  visualDensity: VisualDensity.compact,
+                  // a11y：显式锁 48dp 触控目标（不再用 compact 压到 40dp，B-05）。
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                  ),
                   icon: Icon(wrap ? Icons.wrap_text : Icons.notes),
                   tooltip: wrap ? wrapOffTooltip : wrapOnTooltip,
                   onPressed: onToggleWrap,
                 ),
                 IconButton(
-                  visualDensity: VisualDensity.compact,
+                  // a11y：显式锁 48dp 触控目标（不再用 compact 压到 40dp，B-05）。
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                  ),
                   icon: const Icon(Icons.remove),
                   tooltip: fontSmallerTooltip,
                   onPressed: onFontSmaller,
                 ),
                 IconButton(
-                  visualDensity: VisualDensity.compact,
+                  // a11y：显式锁 48dp 触控目标（不再用 compact 压到 40dp，B-05）。
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                  ),
                   icon: const Icon(Icons.add),
                   tooltip: fontLargerTooltip,
                   onPressed: onFontLarger,
                 ),
                 IconButton(
-                  visualDensity: VisualDensity.compact,
+                  // a11y：显式锁 48dp 触控目标（不再用 compact 压到 40dp，B-05）。
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                  ),
                   icon: const Icon(Icons.visibility_outlined),
                   tooltip: previewTooltip,
                   onPressed: onPreview,

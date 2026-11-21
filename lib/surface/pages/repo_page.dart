@@ -2696,6 +2696,9 @@ class _IssuesTabState extends State<_IssuesTab> {
   }
 
   Future<void> _close(int number) async {
+    if (_busy) {
+      return;
+    }
     final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
@@ -2716,14 +2719,26 @@ class _IssuesTabState extends State<_IssuesTab> {
     if (confirmed != true || !mounted) {
       return;
     }
+    if (_busy) {
+      return;
+    }
+    setState(() => _busy = true);
     try {
       await widget.surface.domain.api
           .updateIssue(widget.fullName, number, state: 'closed');
       OgLAppLog.instance.result('议题', _t('issueClosed'), '#$number');
+      // 关闭议题成功确认（依赖 4-1 的 success 语气 SnackBar）。
+      if (mounted) {
+        OgLNotifier.of(context).success(_t('issueClosed'));
+      }
       await _paged.refresh();
     } catch (error) {
       if (mounted) {
         OgLNotifier.of(context).warning(_t('closeFailed', {'error': error}));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
       }
     }
   }
@@ -3920,6 +3935,9 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
 
   /// 可见性切换（**危险操作**：二次确认 + 影响面说明）。
   Future<void> _setVisibility(bool priv) async {
+    if (_busy) {
+      return;
+    }
     if (priv == widget.repo.isPrivate) {
       return;
     }
@@ -3972,6 +3990,9 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
 
   /// 转移仓库（**危险操作**：二次确认 + 输入目标账号名）。
   Future<void> _transferRepo() async {
+    if (_busy) {
+      return;
+    }
     final String? owner = await _promptText(
       title: _t('transferTitle'),
       hint: _t('transferNewOwnerLabel'),
@@ -4038,6 +4059,9 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
 
   /// 设置默认分支（GitHub 侧 PATCH default_branch）。
   Future<void> _setDefaultBranch(String branch) async {
+    if (_busy) {
+      return;
+    }
     setState(() => _busy = true);
     try {
       final GhRepo updated = await widget.surface.domain.api.updateRepo(
@@ -4061,6 +4085,9 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
 
   /// 归档 / 取消归档（归档后仓库只读，属重要状态变更）。
   Future<void> _toggleArchive() async {
+    if (_busy) {
+      return;
+    }
     final bool target = !widget.repo.isArchived;
     final bool? ok = await ogLShowDialog<bool>(
       context: context,
@@ -4209,6 +4236,9 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
   }
 
   Future<void> _deleteRepo() async {
+    if (_busy) {
+      return;
+    }
     final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
@@ -4232,6 +4262,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
     if (confirmed != true || !mounted) {
       return;
     }
+    setState(() => _busy = true);
     try {
       await widget.surface.domain.api.deleteRepo(_full);
       OgLAppLog.instance.add('仓库', _t('repoDeleted', {'full': _full}),
@@ -4244,6 +4275,10 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
       if (mounted) {
         OgLNotifier.of(context)
             .warning(_t('branchDeleteFailed', {'error': error}));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
       }
     }
   }
@@ -4290,7 +4325,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             const SizedBox(height: OgLSpace.sm),
             OgLSettingsActionRow(
               title: _t('description'),
-              onTap: _busy ? () {} : _editDescription,
+              onTap: _busy ? null : _editDescription,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -4306,7 +4341,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             ),
             OgLSettingsActionRow(
               title: _t('homepageLabel'),
-              onTap: _busy ? () {} : _editHomepage,
+              onTap: _busy ? null : _editHomepage,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -4322,7 +4357,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
             ),
             OgLSettingsActionRow(
               title: _t('topicsLabel'),
-              onTap: _busy ? () {} : _editTopics,
+              onTap: _busy ? null : _editTopics,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -4346,14 +4381,22 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
                       ],
                     ),
             ),
-            OgLSettingsSwitchRow(
-              title: _t('privateRepo'),
-              subtitle:
-                  widget.repo.isPrivate ? _t('privateHint') : _t('publicHint'),
-              value: widget.repo.isPrivate,
-              onChanged: _busy
-                  ? (bool value) {}
-                  : (bool value) => _setVisibility(value),
+            // 写操作在途：可见性开关进禁用态（AbsorbPointer 吞事件 + 降透明度，
+            // 不再用「空回调假可交互」）。OgLSettingsSwitchRow.onChanged 为
+            // 非空类型、定义在 widgets 层（本批次改动范围外），故在调用点禁用。
+            Opacity(
+              opacity: _busy ? 0.55 : 1.0,
+              child: AbsorbPointer(
+                absorbing: _busy,
+                child: OgLSettingsSwitchRow(
+                  title: _t('privateRepo'),
+                  subtitle: widget.repo.isPrivate
+                      ? _t('privateHint')
+                      : _t('publicHint'),
+                  value: widget.repo.isPrivate,
+                  onChanged: (bool value) => _setVisibility(value),
+                ),
+              ),
             ),
             const SizedBox(height: OgLSpace.md),
             Align(
@@ -4510,18 +4553,27 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
                     OgLSettingsActionRow(
                       title: _t('transfer'),
                       icon: Icons.drive_file_move_outline,
-                      onTap: _busy ? () {} : _transferRepo,
+                      onTap: _busy ? null : _transferRepo,
                     ),
                     const SizedBox(height: OgLSpace.sm),
                     // A1：删除仓库需要 **admin** 权限——仅 push 的协作者此前
                     // 也能看到按钮，点了只会 403。按权限收敛。
                     if (widget.repo.canAdmin == true)
-                      FilledButton(
+                      FilledButton.icon(
                         style: FilledButton.styleFrom(
                           backgroundColor: theme.colorScheme.error,
                         ),
-                        onPressed: _deleteRepo,
-                        child: Text(_t('deleteRepo')),
+                        onPressed: _busy ? null : _deleteRepo,
+                        icon: _busy
+                            ? const SizedBox(
+                                width: OgLIconSize.sm,
+                                height: OgLIconSize.sm,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.delete_outline,
+                                size: OgLIconSize.md),
+                        label: Text(_t('deleteRepo')),
                       )
                     else
                       Text(

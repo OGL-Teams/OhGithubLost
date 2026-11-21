@@ -64,6 +64,14 @@ class _IssuePageState extends State<IssuePage> {
   bool _busy = false;
   bool _locked = false;
 
+  /// 对话框内进度闸门：点保存后对话框不立即关闭，原地显示 spinner。
+  ///
+  /// 与 `_busy` 的区别：`_busy` 由 [_runWrite] 在页面级设置（防重入），
+  /// 这个 notifier 在「请求发起前」就置位、在 [_runWrite] 结束后复位，
+  /// 供对话框的 `ValueListenableBuilder` 监听——避免「点了保存 → 对话框秒关
+  /// → 异步期屏幕零反馈」（F-01）。页面 dispose 时一并释放。
+  final ValueNotifier<bool> _dialogBusy = ValueNotifier<bool>(false);
+
   /// 评论输入。
   final TextEditingController _comment = TextEditingController();
   bool _posting = false;
@@ -95,6 +103,7 @@ class _IssuePageState extends State<IssuePage> {
   void dispose() {
     _comments?.dispose();
     _comment.dispose();
+    _dialogBusy.dispose();
     super.dispose();
   }
 
@@ -171,15 +180,20 @@ class _IssuePageState extends State<IssuePage> {
   // ───────────────────────── 写操作公共收尾 ─────────────────────────
 
   /// 失败转用户可见提示（横幅 + 日志）；成功记结果日志。
+  ///
+  /// [dialogBusy] 非空时，写操作发起前先置 `true`、结束后置 `false`，
+  /// 让对话框的 `ValueListenableBuilder` 在异步期原地显示进度（F-01）。
   Future<bool> _runWrite(
     String okLogDomain,
     String okMessage,
     String okTag,
-    Future<void> Function() action,
-  ) async {
+    Future<void> Function() action, {
+    ValueNotifier<bool>? dialogBusy,
+  }) async {
     if (_busy) {
       return false;
     }
+    dialogBusy?.value = true;
     setState(() => _busy = true);
     try {
       await action();
@@ -196,6 +210,7 @@ class _IssuePageState extends State<IssuePage> {
       }
       return false;
     } finally {
+      dialogBusy?.value = false;
       if (mounted) {
         setState(() => _busy = false);
       }
@@ -205,46 +220,59 @@ class _IssuePageState extends State<IssuePage> {
   // ───────────────────────── 编辑标题 / 正文 ─────────────────────────
 
   Future<void> _editIssue() async {
+    if (_busy) {
+      return;
+    }
     final titleController = TextEditingController(text: _title);
     final bodyController =
         TextEditingController(text: ghStrOrNull(widget.issue, 'body') ?? '');
-    final bool? saved = await ogLShowDialog<bool>(
+
+    // 写在对话框内原地发起：保存后不立即 pop，_runWrite 期间 _dialogBusy
+    // 驱动按钮内 spinner；成功才 pop(true)，失败则对话框留着让用户修改重试（F-01）。
+    Future<void> saveInDialog() async {
+      final String newTitle = titleController.text.trim();
+      final String newBody = bodyController.text.trim();
+      if (newTitle.isEmpty) {
+        if (context.mounted) {
+          OgLNotifier.of(context).info(_t('titleRequired'));
+        }
+        return;
+      }
+      final bool ok = await _runWrite(
+        // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
+        '议题',
+        _t('issueEdited'),
+        '#$_number',
+        () => widget.surface.domain.api.updateIssue(
+          widget.fullName,
+          _number,
+          title: newTitle,
+          body: newBody,
+        ),
+        dialogBusy: _dialogBusy,
+      );
+      if (ok) {
+        if (mounted) {
+          setState(() => _title = newTitle);
+          OgLNotifier.of(context).info(_t('issueEdited'));
+        }
+        if (context.mounted) {
+          Navigator.of(context).pop(true);
+        }
+      }
+    }
+
+    await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => _EditIssueDialog(
         titleController: titleController,
         bodyController: bodyController,
-        busyOf: () => _busy,
+        busy: _dialogBusy,
+        onSave: saveInDialog,
       ),
     );
     titleController.dispose();
     bodyController.dispose();
-    if (saved != true || !mounted || !context.mounted) {
-      return;
-    }
-    final String newTitle = titleController.text.trim();
-    final String newBody = bodyController.text.trim();
-    if (newTitle.isEmpty) {
-      if (context.mounted) {
-        OgLNotifier.of(context).info(_t('titleRequired'));
-      }
-      return;
-    }
-    final bool ok = await _runWrite(
-      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
-      '议题',
-      _t('issueEdited'),
-      '#$_number',
-      () => widget.surface.domain.api.updateIssue(
-        widget.fullName,
-        _number,
-        title: newTitle,
-        body: newBody,
-      ),
-    );
-    if (ok && mounted && context.mounted) {
-      setState(() => _title = newTitle);
-      OgLNotifier.of(context).info(_t('issueEdited'));
-    }
   }
 
   // ───────────────────────── 标签管理 ─────────────────────────
@@ -270,68 +298,87 @@ class _IssuePageState extends State<IssuePage> {
         if (ghStr(label, 'name').isNotEmpty) ghStr(label, 'name'),
     ];
     final Set<String> selected = Set<String>.from(_labels);
-    final bool? saved = await ogLShowDialog<bool>(
+    Future<void> saveInDialog() async {
+      final List<String> target = selected.toList();
+      final bool ok = await _runWrite(
+        // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
+        '议题',
+        _t('labelsUpdated'),
+        '#$_number',
+        () => widget.surface.domain.api.updateIssueLabels(
+          widget.fullName,
+          _number,
+          labels: target,
+        ),
+        dialogBusy: _dialogBusy,
+      );
+      if (ok) {
+        if (mounted) {
+          setState(() => _labels = target);
+          OgLNotifier.of(context).info(_t('labelsUpdated'));
+        }
+        if (context.mounted) {
+          Navigator.of(context).pop(true);
+        }
+      }
+    }
+
+    await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => _LabelsDialog(
         allNames: allNames,
         selected: selected,
+        busy: _dialogBusy,
+        onSave: saveInDialog,
       ),
     );
-    if (saved != true || !mounted || !context.mounted) {
-      return;
-    }
-    final List<String> target = selected.toList();
-    final bool ok = await _runWrite(
-      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
-      '议题',
-      _t('labelsUpdated'),
-      '#$_number',
-      () => widget.surface.domain.api.updateIssueLabels(
-        widget.fullName,
-        _number,
-        labels: target,
-      ),
-    );
-    if (ok && mounted && context.mounted) {
-      setState(() => _labels = target);
-      OgLNotifier.of(context).info(_t('labelsUpdated'));
-    }
   }
 
   // ───────────────────────── 指派人 ─────────────────────────
 
   Future<void> _manageAssignees() async {
+    if (_busy) {
+      return;
+    }
     final controller = TextEditingController(text: _assignees.join(', '));
-    final bool? saved = await ogLShowDialog<bool>(
+    Future<void> saveInDialog() async {
+      final List<String> target = controller.text
+          .split(',')
+          .map((String token) => token.trim())
+          .where((String token) => token.isNotEmpty)
+          .toList();
+      final bool ok = await _runWrite(
+        // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
+        '议题',
+        _t('assigneesUpdated'),
+        '#$_number',
+        () => widget.surface.domain.api.updateIssueAssignees(
+          widget.fullName,
+          _number,
+          assignees: target,
+        ),
+        dialogBusy: _dialogBusy,
+      );
+      if (ok) {
+        if (mounted) {
+          setState(() => _assignees = target);
+          OgLNotifier.of(context).info(_t('assigneesUpdated'));
+        }
+        if (context.mounted) {
+          Navigator.of(context).pop(true);
+        }
+      }
+    }
+
+    await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => _AssigneesDialog(
         controller: controller,
+        busy: _dialogBusy,
+        onSave: saveInDialog,
       ),
     );
     controller.dispose();
-    if (saved != true || !mounted || !context.mounted) {
-      return;
-    }
-    final List<String> target = controller.text
-        .split(',')
-        .map((String token) => token.trim())
-        .where((String token) => token.isNotEmpty)
-        .toList();
-    final bool ok = await _runWrite(
-      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
-      '议题',
-      _t('assigneesUpdated'),
-      '#$_number',
-      () => widget.surface.domain.api.updateIssueAssignees(
-        widget.fullName,
-        _number,
-        assignees: target,
-      ),
-    );
-    if (ok && mounted && context.mounted) {
-      setState(() => _assignees = target);
-      OgLNotifier.of(context).info(_t('assigneesUpdated'));
-    }
   }
 
   // ───────────────────────── 锁定 / 解锁 ─────────────────────────
@@ -419,46 +466,56 @@ class _IssuePageState extends State<IssuePage> {
   }
 
   Future<void> _editComment(Map<String, dynamic> comment) async {
+    if (_busy) {
+      return;
+    }
     final int commentId = ghInt(comment, 'id');
     final controller = TextEditingController(text: ghStr(comment, 'body'));
-    final bool? saved = await ogLShowDialog<bool>(
+    Future<void> saveInDialog() async {
+      final String body = controller.text.trim();
+      if (body.isEmpty) {
+        if (context.mounted) {
+          OgLNotifier.of(context).info(_t('commentRequired'));
+        }
+        return;
+      }
+      if (body.length > _kMaxCommentChars) {
+        if (!context.mounted) {
+          return;
+        }
+        OgLNotifier.of(context).warning(
+          _t('commentTooLong',
+              {'length': body.length, 'max': _kMaxCommentChars}),
+        );
+        return;
+      }
+      final bool ok = await _runWrite(
+        // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
+        '议题',
+        _t('commentEdited'),
+        '#$_number',
+        () => widget.surface.domain.api
+            .updateIssueComment(widget.fullName, commentId, body: body),
+        dialogBusy: _dialogBusy,
+      );
+      if (ok) {
+        if (mounted && context.mounted) {
+          OgLNotifier.of(context).info(_t('commentEdited'));
+          await _commentsC().load();
+          Navigator.of(context).pop(true);
+        }
+      }
+    }
+
+    await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => _EditCommentDialog(
         controller: controller,
+        busy: _dialogBusy,
+        onSave: saveInDialog,
       ),
     );
     controller.dispose();
-    if (saved != true || !mounted || !context.mounted) {
-      return;
-    }
-    final String body = controller.text.trim();
-    if (body.isEmpty) {
-      if (context.mounted) {
-        OgLNotifier.of(context).info(_t('commentRequired'));
-      }
-      return;
-    }
-    if (body.length > _kMaxCommentChars) {
-      if (!context.mounted) {
-        return;
-      }
-      OgLNotifier.of(context).warning(
-        _t('commentTooLong', {'length': body.length, 'max': _kMaxCommentChars}),
-      );
-      return;
-    }
-    final bool ok = await _runWrite(
-      // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
-      '议题',
-      _t('commentEdited'),
-      '#$_number',
-      () => widget.surface.domain.api
-          .updateIssueComment(widget.fullName, commentId, body: body),
-    );
-    if (ok && mounted && context.mounted) {
-      OgLNotifier.of(context).info(_t('commentEdited'));
-      await _commentsC().load();
-    }
   }
 
   Future<void> _deleteComment(Map<String, dynamic> comment) async {
@@ -712,6 +769,17 @@ class _IssuePageState extends State<IssuePage> {
       appBar: AppBar(
         title: Text('#$_number', maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: <Widget>[
+          // 写操作异步期的页面级进度（锁/删评/开关等确认型写用；
+          // 编辑/标签/指派/编评四类还在对话框内原地显示 spinner，F-01）。
+          if (_busy)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: OgLSpace.md),
+              child: SizedBox(
+                width: OgLIconSize.sm,
+                height: OgLIconSize.sm,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
           if (canWrite)
             IconButton(
               icon: const Icon(Icons.more_vert),
@@ -902,17 +970,58 @@ class _IssuePageState extends State<IssuePage> {
   }
 }
 
+/// 对话框「保存」按钮：忙碌时原地显示 spinner 并禁用，不立即 pop（F-01）。
+///
+/// 复用现有 `CircularProgressIndicator(strokeWidth: 2)` 规格（对齐
+/// `code_editor_page.dart:601`），文案复用 common 分片已有的 `loading` 键，
+/// 不新增键。忙碌时 `onPressed: null` 同时防重入。
+Widget _dialogSaveButton(
+  BuildContext context,
+  ValueListenable<bool> busy, {
+  required VoidCallback onSaved,
+}) {
+  return ValueListenableBuilder<bool>(
+    valueListenable: busy,
+    builder: (BuildContext context, bool saving, Widget? child) {
+      return FilledButton(
+        onPressed: saving ? null : onSaved,
+        child: saving
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  const SizedBox(
+                    width: OgLIconSize.sm,
+                    height: OgLIconSize.sm,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: OgLSpace.xxs),
+                  Text(OgLI18n.instance.t('common', 'loading')),
+                ],
+              )
+            : child,
+      );
+    },
+    child: Text(_t('save')),
+  );
+}
+
 /// 编辑议题对话框（标题 + 正文）。
 class _EditIssueDialog extends StatelessWidget {
   const _EditIssueDialog({
     required this.titleController,
     required this.bodyController,
-    required this.busyOf,
+    required this.busy,
+    required this.onSave,
   });
 
   final TextEditingController titleController;
   final TextEditingController bodyController;
-  final bool Function() busyOf;
+
+  /// 写操作进度（由页面的 [_dialogBusy] 提供）。
+  final ValueListenable<bool> busy;
+
+  /// 点保存的回调：由页面校验输入并发起写操作，成功后才 pop 对话框。
+  final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -948,10 +1057,7 @@ class _EditIssueDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(false),
           child: Text(_t('cancel')),
         ),
-        FilledButton(
-          onPressed: busyOf() ? null : () => Navigator.of(context).pop(true),
-          child: Text(_t('save')),
-        ),
+        _dialogSaveButton(context, busy, onSaved: onSave),
       ],
     );
   }
@@ -962,10 +1068,14 @@ class _LabelsDialog extends StatefulWidget {
   const _LabelsDialog({
     required this.allNames,
     required this.selected,
+    required this.busy,
+    required this.onSave,
   });
 
   final List<String> allNames;
   final Set<String> selected;
+  final ValueListenable<bool> busy;
+  final VoidCallback onSave;
 
   @override
   State<_LabelsDialog> createState() => _LabelsDialogState();
@@ -1012,10 +1122,7 @@ class _LabelsDialogState extends State<_LabelsDialog> {
           onPressed: () => Navigator.of(context).pop(false),
           child: Text(_t('cancel')),
         ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(_t('save')),
-        ),
+        _dialogSaveButton(context, widget.busy, onSaved: widget.onSave),
       ],
     );
   }
@@ -1023,9 +1130,15 @@ class _LabelsDialogState extends State<_LabelsDialog> {
 
 /// 指派人编辑对话框（登录名逗号分隔；PATCH 全量替换）。
 class _AssigneesDialog extends StatelessWidget {
-  const _AssigneesDialog({required this.controller});
+  const _AssigneesDialog({
+    required this.controller,
+    required this.busy,
+    required this.onSave,
+  });
 
   final TextEditingController controller;
+  final ValueListenable<bool> busy;
+  final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -1043,10 +1156,7 @@ class _AssigneesDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(false),
           child: Text(_t('cancel')),
         ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(_t('save')),
-        ),
+        _dialogSaveButton(context, busy, onSaved: onSave),
       ],
     );
   }
@@ -1054,9 +1164,15 @@ class _AssigneesDialog extends StatelessWidget {
 
 /// 编辑评论对话框。
 class _EditCommentDialog extends StatelessWidget {
-  const _EditCommentDialog({required this.controller});
+  const _EditCommentDialog({
+    required this.controller,
+    required this.busy,
+    required this.onSave,
+  });
 
   final TextEditingController controller;
+  final ValueListenable<bool> busy;
+  final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -1076,10 +1192,7 @@ class _EditCommentDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(false),
           child: Text(_t('cancel')),
         ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(_t('save')),
-        ),
+        _dialogSaveButton(context, busy, onSaved: onSave),
       ],
     );
   }

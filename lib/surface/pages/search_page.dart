@@ -212,135 +212,148 @@ class _RepoCardState extends State<_RepoCard> {
     final GhRepo repo = widget.repo;
     return Card(
       margin: EdgeInsets.zero,
-      child: InkWell(
-        // ★ 批 9 · B18：Card 有圆角，水波纹必须同圆角裁剪，
-        //   否则按下时方角溢出卡片轮廓。
-        borderRadius: OgLRadius.cMd,
-        onTap: () => unawaited(widget.onOpen(repo)),
-        onLongPress: () => unawaited(widget.onActions(context, repo)),
-        child: Padding(
-          padding: const EdgeInsets.all(OgLSpace.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      repo.fullName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium,
-                    ),
-                  ),
-                  // ★ IN-02：动作面板必须有**可见入口**——旧实现只留
-                  //   onLongPress，桌面鼠标没有长按习惯 → 事实不可达。
-                  //   双入口模式对齐 issue_page 评论操作（长按 + IconButton）。
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.more_horiz, size: OgLIconSize.md),
-                    tooltip: OgLI18n.instance.t('search_page', 'actions'),
-                    onPressed: () => unawaited(widget.onActions(context, repo)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: OgLSpace.xxs),
-              Text(
-                _subtitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall,
-              ),
-              // README 切片：默认折叠（点击展开 / 再点收起），长文本不刷屏。
-              if (widget.excerpt.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: OgLSpace.xxs),
-                  child: InkWell(
-                    onTap: () =>
-                        setState(() => _readmeExpanded = !_readmeExpanded),
-                    borderRadius: OgLRadius.cXs,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: OgLSpace.xxs,
+      // a11y：可点击仓库行补 button 语义，读屏用户知道「这行能点」
+      // 并念出标题与副标题（F-22 / 5-B A-S4）。
+      child: Semantics(
+        button: true,
+        label: '${repo.fullName}, $_subtitle',
+        excludeSemantics: true,
+        child: InkWell(
+          // ★ 批 9 · B18：Card 有圆角，水波纹必须同圆角裁剪，
+          //   否则按下时方角溢出卡片轮廓。
+          borderRadius: OgLRadius.cMd,
+          onTap: () => unawaited(widget.onOpen(repo)),
+          onLongPress: () => unawaited(widget.onActions(context, repo)),
+          child: Padding(
+            padding: const EdgeInsets.all(OgLSpace.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        repo.fullName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium,
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Expanded(
-                            child: Text(
-                              widget.excerpt,
-                              maxLines: _readmeExpanded ? null : 2,
-                              overflow: _readmeExpanded
-                                  ? null
-                                  : TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall?.copyWith(
+                    ),
+                    // ★ IN-02：动作面板必须有**可见入口**——旧实现只留
+                    //   onLongPress，桌面鼠标没有长按习惯 → 事实不可达。
+                    //   双入口模式对齐 issue_page 评论操作（长按 + IconButton）。
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.more_horiz, size: OgLIconSize.md),
+                      tooltip: OgLI18n.instance.t('search_page', 'actions'),
+                      onPressed: () =>
+                          unawaited(widget.onActions(context, repo)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: OgLSpace.xxs),
+                Text(
+                  _subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall,
+                ),
+                // README 切片：默认折叠（点击展开 / 再点收起），长文本不刷屏。
+                if (widget.excerpt.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: OgLSpace.xxs),
+                    child: Semantics(
+                      button: true,
+                      expanded: _readmeExpanded,
+                      label: widget.excerpt,
+                      child: InkWell(
+                        onTap: () =>
+                            setState(() => _readmeExpanded = !_readmeExpanded),
+                        borderRadius: OgLRadius.cXs,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: OgLSpace.xxs,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Expanded(
+                                child: Text(
+                                  widget.excerpt,
+                                  maxLines: _readmeExpanded ? null : 2,
+                                  overflow: _readmeExpanded
+                                      ? null
+                                      : TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: OgLSpace.xxs),
+                              Icon(
+                                _readmeExpanded
+                                    ? Icons.expand_less
+                                    : Icons.expand_more,
+                                size: OgLIconSize.sm,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ), // Semantics README 折叠切片
+                  ),
+                const SizedBox(height: OgLSpace.sm),
+                // meta 行：★数 · 语言 · 版本号。
+                // ★ 批 11 信息密度：★ 数用紧凑记法（12.3k），语言与版本
+                //   都折叠省略——此前语言占 Expanded、版本不折叠，长版本号
+                //   （如 v1.2.3-beta.1+build）会把语言挤没。
+                Row(
+                  children: <Widget>[
+                    Icon(
+                      Icons.star_border,
+                      size: OgLIconSize.sm,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: OgLSpace.xxs),
+                    Text(_compactCount(repo.stars),
+                        style: theme.textTheme.bodySmall),
+                    if (repo.language != null && repo.language!.isNotEmpty)
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: OgLSpace.xxs),
+                          child: Text(
+                            ' · ${repo.language!}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
-                          const SizedBox(width: OgLSpace.xxs),
-                          Icon(
-                            _readmeExpanded
-                                ? Icons.expand_less
-                                : Icons.expand_more,
-                            size: OgLIconSize.sm,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
+                    if (widget.version != null && widget.version!.isNotEmpty)
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: OgLSpace.xxs),
+                          child: Text(
+                            widget.version!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-              const SizedBox(height: OgLSpace.sm),
-              // meta 行：★数 · 语言 · 版本号。
-              // ★ 批 11 信息密度：★ 数用紧凑记法（12.3k），语言与版本
-              //   都折叠省略——此前语言占 Expanded、版本不折叠，长版本号
-              //   （如 v1.2.3-beta.1+build）会把语言挤没。
-              Row(
-                children: <Widget>[
-                  Icon(
-                    Icons.star_border,
-                    size: OgLIconSize.sm,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: OgLSpace.xxs),
-                  Text(_compactCount(repo.stars),
-                      style: theme.textTheme.bodySmall),
-                  if (repo.language != null && repo.language!.isNotEmpty)
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: OgLSpace.xxs),
-                        child: Text(
-                          ' · ${repo.language!}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (widget.version != null && widget.version!.isNotEmpty)
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: OgLSpace.xxs),
-                        child: Text(
-                          widget.version!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.right,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
+      ), // Semantics
     );
   }
 }
@@ -1058,89 +1071,100 @@ class _DiscoverPageState extends State<DiscoverPage>
                           final Color stateColor = state == 'closed'
                               ? theme.colorScheme.secondary
                               : theme.colorScheme.primary;
-                          return InkWell(
-                            key: ValueKey<String>(
-                              'issue-${ghStr(item, 'html_url')}',
-                            ),
-                            onTap: () => unawaited(_openIssue(item)),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: OgLSpace.lg,
-                                vertical: OgLSpace.sm,
+                          final String stateLabel = state == 'closed'
+                              ? OgLI18n.instance.t('issue_page', 'closed')
+                              : OgLI18n.instance.t('issue_page', 'openNow');
+                          // a11y：可点击议题行补 button 语义，状态词进 label
+                          // （原仅靠颜色点表达，读屏拿不到），复用 issue_page 既有键（F-22）。
+                          return Semantics(
+                            button: true,
+                            label: '$stateLabel, ${ghStr(item, 'title')}, '
+                                '${_repoFullOf(item)} #${ghInt(item, 'number')}',
+                            excludeSemantics: true,
+                            child: InkWell(
+                              key: ValueKey<String>(
+                                'issue-${ghStr(item, 'html_url')}',
                               ),
-                              child: Row(
-                                children: <Widget>[
-                                  Container(
-                                    width: OgLSpace.xxs,
-                                    height: OgLSpace.xxs,
-                                    decoration: BoxDecoration(
-                                      color: stateColor,
-                                      shape: BoxShape.circle,
+                              onTap: () => unawaited(_openIssue(item)),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: OgLSpace.lg,
+                                  vertical: OgLSpace.sm,
+                                ),
+                                child: Row(
+                                  children: <Widget>[
+                                    Container(
+                                      width: OgLSpace.xxs,
+                                      height: OgLSpace.xxs,
+                                      decoration: BoxDecoration(
+                                        color: stateColor,
+                                        shape: BoxShape.circle,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: OgLSpace.sm),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          ghStr(item, 'title'),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: theme.textTheme.titleMedium,
-                                        ),
-                                        const SizedBox(height: OgLSpace.xxs),
-                                        Text(
-                                          '${mine ? '@me · ' : ''}'
-                                          '${_repoFullOf(item)} '
-                                          '#${ghInt(item, 'number')} · '
-                                          '${ghLogin(item)} · '
-                                          '${_relativeTime(ghStr(item, 'created_at'))}',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: theme.textTheme.bodySmall
-                                              ?.copyWith(
+                                    const SizedBox(width: OgLSpace.sm),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            ghStr(item, 'title'),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: theme.textTheme.titleMedium,
+                                          ),
+                                          const SizedBox(height: OgLSpace.xxs),
+                                          Text(
+                                            '${mine ? '@me · ' : ''}'
+                                            '${_repoFullOf(item)} '
+                                            '#${ghInt(item, 'number')} · '
+                                            '${ghLogin(item)} · '
+                                            '${_relativeTime(ghStr(item, 'created_at'))}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: theme.textTheme.bodySmall
+                                                ?.copyWith(
+                                              color: theme
+                                                  .colorScheme.onSurfaceVariant,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: OgLSpace.sm),
+                                    // 右侧：评论数 + 进入箭头。
+                                    Semantics(
+                                      label: _t('issuesComments', {
+                                        'count': ghInt(item, 'comments'),
+                                      }),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.chat_bubble_outline,
+                                            size: OgLIconSize.sm,
                                             color: theme
                                                 .colorScheme.onSurfaceVariant,
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(width: OgLSpace.xxs),
+                                          Text(
+                                            '${ghInt(item, 'comments')}',
+                                            style: theme.textTheme.bodySmall,
+                                          ),
+                                          const SizedBox(width: OgLSpace.xxs),
+                                          Icon(
+                                            Icons.chevron_right,
+                                            size: OgLIconSize.md,
+                                            color: theme
+                                                .colorScheme.onSurfaceVariant,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: OgLSpace.sm),
-                                  // 右侧：评论数 + 进入箭头。
-                                  Semantics(
-                                    label: _t('issuesComments', {
-                                      'count': ghInt(item, 'comments'),
-                                    }),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        Icon(
-                                          Icons.chat_bubble_outline,
-                                          size: OgLIconSize.sm,
-                                          color: theme
-                                              .colorScheme.onSurfaceVariant,
-                                        ),
-                                        const SizedBox(width: OgLSpace.xxs),
-                                        Text(
-                                          '${ghInt(item, 'comments')}',
-                                          style: theme.textTheme.bodySmall,
-                                        ),
-                                        const SizedBox(width: OgLSpace.xxs),
-                                        Icon(
-                                          Icons.chevron_right,
-                                          size: OgLIconSize.md,
-                                          color: theme
-                                              .colorScheme.onSurfaceVariant,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
+                            ), // Semantics 议题行
                           );
                         },
                       );
