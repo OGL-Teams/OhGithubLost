@@ -448,23 +448,20 @@ class _DashboardPageState extends State<DashboardPage> {
                     onRefresh: _refreshActive,
                     child: ListView(
                       children: <Widget>[
-                        SizedBox(
-                          height: MediaQuery.sizeOf(context).height * 0.5,
-                          child: OgLAsyncEmptyPane(
-                            icon: Icons.folder_outlined,
-                            text: _segment == 0
-                                ? _t('emptyMine')
-                                : _t('emptyStarred'),
-                            action: _segment == 0
-                                ? FilledButton(
-                                    onPressed: _createRepo,
-                                    child: Text(_t('newRepo')),
-                                  )
-                                : FilledButton.tonal(
-                                    onPressed: _goDiscover,
-                                    child: Text(_t('goSearch')),
-                                  ),
-                          ),
+                        OgLAsyncEmptyPane(
+                          icon: Icons.folder_outlined,
+                          text: _segment == 0
+                              ? _t('emptyMine')
+                              : _t('emptyStarred'),
+                          action: _segment == 0
+                              ? FilledButton(
+                                  onPressed: _createRepo,
+                                  child: Text(_t('newRepo')),
+                                )
+                              : FilledButton.tonal(
+                                  onPressed: _goDiscover,
+                                  child: Text(_t('goSearch')),
+                                ),
                         ),
                       ],
                     ),

@@ -20,6 +20,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/animations.dart';
+import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../app/overlays.dart';
@@ -75,6 +76,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   int _step = 0;
   List<OgLPermissionInfo>? _infos;
+  String? _error;
   OgLPermission? _busyPermission;
 
   @override
@@ -95,16 +97,24 @@ class _OnboardingPageState extends State<OnboardingPage> {
       if (!mounted) {
         return;
       }
-      setState(() => _infos = infos);
+      setState(() {
+        _infos = infos;
+        _error = null;
+      });
     } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        // 读 permissions 失败必须让用户看见并可重试，不能伪装成"没有权限项"。
+        _error = _t('permissionListFailed', {'error': error});
+        _infos = null;
+      });
       OgLAppLog.instance.add(
         _t('title'),
         _t('permissionListFailed', {'error': error}),
         severity: OgLNoticeSeverity.warning,
       );
-      if (mounted) {
-        setState(() => _infos = const <OgLPermissionInfo>[]);
-      }
     }
   }
 
@@ -271,7 +281,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     // 仅「权限」页在探测完成前禁用「下一步」，并**说明原因**；
     // 其余步骤不因 `_infos == null` 被莫名禁用（以前是全部步骤一起禁用）。
     final bool permissionPending =
-        _step == _permissionStepIndex && _infos == null;
+        _step == _permissionStepIndex && _infos == null && _error == null;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
           OgLSpace.xl, OgLSpace.sm, OgLSpace.xl, OgLSpace.lg),
@@ -346,7 +356,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
         children: <Widget>[
           Text(_t('permissionIntro'), style: theme.textTheme.titleMedium),
           const SizedBox(height: OgLSpace.sm),
-          if (_infos == null)
+          if (_error != null)
+            OgLAsyncErrorPane(message: _error!, onRetry: _load)
+          else if (_infos == null)
             const Padding(
               padding: EdgeInsets.all(OgLSpace.xl),
               child: Center(child: CircularProgressIndicator()),

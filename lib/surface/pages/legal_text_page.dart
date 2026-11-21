@@ -19,6 +19,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
@@ -47,6 +48,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
   /// 当前查看的语言（默认 `zh` —— 效力以它为准）。
   String _locale = 'zh';
   String? _body;
+  String? _error;
   bool _loading = true;
 
   @override
@@ -60,8 +62,10 @@ class _LegalTextPageState extends State<LegalTextPage> {
     setState(() {
       _loading = true;
       _locale = code;
+      _error = null;
     });
     String body = '';
+    String? error;
     try {
       final String raw =
           await rootBundle.loadString('assets/i18n/$code/onboarding.json');
@@ -69,11 +73,12 @@ class _LegalTextPageState extends State<LegalTextPage> {
       if (json is Map) {
         body = '${json['onboardingLicenseBody'] ?? ''}';
       }
-    } catch (error) {
+    } catch (e) {
+      error = _t('actionFailed', {'error': e});
       body = '';
       OgLAppLog.instance.add(
         '法律文本',
-        '读取 $code 失败：$error',
+        '读取 $code 失败：$e',
         severity: OgLNoticeSeverity.warning,
       );
     }
@@ -83,6 +88,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
     }
     setState(() {
       _body = body;
+      _error = error;
       _loading = false;
     });
   }
@@ -161,25 +167,30 @@ class _LegalTextPageState extends State<LegalTextPage> {
           ),
           const Divider(height: 1),
           Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : (_body == null || _body!.isEmpty)
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(OgLSpace.xl),
-                          child: Text(_t('legalTextEmpty'),
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodyMedium),
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.all(OgLSpace.lg),
-                        child: SelectableText(
-                          _body!,
-                          style:
-                              theme.textTheme.bodySmall?.copyWith(height: 1.6),
-                        ),
-                      ),
+            child: _error != null && !_loading
+                ? OgLAsyncErrorPane(
+                    message: _error!,
+                    onRetry: () => _load(_locale),
+                  )
+                : _loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : (_body == null || _body!.isEmpty)
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(OgLSpace.xl),
+                              child: Text(_t('legalTextEmpty'),
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.bodyMedium),
+                            ),
+                          )
+                        : SingleChildScrollView(
+                            padding: const EdgeInsets.all(OgLSpace.lg),
+                            child: SelectableText(
+                              _body!,
+                              style: theme.textTheme.bodySmall
+                                  ?.copyWith(height: 1.6),
+                            ),
+                          ),
           ),
         ],
       ),
