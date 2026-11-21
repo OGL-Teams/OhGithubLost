@@ -1,6 +1,7 @@
 /// 展示层冒烟测试：关键渲染路径不崩、关键三态可见。
 library;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -28,6 +29,17 @@ void _loadZh() {
   OgLI18n.instance.debugInject('zh', pages);
 }
 
+/// 推进假时钟：越过 300ms 防抖 + 300ms 最小加载时长，让异步状态真正落定。
+///
+/// 控制器现在有前置防抖与最小加载时长（见 `AsyncController.loadDebounce` /
+/// `minLoadingDuration`），widget 测试里假时钟不会自己走，必须显式推进。
+Future<void> _settleAsync(WidgetTester tester) async {
+  await tester.pump(const Duration(milliseconds: 350));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 350));
+  await tester.pump();
+}
+
 void main() {
   setUpAll(_loadZh);
   testWidgets('启动失败页：原因原样呈现（不静默降级）', (WidgetTester tester) async {
@@ -38,7 +50,7 @@ void main() {
     expect(find.textContaining('引导清单签名校验失败'), findsOneWidget);
   });
 
-  testWidgets('AsyncView：加载中转圈 → 数据渲染', (WidgetTester tester) async {
+  testWidgets('AsyncView：加载中骨架屏 → 数据渲染', (WidgetTester tester) async {
     final AsyncController<int> c = AsyncController<int>(
       label: '测试',
       loader: () async => 42,
@@ -54,11 +66,15 @@ void main() {
         ),
       ),
     );
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    // ★ 2-1：加载态不再是裸转圈，而是两段式骨架屏（OgLAsyncSkeleton）。
+    expect(find.byType(OgLAsyncSkeleton), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
 
-    await c.load();
-    await tester.pump();
+    // ★ 300ms 防抖 + 300ms 最小加载时长：假时钟必须显式推进。
+    unawaited(c.load());
+    await _settleAsync(tester);
     expect(find.text('数据=42'), findsOneWidget);
+    expect(find.byType(OgLAsyncSkeleton), findsNothing);
   });
 
   testWidgets('AsyncView：空态文案（不是加载中）', (WidgetTester tester) async {
@@ -67,7 +83,7 @@ void main() {
       loader: () async => const <int>[],
       isEmpty: (List<int> value) => value.isEmpty,
     );
-    await c.load();
+    unawaited(c.load());
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -80,7 +96,9 @@ void main() {
         ),
       ),
     );
+    await _settleAsync(tester);
     expect(find.text('空空如也'), findsOneWidget);
+    expect(find.byType(OgLAsyncSkeleton), findsNothing);
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
@@ -97,8 +115,6 @@ void main() {
       },
       isEmpty: (int value) => false,
     );
-    await c.load();
-    await c.load();
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -114,6 +130,14 @@ void main() {
         ),
       ),
     );
+    // 第一次：成功（拿到内容）。
+    unawaited(c.load());
+    await _settleAsync(tester);
+    expect(find.text('内容=1'), findsOneWidget);
+
+    // 第二次：刷新失败 → 软错误（保留旧内容 + 顶部提示）。
+    unawaited(c.load());
+    await _settleAsync(tester);
     expect(find.text('内容=1'), findsOneWidget);
     // 原始异常不再直接展示；此处断言提示存在且不含原始文本。
     expect(find.textContaining('刷新失败演示'), findsNothing);

@@ -402,10 +402,15 @@ void main() {
         }
         final String shell =
             File('lib/surface/app/client_shell.dart').readAsStringSync();
-        // ★ M3 断点常量化：宽屏限宽走 OgLWindowWidths.contentMax（720），
-        //   字面值不再直接出现在页面里。
-        expect(shell.contains('OgLWindowWidths.contentMax'), isTrue,
-            reason: '宽屏一级页内容限宽应走 OgLWindowWidths.contentMax');
+        // ★ G-05（外壳锚定）：外壳**不再**把整页裁成限宽块——
+        //   整页限宽（OgLWindowWidths.contentMax）已从外壳移除，
+        //   阅读限宽下沉到各页 body 内部自行决定（外壳只留断点常量）。
+        expect(shell.contains('OgLWindowWidths.contentMax'), isFalse,
+            reason: '外壳不得再把整页裁成限宽块（限宽已下沉到各页 body）');
+        expect(shell.contains('OgLWindowWidths.compact'), isTrue,
+            reason: '断点常量应统一引用');
+        expect(shell.contains('OgLWindowWidths.expanded'), isTrue,
+            reason: '断点常量应统一引用');
         final String login =
             File('lib/surface/pages/login_page.dart').readAsStringSync();
         final int submit = login.indexOf('onSubmitted:');

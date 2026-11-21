@@ -6,9 +6,22 @@
 /// 交给 `SliverList.builder` **按需构建**——这里把"只构建视口附近"钉成测试。
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ohgithublost/surface/app/async.dart';
+
+/// 推进假时钟：越过 300ms 防抖 + 300ms 最小加载时长，让异步状态真正落定。
+///
+/// 加载态用的是 CircularProgressIndicator（无限动画），`pumpAndSettle` 在加载
+/// 期间永远等不到"没有待绘制帧"，只会超时——所以这里只做定长推进。
+Future<void> _settleAsync(WidgetTester tester) async {
+  await tester.pump(const Duration(milliseconds: 350));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 350));
+  await tester.pump();
+}
 
 void main() {
   testWidgets('OgLAsyncSliver：500 行只构建视口附近的少数行', (WidgetTester tester) async {
@@ -17,7 +30,6 @@ void main() {
       isEmpty: (List<int> rows) => rows.isEmpty,
       loader: () async => List<int>.generate(500, (int i) => i),
     );
-    await controller.load();
 
     await tester.pumpWidget(
       MaterialApp(
@@ -38,7 +50,9 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    // ★ 300ms 防抖 + 300ms 最小加载时长：假时钟必须显式推进。
+    unawaited(controller.load());
+    await _settleAsync(tester);
 
     // 500 行里只应构建视口附近的一小部分（懒加载生效）。
     final int built = tester.widgetList<Text>(find.byType(Text)).length;
@@ -55,7 +69,6 @@ void main() {
       isEmpty: (List<int> rows) => rows.isEmpty,
       loader: () async => <int>[],
     );
-    await controller.load();
 
     await tester.pumpWidget(
       MaterialApp(
@@ -76,7 +89,8 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    unawaited(controller.load());
+    await _settleAsync(tester);
     expect(find.text('没有内容'), findsOneWidget);
 
     controller.dispose();

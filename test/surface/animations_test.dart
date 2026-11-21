@@ -122,8 +122,10 @@ void main() {
       expect(q2.medium < q3.medium, isTrue);
       expect(q1.staggerMaxIndex < q2.staggerMaxIndex, isTrue);
       expect(q2.staggerMaxIndex < q3.staggerMaxIndex, isTrue);
+      // ★ 整页转场位移：档位 1 → 2 递增；档位 2 与 3 **相同**（0.03）——
+      //   3-2 取消整页缩放后转场位移收敛，不再逐档增大（只保证不更小）。
       expect(q1.transitionOffset < q2.transitionOffset, isTrue);
-      expect(q2.transitionOffset < q3.transitionOffset, isTrue);
+      expect(q2.transitionOffset <= q3.transitionOffset, isTrue);
     });
 
     test('大体积动画：时长逐档增加，但都**比 5.2 更快**', () {
@@ -242,10 +244,18 @@ void main() {
       c.dispose();
     });
 
-    test('缩放最保守档不做、模糊只在拉满档', () {
+    test('整页缩放全面取消、模糊只在拉满档', () {
+      // ★ 3-2：整页缩放（转场缩放）已全面取消——所有档位的
+      //   transitionScaleFrom 都是 1，不再有"整页被缩放"的画面。
+      for (int level = 0; level <= 3; level++) {
+        expect(OgLOAnimQuality.of(level).transitionScaleFrom, 1,
+            reason: '档位 $level 仍带整页缩放');
+      }
+      // 内容级缩放只有**拉满档**才有（档位 1 / 2 一律不缩放）。
       expect(OgLOAnimQuality.of(1).hasScale, isFalse, reason: '档位 1 不缩放');
-      expect(OgLOAnimQuality.of(2).hasScale, isTrue, reason: '档位 2 起给极轻缩放');
-      expect(OgLOAnimQuality.of(3).hasScale, isTrue);
+      expect(OgLOAnimQuality.of(2).hasScale, isFalse,
+          reason: '档位 2 也不缩放（整页缩放取消后只留淡入）');
+      expect(OgLOAnimQuality.of(3).hasScale, isTrue, reason: '拉满档保留极轻的内容级缩放');
       expect(OgLOAnimQuality.of(1).hasBlur, isFalse);
       expect(OgLOAnimQuality.of(2).hasBlur, isFalse);
       expect(OgLOAnimQuality.of(3).hasBlur, isTrue);
