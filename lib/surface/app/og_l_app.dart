@@ -179,31 +179,35 @@ class OgLBootFailureApp extends StatelessWidget {
         ),
         home: Scaffold(
           body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: Padding(
-                padding: const EdgeInsets.all(OgLSpace.xl),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    // M5: 用 textTheme.titleLarge 替代硬编码 22/w6 —— 跟随系统
-                    // fontScale 缩放（用户把字号拉到 130% 时这一行会一起变大，
-                    // 旧实现钉死 22px 看起来不协调）。
-                    Text(
-                      _t('bootRejected'),
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const SizedBox(height: OgLSpace.md),
-                    Text(_t('dataUntouched')),
-                    const SizedBox(height: OgLSpace.lg),
-                    SelectableText(
-                      message,
-                      style: const TextStyle(fontFamily: kOglMonoFamily),
-                    ),
-                  ],
+            // ★ G-06：长堆栈 + 大字号下 Column 会 RenderFlex overflow——
+            //   加 SingleChildScrollView 让失败页可滚动，内容不再被裁切。
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 640),
+                child: Padding(
+                  padding: const EdgeInsets.all(OgLSpace.xl),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      // M5: 用 textTheme.titleLarge 替代硬编码 22/w6 —— 跟随系统
+                      // fontScale 缩放（用户把字号拉到 130% 时这一行会一起变大，
+                      // 旧实现钉死 22px 看起来不协调）。
+                      Text(
+                        _t('bootRejected'),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(height: OgLSpace.md),
+                      Text(_t('dataUntouched')),
+                      const SizedBox(height: OgLSpace.lg),
+                      SelectableText(
+                        message,
+                        style: const TextStyle(fontFamily: kOglMonoFamily),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

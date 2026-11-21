@@ -13,8 +13,9 @@
 /// 1. **零依赖**：只 import `flutter/material.dart`——不能碰 i18n、桥、磁盘；
 /// 2. **零动效依赖**：不读档位质量表（那要内核），只用固定时长的
 ///    `CircularProgressIndicator`（框架自带）；
-/// 3. **明暗自适应**：跟随系统 `platformBrightness`，避免深色系统下白屏刺眼；
-/// 4. **不做假进度**：只显示不确定进度环——启动耗时无法预知，画百分比是撒谎。
+/// 4. **启动锚定色**：不再用与主题脱节的纯黑/纯白——改用与 MD3 seed 色板同族的
+///    中性 Surface 色，冷启动首帧 → [OgLApp] 顶替时不闪白（G-06）。
+///    中性锚定色取 `ColorScheme.fromSeed` 的 surface（明/暗），与主题同源。
 library;
 
 import 'package:flutter/material.dart';
@@ -30,9 +31,15 @@ class OgLBootSplash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Brightness brightness = MediaQuery.platformBrightnessOf(context);
-    final bool dark = brightness == Brightness.dark;
-    final Color bg = dark ? const Color(0xFF101418) : const Color(0xFFFBFCFE);
-    final Color fg = dark ? const Color(0xFFCEDACD) : const Color(0xFF3A424C);
+    // ★ G-06：锚定色取自与主题同源的 MD3 seed 色板 surface / onSurface，
+    //   冷启动首帧与 [OgLApp] 顶替帧不再"闪白/闪黑"。零依赖：只用
+    //   material.dart 的 ColorScheme.fromSeed（纯计算，不碰内核/磁盘）。
+    final ColorScheme scheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF0969DA),
+      brightness: brightness,
+    );
+    final Color bg = scheme.surface;
+    final Color fg = scheme.onSurfaceVariant;
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,

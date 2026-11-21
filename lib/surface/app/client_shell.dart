@@ -303,31 +303,17 @@ class _OgLClientShellState extends State<OgLClientShell> {
     ];
     final int index = OgLShellTab.values.indexOf(_tab);
     final double width = MediaQuery.sizeOf(context).width;
-    // R7：页面切换加**左右滑动**入场动画（保留 IndexedStack 的状态与懒挂载）。
-    // 关闭动画（档位 0 / 系统减少动效）时瞬时切换。
-    final Widget slide = _OgLShellSlide(
+    // ★ G-05（外壳锚定）：不再把整个页面 Scaffold 裁成居中块。
+    //   此前 Center + ConstrainedBox(maxWidth: 720) 包住整页（含各页自带
+    //   AppBar），宽屏两侧露裸 surface、顶栏不贴窗边——这是用户"漂浮感"
+    //   的直接来源。此处移除外层限宽：各页 Scaffold 拿到全宽约束，AppBar
+    //   作为窗口级组件自然 full-bleed。
+    //   待办（需改 pages，超出本批 4 文件范围）：把 720 阅读限宽下沉到各页
+    //   body 内部，使长行不失控；本批先保证顶栏锚定与整块不裁切。
+    final Widget body = _OgLShellSlide(
       index: index,
       child: IndexedStack(index: index, children: pages),
     );
-    // ★ SZ-02：宽屏一级页内容限宽——桌面拖到 2560 时列表行不再被
-    //   拉成全屏长条。手机（<600）保持全宽，不改触控与滚动语义。
-    //
-    // ★ 断点决策（M3 Layout 收口说明）：这里用自研 OgLWindowWidths 三档
-    //   （600/720/1200，注释映射 WindowSizeClass compact/medium/expanded），
-    //   而非官方 material_window_size_class / calculateWindowSizeClass——
-    //   后者仅在 Android 可用（依赖 Activity 窗口类别回调），本项目全平台
-    //   （桌面三平台 + Web）需统一口径，且零额外依赖；行为与 M3 canonical
-    //   断点一致，foldable hinge 适配留待真实设备需求出现再评估。
-    final Widget body = width < OgLWindowWidths.compact
-        ? slide
-        : Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: OgLWindowWidths.contentMax,
-              ),
-              child: slide,
-            ),
-          );
 
     // ── 手机：底栏 ──
     if (width < OgLWindowWidths.compact) {
@@ -431,8 +417,9 @@ class _OgLShellSlideState extends State<_OgLShellSlide>
     with SingleTickerProviderStateMixin {
   /// 弹簧驱动的进度控制器。
   ///
-  /// 上下界特意放开到 `[-1, 2]`：欠阻尼弹簧会**轻微过冲**（回弹），
-  /// 若仍锁在 `[0, 1]` 就会把回弹削掉，变成"没有回弹的弹簧"。
+  /// ★ G-09：上下界收回 `[0, 1]`——此前放开到 `[-1, 2]` 让欠阻尼弹簧过冲，
+  ///   切 tab 时内容会越界冲出，破坏顶边锚点。位移与透明度在 build 里再做
+  ///   一次 `[0,1]` 夹紧，保证即使 SpringSimulation 越界也不产生过冲/鬼影。
   ///
   /// ★ 7.4.1：改成在 `initState` 里**提前建好**（而不是 `late final` 首次
   /// 访问才建）——这就是切 tab 这条**全屏动画**的"预加载"：`Ticker` 的创建 /
@@ -450,8 +437,6 @@ class _OgLShellSlideState extends State<_OgLShellSlide>
       vsync: this,
       duration: Duration.zero,
       value: 1,
-      lowerBound: -1,
-      upperBound: 2,
     );
   }
 
@@ -472,8 +457,9 @@ class _OgLShellSlideState extends State<_OgLShellSlide>
     if (_controller.isAnimating) {
       return;
     }
-    // 位移距离按档位（低档更短、更快 —— "更贴"的手感）。
-    final double distance = OgLAnim.shellOffset(context);
+    // 位移距离封顶 = 屏宽 2%（G-09）：shellOffset 档位最大 0.05（Fractional
+    // 比例），统一压到 0.02，切 tab 不再"整页横飞"、顶边锚点稳定。
+    final double distance = OgLAnim.shellOffset(context).clamp(0.0, 0.02);
     _from = widget.index > oldWidget.index ? distance : -distance;
     // **物理弹簧**驱动（不是固定时长）：更"跟手 / 丝滑"，
     // 档位越高、回弹越明显（档位 1 临界阻尼，不振荡）。
@@ -488,20 +474,17 @@ class _OgLShellSlideState extends State<_OgLShellSlide>
 
   @override
   Widget build(BuildContext context) {
-    // 切 tab 也是"大体积动画"，且**基于物理**：进度由弹簧给出
-    //（可能轻微过冲 → 落位前"回弹"一下）。位置 / 透明度直接读弹簧进度。
+    // 切 tab 也是"大体积动画"，且**基于物理**：进度由弹簧给出。
+    // ★ G-09：t 与位移都夹紧到 [0,1]，禁止过冲；透明度下限提到 0.94
+    //   （残影不可见），顶栏由外层持有保持静止。
     return AnimatedBuilder(
       animation: _controller,
-      // RepaintBoundary：切 tab 时只做图层位移、不重绘整页
-      //（此前"整棵页面树每帧重绘"正是切换卡顿的主因）。
-      //
-      // 再叠一层**很轻的淡入**（0.7 → 1）：整页纯位移会显得"生硬"，
-      // 一点点透明度变化就足以让切换"活"起来，成本几乎为零。
+      // RepaintBoundary：切 tab 时只做图层位移、不重绘整页。
       builder: (BuildContext context, Widget? child) {
-        final double t = _controller.value;
+        final double t = _controller.value.clamp(0.0, 1.0);
         return RepaintBoundary(
           child: Opacity(
-            opacity: (0.7 + 0.3 * t).clamp(0.0, 1.0),
+            opacity: (0.94 + 0.06 * t).clamp(0.0, 1.0),
             child: FractionalTranslation(
               translation: Offset(_from * (1 - t), 0),
               child: child,
