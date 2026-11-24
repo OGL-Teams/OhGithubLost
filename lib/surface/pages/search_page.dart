@@ -1391,10 +1391,10 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     controller: controller,
                     emptyIcon: Icons.search_off,
                     emptyText: _t('noResults', {'query': _query}),
-                    // 待核实：SearchResultsPage 无「去发现」路由调用；
-                    // 保留 CTA 文案与样式，onTap 待主会话/CI 裁决。
+                    // 批 1a：接真——重新执行搜索（模式切换控件里也是调
+                    // `_run()`；清词重搜走同一条路径，无新增方法）。
                     emptyAction: FilledButton.tonal(
-                      onPressed: null,
+                      onPressed: () => unawaited(_run()),
                       child: Text(
                         OgLI18n.instance.t('common', 'emptyActionGoDiscover'),
                       ),

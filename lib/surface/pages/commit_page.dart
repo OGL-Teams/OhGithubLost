@@ -155,17 +155,11 @@ class _CommitPageState extends State<CommitPage> {
                 ) =>
                     _fileTile(files[index]),
                 emptyIcon: Icons.history,
+                // 批 1a：原「网页查看」CTA 无已验证的查看路由调用，属假 CTA，
+                // 按任务书删除按钮、保留空态文案。
                 emptyText: (widget.commit.parentShas.isEmpty
                     ? _t('initialCommit')
                     : _t('noChanges')),
-                // 待核实：CommitPage 未消费 html_url，网页查看路由无验证调用；
-                // 保留次级动作文案，onTap 待主会话/CI 裁决。
-                emptyAction: TextButton(
-                  onPressed: null,
-                  child: Text(
-                    OgLI18n.instance.t('common', 'emptyActionViewOnWeb'),
-                  ),
-                ),
               ),
               const SliverToBoxAdapter(child: SizedBox(height: OgLSpace.xl)),
             ],

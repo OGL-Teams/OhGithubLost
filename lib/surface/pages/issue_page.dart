@@ -75,6 +75,9 @@ class _IssuePageState extends State<IssuePage> {
 
   /// 评论输入。
   final TextEditingController _comment = TextEditingController();
+
+  /// 评论输入框焦点：空态「写评论」CTA 滚动到输入区后聚焦（批 1a 接真）。
+  final FocusNode _commentFocus = FocusNode();
   bool _posting = false;
 
   /// 当前登录名（从登录态懒取；取不到视为游客，按空串处理）。
@@ -104,6 +107,7 @@ class _IssuePageState extends State<IssuePage> {
   void dispose() {
     _comments?.dispose();
     _comment.dispose();
+    _commentFocus.dispose();
     _dialogBusy.dispose();
     super.dispose();
   }
@@ -846,10 +850,17 @@ class _IssuePageState extends State<IssuePage> {
                 padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
                 emptyIcon: Icons.chat_bubble_outline,
                 emptyText: _t('noComments'),
-                // 待核实：本页评论输入框无 FocusNode，无法安全聚焦；
-                // 保留 CTA 文案与样式，onTap 待主会话/CI 裁决。
+                // 批 1a：接真——滚动到评论输入区并聚焦。评论列表很长时
+                // 输入框在视口外，需先确保可见再请求焦点。
                 emptyAction: FilledButton.tonal(
-                  onPressed: null,
+                  onPressed: () {
+                    Scrollable.ensureVisible(
+                      _commentFocus.context ?? context,
+                      duration: OgLAnim.fast(context),
+                      curve: Curves.easeOutCubic,
+                    );
+                    _commentFocus.requestFocus();
+                  },
                   child: Text(
                     OgLI18n.instance.t('common', 'emptyActionWriteComment'),
                   ),
@@ -935,6 +946,7 @@ class _IssuePageState extends State<IssuePage> {
                       const SizedBox(height: OgLSpace.sm),
                       TextField(
                         controller: _comment,
+                        focusNode: _commentFocus,
                         minLines: 3,
                         maxLines: 8,
                         enabled: !_posting,

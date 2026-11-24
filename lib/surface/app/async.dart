@@ -50,10 +50,12 @@ class AsyncController<T> extends ChangeNotifier {
   /// 判定"空结果"的规则。
   final bool Function(T value) isEmpty;
 
-  /// 请求发起前的短延迟：抑制输入/点击抖动带来的无意义请求，
-  /// 并让"加载态"有一个稳定的起点（避免一闪而过的裸转圈）。
+  /// 批 1a：防抖收窄。此延迟只抑制连点/输入抖动带来的无意义请求，
+  /// 不再作为"稳定加载起点"——那个职责已交给 [minLoadingDuration]
+  /// （加载指示器出现后的最小显示时长）。原先 300ms 前置延迟会让每次
+  /// 切页/刷新都强制空等 300ms（明明数据 50ms 就回来）。
   /// ui-allow: debounce；motion-allow: 等待/防抖时长（非动画）。
-  static const Duration loadDebounce = Duration(milliseconds: 300);
+  static const Duration loadDebounce = Duration(milliseconds: 100);
 
   /// 加载态最小显示时长：快速返回时也让骨架展示足够时间，
   /// 避免"闪一下就没"的视觉抖动。
@@ -127,8 +129,8 @@ class AsyncController<T> extends ChangeNotifier {
 
   /// 加载 / 刷新（**并发抑制**：上一次没回来之前不再发第二次）。
   ///
-  /// 300ms 前置延迟 + 300ms 最小显示时长：防止快速返回时骨架/转圈一闪而过，
-  /// 也让连续触发（如切换筛选）不会发出无意义的请求。
+  /// 100ms 前置防抖（仅抑制连点抖动）+ 300ms 最小显示时长：快速返回时
+  /// 骨架/转圈不会一闪而过，连续触发也不会发出无意义请求，但切页不再强制空等。
   Future<void> load() async {
     if (_disposed || _loading) {
       return;
