@@ -386,8 +386,19 @@ class OgLAsyncSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
+    // 测试用的裸 MaterialApp 可能未挂 OgLSemanticColors 扩展——容错回落，
+    // 生产主题（buildOgLTheme）始终注册该扩展。
     final OgLSemanticColors semantic =
-        Theme.of(context).extension<OgLSemanticColors>()!;
+        Theme.of(context).extension<OgLSemanticColors>() ??
+        OgLSemanticColors(
+          success: scheme.primary,
+          onSuccess: scheme.onPrimary,
+          warning: scheme.secondary,
+          onWarning: scheme.onSecondary,
+          info: scheme.primary,
+          onInfo: scheme.onPrimary,
+          outlineVariantStrong: scheme.outlineVariant,
+        );
     return Padding(
       padding: const EdgeInsets.all(OgLSpace.lg),
       child: Column(
