@@ -2,6 +2,7 @@
   "bootDiagnostics": "Käynnistysdiagnostiikka",
   "bootReport": "Käynnistysraportti",
   "bootStages": "Käynnistysvaiheet",
+  "runtimeGates": "Ajonaikaiset portit",
   "copied": "Kopioitu{label}",
   "copyRepoUrl": "Kopioi repositorion osoite",
   "dependencyGraph": "Riippuvuuskaavio",

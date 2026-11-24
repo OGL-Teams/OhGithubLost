@@ -41,10 +41,15 @@ class AboutPage extends StatelessWidget {
   /// 创建页面。
   ///
   /// [report] 可为 `null`（例如未启动内核的预览场景）：此时不展示启动诊断段。
-  const AboutPage({this.report, super.key});
+  const AboutPage({this.report, this.runtimeGate, super.key});
 
   /// 启动报告（内核在启动时定格的快照）。
   final KernelReport? report;
+
+  /// 运行时门禁快照（net/disk 两层 guard 的实时状态；由设置页经层桥传入）。
+  /// 可在页面构建时取一次——门禁告警已通过通知中心实时触达，此处仅作
+  /// 「关于页自检」的静态快照，不轮询（避免常驻重建）。
+  final Map<String, Object?>? runtimeGate;
 
   /// 统一提示入口（与设置页同一纪律）：提示长什么样、什么语气只有一处定义
   /// （见 [OgLNotifier]）。本页是 `StatelessWidget`，因此入口带 `context` 入参，
@@ -257,6 +262,8 @@ class AboutPage extends StatelessWidget {
                   ),
               ],
             ),
+            if (runtimeGate != null && runtimeGate!.isNotEmpty)
+              _runtimeGateTile(theme),
             _permissionSelfTestTile(theme),
           ],
           const SizedBox(height: OgLSpace.xl),
@@ -385,6 +392,28 @@ class AboutPage extends StatelessWidget {
   ///
   /// 在这里摊开是为了让「为什么日志写不进外部目录 / 为什么没有通知」有据可查：
   /// 用户与排查者看到的是**实测状态 + 事件码**，不是一句“可能没权限”。
+  /// 运行时门禁快照（net/disk 两层 guard 的即时状态）。
+  ///
+  /// 告警已由 diagnostics → 通知中心实时触达；此处只是"关于页自检"的
+  /// 静态快照（构建时取一次，不轮询），让技术人员能看到阈值与当前统计。
+  Widget _runtimeGateTile(ThemeData theme) {
+    final Map<String, Object?> gate = runtimeGate ?? const <String, Object?>{};
+    return _diagnosticTile(
+      title: _t('runtimeGates'),
+      subtitle: gate.toString(),
+      children: <Widget>[
+        for (final MapEntry<String, Object?> layer in gate.entries)
+          SelectableText(
+            '${layer.key}: ${layer.value}',
+            style: const TextStyle(
+              fontFamily: kOglMonoFamily,
+              fontSize: OgLFont.monoSm,
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _permissionSelfTestTile(ThemeData theme) {
     final OgLPermissionSelfTestReport? last = OgLPermissionSelfTestReport.last;
     final String subtitle;

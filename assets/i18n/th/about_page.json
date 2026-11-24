@@ -2,6 +2,7 @@
   "bootDiagnostics": "การวินิจฉัยการเริ่มทำงาน",
   "bootReport": "รายงานการเริ่มทำงาน",
   "bootStages": "ขั้นตอนการเริ่มทำงาน",
+  "runtimeGates": "เกตขณะทำงาน",
   "copied": "คัดลอก{label}แล้ว",
   "copyRepoUrl": "คัดลอก URL ของคลังเก็บ",
   "dependencyGraph": "แผนภาพการพึ่งพา",

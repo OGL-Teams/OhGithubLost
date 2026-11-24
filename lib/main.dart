@@ -18,7 +18,9 @@ import 'package:flutter/material.dart';
 
 import './surface/util/og_l_space.dart';
 import 'base/base_bootstrap.dart';
+import 'base/disk/disk_guard.dart';
 import 'base/log/log_dirs.dart';
+import 'base/net/net_guard.dart';
 import 'domain/domain_bridge.dart';
 import 'domain/ix/ix_notify.dart';
 import 'kernel/boot/boot_fs.dart';
@@ -28,6 +30,7 @@ import 'kernel/boot/release_trust_root.dart';
 import 'kernel/boot/trust_policy.dart';
 import 'kernel/boot/trust_warnings.dart';
 import 'kernel/contract/module.dart';
+import 'kernel/di.dart';
 import 'kernel/diagnostics.dart';
 import 'kernel/kernel.dart';
 import 'kernel/log/og_l_log_file.dart';
@@ -298,6 +301,33 @@ void main() async {
 
     notifications.addListener(forwardNotifications);
     runApp(OgLApp(surface: surfaceModule.bridge, report: report));
+
+    // ★ 运行时门禁：首屏之后各采集层巡检一次。发现 degradation 时写
+    //   diagnostics.warn → 既有 OgLDiagnosticsNoticeSink → 通知中心 + 磁盘日志，
+    //   与 CI 离线门禁互补（用户设备上此刻的真实状态）。组合根允许直接取
+    //   两层 guard；展示层仍只经 SurfaceBridge。
+    Future<void> runRuntimeGates() async {
+      // 两层 guard 在各自 Module.onRegister 里注册；取不到视为尚未装配，跳过。
+      for (final Object Function() lookup in <Object Function()>[
+        () => kernel.di.resolve<NetGuard>(),
+        () => kernel.di.resolve<DiskGuard>(),
+      ]) {
+        try {
+          final Object guard = lookup();
+          if (guard is NetGuard) {
+            await guard.check();
+          } else if (guard is DiskGuard) {
+            await guard.check();
+          }
+        } on KernelDiError {
+          // 模块未注册（如安全模式隔离）——不是门禁失败，跳过。
+        } catch (error) {
+          diagnostics.warn('GATE', '运行时门禁巡检异常：$error', code: 'OGL-RUNTIME-G00');
+        }
+      }
+    }
+
+    unawaited(runRuntimeGates());
 
     // ── 首屏之后：权限自检（不阻塞启动）────────────────────────────────
     //   只复核、不弹窗（重新请求交给引导页 / 设置页）；缺什么、影响什么、

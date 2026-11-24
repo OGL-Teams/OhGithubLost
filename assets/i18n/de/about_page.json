@@ -2,6 +2,7 @@
   "bootDiagnostics": "Startdiagnose",
   "bootReport": "Startbericht",
   "bootStages": "Startphasen",
+  "runtimeGates": "Laufzeit-Gates",
   "copied": "{label} kopiert",
   "copyRepoUrl": "Repo-URL kopieren",
   "dependencyGraph": "Abhängigkeitsgraph",

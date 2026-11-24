@@ -2,6 +2,7 @@
   "bootDiagnostics": "Boot Diagnostics",
   "bootReport": "Boot Report",
   "bootStages": "Boot Stages",
+  "runtimeGates": "Runtime gates",
   "copied": "Copied {label}",
   "copyRepoUrl": "Copy Repo URL",
   "dependencyGraph": "Dependency Graph",

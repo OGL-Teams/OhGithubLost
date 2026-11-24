@@ -2,6 +2,7 @@
   "bootDiagnostics": "Oppstartsd diagnostikk",
   "bootReport": "Oppstartsrapport",
   "bootStages": "Oppstartsfaser",
+  "runtimeGates": "Kjørefelt",
   "copied": "Kopierte{label}",
   "copyRepoUrl": "Kopier repo-URL",
   "dependencyGraph": "Avhengighetsgraf",

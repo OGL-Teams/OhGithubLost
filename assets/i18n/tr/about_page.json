@@ -2,6 +2,7 @@
   "bootDiagnostics": "Başlangıç tanılaması",
   "bootReport": "Başlangıç raporu",
   "bootStages": "Başlangıç aşamaları",
+  "runtimeGates": "Çalışma zamanı kapıları",
   "copied": "{label} kopyalandı",
   "copyRepoUrl": "Depo adresini kopyala",
   "dependencyGraph": "Bağımlılık grafiği",

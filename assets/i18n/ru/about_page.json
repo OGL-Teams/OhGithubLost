@@ -2,6 +2,7 @@
   "bootDiagnostics": "Диагностика загрузки",
   "bootReport": "Отчёт о загрузке",
   "bootStages": "Этапы загрузки",
+  "runtimeGates": "Среды выполнения",
   "copied": "Скопировано: {label}",
   "copyRepoUrl": "Скопировать URL репозитория",
   "dependencyGraph": "Граф зависимостей",

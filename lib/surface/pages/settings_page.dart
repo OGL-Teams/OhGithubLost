@@ -324,7 +324,10 @@ class _SettingsPageState extends State<SettingsPage> {
   void _openAbout() {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => AboutPage(report: widget.report),
+        builder: (BuildContext context) => AboutPage(
+          report: widget.report,
+          runtimeGate: widget.surface.runtimeGateSnapshot,
+        ),
       ),
     );
   }

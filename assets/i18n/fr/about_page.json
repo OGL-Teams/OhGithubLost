@@ -2,6 +2,7 @@
   "bootDiagnostics": "Diagnostic de démarrage",
   "bootReport": "Rapport de démarrage",
   "bootStages": "Étapes de démarrage",
+  "runtimeGates": "Portails d’exécution",
   "copied": "{label} copié",
   "copyRepoUrl": "Copier l'URL du dépôt",
   "dependencyGraph": "Graphique des dépendances",

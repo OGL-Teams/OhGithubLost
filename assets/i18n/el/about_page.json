@@ -2,6 +2,7 @@
   "bootDiagnostics": "Διαγνωστικά εκκίνησης",
   "bootReport": "Αναφορά εκκίνησης",
   "bootStages": "Στάδια εκκίνησης",
+  "runtimeGates": "Πύλες εκτέλεσης",
   "copied": "Αντιγράφηκε το {label}",
   "copyRepoUrl": "Αντιγραφή διεύθυνσης αποθετηρίου",
   "dependencyGraph": "Γράφος εξαρτήσεων",

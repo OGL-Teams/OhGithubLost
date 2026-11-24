@@ -2,6 +2,7 @@
   "bootDiagnostics": "Diagnostik startup",
   "bootReport": "Laporan startup",
   "bootStages": "Tahapan startup",
+  "runtimeGates": "Gate runtime",
   "copied": "{label} disalin",
   "copyRepoUrl": "Salin alamat repositori",
   "dependencyGraph": "Graf dependensi",

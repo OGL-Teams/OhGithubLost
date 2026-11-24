@@ -2,6 +2,7 @@
   "bootDiagnostics": "Startdiagnostik",
   "bootReport": "Startrapport",
   "bootStages": "Startfaser",
+  "runtimeGates": "Kørselshave",
   "copied": "Kopierede {label}",
   "copyRepoUrl": "Kopiér repository-URL",
   "dependencyGraph": "Afhengighedsgraf",

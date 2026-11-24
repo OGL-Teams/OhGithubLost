@@ -2,6 +2,7 @@
   "bootDiagnostics": "Indítási diagnosztika",
   "bootReport": "Indítási jelentés",
   "bootStages": "Indítási szakaszok",
+  "runtimeGates": "Futási kapuk",
   "copied": "{label} másolva",
   "copyRepoUrl": "Repository-cím másolása",
   "dependencyGraph": "Függőségi gráf",

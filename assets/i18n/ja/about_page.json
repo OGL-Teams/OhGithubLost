@@ -2,6 +2,7 @@
   "bootDiagnostics": "起動診断",
   "bootReport": "起動レポート",
   "bootStages": "起動段階",
+  "runtimeGates": "実行時ゲート",
   "copied": "{label} をコピーしました",
   "copyRepoUrl": "リポジトリの URL をコピー",
   "dependencyGraph": "依存グラフ",

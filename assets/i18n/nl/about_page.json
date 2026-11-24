@@ -2,6 +2,7 @@
   "bootDiagnostics": "Opstartdiagnose",
   "bootReport": "Opstartverslag",
   "bootStages": "Opstartfasen",
+  "runtimeGates": "Runtime-gates",
   "copied": "{label} gekopieerd",
   "copyRepoUrl": "Repository-URL kopiëren",
   "dependencyGraph": "Afhankelijkheidsgrafiek",

@@ -2,6 +2,7 @@
   "bootDiagnostics": "Diagnostice la pornire",
   "bootReport": "Raport de pornire",
   "bootStages": "Etape de pornire",
+  "runtimeGates": "Porți de rulare",
   "copied": "Copiat {label}",
   "copyRepoUrl": "Copiază adresa repository-ului",
   "dependencyGraph": "Graf de dependențe",

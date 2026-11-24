@@ -2,6 +2,7 @@
   "bootDiagnostics": "تشخيص بدء التشغيل",
   "bootReport": "تقرير بدء التشغيل",
   "bootStages": "مراحل بدء التشغيل",
+  "runtimeGates": "بوابات التشغيل",
   "copied": "تم نسخ {label}",
   "copyRepoUrl": "نسخ عنوان المستودع",
   "dependencyGraph": "مخطط الاعتماديات",

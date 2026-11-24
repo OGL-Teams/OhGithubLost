@@ -2,6 +2,7 @@
   "bootDiagnostics": "Діагностика запуску",
   "bootReport": "Звіт про запуск",
   "bootStages": "Етапи запуску",
+  "runtimeGates": "Вхідні ворота",
   "copied": "Скопійовано: {label}",
   "copyRepoUrl": "Копіювати URL репозиторію",
   "dependencyGraph": "Граф залежностей",

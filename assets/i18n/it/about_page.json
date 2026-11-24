@@ -2,6 +2,7 @@
   "bootDiagnostics": "Diagnostica di avvio",
   "bootReport": "Report di avvio",
   "bootStages": "Fasi di avvio",
+  "runtimeGates": "Gate di runtime",
   "copied": "Copiato{label}",
   "copyRepoUrl": "Copia l'indirizzo della repository",
   "dependencyGraph": "Grafo delle dipendenze",

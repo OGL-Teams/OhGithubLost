@@ -2,6 +2,7 @@
   "bootDiagnostics": "Diagnostika spuštění",
   "bootReport": "Zpráva o spuštění",
   "bootStages": "Fáze spuštění",
+  "runtimeGates": "Běhové brány",
   "copied": "Zkopírováno{label}",
   "copyRepoUrl": "Kopírovat adresu repozitáře",
   "dependencyGraph": "Graf závislostí",

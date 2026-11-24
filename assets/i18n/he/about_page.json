@@ -2,6 +2,7 @@
   "bootDiagnostics": "אבחון אתחול",
   "bootReport": "דוח אתחול",
   "bootStages": "שלבי אתחול",
+  "runtimeGates": "שערי זמן ריצה",
   "copied": "{label} הועתק",
   "copyRepoUrl": "העתקת כתובת המאגר",
   "dependencyGraph": "גרף תלויות",

@@ -2,6 +2,7 @@
   "bootDiagnostics": "Chẩn đoán khởi động",
   "bootReport": "Báo cáo khởi động",
   "bootStages": "Các giai đoạn khởi động",
+  "runtimeGates": "Cổng thời gian chạy",
   "copied": "Đã sao chép {label}",
   "copyRepoUrl": "Sao chép địa chỉ kho lưu trữ",
   "dependencyGraph": "Biểu đồ phụ thuộc",

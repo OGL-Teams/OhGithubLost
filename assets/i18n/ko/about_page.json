@@ -2,6 +2,7 @@
   "bootDiagnostics": "시작 진단",
   "bootReport": "시작 보고서",
   "bootStages": "시작 단계",
+  "runtimeGates": "런타임 게이트",
   "copied": "{label} 복사됨",
   "copyRepoUrl": "저장소 주소 복사",
   "dependencyGraph": "의존성 그래프",

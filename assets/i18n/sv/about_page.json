@@ -2,6 +2,7 @@
   "bootDiagnostics": "Startdiagnostik",
   "bootReport": "Startrapport",
   "bootStages": "Startstadier",
+  "runtimeGates": "Körningsgrindar",
   "copied": "{label} kopierad",
   "copyRepoUrl": "Kopiera repositoriets URL",
   "dependencyGraph": "Beroendediagram",

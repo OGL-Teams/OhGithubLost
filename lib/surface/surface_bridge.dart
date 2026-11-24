@@ -19,13 +19,16 @@ import 'package:flutter/material.dart';
 import '../base/base_bridge.dart';
 import '../base/disk/app_dirs.dart';
 import '../base/disk/disk_cache.dart';
+import '../base/disk/disk_guard.dart';
 import '../base/disk/disk_store.dart';
 import '../base/disk/og_l_storage.dart';
 import '../base/net/net_bridge.dart';
+import '../base/net/net_guard.dart';
 import '../domain/domain_bridge.dart';
 import '../domain/gh/repo_file_service.dart';
 import '../kernel/bridge_registry.dart';
 import '../kernel/contract/module.dart';
+import '../kernel/di.dart';
 import '../kernel/log/og_l_log_file.dart';
 import 'app/error_surface.dart';
 import 'app/font_loader.dart';
@@ -48,6 +51,7 @@ class SurfaceBridge {
     this.storageProbe,
     this.uiPrefs,
     this.storageRoot,
+    this.runtimeGateSnapshotOf,
   });
 
   /// 从内核桥表解析（展示层的标准取用方式）。
@@ -76,6 +80,15 @@ class SurfaceBridge {
   /// 为什么注入而不是页面直接取：surface 不得 import base/disk（分层门禁），
   /// 与 [storageProbe] 同一手法。
   final Future<String> Function()? storageRoot;
+
+  /// 运行时门禁快照提供者（由装配层注入，返回 net/disk 两层 guard 的合并快照）。
+  ///
+  /// surface 不得 import base/net|disk；以函数注入保持分层单向。
+  final Map<String, Object?> Function()? runtimeGateSnapshotOf;
+
+  /// 运行时门禁快照（供设置/关于页与健康中心展示；未注入时为空）。
+  Map<String, Object?> get runtimeGateSnapshot =>
+      runtimeGateSnapshotOf?.call() ?? const <String, Object>{};
 
   /// 界面偏好 KV（**纯展示层状态**：分组展开状态等）。
   ///
@@ -683,6 +696,11 @@ class SurfaceLayerModule extends OgLModule {
       // 界面偏好（分组展开状态）走同一套 KV：与设置数据分开存，
       // 但共用"底座可替换"的唯一入口。
       uiPrefs: base.disk.kv,
+      // 运行时门禁快照：经 DI 取 net/disk 两层 guard（组合根装配，展示层只调闭包）。
+      runtimeGateSnapshotOf: () => <String, Object?>{
+        'net': _gateSnapshot<NetGuard>(context),
+        'disk': _gateSnapshot<DiskGuard>(context),
+      },
     );
     context.bridges.register(ModuleLayer.surface.key, bridge);
 
@@ -696,6 +714,24 @@ class SurfaceLayerModule extends OgLModule {
         'settingsError': settings.lastError != null,
       },
     );
+  }
+
+  /// 运行时门禁快照的通用取法：由装配上下文的 DI 解析 guard，未注册返回空。
+  ///
+  /// 只用于注入给展示层的闭包；展示层本身不 import base/net|disk 的 guard 实现。
+  Map<String, Object?> _gateSnapshot<T extends Object>(KernelContext context) {
+    try {
+      final T guard = context.di.resolve<T>();
+      if (guard is NetGuard) {
+        return guard.snapshot();
+      }
+      if (guard is DiskGuard) {
+        return guard.snapshot();
+      }
+    } on KernelDiError {
+      // 模块未注册（安全模式隔离）——无快照，不是错误。
+    }
+    return const <String, Object>{};
   }
 
   @override

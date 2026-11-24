@@ -2,6 +2,7 @@
   "bootDiagnostics": "Diagnostyka uruchamiania",
   "bootReport": "Raport uruchomienia",
   "bootStages": "Etapy uruchamiania",
+  "runtimeGates": "Bramy uruchomieniowe",
   "copied": "Skopiowano {label}",
   "copyRepoUrl": "Kopiuj adres repozytorium",
   "dependencyGraph": "Graf zależności",

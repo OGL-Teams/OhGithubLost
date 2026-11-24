@@ -2,6 +2,7 @@
   "bootDiagnostics": "開機診斷",
   "bootReport": "開機報告",
   "bootStages": "開機階段",
+  "runtimeGates": "執行時期門禁",
   "copied": "已複製 {label}",
   "copyRepoUrl": "複製儲存庫 URL",
   "dependencyGraph": "依賴關係圖",

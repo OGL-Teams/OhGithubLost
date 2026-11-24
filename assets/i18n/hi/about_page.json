@@ -2,6 +2,7 @@
   "bootDiagnostics": "स्टार्टअप निदान",
   "bootReport": "स्टार्टअप रिपोर्ट",
   "bootStages": "स्टार्टअप चरण",
+  "runtimeGates": "रनटाइम गेट",
   "copied": "{label} कॉपी हो गया",
   "copyRepoUrl": "रिपॉजिटरी का पता कॉपी करें",
   "dependencyGraph": "निर्भरता ग्राफ़",

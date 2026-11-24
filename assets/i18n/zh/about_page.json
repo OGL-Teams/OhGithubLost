@@ -2,6 +2,7 @@
   "bootDiagnostics": "启动诊断",
   "bootReport": "启动报告",
   "bootStages": "启动阶段",
+  "runtimeGates": "运行时门禁",
   "copied": "已复制{label}",
   "copyRepoUrl": "复制仓库地址",
   "dependencyGraph": "依赖图",

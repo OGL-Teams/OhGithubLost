@@ -2,6 +2,7 @@
   "bootDiagnostics": "Diagnóstico de inicialização",
   "bootReport": "Relatório de inicialização",
   "bootStages": "Etapas de inicialização",
+  "runtimeGates": "Portões de execução",
   "copied": "{label} copiado",
   "copyRepoUrl": "Copiar endereço do repositório",
   "dependencyGraph": "Grafo de dependências",
