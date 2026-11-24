@@ -390,15 +390,15 @@ class OgLAsyncSkeleton extends StatelessWidget {
     // 生产主题（buildOgLTheme）始终注册该扩展。
     final OgLSemanticColors semantic =
         Theme.of(context).extension<OgLSemanticColors>() ??
-        OgLSemanticColors(
-          success: scheme.primary,
-          onSuccess: scheme.onPrimary,
-          warning: scheme.secondary,
-          onWarning: scheme.onSecondary,
-          info: scheme.primary,
-          onInfo: scheme.onPrimary,
-          outlineVariantStrong: scheme.outlineVariant,
-        );
+            OgLSemanticColors(
+              success: scheme.primary,
+              onSuccess: scheme.onPrimary,
+              warning: scheme.secondary,
+              onWarning: scheme.onSecondary,
+              info: scheme.primary,
+              onInfo: scheme.onPrimary,
+              outlineVariantStrong: scheme.outlineVariant,
+            );
     return Padding(
       padding: const EdgeInsets.all(OgLSpace.lg),
       child: Column(

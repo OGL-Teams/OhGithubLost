@@ -81,7 +81,6 @@ import 'package:ohgithublost/surface/pages/pull_page.dart';
 import 'package:ohgithublost/surface/pages/release_detail_page.dart';
 import 'package:ohgithublost/surface/pages/repo_page.dart';
 import 'package:ohgithublost/surface/pages/repo_tags_page.dart';
-import 'package:ohgithublost/surface/pages/search_page.dart';
 import 'package:ohgithublost/surface/pages/settings_page.dart';
 import 'package:ohgithublost/surface/pages/settings_section_page.dart';
 import 'package:ohgithublost/surface/pages/workflow_dispatch_page.dart';
