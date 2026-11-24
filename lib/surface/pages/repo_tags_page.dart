@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../app/async.dart';
 import '../app/notifier.dart';
 import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
@@ -196,7 +197,8 @@ class _RepoTagsPageState extends State<RepoTagsPage> {
       );
     }
     if (_items.isEmpty && _loading) {
-      return const Center(child: CircularProgressIndicator());
+      // 批 1b：标签列表加载骨架化。
+      return const Center(child: OgLAsyncSkeleton());
     }
     if (_items.isEmpty) {
       return Center(
@@ -221,7 +223,7 @@ class _RepoTagsPageState extends State<RepoTagsPage> {
           if (index >= _items.length) {
             return const Padding(
               padding: EdgeInsets.all(OgLSpace.lg),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: OgLAsyncSkeleton(rows: 2)),
             );
           }
           final GhTag tag = _items[index];

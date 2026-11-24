@@ -1386,7 +1386,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
           ),
           Expanded(
             child: controller == null
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: OgLAsyncSkeleton())
                 : AsyncView<List<_SearchHit>>(
                     controller: controller,
                     emptyIcon: Icons.search_off,

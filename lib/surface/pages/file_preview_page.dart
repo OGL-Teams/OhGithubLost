@@ -219,7 +219,8 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          // 批 1b：内容区加载骨架化（非行内小 spinner）。
+          ? const Center(child: OgLAsyncSkeleton())
           : _buildBody(theme),
     );
   }

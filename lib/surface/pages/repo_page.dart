@@ -787,7 +787,8 @@ Widget _pagedBody<T>(
 }) {
   final List<T> list = items ?? paged.items;
   if (paged.items.isEmpty && paged.loading) {
-    return const Center(child: CircularProgressIndicator());
+    // 批 1b：列表首屏加载骨架化（与最终行同形）。
+    return const Center(child: OgLAsyncSkeleton());
   }
   // 错误优先于一切：有 error 就显示错误面板（可重试）。
   // 此前只判 `items.isEmpty && error != null` —— 若上一页成功、本页失败，
@@ -2525,7 +2526,8 @@ class _CodeTabState extends State<_CodeTab> {
                             ghPathName(e.path).toLowerCase().contains(q))
                         .toList();
                 if (_entries.items.isEmpty && _entries.loading) {
-                  return const Center(child: CircularProgressIndicator());
+                  // 批 1b：目录列表加载骨架化。
+                  return const Center(child: OgLAsyncSkeleton());
                 }
                 if (_entries.items.isEmpty && _entries.error != null) {
                   return OgLAsyncErrorPane(

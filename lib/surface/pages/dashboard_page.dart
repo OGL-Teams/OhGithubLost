@@ -22,6 +22,7 @@ import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
 import '../widgets/scroll_aware_action.dart';
 import 'download_manager_page.dart';
+import 'login_page.dart';
 import 'new_repo_page.dart';
 import 'notifications_page.dart';
 import 'repo_page.dart';
@@ -93,6 +94,10 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _segment = 0;
 
+  /// 游客判定缓存（首帧后由 [_resolveGuest] 填）：true = 未登录。
+  /// 只影响空态 CTA 文案与分流；建仓入口本身再做一次实时判定，不依赖它。
+  bool _guestNoAccount = true;
+
   /// 列表滚动位置：交给 [ScrollAwareAction] 判定"下滑收边 / 上滑弹回 / 近底部收起"。
   final ScrollController _scroll = ScrollController();
   late final _RepoPaged _mine = _RepoPaged(
@@ -113,11 +118,60 @@ class _DashboardPageState extends State<DashboardPage> {
     _scroll.addListener(_onScroll);
     WidgetsBinding.instance
         .addPostFrameCallback((_) => unawaited(_bootstrap()));
+    unawaited(_resolveGuest());
     // 分级预加载：本页主视觉的图片资源 = 身份头像。
     // - 账号头像 → `currentPage`（档位 ≥1）；
     // - 列表前几项的 owner 头像 → 数据落地后才登记（见 [_preloadRepoAvatars]）。
     // 登记动作本身不碰 UI、不持有 context；档位不够时被策略表**拒收**（不排队）。
     unawaited(_preloadAccountAvatar());
+  }
+
+  /// 当前账号；取不到就是 `null`（未登录 / 保险库读失败都算"游客态"）。
+  Future<GhAccount?> _activeAccountOrNull() async {
+    try {
+      return await widget.surface.domain.auth.activeAccount();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 游客态判定（供「新建仓库」按钮分流）：未登录时不弹创建页，
+  /// 改引导去登录。首帧后判定一次，与本页头像预加载同节奏。
+  Future<void> _resolveGuest() async {
+    final GhAccount? account = await _activeAccountOrNull();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _guestNoAccount = account == null);
+  }
+
+  /// 「新建仓库」/空态 CTA：已登录 → 创建页；游客 → 登录页（复用
+  /// `client_shell` 同一条登录导航：`LoginPage` 带 `onLoggedIn` 回调）。
+  Future<void> _createRepoOrLogin() async {
+    final GhAccount? account = await _activeAccountOrNull();
+    if (!mounted) {
+      return;
+    }
+    if (account == null) {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (BuildContext routeContext) => LoginPage(
+            surface: widget.surface,
+            onLoggedIn: () {
+              if (routeContext.mounted) {
+                Navigator.of(routeContext).pop();
+              }
+            },
+          ),
+        ),
+      );
+      if (mounted) {
+        await _resolveGuest();
+        await _mine.refresh();
+      }
+      return;
+    }
+    await _createRepo();
   }
 
   /// 首帧后拉第一页；数据落地即登记（列表前几项的）owner 头像。
@@ -403,9 +457,14 @@ class _DashboardPageState extends State<DashboardPage> {
       floatingActionButton: ScrollAwareAction(
         controller: _scroll,
         child: FloatingActionButton.extended(
-          onPressed: _createRepo,
-          icon: const Icon(Icons.add),
-          label: Text(_t('newRepo')),
+          // 同空态 CTA：游客改去登录，不做假的新建入口。
+          onPressed: _createRepoOrLogin,
+          icon: Icon(_guestNoAccount ? Icons.login : Icons.add),
+          label: Text(
+            _guestNoAccount
+                ? OgLI18n.instance.t('login', 'signIn')
+                : _t('newRepo'),
+          ),
         ),
       ),
       body: Column(
@@ -433,7 +492,8 @@ class _DashboardPageState extends State<DashboardPage> {
               builder: (BuildContext context, Widget? _) {
                 final _RepoPaged p = _active;
                 if (p.items.isEmpty && p.loading) {
-                  return const Center(child: CircularProgressIndicator());
+                  // 批 1b：首屏加载骨架化（与最终列表行同形）。
+                  return const Center(child: OgLAsyncSkeleton());
                 }
                 if (p.items.isEmpty && p.error != null) {
                   return OgLAsyncErrorPane(
@@ -455,8 +515,14 @@ class _DashboardPageState extends State<DashboardPage> {
                               : _t('emptyStarred'),
                           action: _segment == 0
                               ? FilledButton(
-                                  onPressed: _createRepo,
-                                  child: Text(_t('newRepo')),
+                                  // 游客（未登录）不弹创建页：改引导登录
+                                  //（建仓需要账号，假 CTA 才是真正的死路）。
+                                  onPressed: _createRepoOrLogin,
+                                  child: Text(
+                                    _guestNoAccount
+                                        ? OgLI18n.instance.t('login', 'signIn')
+                                        : _t('newRepo'),
+                                  ),
                                 )
                               : FilledButton.tonal(
                                   onPressed: _goDiscover,
@@ -477,11 +543,12 @@ class _DashboardPageState extends State<DashboardPage> {
                         const Divider(height: 1),
                     itemBuilder: (BuildContext context, int index) {
                       if (index == p.items.length) {
-                        // ★ 自动加载：尾部骨架屏（滚动到底由 _onScroll 触发
-                        //   loadMore），不再要手动按钮。
+                        // ★ 自动加载：尾部骨架条（滚动到底由 _onScroll 触发
+                        //   loadMore），不再要手动按钮。行内占位，用 2 行
+                        //   小骨架即可，不必整屏。
                         return const Padding(
                           padding: EdgeInsets.all(OgLSpace.md),
-                          child: Center(child: CircularProgressIndicator()),
+                          child: Center(child: OgLAsyncSkeleton(rows: 2)),
                         );
                       }
                       final GhRepo repo = p.items[index];

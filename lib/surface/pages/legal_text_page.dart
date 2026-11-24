@@ -173,7 +173,8 @@ class _LegalTextPageState extends State<LegalTextPage> {
                     onRetry: () => _load(_locale),
                   )
                 : _loading
-                    ? const Center(child: CircularProgressIndicator())
+                    // 批 1b：正文加载骨架化。
+                    ? const Center(child: OgLAsyncSkeleton())
                     : (_body == null || _body!.isEmpty)
                         ? Center(
                             child: Padding(

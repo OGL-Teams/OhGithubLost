@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../kernel/kernel.dart';
+import '../app/async.dart';
 import '../app/notifier.dart';
 import '../i18n/og_l_i18n.dart';
 import '../pages/dashboard_page.dart';
@@ -276,8 +277,9 @@ class _OgLClientShellState extends State<OgLClientShell> {
       );
     }
     if (!_checked) {
+      // 批 1b：登录态检查的中间态骨架化（不再裸转圈）。
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: OgLAsyncSkeleton()),
       );
     }
     if ((_accountId == null ||

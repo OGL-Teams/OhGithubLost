@@ -361,7 +361,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           else if (_infos == null)
             const Padding(
               padding: EdgeInsets.all(OgLSpace.xl),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: OgLAsyncSkeleton()),
             )
           else
             for (final OgLPermissionInfo info in _infos!)

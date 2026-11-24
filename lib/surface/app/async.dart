@@ -21,6 +21,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../i18n/og_l_i18n.dart';
+import '../theme.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import 'animations.dart';
@@ -365,27 +366,68 @@ class AsyncView<T> extends StatelessWidget {
       OgLReveal(delay: Duration.zero, child: child);
 }
 
-/// 二段式矩形骨架：标题块 + 元信息块，用主题色阶代替裸转圈。
+/// **列表行形**骨架：与最终列表布局同形（左leading块 + 两行文字条），
+/// 用主题色阶代替裸转圈。让"加载中 → 数据"的形变最小，感知等待更短。
 ///
 /// 来自 `search_page.dart` 的 `_SkeletonBox`/`_SkeletonRow` 模式，提到统一出口，
-/// 供 [AsyncView] 与页面共用（D-06）。色阶按第一批主题 token 取
-/// `surfaceContainerHighest`，与列表底色同调、不发亮。
+/// 供 [AsyncView]、[OgLAsyncSliver] 与页面共用（D-06）。色阶按第一批主题 token 取
+/// `surfaceContainerHigh` / `OgLSemanticColors.outlineVariantStrong`，
+/// 与列表底色同调、不发亮。
 class OgLAsyncSkeleton extends StatelessWidget {
   /// 创建。
-  const OgLAsyncSkeleton({super.key});
+  ///
+  /// [rows] 控制骨架行数（默认 6 行，约一屏的量感）；
+  /// 行高固定 60dp，落在 56-64dp 的列表行密度区间。
+  const OgLAsyncSkeleton({super.key, this.rows = 6});
+
+  /// 骨架行数（5-8 行最接近一屏列表）。
+  final int rows;
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.all(OgLSpace.xl),
+      padding: const EdgeInsets.all(OgLSpace.lg),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          _block(scheme, height: OgLSpace.md, width: 160),
-          const SizedBox(height: OgLSpace.sm),
-          _block(scheme, height: OgLSpace.sm, width: 220),
+          for (int i = 0; i < rows.clamp(1, 8); i++) ...<Widget>[
+            if (i > 0) const SizedBox(height: OgLSpace.md),
+            _row(scheme),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 单行：左侧圆形块（leading）+ 右侧两行文字条（标题 / 副标题）。
+  Widget _row(ColorScheme scheme) {
+    return SizedBox(
+      height: 60,
+      child: Row(
+        children: <Widget>[
+          _block(scheme, width: 36, height: 36, circular: true),
+          const SizedBox(width: OgLSpace.lg),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                // 标题条：约 70% 宽度（余量由 Expanded 吃掉）。
+                FractionallySizedBox(
+                  widthFactor: 0.7,
+                  child: _block(scheme, height: OgLSpace.md),
+                ),
+                const SizedBox(height: OgLSpace.sm),
+                // 副标题条：约 45% 宽度，短一截更像真实列表行。
+                FractionallySizedBox(
+                  widthFactor: 0.45,
+                  child: _block(scheme, height: OgLSpace.sm),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -393,13 +435,19 @@ class OgLAsyncSkeleton extends StatelessWidget {
 
   /// 单个圆角骨架块（色阶来自主题 token）。
   Widget _block(ColorScheme scheme,
-      {required double height, required double width}) {
+      {required double height, double? width, bool circular = false}) {
+    final OgLSemanticColors semantic =
+        Theme.of(context).extension<OgLSemanticColors>()!;
     return Container(
       height: height,
       width: width,
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest,
-        borderRadius: OgLRadius.cSm,
+        // 底色用 surfaceContainerHigh（与列表底色同调），描边用
+        // outlineVariantStrong —— 骨架块既不发光也不糊成一片。
+        color: scheme.surfaceContainerHigh,
+        border: Border.all(color: semantic.outlineVariantStrong),
+        borderRadius:
+            circular ? BorderRadius.circular(height / 2) : OgLRadius.cSm,
       ),
     );
   }
@@ -640,12 +688,7 @@ class OgLAsyncSliver<T> extends StatelessWidget {
                   OgLAsyncErrorPane(message: failure, onRetry: controller.load);
             } else {
               state = 'loading';
-              stateChild = const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(OgLSpace.xxl),
-                  child: CircularProgressIndicator(),
-                ),
-              );
+              stateChild = const Center(child: OgLAsyncSkeleton());
             }
           }
           return SliverToBoxAdapter(
