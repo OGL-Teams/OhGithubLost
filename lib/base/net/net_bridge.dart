@@ -7,6 +7,7 @@ library;
 import '../../kernel/contract/module.dart';
 import 'io_net_transport.dart';
 import 'net_dns.dart';
+import 'net_guard.dart';
 import 'net_mirror.dart';
 import 'net_retry.dart';
 import 'net_transport.dart';
@@ -15,7 +16,12 @@ import 'net_types.dart';
 /// 网络连接门面。
 class NetBridge implements NetTransport {
   /// 创建门面。
-  NetBridge({required this.transport, required this.observer, this.dns});
+  NetBridge({
+    required this.transport,
+    required this.observer,
+    this.dns,
+    NetGuard? guard,
+  }) : _guard = guard;
 
   /// 韧性传输（重试 + 镜像 + 观测）。
   final NetTransport transport;
@@ -25,6 +31,17 @@ class NetBridge implements NetTransport {
 
   /// DNS 策略服务（`null` 表示只用系统解析）。
   final DnsService? dns;
+
+  final NetGuard? _guard;
+
+  /// 网络运行时门禁采集器（高层经层桥读取门禁状态）。
+  ///
+  /// `null` 表示本门面未装配门禁（例如外部单独构造的桥）。
+  NetGuard? get guard => _guard;
+
+  /// 当前门禁状态快照（高层只读消费）。
+  Map<String, Object?> get guardSnapshot =>
+      _guard?.snapshot() ?? <String, Object?>{'attached': false};
 
   /// 当前 DNS 策略摘要（UI 必须向用户展示，不得让用户猜）。
   String get dnsSummary {
@@ -191,6 +208,12 @@ class NetModule extends OgLModule {
   Future<void> onRegister(KernelContext context) async {
     _dns.attachDiagnostics(context.diagnostics);
 
+    // 网络运行时门禁采集器：只采集，不决策。
+    // 数据源是本层已有的 NetObserver 记账 + DnsService 降级状态，
+    // 命中门禁时写 diagnostics（由通知中心 / 日志呈现）。
+    final NetGuard guard = NetGuard();
+    guard.attach(context.diagnostics, _observer, dns: _dns);
+
     final inner = _explicit ??
         _factory?.call() ??
         // 传输实现：dart:io 的 HttpClient（`io_net_transport.dart`）。
@@ -207,10 +230,16 @@ class NetModule extends OgLModule {
             observer: _observer,
           );
 
-    bridge = NetBridge(transport: transport, observer: _observer, dns: _dns);
+    bridge = NetBridge(
+      transport: transport,
+      observer: _observer,
+      dns: _dns,
+      guard: guard,
+    );
 
     context.di.register<NetBridge>(bridge);
     context.di.register<DnsService>(_dns);
+    context.di.register<NetGuard>(guard);
     // 把 DNS 自检挂到内核自检表：启动报告里就能看到"当前用的是哪家 DNS"。
     context.probes?.register(_dns.probe());
     context.diagnostics.info(
@@ -221,6 +250,7 @@ class NetModule extends OgLModule {
         'policy': _policy.toString(),
         'mirrors': _mirrors.channels.length,
         'dns': bridge.dnsSummary,
+        'guard': guard.snapshot(),
         'syslog': 'DNS 策略可随时切换，不重建传输层',
       },
     );

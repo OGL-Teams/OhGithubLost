@@ -8,6 +8,7 @@ library;
 import '../../kernel/contract/module.dart';
 import 'disk_cache.dart';
 import 'disk_draft.dart';
+import 'disk_guard.dart';
 import 'disk_journal.dart';
 import 'disk_store.dart';
 
@@ -22,6 +23,7 @@ class DiskBridge {
     required this.cache,
     required this.journal,
     required this.drafts,
+    required this.guard,
   });
 
   /// 键值存储。
@@ -44,6 +46,12 @@ class DiskBridge {
 
   /// 草稿仓库（D9：编辑不丢）。
   final DraftStore drafts;
+
+  /// 硬盘运行时门禁（只读；上层经层桥读取其状态快照）。
+  final DiskGuard guard;
+
+  /// 门禁状态快照（JSON 可序列化）。
+  Map<String, Object?> get guardSnapshot => guard.snapshot();
 
   @override
   String toString() => 'DiskBridge(kv=${kv.runtimeType}, '
@@ -131,6 +139,12 @@ class DiskModule extends OgLModule {
     writeJournal.attachDiagnostics(context.diagnostics);
     draftStore.attachDiagnostics(context.diagnostics);
 
+    // ④ 硬盘运行时门禁：汇总磁盘降级信号（写失败 / 落盘不可用 / pending 积压），
+    //    自查日志经 `OGL-DISK-G*` 前缀过滤，不会自激。
+    final diskGuard = DiskGuard();
+    diskGuard.attach(context.diagnostics);
+    diskGuard.attachJournal(writeJournal);
+
     bridge = DiskBridge(
       kv: kv,
       vault: vault,
@@ -139,11 +153,13 @@ class DiskModule extends OgLModule {
       cache: repositoryCache,
       journal: writeJournal,
       drafts: draftStore,
+      guard: diskGuard,
     );
     context.di.register<DiskBridge>(bridge);
     context.di.register<RepositoryCache>(repositoryCache);
     context.di.register<WriteJournal>(writeJournal);
     context.di.register<DraftStore>(draftStore);
+    context.di.register<DiskGuard>(diskGuard);
     context.diagnostics.info(
       'DISK',
       '硬盘逻辑就绪',
@@ -154,7 +170,14 @@ class DiskModule extends OgLModule {
         'vault': vault.runtimeType.toString(),
         'pendingWrites': await writeJournal.pendingCount(),
         'draftCount': await draftStore.count(),
+        'guard': diskGuard.snapshot(),
       },
     );
+  }
+
+  @override
+  Future<void> onStart() async {
+    // 首次巡检：启动后立刻给出门禁基线（此后由上层按需再次调用 check()）。
+    await bridge.guard.check();
   }
 }
