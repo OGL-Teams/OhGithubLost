@@ -149,9 +149,10 @@ class _DashboardPageState extends State<DashboardPage> {
           builder: (BuildContext routeContext) => LoginPage(
             surface: widget.surface,
             onLoggedIn: () {
-              if (routeContext.mounted) {
-                Navigator.of(routeContext).pop();
+              if (!routeContext.mounted) {
+                return;
               }
+              Navigator.of(routeContext).pop();
             },
           ),
         ),
