@@ -608,6 +608,10 @@ jobs:
       - name: 引导清单注入校验（防空注入回归）
         # 用与构建同一份 `dart_define.json` 跑聚焦测试：注入必须非空、
         # 可解析、且签名能被内嵌公钥验证 —— 防"注入静默失败 → 发布包拒绝启动"。
+        # ★ 令牌只经环境传给测试进程（供截图矩阵按需读取），不写 dart_define、
+        #   不打印、不进产物；缺失时截图测试自动回落假件。
+        env:
+          OGL_SCREENSHOT_TOKEN: ${{ secrets.OGL_SCREENSHOT_TOKEN }}
         if: matrix.label == 'Android · arm64-v8a'
         run: |
           flutter test \

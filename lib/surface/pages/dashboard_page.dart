@@ -148,7 +148,7 @@ class _DashboardPageState extends State<DashboardPage> {
         MaterialPageRoute<void>(
           builder: (BuildContext routeContext) => LoginPage(
             surface: widget.surface,
-            onLoggedIn: () {
+            onLoggedIn: () async {
               if (!routeContext.mounted) {
                 return;
               }
