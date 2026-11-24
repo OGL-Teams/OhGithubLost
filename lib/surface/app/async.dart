@@ -386,6 +386,8 @@ class OgLAsyncSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
+    final OgLSemanticColors semantic =
+        Theme.of(context).extension<OgLSemanticColors>()!;
     return Padding(
       padding: const EdgeInsets.all(OgLSpace.lg),
       child: Column(
@@ -394,7 +396,7 @@ class OgLAsyncSkeleton extends StatelessWidget {
         children: <Widget>[
           for (int i = 0; i < rows.clamp(1, 8); i++) ...<Widget>[
             if (i > 0) const SizedBox(height: OgLSpace.md),
-            _row(scheme),
+            _row(scheme, semantic),
           ],
         ],
       ),
@@ -402,12 +404,12 @@ class OgLAsyncSkeleton extends StatelessWidget {
   }
 
   /// 单行：左侧圆形块（leading）+ 右侧两行文字条（标题 / 副标题）。
-  Widget _row(ColorScheme scheme) {
+  Widget _row(ColorScheme scheme, OgLSemanticColors semantic) {
     return SizedBox(
       height: 60,
       child: Row(
         children: <Widget>[
-          _block(scheme, width: 36, height: 36, circular: true),
+          _block(scheme, semantic, width: 36, height: 36, circular: true),
           const SizedBox(width: OgLSpace.lg),
           Expanded(
             child: Column(
@@ -417,13 +419,13 @@ class OgLAsyncSkeleton extends StatelessWidget {
                 // 标题条：约 70% 宽度（余量由 Expanded 吃掉）。
                 FractionallySizedBox(
                   widthFactor: 0.7,
-                  child: _block(scheme, height: OgLSpace.md),
+                  child: _block(scheme, semantic, height: OgLSpace.md),
                 ),
                 const SizedBox(height: OgLSpace.sm),
                 // 副标题条：约 45% 宽度，短一截更像真实列表行。
                 FractionallySizedBox(
                   widthFactor: 0.45,
-                  child: _block(scheme, height: OgLSpace.sm),
+                  child: _block(scheme, semantic, height: OgLSpace.sm),
                 ),
               ],
             ),
@@ -434,10 +436,8 @@ class OgLAsyncSkeleton extends StatelessWidget {
   }
 
   /// 单个圆角骨架块（色阶来自主题 token）。
-  Widget _block(ColorScheme scheme,
+  Widget _block(ColorScheme scheme, OgLSemanticColors semantic,
       {required double height, double? width, bool circular = false}) {
-    final OgLSemanticColors semantic =
-        Theme.of(context).extension<OgLSemanticColors>()!;
     return Container(
       height: height,
       width: width,

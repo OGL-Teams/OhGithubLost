@@ -126,15 +126,6 @@ class _DashboardPageState extends State<DashboardPage> {
     unawaited(_preloadAccountAvatar());
   }
 
-  /// 当前账号；取不到就是 `null`（未登录 / 保险库读失败都算"游客态"）。
-  Future<GhAccount?> _activeAccountOrNull() async {
-    try {
-      return await widget.surface.domain.auth.activeAccount();
-    } catch (_) {
-      return null;
-    }
-  }
-
   /// 游客态判定（供「新建仓库」按钮分流）：未登录时不弹创建页，
   /// 改引导去登录。首帧后判定一次，与本页头像预加载同节奏。
   Future<void> _resolveGuest() async {
