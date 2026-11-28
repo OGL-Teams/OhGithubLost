@@ -547,6 +547,7 @@ Widget? _pageOf(
     case 'login':
       return LoginPage(surface: bridge, onLoggedIn: _noop);
     case 'home':
+    case 'dashboard':
       return DashboardPage(surface: bridge);
     case 'repo':
       return RepoPage(surface: bridge, repo: repo);
