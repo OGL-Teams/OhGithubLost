@@ -107,7 +107,7 @@ class OgLCodeTheme {
 
   /// 从应用主题派生（默认预设）。
   factory OgLCodeTheme.fromScheme(ColorScheme scheme) => OgLCodeTheme(
-        background: scheme.surfaceContainerHighest,
+        background: scheme.surfaceVariant,
         foreground: scheme.onSurface,
         keyword: scheme.primary,
         typeName: scheme.tertiary,
@@ -749,7 +749,7 @@ class OgLCodeFindPanel extends StatelessWidget implements PreferredSizeWidget {
             return const SizedBox.shrink();
           }
           return Material(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            color: Theme.of(context).colorScheme.surfaceVariant,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[

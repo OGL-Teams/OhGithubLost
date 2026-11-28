@@ -540,7 +540,7 @@ class _JobCard extends StatelessWidget {
             constraints: const BoxConstraints(maxHeight: 420),
             padding: const EdgeInsets.all(OgLSpace.md),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
+              color: theme.colorScheme.surfaceVariant,
               borderRadius: BorderRadius.circular(OgLRadius.sm),
             ),
             // 长日志分块虚拟化（几万行 Actions 日志按需排版，展开不卡顿）。

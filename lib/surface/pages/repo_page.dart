@@ -625,7 +625,7 @@ class _RepoPageState extends State<RepoPage> {
   }
 
   Widget _branchBar(ThemeData theme) => Material(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: theme.colorScheme.surfaceVariant,
         child: Semantics(
           // 分支选择条是「打开选择器」的按钮：屏幕阅读器需要可读标签，
           // 否则用户只看到一行分支名，不知道可以点。
@@ -2303,7 +2303,7 @@ class _CodeTabState extends State<_CodeTab> {
   Widget _buildFileHeader(GhContent file) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return Material(
-      color: scheme.surfaceContainerHighest,
+      color: scheme.surfaceVariant,
       child: Row(
         children: <Widget>[
           IconButton(

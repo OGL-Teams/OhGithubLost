@@ -693,6 +693,6 @@ class _RepoPaged extends ChangeNotifier {
 /// 点击跳转 `SearchResultsPage`，输入发生在那边（本页不持输入状态）。
 ///
 /// ## 实现取舍
-/// - 用 `InkWell` + 主题输入框同款底色（`surfaceContainerHighest`）+ 描边，
+/// - 用 `InkWell` + 主题输入框同款底色（`surfaceVariant`）+ 描边，
 ///   视觉与真输入框一致；圆角 / 间距 / 颜色全部走令牌；
 /// - 文案用 `onSurfaceVariant`（占位符的"灰"），不抢真输入框的戏。

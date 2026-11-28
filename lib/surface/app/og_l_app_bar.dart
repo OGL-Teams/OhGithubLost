@@ -4,12 +4,12 @@
 /// Material 默认 AppBar 用 `scrolledUnderElevation` 加 surfaceTintColor——
 /// 滚到内容下方时"浮起"，与正文之间出现可感知边界。这里在此之上叠加一段
 /// **连续插值**：顶部 → 与页面同色（surface，完全融合），滚深 →
-/// surfaceContainerHigh（可辨识的浮起感），颜色全程渐变、无硬边。
+/// surfaceVariant（可辨识的浮起感），颜色全程渐变、无硬边。
 ///
 /// ## 与主题令牌的关系
-/// `theme.dart` 的 `appBarTheme.backgroundColor = surfaceContainerLow`、
+/// `theme.dart` 的 `appBarTheme.backgroundColor = surface`、
 /// `scrolledUnderElevation = 2`（融合基线 + 原生边界）。本组件叠加的连续
-/// 插值两端色（surface / surfaceContainerHigh）都来自 `ColorScheme`。
+/// 插值两端色（surface / surfaceVariant）都来自 `ColorScheme`。
 ///
 /// ## 滚动进度来源（G-02 / B-01：已删除 Primary 兜底假设）
 /// 本项目**没有任何地方**注入 `PrimaryScrollController`（Scaffold 只读不写），
@@ -137,7 +137,7 @@ class _OgLAppBarState extends State<OgLAppBar> {
         final double progress = t.clamp(0.0, 1.0);
         final Color merged = Color.lerp(
           theme.colorScheme.surface,
-          theme.colorScheme.surfaceContainerHigh,
+          theme.colorScheme.surfaceVariant,
           progress,
         )!;
         return AppBar(
@@ -145,7 +145,7 @@ class _OgLAppBarState extends State<OgLAppBar> {
           actions: widget.actions,
           bottom: widget.bottom,
           elevation: 0,
-          // ★ G-02：不归零——M3 原生接管滚动态（surfaceContainer + level-2
+          // ★ G-02：MD2——滚动边界用 elevation 4 真投影表达（原 M3 tonal 体系已移除；
           //   落影），14/15 页即使没有 controller 也在滚动时出现边界变化。
           scrolledUnderElevation: 2,
           backgroundColor: merged,

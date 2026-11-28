@@ -110,7 +110,7 @@ class OgLSemanticColors extends ThemeExtension<OgLSemanticColors> {
   /// 强描边色：分割线 / 卡片 / Chip / 输入框 / 分段控件的可见边界。
   ///
   /// [ColorScheme.outlineVariant] 对各级 surface 仅 1.3–2.0:1，形同虚设；
-  /// 本色按 WCAG 2.1 校准，对 surface → surfaceContainerHighest 明暗各级
+  /// 本色按 WCAG 2.1 校准，对 surface → surfaceVariant 明暗各级
   /// 均 ≥3:1；页面取用走
   /// `Theme.of(context).extension<OgLSemanticColors>()!.outlineVariantStrong`。
   final Color outlineVariantStrong;
@@ -169,13 +169,27 @@ ThemeData buildOgLTheme(
   Brightness brightness, {
   Color seedColor = kOgLSeedColor,
   VisualDensity density = VisualDensity.standard,
-  ColorScheme? overrideScheme,
 }) {
-  final ColorScheme scheme = overrideScheme ??
-      ColorScheme.fromSeed(
-        seedColor: seedColor,
-        brightness: brightness,
-      );
+  // ★ MD2 迁移（M-1）：弃 fromSeed/tonal 体系，回传统 ColorScheme 角色。
+  //   色板取 GitHub 实际用色（亮/暗两套），层级只靠 surface + 真投影表达。
+  final bool dark = brightness == Brightness.dark;
+  final ColorScheme scheme = ColorScheme(
+    brightness: brightness,
+    primary: const Color(0xFF0969DA),
+    onPrimary: Colors.white,
+    secondary: dark ? const Color(0xFF8B949E) : const Color(0xFF57606A),
+    onSecondary: Colors.white,
+    error: dark ? const Color(0xFFF85149) : const Color(0xFFCF222E),
+    onError: Colors.white,
+    background: dark ? const Color(0xFF121212) : Colors.white,
+    onBackground: dark ? const Color(0xFFE6EDF3) : const Color(0xFF1F2328),
+    surface: dark ? const Color(0xFF121212) : Colors.white,
+    onSurface: dark ? const Color(0xFFE6EDF3) : const Color(0xFF1F2328),
+    surfaceVariant: dark ? const Color(0xFF1C2128) : const Color(0xFFF6F8FA),
+    onSurfaceVariant: dark ? const Color(0xFF8B949E) : const Color(0xFF57606A),
+    outline: dark ? const Color(0xFF30363D) : const Color(0xFFD0D7DE),
+    shadow: Colors.black,
+  );
 
   // 统一的边框形状（按组件体量分三档，与 OgLRadius 对齐）。
   final RoundedRectangleBorder shapeSm = RoundedRectangleBorder(
@@ -186,9 +200,6 @@ ThemeData buildOgLTheme(
   );
   final RoundedRectangleBorder shapeLg = RoundedRectangleBorder(
     borderRadius: OgLRadius.cLg,
-  );
-  final RoundedRectangleBorder shapeXl = RoundedRectangleBorder(
-    borderRadius: OgLRadius.cXl,
   );
   final RoundedRectangleBorder shapePill = RoundedRectangleBorder(
     borderRadius: OgLRadius.cPill,
@@ -210,13 +221,13 @@ ThemeData buildOgLTheme(
   final Color outlineStrong = brightness == Brightness.dark
       ? OgLSemanticColors.darkOutlineVariantStrong
       : OgLSemanticColors.lightOutlineVariantStrong;
-  final Color shadow12 = scheme.shadow.withValues(alpha: 0.12);
+  // ★ MD2：真实投影（黑影），层级靠 elevation 档位（卡2/AppBar4/菜单4/弹层16）。
+  final Color md2Shadow = Colors.black.withValues(alpha: 0.26);
 
   return ThemeData(
-    useMaterial3: true,
-    colorScheme: scheme.copyWith(shadow: shadow12),
+    colorScheme: scheme.copyWith(shadow: md2Shadow),
     scaffoldBackgroundColor: scheme.surface,
-    shadowColor: shadow12,
+    shadowColor: md2Shadow,
     visualDensity: density,
     extensions: <ThemeExtension<dynamic>>[
       OgLSemanticColors(
@@ -231,11 +242,9 @@ ThemeData buildOgLTheme(
     ],
 
     // ── 卡片 ────────────────────────────────────────────────────────────
-    // Material 3 靠 tonal elevation 而非投影：色阶 + 描边 + 轻投影。
-    // 卡片底色 surfaceContainer（对 scaffold surface 明确深一档）+ 强描边
-    // + elevation 1，使卡片真正"接地"而非与页面同色漂浮。
+    // MD2：卡片层级 = surface 底 + 真投影 + 描边（无 tonal 分层）。
     cardTheme: CardThemeData(
-      color: scheme.surfaceContainer,
+      color: scheme.surface,
       shape: shapeLg.copyWith(
         side: BorderSide(color: outlineStrong),
       ),
@@ -249,9 +258,9 @@ ThemeData buildOgLTheme(
 
     // ── 对话框 ──────────────────────────────────────────────────────────
     dialogTheme: DialogThemeData(
-      shape: shapeXl,
+      shape: shapeMd,
       elevation: 3,
-      backgroundColor: scheme.surfaceContainerHighest,
+      backgroundColor: scheme.surfaceVariant,
       insetPadding: const EdgeInsets.symmetric(
         horizontal: OgLSpace.xl,
         vertical: OgLSpace.xl,
@@ -274,7 +283,7 @@ ThemeData buildOgLTheme(
       shape:
           const RoundedRectangleBorder(borderRadius: OgLRadius.verticalTopXl),
       elevation: 1,
-      backgroundColor: scheme.surfaceContainerHigh,
+      backgroundColor: scheme.surfaceVariant,
       showDragHandle: true,
       dragHandleColor: outlineStrong,
       clipBehavior: Clip.antiAlias,
@@ -286,7 +295,7 @@ ThemeData buildOgLTheme(
       shape: shapeMd,
       elevation: 3,
       backgroundColor: brightness == Brightness.dark
-          ? scheme.surfaceContainerHighest
+          ? scheme.surfaceVariant
           : scheme.inverseSurface,
       contentTextStyle: tt.bodyMedium?.copyWith(
         // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
@@ -296,7 +305,7 @@ ThemeData buildOgLTheme(
         height: 1.4,
       ),
       insetPadding: const EdgeInsets.all(OgLSpace.md),
-      // 暗色底色为 surfaceContainerHighest（亮档），inversePrimary 仅 1.9:1；
+      // 暗色底色为 surfaceVariant（亮档），inversePrimary 仅 1.9:1；
       // 用 onSurface 达 9.5:1。浅色底色 inverseSurface 则沿用 inversePrimary。
       actionTextColor: brightness == Brightness.dark
           ? scheme.onSurface
@@ -304,14 +313,13 @@ ThemeData buildOgLTheme(
     ),
 
     // ── 应用栏 ──────────────────────────────────────────────────────────
-    // ★ AppBar 与内容分层：底色用 surfaceContainerLow，滚动时
+    // ★ AppBar 与内容分层：底色用 surface，滚动时
     //   scrolledUnderElevation=2 由 MD3 原生接管色阶显形（OgLAppBar 的连续
     //   渐变叠加其上），任何页面滚动态都出现可感知顶栏边界。
     appBarTheme: AppBarTheme(
       centerTitle: false,
       elevation: 0,
-      scrolledUnderElevation: 2,
-      backgroundColor: scheme.surfaceContainerLow,
+      backgroundColor: scheme.surface,
       surfaceTintColor: Colors.transparent,
       titleTextStyle: tt.titleLarge?.copyWith(
         // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
@@ -324,7 +332,7 @@ ThemeData buildOgLTheme(
     navigationBarTheme: NavigationBarThemeData(
       height: 80,
       elevation: 0,
-      backgroundColor: scheme.surfaceContainerLow,
+      backgroundColor: scheme.surface,
       surfaceTintColor: Colors.transparent,
       // 选中态用品牌色（primaryContainer 药丸 + onPrimaryContainer 图标）：
       // 此前走默认 secondaryContainer 且底色同阶，选中项几乎看不出来。
@@ -353,10 +361,10 @@ ThemeData buildOgLTheme(
     ),
 
     // ── 导航栏（宽屏 Rail）───────────────────────────────────────────────
-    // 与 navigationBarTheme 同语言：轨面用 surfaceContainerLow 与页面分层，
+    // 与 navigationBarTheme 同语言：轨面用 surface 与页面分层，
     // 选中态 primaryContainer 药丸 + onPrimaryContainer 图标/标签。
     navigationRailTheme: NavigationRailThemeData(
-      backgroundColor: scheme.surfaceContainerLow,
+      backgroundColor: scheme.surface,
       indicatorColor: scheme.primaryContainer,
       elevation: 0,
       labelType: NavigationRailLabelType.all,
@@ -391,7 +399,7 @@ ThemeData buildOgLTheme(
     // ── Chip ────────────────────────────────────────────────────────────
     chipTheme: ChipThemeData(
       shape: shapeSm,
-      backgroundColor: scheme.surfaceContainerHigh,
+      backgroundColor: scheme.surfaceVariant,
       selectedColor: scheme.secondaryContainer,
       showCheckmark: false,
       side: BorderSide(color: outlineStrong),
@@ -425,7 +433,7 @@ ThemeData buildOgLTheme(
     // ── 输入框 ──────────────────────────────────────────────────────────
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: scheme.surfaceContainerHigh,
+      fillColor: scheme.surfaceVariant,
       isDense: true,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: OgLSpace.md,
@@ -461,7 +469,7 @@ ThemeData buildOgLTheme(
         minimumSize: minButton,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
         disabledForegroundColor: scheme.onSurface.withValues(alpha: 0.60),
-        disabledBackgroundColor: scheme.surfaceContainerHigh,
+        disabledBackgroundColor: scheme.surfaceVariant,
         textStyle: tt.labelLarge?.copyWith(
           // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
           fontWeight: FontWeight.w600,

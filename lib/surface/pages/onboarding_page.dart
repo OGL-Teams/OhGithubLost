@@ -268,7 +268,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   decoration: BoxDecoration(
                     color: i <= _step
                         ? theme.colorScheme.primary
-                        : theme.colorScheme.surfaceContainerHighest,
+                        : theme.colorScheme.surfaceVariant,
                     borderRadius: BorderRadius.circular(OgLRadius.xs),
                   ),
                 ),

@@ -34,7 +34,9 @@ abstract final class OgLRadius {
   static const double lg = 16;
 
   /// 浮层（对话框 / 大圆角面板，对齐 M3 extra-large 28dp）。
-  static const double xl = 28;
+  /// MD2 无 extra-large 28 档；xl 收敛为 12（对话框级别由 cMd=8 覆盖，
+  /// 12 留给 snackbar 等中等体量）。
+  static const double xl = 12;
 
   /// 胶囊（全圆）。
   static const double pill = 999;
@@ -44,6 +46,7 @@ abstract final class OgLRadius {
   static const BorderRadius cSm = BorderRadius.all(Radius.circular(sm));
   static const BorderRadius cMd = BorderRadius.all(Radius.circular(md));
   static const BorderRadius cLg = BorderRadius.all(Radius.circular(lg));
+  @Deprecated("MD2 无 extra-large；用 cMd")
   static const BorderRadius cXl = BorderRadius.all(Radius.circular(xl));
   static const BorderRadius cPill = BorderRadius.all(Radius.circular(pill));
 

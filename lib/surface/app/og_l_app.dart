@@ -11,7 +11,6 @@
 /// - 组件：全部 Material 3（不再有自绘 Kit / 自研滚动行为以外的定制）。
 library;
 
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -63,21 +62,9 @@ class OgLApp extends StatelessWidget {
         ]),
         builder: (BuildContext context, Widget? _) {
           final OgLSettings current = surface.settings.settings;
-          // ★ MD3 dynamic color（Material You）：DynamicColorBuilder 取系统
-          //   动态配色（Android 12+ / 部分桌面平台）；不支持的平台回调 null，
-          //   主题自然回落种子色。用户开启「跟随系统配色」且种子色为品牌色
-          //   时生效（手动选其它种子色 = 明确要手动配色，动态色让位）。
-          return DynamicColorBuilder(
-            builder: (ColorScheme? dynamicLight, ColorScheme? dynamicDark) {
-              final Brightness platformBrightness =
-                  MediaQuery.platformBrightnessOf(context);
-              final ColorScheme? dynamicScheme =
-                  current.dynamicColor && dynamicLight != null
-                      ? (platformBrightness == Brightness.dark
-                          ? dynamicDark
-                          : dynamicLight)
-                      : null;
-              return MaterialApp(
+          // MD2 迁移：删 dynamic_color / DynamicColorBuilder（MD3 Material You）。
+          // 主题固定由 buildOgLTheme 传统 ColorScheme 编译，不再有系统动态取色。
+          return MaterialApp(
                 title: 'OhGithubLost',
                 debugShowCheckedModeBanner: false,
                 navigatorKey: navigatorKey,
@@ -99,7 +86,6 @@ class OgLApp extends StatelessWidget {
                 theme: surface.themeFor(
                   MediaQuery.platformBrightnessOf(context),
                   motionLevel: current.motionLevel,
-                  dynamicScheme: dynamicScheme,
                 ),
                 // ⚠️ 文字缩放必须在 `builder` 里覆盖：
                 // 该层位于 `WidgetsApp` 自建的 MediaQuery **之内**，
@@ -170,11 +156,15 @@ class OgLBootFailureApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+        // MD2：传统 ColorScheme 构造（错误兜底主题，固定暗色）。
         theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: kOgLErrorSeedColor,
-            brightness: Brightness.dark,
+          useMaterial3: false,
+          colorScheme: const ColorScheme.dark(
+            primary: kOgLErrorSeedColor,
+            secondary: Color(0xFF57606A),
+            surface: Color(0xFF121212),
+            background: Color(0xFF121212),
+            error: kOgLErrorSeedColor,
           ),
         ),
         home: Scaffold(
