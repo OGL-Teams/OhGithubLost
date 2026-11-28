@@ -39,6 +39,8 @@ LIB = ROOT / 'lib'
 # ── 例外登记（文件 → 理由）────────────────────────────────────────────────
 # 只登记"这些字面值本身就是数据"的文件，**不登记**"懒得改"的文件。
 ALLOW = {
+    'lib/surface/md1/md1_tokens.dart': 'MD1 设计令牌源 —— 色板/阴影定义自身',
+    'lib/surface/md1/md1_painters.dart': 'MD1 CustomPainter 控件源 —— 自绘色值',
     'lib/surface/util/og_l_space.dart': '间距令牌定义自身',
     'lib/surface/util/og_l_radius.dart': '圆角 / 图标令牌定义自身',
     'lib/surface/theme.dart': '组件级主题 —— 设计令牌的唯一来源',
