@@ -156,7 +156,13 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
       _saved = false;
     }
     if (mounted) {
-      setState(() {});
+      // 编辑控制器的变更通知可能来自 build 阶段（如控制器初始化时同步
+      // 回调）——把 setState 排到帧末，避免 "called during build" 异常。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
     }
   }
 
