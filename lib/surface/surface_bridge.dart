@@ -13,7 +13,6 @@
 /// 设置里的明暗偏好 + 系统亮度 → 唯一一次 `ThemeData` 编译。
 library;
 
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 
 import '../base/base_bridge.dart';

@@ -31,15 +31,14 @@ class OgLBootSplash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Brightness brightness = MediaQuery.platformBrightnessOf(context);
-    // ★ G-06：锚定色取自与主题同源的 MD3 seed 色板 surface / onSurface，
-    //   冷启动首帧与 [OgLApp] 顶替帧不再"闪白/闪黑"。零依赖：只用
-    //   material.dart 的 ColorScheme.fromSeed（纯计算，不碰内核/磁盘）。
-    final ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF0969DA),
-      brightness: brightness,
-    );
-    final Color bg = scheme.surface;
-    final Color fg = scheme.onSurfaceVariant;
+    // ★ G-06 + MD2：锚定色直接取 MD2 色板（与 theme.dart 同源同值），
+    //   冷启动首帧与 [OgLApp] 顶替帧不再"闪白/闪黑"。零依赖纯计算。
+    final Color bg = brightness == Brightness.dark
+        ? const Color(0xFF121212)
+        : Colors.white;
+    final Color fg = brightness == Brightness.dark
+        ? const Color(0xFF8B949E)
+        : const Color(0xFF57606A);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,

@@ -1,26 +1,23 @@
 /// L3 展示级 · **滚动渐变融合 AppBar**（统一应用栏，走设计令牌）。
 ///
-/// ## 它解决什么（UI 细化）
-/// Material 默认 AppBar 用 `scrolledUnderElevation` 加 surfaceTintColor——
-/// 滚到内容下方时"浮起"，与正文之间出现可感知边界。这里在此之上叠加一段
-/// **连续插值**：顶部 → 与页面同色（surface，完全融合），滚深 →
-/// surfaceVariant（可辨识的浮起感），颜色全程渐变、无硬边。
+/// ## 它解决什么（MD2 形态）
+/// MD2 下 AppBar 边界 = elevation 4 真投影 + surface→surfaceVariant 的
+/// **连续色阶插值**：顶部与页面同色（完全融合），滚深渐变到可辨识的
+/// surfaceVariant，全程无硬边。`scrolledUnderElevation`/`surfaceTint`
+/// 等 M3 语义已随迁移移除。
 ///
 /// ## 与主题令牌的关系
 /// `theme.dart` 的 `appBarTheme.backgroundColor = surface`、
-/// `scrolledUnderElevation = 2`（融合基线 + 原生边界）。本组件叠加的连续
-/// 插值两端色（surface / surfaceVariant）都来自 `ColorScheme`。
+/// `elevation = 4`（真投影）。本组件叠加的连续插值两端色
+/// （surface / surfaceVariant）都来自 `ColorScheme`。
 ///
-/// ## 滚动进度来源（G-02 / B-01：已删除 Primary 兜底假设）
+/// ## 滚动进度来源（G-02 / B-01：无 Primary 兜底）
 /// 本项目**没有任何地方**注入 `PrimaryScrollController`（Scaffold 只读不写），
-/// 旧的 `PrimaryScrollController.maybeOf` 兜底在 14/15 页恒为 progress=0，
-/// 是死代码——已删除。新的两条路径：
-/// 1. **所有页面**：`scrolledUnderElevation: 2` 由 M3 原生接管滚动态——
-///    Scaffold 通过内部 `NotificationListener` 感知内容滚到顶栏下方，
-///    自动抬升色阶 + 落影。无需控制器、无需改任何页面（本批禁区），
-///    这就保证了 14/15 页滚定时顶栏也有边界变化。
+/// 该兜底分支是死代码——已删除。两条路径：
+/// 1. **默认**：M2 下 AppBar 的 elevation 阴影本身提供滚动边界，
+///    未接控制器的页面也有稳定的顶栏分隔；
 /// 2. **显式直连**：body 自建 ScrollController 的页把它传给
-///    `scrollController:`，即获得更细腻的连续色阶插值（dashboard 已如此）。
+///    `scrollController:`，获得连续色阶插值（dashboard 已如此）。
 /// - 节流：进度写入 `ValueNotifier`，只让包着背景色的那层重建（1% 步进）。
 /// - 取竖直 position、减 minScrollExtent，并对 pixels 做有界夹紧。
 library;
@@ -144,10 +141,9 @@ class _OgLAppBarState extends State<OgLAppBar> {
           title: Text(widget.title),
           actions: widget.actions,
           bottom: widget.bottom,
-          elevation: 0,
-          // ★ G-02：MD2——滚动边界用 elevation 4 真投影表达（原 M3 tonal 体系已移除；
-          //   落影），14/15 页即使没有 controller 也在滚动时出现边界变化。
-          scrolledUnderElevation: 2,
+          // ★ G-02 + MD2：elevation 4 真投影承担滚动/常态边界（M3 tonal
+          //   体系已移除）；surfaceTintColor 关闭避免滚动染色。
+          elevation: 4,
           backgroundColor: merged,
           surfaceTintColor: Colors.transparent,
           titleTextStyle: theme.appBarTheme.titleTextStyle,
