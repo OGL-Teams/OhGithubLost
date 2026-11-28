@@ -537,7 +537,7 @@ class _RepoPageState extends State<RepoPage> {
       length: tabs.length,
       child: Scaffold(
         appBar: OgLAppBar(
-          title: _repo.fullName,
+          title: Text(_repo.fullName),
           actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.search),

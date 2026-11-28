@@ -290,7 +290,7 @@ ThemeData buildOgLTheme(
     cardTheme: CardThemeData(
       color: scheme.surface,
       shape: shapeLg.copyWith(
-        side: BorderSide(color: outlineStrong),
+        side: BorderSide(color: sem.outlineStrong),
       ),
       elevation: 2,
       margin: const EdgeInsets.symmetric(
@@ -329,7 +329,7 @@ ThemeData buildOgLTheme(
       elevation: 8,
       backgroundColor: scheme.surfaceContainerHighest,
       showDragHandle: true,
-      dragHandleColor: outlineStrong,
+      dragHandleColor: sem.outlineStrong,
       clipBehavior: Clip.antiAlias,
     ),
 
@@ -404,7 +404,7 @@ ThemeData buildOgLTheme(
     dividerTheme: DividerThemeData(
       thickness: 1,
       space: 1,
-      color: outlineStrong,
+      color: sem.outlineStrong,
     ),
 
     // ── Chip ────────────────────────────────────────────────────────────
@@ -413,7 +413,7 @@ ThemeData buildOgLTheme(
       backgroundColor: scheme.surfaceContainerHighest,
       selectedColor: scheme.primary.withValues(alpha: 0.12),
       showCheckmark: false,
-      side: BorderSide(color: outlineStrong),
+      side: BorderSide(color: sem.outlineStrong),
       padding: const EdgeInsets.symmetric(
         horizontal: OgLSpace.sm,
         vertical: OgLSpace.xxs,
@@ -436,7 +436,7 @@ ThemeData buildOgLTheme(
           RoundedRectangleBorder(borderRadius: OgLRadius.cSm),
         ),
         side: WidgetStatePropertyAll<BorderSide>(
-          BorderSide(color: outlineStrong),
+          BorderSide(color: sem.outlineStrong),
         ),
       ),
     ),
@@ -452,11 +452,11 @@ ThemeData buildOgLTheme(
       ),
       border: OutlineInputBorder(
         borderRadius: OgLRadius.cSm,
-        borderSide: BorderSide(color: outlineStrong),
+        borderSide: BorderSide(color: sem.outlineStrong),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: OgLRadius.cSm,
-        borderSide: BorderSide(color: outlineStrong),
+        borderSide: BorderSide(color: sem.outlineStrong),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: OgLRadius.cSm,
@@ -505,7 +505,7 @@ ThemeData buildOgLTheme(
         shape: shapePill,
         minimumSize: minButton,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
-        side: BorderSide(color: outlineStrong),
+        side: BorderSide(color: sem.outlineStrong),
         disabledForegroundColor: scheme.onSurface.withValues(alpha: 0.60),
         textStyle: tt.labelLarge?.copyWith(
           // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
