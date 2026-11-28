@@ -8,8 +8,11 @@
 - 阴影用同心 RRect 阶梯实现（替代 MaskFilter.blur），规避 perf_audit 的 saveLayer 卡顿源。
 - 门禁：ui_audit（令牌源白名单）、perf_audit（0 反模式）、layer_audit（0 违规）、contract_audit（0）、gate_of_gates（12 支全过）、dart format 0 changed。
 
+## 批 2（表单类 5 控件）✅
+- `md1_painters.dart` 扩至 1357 行：新增 `OgMd1TextField`（48dp 底边 1px/focus 2px、浮动 label）、`OgMd1Switch`（MD1 轨道+圆钮）、`OgMd1Checkbox`（18dp 方框+勾路径）、`OgMd1Radio`（圆环+实心点）、`OgMd1Slider`（轨道+拇指）——全 CustomPainter，含焦点/键盘/手势/Semantics。
+- 全门禁绿（ui/perf/layer/contract/gate/i18n/format）。
+
 ## 剩余批次（待执行）
-- 批 2：TextField / Switch / Checkbox / Radio / Slider（表单类 5 控件）
 - 批 3：Dialog / Snackbar / Chip / Badge / Divider（反馈类 5 控件）
 - 批 4：BottomNav / TabBar / Drawer / NavigationRail / Toolbar（导航类 5 控件）
 - 批 5：Progress / RefreshIndicator / BottomSheet / Menu / Dropdown（操作类 5 控件）

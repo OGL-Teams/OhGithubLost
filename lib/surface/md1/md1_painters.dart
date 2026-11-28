@@ -13,6 +13,13 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart'
+    show
+        LogicalKeyboardKey,
+        RawKeyDownEvent,
+        RawKeyEvent,
+        TextEditingValue,
+        TextSelection;
 import 'package:flutter/widgets.dart'
     show
         AnimatedBuilder,
@@ -26,21 +33,31 @@ import 'package:flutter/widgets.dart'
         EdgeInsets,
         EdgeInsetsDirectional,
         Expanded,
+        Focus,
+        FocusNode,
         GestureDetector,
+        GlobalKey,
         HitTestBehavior,
         Key,
+        MainAxisSize,
         MainAxisAlignment,
         Padding,
+        RawKeyboardListener,
         Row,
+        Semantics,
         SingleTickerProviderStateMixin,
         SizedBox,
         State,
         StatefulWidget,
         StatelessWidget,
+        TapDownDetails,
+        DragUpdateDetails,
         Text,
         TextAlign,
+        TextEditingController,
         TextOverflow,
         TextStyle,
+        ValueChanged,
         VoidCallback,
         Widget,
         withValues;
@@ -62,11 +79,7 @@ enum OgMd1ButtonStyle {
 /// 不用 `MaskFilter.blur`：它会触发 saveLayer 离屏合成（perf_audit 确定的
 /// 卡顿源）。改用**同心 RRect 阶梯**近似高斯模糊——每层扩大半径并降低
 /// alpha，3 层叠加视觉上等价于 MD1 的 box-shadow，且全程零 saveLayer。
-void _paintShadows(
-  Canvas canvas,
-  RRect shape,
-  Iterable<BoxShadow> shadows,
-) {
+void _paintShadows(Canvas canvas, RRect shape, Iterable<BoxShadow> shadows) {
   const int layers = 3;
   for (final BoxShadow shadow in shadows) {
     final double spread = shadow.blurRadius / 2;
@@ -334,8 +347,9 @@ class OgMd1ListRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final OgMd1Colors palette = OgMd1Colors.of(context);
     final bool twoLines = subtitle != null;
-    final double height =
-        twoLines ? OgMd1Size.listRowDouble : OgMd1Size.listRowSingle;
+    final double height = twoLines
+        ? OgMd1Size.listRowDouble
+        : OgMd1Size.listRowSingle;
     final Widget row = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
@@ -574,6 +588,768 @@ class OgMd1AppBar extends StatelessWidget {
             start: OgMd1Size.buttonPadding,
           ),
           child: row,
+        ),
+      ),
+    );
+  }
+}
+
+/// TextField 外观 painter：48dp 高、底边 1px（focus 2px primary）、浮动 label（12sp）。
+class _OgMd1TextFieldPainter extends CustomPainter {
+  const _OgMd1TextFieldPainter({
+    required this.dividerColor,
+    required this.focused,
+    required this.primary,
+    required this.labelColor,
+    required this.label,
+    required this.floating,
+  });
+
+  final Color dividerColor;
+  final bool focused;
+  final Color primary;
+  final Color labelColor;
+  final String label;
+  final bool floating;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawLine(
+      Offset(0, size.height - 1),
+      Offset(size.width, size.height - 1),
+      Paint()
+        ..color = focused ? primary : dividerColor
+        ..strokeWidth = focused ? 2 : 1,
+    );
+    if (floating) {
+      TextPainter(
+        text: TextSpan(
+          text: label,
+          style: TextStyle(fontSize: OgMd1Type.caption, color: labelColor),
+        ),
+        textDirection: TextDirection.ltr,
+      )
+        ..layout()
+        ..paint(canvas, Offset.zero);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1TextFieldPainter oldDelegate) =>
+      oldDelegate.dividerColor != dividerColor ||
+      oldDelegate.focused != focused ||
+      oldDelegate.primary != primary ||
+      oldDelegate.labelColor != labelColor ||
+      oldDelegate.label != label ||
+      oldDelegate.floating != floating;
+}
+
+/// MD1 经典输入框：48dp 高、底边 1px（focus 2px primary）、label 浮动 12sp。
+///
+/// 键盘走 [RawKeyboardListener] + [Focus]：可打印字符追加、Backspace 删除、
+/// 方向键移动插入点；[Semantics] 暴露 textField / value。
+class OgMd1TextField extends StatefulWidget {
+  /// 创建输入框。
+  const OgMd1TextField({
+    required this.label,
+    this.controller,
+    this.onChanged,
+    this.enabled = true,
+    this.obscureText = false,
+    super.key,
+  });
+
+  /// 字段标签（浮动态 12sp）。
+  final String label;
+
+  /// 可选的文本控制器（调用方可读取/预置文本）。
+  final TextEditingController? controller;
+
+  /// 文本变化回调。
+  final ValueChanged<String>? onChanged;
+
+  /// 是否可编辑。
+  final bool enabled;
+
+  /// 是否以圆点遮蔽输入（密码场景）。
+  final bool obscureText;
+
+  @override
+  State<OgMd1TextField> createState() => _OgMd1TextFieldState();
+}
+
+class _OgMd1TextFieldState extends State<OgMd1TextField> {
+  late final FocusNode _focusNode = FocusNode();
+  late final FocusNode _keyboardNode = FocusNode();
+  late TextEditingController _controller;
+  bool _ownsController = false;
+  bool _focused = false;
+  int _caret = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = widget.controller ?? TextEditingController();
+    _ownsController = widget.controller == null;
+    _caret = _controller.text.length;
+    _focusNode.addListener(_onFocus);
+  }
+
+  void _onFocus() {
+    if (!mounted || _focused == _focusNode.hasFocus) {
+      return;
+    }
+    setState(() => _focused = _focusNode.hasFocus);
+  }
+
+  @override
+  void didUpdateWidget(covariant OgMd1TextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller == oldWidget.controller) {
+      return;
+    }
+    _focusNode.removeListener(_onFocus);
+    if (_ownsController) {
+      _controller.dispose();
+    }
+    _controller = widget.controller ?? TextEditingController();
+    _ownsController = widget.controller == null;
+    _caret = _controller.text.length;
+    _focusNode.addListener(_onFocus);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocus);
+    _focusNode.dispose();
+    _keyboardNode.dispose();
+    if (_ownsController) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
+
+  String get _visibleText => widget.obscureText
+      ? '•' * _controller.text.length
+      : _controller.text;
+
+  void _emit() {
+    if (widget.onChanged != null) {
+      widget.onChanged!(_controller.text);
+    }
+  }
+
+  void _replaceText(String text, int caret) {
+    _controller.value = _controller.value.copyWith(
+      text: text,
+      selection: TextSelection.collapsed(offset: caret),
+    );
+    _emit();
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent || !widget.enabled) {
+      return;
+    }
+    final String text = _controller.text;
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.backspace) {
+      if (_caret > 0) {
+        _replaceText(
+          text.substring(0, _caret - 1) + text.substring(_caret),
+          _caret - 1,
+        );
+      }
+      return;
+    }
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      setState(() => _caret = _caret > 0 ? _caret - 1 : 0);
+      return;
+    }
+    if (key == LogicalKeyboardKey.arrowRight) {
+      setState(() => _caret = _caret < text.length ? _caret + 1 : text.length);
+      return;
+    }
+    if (key == LogicalKeyboardKey.home) {
+      setState(() => _caret = 0);
+      return;
+    }
+    if (key == LogicalKeyboardKey.end) {
+      setState(() => _caret = text.length);
+      return;
+    }
+    final String character = event.character ?? '';
+    if (character.isNotEmpty &&
+        !event.isControlKey &&
+        !event.isMetaKey &&
+        !event.isAltKey) {
+      _replaceText(
+        text.substring(0, _caret) + character + text.substring(_caret),
+        _caret + character.length,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool floating = _focused || _controller.text.isNotEmpty;
+    final Color labelColor = _focused
+        ? palette.primary
+        : (widget.enabled ? palette.textSecondary : palette.divider);
+    final String visible = _visibleText;
+    final int visibleCaret = widget.obscureText ? visible.length : _caret;
+    final TextStyle valueStyle = TextStyle(
+      fontSize: OgMd1Type.subhead,
+      fontWeight: OgMd1Type.bodyWeight,
+      color: widget.enabled ? palette.textPrimary : palette.textSecondary,
+    );
+    return Semantics(
+      textField: true,
+      label: widget.label,
+      value: _controller.text,
+      enabled: widget.enabled,
+      child: GestureDetector(
+        onTap: widget.enabled ? () => _focusNode.requestFocus() : null,
+        behavior: HitTestBehavior.opaque,
+        child: Focus(
+          focusNode: _focusNode,
+          child: RawKeyboardListener(
+            focusNode: _keyboardNode,
+            onKey: _onKey,
+            child: SizedBox(
+              height: OgMd1Size.field,
+              child: CustomPaint(
+                painter: _OgMd1TextFieldPainter(
+                  dividerColor: palette.divider,
+                  focused: _focused && widget.enabled,
+                  primary: palette.primary,
+                  labelColor: labelColor,
+                  label: widget.label,
+                  floating: floating,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    if (floating)
+                      Text(
+                        widget.label,
+                        style: TextStyle(
+                          fontSize: OgMd1Type.caption,
+                          color: labelColor,
+                        ),
+                      ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: OgMd1Type.caption),
+                        child: Text(
+                          visible.substring(0, visibleCaret),
+                          style: valueStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.clip,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Switch 外观 painter：MD1 经典轨道 + 圆钮，激活态 accent。
+class _OgMd1SwitchPainter extends CustomPainter {
+  const _OgMd1SwitchPainter({
+    required this.trackColor,
+    required this.thumbColor,
+    required this.on,
+  });
+
+  final Color trackColor;
+  final Color thumbColor;
+  final bool on;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double trackHeight = size.height / 2;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, (size.height - trackHeight) / 2, size.width, trackHeight),
+        Radius.circular(trackHeight / 2),
+      ),
+      Paint()..color = trackColor,
+    );
+    final double radius = size.height * 0.4;
+    canvas.drawCircle(
+      Offset(on ? size.width - radius : radius, size.height / 2),
+      radius,
+      Paint()..color = thumbColor,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1SwitchPainter oldDelegate) =>
+      oldDelegate.trackColor != trackColor ||
+      oldDelegate.thumbColor != thumbColor ||
+      oldDelegate.on != on;
+}
+
+/// MD1 经典开关：轨道 + 圆钮（accent 激活），触控目标 48dp。
+class OgMd1Switch extends StatelessWidget {
+  /// 创建开关。
+  const OgMd1Switch({
+    required this.value,
+    required this.onChanged,
+    this.label,
+    super.key,
+  });
+
+  /// 是否开启。
+  final bool value;
+
+  /// 状态切换回调；null 表示禁用。
+  final ValueChanged<bool>? onChanged;
+
+  /// 无障碍标签（可选）。
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool enabled = onChanged != null;
+    final Color track = value
+        ? palette.accent.withValues(alpha: 0.5)
+        : palette.divider.withValues(alpha: enabled ? 1 : 0.5);
+    final Color thumb = value
+        ? palette.accent
+        : (enabled ? palette.card : palette.divider);
+    return Semantics(
+      switch_: true,
+      checked: value,
+      enabled: enabled,
+      label: label,
+      child: GestureDetector(
+        onTap: onChanged == null ? null : () => onChanged!(!value),
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          width: OgMd1Size.touchTarget,
+          height: OgMd1Size.touchTarget,
+          child: CustomPaint(
+            painter: _OgMd1SwitchPainter(
+              trackColor: track,
+              thumbColor: thumb,
+              on: value,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Checkbox 外观 painter：18dp 方框 + 自绘勾选路径。
+class _OgMd1CheckboxPainter extends CustomPainter {
+  const _OgMd1CheckboxPainter({
+    required this.color,
+    required this.checked,
+    required this.borderColor,
+  });
+
+  final Color color;
+  final bool checked;
+  final Color borderColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Offset.zero & size,
+        const Radius.circular(OgMd1Size.radius),
+      ),
+      Paint()
+        ..color = checked ? color : borderColor
+        ..style = checked ? PaintingStyle.fill : PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    if (checked) {
+      canvas.drawPath(
+        Path()
+          ..moveTo(size.width * 0.25, size.height * 0.52)
+          ..lineTo(size.width * 0.43, size.height * 0.7)
+          ..lineTo(size.width * 0.76, size.height * 0.3),
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1CheckboxPainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.checked != checked ||
+      oldDelegate.borderColor != borderColor;
+}
+
+/// MD1 复选框：18dp 方框、勾选路径自绘，触控目标 48dp。
+class OgMd1Checkbox extends StatelessWidget {
+  /// 创建复选框。
+  const OgMd1Checkbox({
+    required this.value,
+    required this.onChanged,
+    this.label,
+    super.key,
+  });
+
+  /// 是否勾选。
+  final bool value;
+
+  /// 切换回调；null 表示禁用。
+  final ValueChanged<bool>? onChanged;
+
+  /// 右侧文字（可选，14sp 正文）。
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool enabled = onChanged != null;
+    final Widget row = Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        SizedBox(
+          width: OgMd1Size.touchTarget,
+          height: OgMd1Size.touchTarget,
+          child: CustomPaint(
+            size: const Size(
+              OgMd1Type.subhead + OgMd1Type.overline,
+              OgMd1Type.subhead + OgMd1Type.overline,
+            ),
+            painter: _OgMd1CheckboxPainter(
+              color: enabled ? palette.accent : palette.divider,
+              checked: value,
+              borderColor: enabled
+                  ? palette.textSecondary
+                  : palette.divider.withValues(alpha: 0.5),
+            ),
+          ),
+        ),
+        if (label != null)
+          Text(
+            label!,
+            style: TextStyle(
+              fontSize: OgMd1Type.body,
+              color: enabled ? palette.textPrimary : palette.textSecondary,
+            ),
+          ),
+      ],
+    );
+    return Semantics(
+      checkbox: true,
+      checked: value,
+      enabled: enabled,
+      child: GestureDetector(
+        onTap: onChanged == null ? null : () => onChanged!(!value),
+        behavior: HitTestBehavior.opaque,
+        child: row,
+      ),
+    );
+  }
+}
+
+/// Radio 外观 painter：20dp 圆环 + 实心点。
+class _OgMd1RadioPainter extends CustomPainter {
+  const _OgMd1RadioPainter({
+    required this.color,
+    required this.selected,
+    required this.borderColor,
+  });
+
+  final Color color;
+  final bool selected;
+  final Color borderColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Offset center = Offset(size.width / 2, size.height / 2);
+    canvas.drawCircle(
+      center,
+      size.width / 2 - 1,
+      Paint()
+        ..color = selected ? color : borderColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    if (selected) {
+      canvas.drawCircle(center, size.width / 4, Paint()..color = color);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1RadioPainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.selected != selected ||
+      oldDelegate.borderColor != borderColor;
+}
+
+/// MD1 单选按钮：20dp 圆环 + 实心点（accent 选中），触控目标 48dp。
+class OgMd1Radio extends StatelessWidget {
+  /// 创建单选按钮。
+  const OgMd1Radio({
+    required this.value,
+    required this.groupValue,
+    required this.onChanged,
+    this.label,
+    super.key,
+  });
+
+  /// 本项的值。
+  final Object value;
+
+  /// 当前组选中的值。
+  final Object? groupValue;
+
+  /// 选中回调；null 表示禁用。
+  final ValueChanged<Object>? onChanged;
+
+  /// 右侧文字（可选，14sp 正文）。
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool selected = value == groupValue;
+    final bool enabled = onChanged != null;
+    final Widget row = Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        SizedBox(
+          width: OgMd1Size.touchTarget,
+          height: OgMd1Size.touchTarget,
+          child: CustomPaint(
+            size: const Size(OgMd1Size.listLeading, OgMd1Size.listLeading),
+            painter: _OgMd1RadioPainter(
+              color: enabled ? palette.accent : palette.divider,
+              selected: selected,
+              borderColor: enabled
+                  ? palette.textSecondary
+                  : palette.divider.withValues(alpha: 0.5),
+            ),
+          ),
+        ),
+        if (label != null)
+          Text(
+            label!,
+            style: TextStyle(
+              fontSize: OgMd1Type.body,
+              color: enabled ? palette.textPrimary : palette.textSecondary,
+            ),
+          ),
+      ],
+    );
+    return Semantics(
+      radio: true,
+      checked: selected,
+      enabled: enabled,
+      child: GestureDetector(
+        onTap: enabled && !selected ? () => onChanged!(value) : null,
+        behavior: HitTestBehavior.opaque,
+        child: row,
+      ),
+    );
+  }
+}
+
+/// Slider 外观 painter：轨道 + 已选段 + 拇指（MD1 accent）。
+class _OgMd1SliderPainter extends CustomPainter {
+  const _OgMd1SliderPainter({
+    required this.inactive,
+    required this.active,
+    required this.thumb,
+    required this.progress,
+  });
+
+  final Color inactive;
+  final Color active;
+  final Color thumb;
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double y = size.height / 2;
+    final double end = size.width * progress;
+    final Paint track = Paint()
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(0, y), Offset(size.width, y), track..color = inactive);
+    if (progress > 0) {
+      canvas.drawLine(Offset(0, y), Offset(end, y), track..color = active);
+    }
+    canvas.drawCircle(Offset(end, y), OgMd1Type.body, Paint()..color = thumb);
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1SliderPainter oldDelegate) =>
+      oldDelegate.inactive != inactive ||
+      oldDelegate.active != active ||
+      oldDelegate.thumb != thumb ||
+      oldDelegate.progress != progress;
+}
+
+/// MD1 滑块：轨道 + 拇指（accent），拖动/点击/键盘可调，触控目标 48dp。
+class OgMd1Slider extends StatefulWidget {
+  /// 创建滑块。
+  const OgMd1Slider({
+    required this.value,
+    required this.onChanged,
+    this.min = 0,
+    this.max = 1,
+    this.label,
+    super.key,
+  });
+
+  /// 当前值（须在 [min] 与 [max] 之间）。
+  final double value;
+
+  /// 数值变化回调；null 表示禁用。
+  final ValueChanged<double>? onChanged;
+
+  /// 最小值（默认 0）。
+  final double min;
+
+  /// 最大值（默认 1，须大于 [min]）。
+  final double max;
+
+  /// 无障碍标签（可选）。
+  final String? label;
+
+  @override
+  State<OgMd1Slider> createState() => _OgMd1SliderState();
+}
+
+class _OgMd1SliderState extends State<OgMd1Slider> {
+  final FocusNode _focusNode = FocusNode();
+  final FocusNode _keyboardNode = FocusNode();
+  final GlobalKey _boxKey = GlobalKey();
+
+  double get _progress {
+    final double span = widget.max - widget.min;
+    if (span <= 0) {
+      return 0;
+    }
+    return ((widget.value - widget.min) / span).clamp(0.0, 1.0);
+  }
+
+  void _emitProgress(double progress) {
+    final double clamped = progress.clamp(0.0, 1.0);
+    widget.onChanged!(widget.min + clamped * (widget.max - widget.min));
+  }
+
+  double _localDx(double globalDx) {
+    final RenderBox? box = _boxKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) {
+      return 0;
+    }
+    return globalDx - box.localToGlobal(Offset.zero).dx;
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    if (widget.onChanged == null) {
+      return;
+    }
+    final RenderBox? box = _boxKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null || box.size.width <= 0) {
+      return;
+    }
+    _emitProgress(details.localPosition.dx / box.size.width);
+  }
+
+  void _onDrag(DragUpdateDetails details) {
+    if (widget.onChanged == null) {
+      return;
+    }
+    final RenderBox? box = _boxKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null || box.size.width <= 0) {
+      return;
+    }
+    _emitProgress(_localDx(details.globalPosition.dx) / box.size.width);
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent || widget.onChanged == null) {
+      return;
+    }
+    final double span = widget.max - widget.min;
+    if (span <= 0) {
+      return;
+    }
+    final double step = 1 / OgMd1Type.display;
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowLeft ||
+        key == LogicalKeyboardKey.arrowDown) {
+      _emitProgress(_progress - step);
+    } else if (key == LogicalKeyboardKey.arrowRight ||
+        key == LogicalKeyboardKey.arrowUp) {
+      _emitProgress(_progress + step);
+    } else if (key == LogicalKeyboardKey.home) {
+      _emitProgress(0);
+    } else if (key == LogicalKeyboardKey.end) {
+      _emitProgress(1);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _keyboardNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool enabled = widget.onChanged != null;
+    return Semantics(
+      slider: true,
+      value: widget.value.toStringAsFixed(OgMd1Type.overline.toInt()),
+      enabled: enabled,
+      label: widget.label,
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onHorizontalDragUpdate: _onDrag,
+        behavior: HitTestBehavior.opaque,
+        child: Focus(
+          focusNode: _focusNode,
+          child: RawKeyboardListener(
+            focusNode: _keyboardNode,
+            onKey: _onKey,
+            child: SizedBox(
+              key: _boxKey,
+              height: OgMd1Size.touchTarget,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: OgMd1Type.body),
+                child: CustomPaint(
+                  painter: _OgMd1SliderPainter(
+                    inactive: enabled
+                        ? palette.divider
+                        : palette.divider.withValues(alpha: 0.5),
+                    active: enabled ? palette.accent : palette.divider,
+                    thumb: enabled ? palette.accent : palette.divider,
+                    progress: _progress,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
