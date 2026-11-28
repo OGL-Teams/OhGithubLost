@@ -27,6 +27,7 @@ import 'package:flutter/widgets.dart'
     show
         Align,
         Alignment,
+        AlignmentDirectional,
         AnimatedBuilder,
         Animation,
         AnimationController,
@@ -44,6 +45,8 @@ import 'package:flutter/widgets.dart'
         CrossAxisAlignment,
         CustomPaint,
         CustomPainter,
+        Directionality,
+        DragStartDetails,
         DragUpdateDetails,
         Duration,
         EdgeInsets,
@@ -84,6 +87,7 @@ import 'package:flutter/widgets.dart'
         Stack,
         State,
         StatefulWidget,
+        StrokeCap,
         StatelessWidget,
         TapDownDetails,
         Text,
@@ -97,6 +101,7 @@ import 'package:flutter/widgets.dart'
         TextStyle,
         TickerProvider,
         ValueChanged,
+        ValueNotifier,
         VoidCallback,
         Widget,
         withValues;
@@ -934,7 +939,11 @@ class _OgMd1SwitchPainter extends CustomPainter {
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(
-            0, (size.height - trackHeight) / 2, size.width, trackHeight),
+          0,
+          (size.height - trackHeight) / 2,
+          size.width,
+          trackHeight,
+        ),
         Radius.circular(trackHeight / 2),
       ),
       Paint()..color = trackColor,
@@ -1246,7 +1255,10 @@ class _OgMd1SliderPainter extends CustomPainter {
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(
-        Offset(0, y), Offset(size.width, y), track..color = inactive);
+      Offset(0, y),
+      Offset(size.width, y),
+      track..color = inactive,
+    );
     if (progress > 0) {
       canvas.drawLine(Offset(0, y), Offset(end, y), track..color = active);
     }
@@ -1607,10 +1619,7 @@ class OgMd1Dialog extends StatelessWidget {
 
 /// Snackbar 外观 painter：深色底 + 2dp 圆角 + elevation6 + 1px 描边。
 class _OgMd1SnackbarPainter extends CustomPainter {
-  const _OgMd1SnackbarPainter({
-    required this.color,
-    required this.border,
-  });
+  const _OgMd1SnackbarPainter({required this.color, required this.border});
 
   final Color color;
   final Color border;
@@ -1829,8 +1838,10 @@ class _OgMd1ChipPainter extends CustomPainter {
         ..strokeWidth = _md1DividerPx,
     );
     if (deletable) {
-      final Offset center =
-          Offset(size.width - OgMd1Size.buttonPadding, size.height / 2);
+      final Offset center = Offset(
+        size.width - OgMd1Size.buttonPadding,
+        size.height / 2,
+      );
       final double arm = _md1BadgeDot / OgMd1Size.radius;
       final Paint cross = Paint()
         ..color = deleteColor
@@ -1864,12 +1875,7 @@ class _OgMd1ChipPainter extends CustomPainter {
 /// 点按删除区触发 [onDeleted]，点按其它区域触发 [onTap]。
 class OgMd1Chip extends StatelessWidget {
   /// 创建 Chip。
-  const OgMd1Chip({
-    required this.label,
-    this.onTap,
-    this.onDeleted,
-    super.key,
-  });
+  const OgMd1Chip({required this.label, this.onTap, this.onDeleted, super.key});
 
   /// 文案。
   final String label;
@@ -2022,12 +2028,7 @@ class _OgMd1BadgePainter extends CustomPainter {
 /// [count] 为 null 表示红点；0 不绘制；≥1 显示数字（>99 显示 99+）。
 class OgMd1Badge extends StatelessWidget {
   /// 创建角标。
-  const OgMd1Badge({
-    required this.child,
-    this.count,
-    this.label,
-    super.key,
-  });
+  const OgMd1Badge({required this.child, this.count, this.label, super.key});
 
   /// 被角标覆盖的控件。
   final Widget child;
@@ -2100,11 +2101,7 @@ class _OgMd1DividerPainter extends CustomPainter {
 /// MD1 1px 分割线：[height] 为占位高度（默认 1px），[indent] 为左缩进。
 class OgMd1Divider extends StatelessWidget {
   /// 创建分割线。
-  const OgMd1Divider({
-    this.indent = 0,
-    this.height = _md1DividerPx,
-    super.key,
-  });
+  const OgMd1Divider({this.indent = 0, this.height = _md1DividerPx, super.key});
 
   /// 左侧缩进（dp）。
   final double indent;
@@ -2200,12 +2197,7 @@ class _OgMd1BottomNavPainter extends CustomPainter {
       Paint()..color = primary,
     );
     canvas.drawRect(
-      Rect.fromLTWH(
-        0,
-        _md1DividerPx,
-        size.width,
-        _md1DividerPx,
-      ),
+      Rect.fromLTWH(0, _md1DividerPx, size.width, _md1DividerPx),
       Paint()..color = dividerColor,
     );
   }
@@ -2318,10 +2310,7 @@ class _OgMd1BottomNavState extends State<OgMd1BottomNav> {
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () => _select(i),
-            child: SizedBox(
-              height: OgMd1Size.appBar,
-              child: content,
-            ),
+            child: SizedBox(height: OgMd1Size.appBar, child: content),
           ),
         ),
       );
@@ -2418,12 +2407,7 @@ class _OgMd1TabBarPainter extends CustomPainter {
       Paint()..color = primary,
     );
     canvas.drawRect(
-      Rect.fromLTWH(
-        0,
-        _md1DividerPx,
-        size.width,
-        _md1DividerPx,
-      ),
+      Rect.fromLTWH(0, _md1DividerPx, size.width, _md1DividerPx),
       Paint()..color = dividerColor,
     );
   }
@@ -2595,10 +2579,7 @@ class _OgMd1DrawerPanelPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final RRect rect = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.zero,
-    );
+    final RRect rect = RRect.fromRectAndRadius(Offset.zero & size, Radius.zero);
     _paintShadows(canvas, rect, OgMd1Elevation.dp8);
     canvas.drawRRect(rect, Paint()..color = color);
   }
@@ -2722,9 +2703,7 @@ class _OgMd1DrawerState extends State<OgMd1Drawer>
                       button: true,
                       label: 'Close drawer',
                       child: CustomPaint(
-                        painter: _OgMd1DrawerScrimPainter(
-                          progress: progress,
-                        ),
+                        painter: _OgMd1DrawerScrimPainter(progress: progress),
                       ),
                     ),
                   ),
@@ -2771,12 +2750,7 @@ class _OgMd1NavigationRailPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, Paint()..color = color);
     final double itemHeight = size.height / count;
     canvas.drawRect(
-      Rect.fromLTWH(
-        0,
-        selected * itemHeight,
-        _md1RailIndicator,
-        itemHeight,
-      ),
+      Rect.fromLTWH(0, selected * itemHeight, _md1RailIndicator, itemHeight),
       Paint()..color = selectedColor,
     );
   }
@@ -2944,10 +2918,7 @@ class _OgMd1ToolbarPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final RRect rect = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.zero,
-    );
+    final RRect rect = RRect.fromRectAndRadius(Offset.zero & size, Radius.zero);
     _paintShadows(canvas, rect, OgMd1Elevation.dp4);
     canvas.drawRRect(rect, Paint()..color = color);
   }
@@ -3067,6 +3038,1200 @@ class _OgMd1ToolbarState extends State<OgMd1Toolbar> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 批 5：操作类五控件（Progress / RefreshIndicator / BottomSheet / Menu /
+// Dropdown）——全部 CustomPainter 自绘，零 Material 可见控件。
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 进度指示器形态：线性条 / 环形圈（MD1 accent 色）。
+enum OgMd1ProgressKind {
+  /// 水平线性进度条。
+  linear,
+
+  /// 环形进度圈。
+  circular,
+}
+
+/// 进度条高度：MD1 线性进度 4dp。
+const double _md1ProgressTrack = OgMd1Size.radius * 2;
+
+/// 环形进度圈直径 / 轨道宽度（MD1 规范）。
+const double _md1ProgressCircle = OgMd1Size.touchTarget;
+const double _md1ProgressCircleStroke = OgMd1Size.radius * 2;
+
+/// 环形不确定态旋转一周的扫过角度（弧度）。
+const double _md1ProgressArc = math.pi * 1.5;
+
+/// 线性进度外观：card 走轨底 + accent 走条 + 2dp 圆角端头。
+class _OgMd1LinearProgressPainter extends CustomPainter {
+  const _OgMd1LinearProgressPainter({
+    required this.progress,
+    required this.active,
+    required this.track,
+    required this.determinate,
+  });
+
+  final double progress;
+  final Color active;
+  final Color track;
+  final bool determinate;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint base = Paint()..style = PaintingStyle.fill;
+    canvas.drawRRect(
+      RRect.fromLTRBR(
+        0,
+        0,
+        size.width,
+        size.height,
+        const Radius.circular(OgMd1Size.radius),
+      ),
+      base..color = track,
+    );
+    final double left = determinate ? 0 : size.width * progress;
+    final double right =
+        determinate ? size.width * progress : left + size.width / 3;
+    if (right <= 0 || left >= size.width) {
+      return;
+    }
+    canvas.drawRRect(
+      RRect.fromLTRBR(
+        left,
+        0,
+        math.min(right, size.width),
+        size.height,
+        const Radius.circular(OgMd1Size.radius),
+      ),
+      base..color = active,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1LinearProgressPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.active != active ||
+      oldDelegate.track != track ||
+      oldDelegate.determinate != determinate;
+}
+
+/// 环形进度外观：底圈 + accent 弧；不确定态为旋转的开口弧。
+class _OgMd1CircularProgressPainter extends CustomPainter {
+  const _OgMd1CircularProgressPainter({
+    required this.progress,
+    required this.active,
+    required this.track,
+    required this.determinate,
+  });
+
+  final double progress;
+  final Color active;
+  final Color track;
+  final bool determinate;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Offset center = size.center(Offset.zero);
+    final double radius =
+        math.min(size.width, size.height) / 2 - _md1ProgressCircleStroke / 2;
+    if (radius <= 0) {
+      return;
+    }
+    final Paint base = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _md1ProgressCircleStroke
+      ..strokeCap = StrokeCap.butt;
+    canvas.drawCircle(center, radius, base..color = track);
+    const double start = -math.pi / 2;
+    final double sweep = determinate
+        ? _md1ProgressArc * 2 * progress.clamp(0.0, 1.0)
+        : _md1ProgressArc;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      start,
+      sweep,
+      false,
+      base..color = active,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1CircularProgressPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.active != active ||
+      oldDelegate.track != track ||
+      oldDelegate.determinate != determinate;
+}
+
+/// MD1 进度指示器：线性 / 环形，accent 色；[value] 为 null 表示不确定态。
+///
+/// 不确定态用 [AnimationController] 经 [OgLAnim] 档位时长驱动；档位 0
+/// 静默停在起始角。Semantics 暴露 progressbar 与数值/标签。
+class OgMd1Progress extends StatefulWidget {
+  /// 创建进度指示器。
+  const OgMd1Progress({
+    this.value,
+    this.kind = OgMd1ProgressKind.linear,
+    this.label,
+    this.size = _md1ProgressCircle,
+    super.key,
+  });
+
+  /// 0–1 的进度；null = 不确定态（循环动画）。
+  final double? value;
+
+  /// 线性 / 环形。
+  final OgMd1ProgressKind kind;
+
+  /// 无障碍标签（调用方本地化后传入）。
+  final String? label;
+
+  /// 环形圈直径（线性形态忽略）。
+  final double size;
+
+  @override
+  State<OgMd1Progress> createState() => _OgMd1ProgressState();
+}
+
+class _OgMd1ProgressState extends State<OgMd1Progress>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: OgLAnim.slow(context),
+    )..repeat();
+  }
+
+  @override
+  void didUpdateWidget(covariant OgMd1Progress oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != null && _controller.isAnimating) {
+      _controller.stop();
+    } else if (widget.value == null && !_controller.isAnimating) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool determinate = widget.value != null;
+    final double progress =
+        determinate ? widget.value!.clamp(0.0, 1.0) : _controller.value;
+    final String? semanticValue =
+        determinate ? '${(progress * 100).round()}%' : null;
+    final Widget visual = AnimatedBuilder(
+      animation: _controller,
+      builder: (BuildContext context, Widget? child) {
+        final double shown = determinate ? progress : _controller.value;
+        if (widget.kind == OgMd1ProgressKind.circular) {
+          return SizedBox(
+            width: widget.size,
+            height: widget.size,
+            child: CustomPaint(
+              painter: _OgMd1CircularProgressPainter(
+                progress: shown,
+                active: palette.accent,
+                track: palette.divider,
+                determinate: determinate,
+              ),
+            ),
+          );
+        }
+        return SizedBox(
+          height: _md1ProgressTrack,
+          child: CustomPaint(
+            painter: _OgMd1LinearProgressPainter(
+              progress: shown,
+              active: palette.accent,
+              track: palette.divider,
+              determinate: determinate,
+            ),
+          ),
+        );
+      },
+    );
+    return Semantics(
+      progressBar: true,
+      value: semanticValue,
+      label: widget.label,
+      child: visual,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 下拉刷新圈：手势拉出 → 松手触发 → 圈旋转；自绘 arc + arrow。
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 下拉刷新触发位移（dp）。
+const double _md1RefreshTrigger = OgMd1Size.touchTarget + OgMd1Type.body;
+
+/// 下拉刷新最大位移（dp）。
+const double _md1RefreshMaxPull = OgMd1Size.listRowDouble;
+
+/// 刷新圈外观：accent 弧 + 下拉箭头，进度由拉动量决定。
+class _OgMd1RefreshPainter extends CustomPainter {
+  const _OgMd1RefreshPainter({
+    required this.progress,
+    required this.refreshing,
+    required this.angle,
+    required this.color,
+  });
+
+  final double progress;
+  final bool refreshing;
+  final double angle;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Offset center = size.center(Offset.zero);
+    final double radius =
+        math.min(size.width, size.height) / 2 - _md1ProgressCircleStroke;
+    if (radius <= 0) {
+      return;
+    }
+    final Rect box = Rect.fromCircle(center: center, radius: radius);
+    final Paint paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _md1ProgressCircleStroke
+      ..strokeCap = StrokeCap.round
+      ..color = color.withValues(alpha: refreshing ? 1 : 0.4 + progress * 0.6);
+    canvas.drawArc(box, 0, math.pi * 2, false, paint);
+    canvas.drawArc(
+      box,
+      -math.pi / 2,
+      refreshing ? _md1ProgressArc : _md1ProgressArc * progress,
+      false,
+      paint,
+    );
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(refreshing ? angle : progress * math.pi);
+    final double tip = radius * 0.55;
+    final Paint arrow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _md1ProgressCircleStroke
+      ..strokeCap = StrokeCap.round
+      ..color = color;
+    canvas.drawLine(Offset(0, -tip), Offset(0, tip), arrow);
+    canvas.drawLine(Offset(0, tip), Offset(-tip / 2, tip / 2), arrow);
+    canvas.drawLine(Offset(0, tip), Offset(tip / 2, tip / 2), arrow);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1RefreshPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.refreshing != refreshing ||
+      oldDelegate.angle != angle ||
+      oldDelegate.color != color;
+}
+
+/// MD1 下拉刷新圈：包在可滚动内容外层；下拉超阈值松手触发 [onRefresh]。
+///
+/// 只消费竖直下拉手势（不拦截列表正常滚动）；圈与箭头均自绘，位置随拉动量
+/// 变化，松手后按 [OgLAnim] 档位回弹。Semantics 暴露刷新动作与进行中状态。
+class OgMd1RefreshIndicator extends StatefulWidget {
+  /// 创建下拉刷新容器。
+  const OgMd1RefreshIndicator({
+    required this.child,
+    required this.onRefresh,
+    super.key,
+  });
+
+  /// 被包裹的可滚动内容。
+  final Widget child;
+
+  /// 下拉触发后的刷新回调（异步；完成时收起圈）。
+  final Future<void> Function() onRefresh;
+
+  @override
+  State<OgMd1RefreshIndicator> createState() => _OgMd1RefreshIndicatorState();
+}
+
+class _OgMd1RefreshIndicatorState extends State<OgMd1RefreshIndicator>
+    with SingleTickerProviderStateMixin {
+  final ValueNotifier<double> _pull = ValueNotifier<double>(0);
+  late final AnimationController _controller;
+  bool _refreshing = false;
+  double _startY = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: OgLAnim.shellDuration(context),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _pull.dispose();
+    super.dispose();
+  }
+
+  void _onVerticalDragStart(DragStartDetails details) {
+    if (_refreshing) {
+      return;
+    }
+    _startY = details.globalPosition.dy;
+  }
+
+  void _onVerticalDragUpdate(DragUpdateDetails details) {
+    if (_refreshing) {
+      return;
+    }
+    final double delta = details.globalPosition.dy - _startY;
+    if (delta <= 0) {
+      if (_pull.value != 0) {
+        _pull.value = 0;
+      }
+      return;
+    }
+    _pull.value = (delta / _md1RefreshMaxPull).clamp(0.0, 1.0);
+  }
+
+  Future<void> _onVerticalDragEnd(_) async {
+    if (_refreshing || _pull.value <= 0) {
+      return;
+    }
+    if (_pull.value * _md1RefreshMaxPull < _md1RefreshTrigger) {
+      _controller.forward(from: _pull.value);
+      _pull.value = 0;
+      return;
+    }
+    setState(() => _refreshing = true);
+    _controller.value = 0;
+    _controller.repeat();
+    try {
+      await widget.onRefresh();
+    } finally {
+      if (!mounted) {
+        return;
+      }
+      _controller.stop();
+      _controller.reset();
+      _pull.value = 0;
+      setState(() => _refreshing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    return Semantics(
+      container: true,
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onVerticalDragStart: _onVerticalDragStart,
+              onVerticalDragUpdate: _onVerticalDragUpdate,
+              onVerticalDragEnd: _onVerticalDragEnd,
+            ),
+          ),
+          widget.child,
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AnimatedBuilder(
+              animation: Listenable.merge(<Listenable>[_controller, _pull]),
+              builder: (BuildContext context, Widget? child) {
+                final double shown =
+                    _refreshing ? 1 : _pull.value * (1 - _controller.value);
+                if (shown <= 0) {
+                  return const SizedBox.shrink();
+                }
+                return Semantics(
+                  button: true,
+                  enabled: !_refreshing,
+                  label: _refreshing ? 'Refreshing' : 'Pull to refresh',
+                  child: SizedBox(
+                    height: _md1RefreshMaxPull * shown,
+                    child: Center(
+                      child: SizedBox(
+                        width: _md1ProgressCircle,
+                        height: _md1ProgressCircle,
+                        child: CustomPaint(
+                          painter: _OgMd1RefreshPainter(
+                            progress: _pull.value,
+                            refreshing: _refreshing,
+                            angle: _controller.value * math.pi * 2,
+                            color: palette.accent,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 底部弹层：2dp 圆角、elevation 近似 16dp（两档 8dp 叠加），遮罩 + 下滑关闭。
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// BottomSheet 面板外观：card 底 + 2dp 圆角 + 16dp 层级投影。
+class _OgMd1BottomSheetPainter extends CustomPainter {
+  const _OgMd1BottomSheetPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect shape = RRect.fromRectAndCorners(
+      Offset.zero & size,
+      topLeft: const Radius.circular(OgMd1Size.radius),
+      topRight: const Radius.circular(OgMd1Size.radius),
+    );
+    // 16dp = 两档 8dp 叠加；不用 MaskFilter / saveLayer。
+    _paintShadows(canvas, shape, <BoxShadow>[
+      ...OgMd1Elevation.dp8,
+      ...OgMd1Elevation.dp8,
+    ]);
+    canvas.drawRRect(shape, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1BottomSheetPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// BottomSheet 遮罩：半透明黑，点按关闭。
+class _OgMd1SheetScrimPainter extends CustomPainter {
+  const _OgMd1SheetScrimPainter({required this.progress});
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..color = Color.fromRGBO(0, 0, 0, 0.32 * progress),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1SheetScrimPainter oldDelegate) =>
+      oldDelegate.progress != progress;
+}
+
+/// MD1 底部弹层：从底部升起，2dp 圆角 / elevation16，遮罩 + 下滑 / Escape 关闭。
+///
+/// [open] 由调用方控制；[onDismiss] 在遮罩点击、下拉越过阈值或 Escape 时触发。
+/// 动画时长 / 曲线来自 [OgLAnim]，内容由 [child] 提供，全部可见外观自绘。
+class OgMd1BottomSheet extends StatefulWidget {
+  /// 创建底部弹层。
+  const OgMd1BottomSheet({
+    required this.child,
+    required this.open,
+    required this.onDismiss,
+    super.key,
+  });
+
+  /// 面板内容。
+  final Widget child;
+
+  /// 是否展开。
+  final bool open;
+
+  /// 关闭回调。
+  final VoidCallback onDismiss;
+
+  @override
+  State<OgMd1BottomSheet> createState() => _OgMd1BottomSheetState();
+}
+
+class _OgMd1BottomSheetState extends State<OgMd1BottomSheet>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final FocusNode _keyboardNode = FocusNode();
+  double _dragDown = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: OgLAnim.sheetDuration(context),
+    );
+    _controller.value = widget.open ? 1 : 0;
+  }
+
+  @override
+  void didUpdateWidget(covariant OgMd1BottomSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.open == oldWidget.open) {
+      return;
+    }
+    _dragDown = 0;
+    if (widget.open) {
+      _controller.forward();
+    } else {
+      _controller.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _keyboardNode.dispose();
+    super.dispose();
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is RawKeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.escape &&
+        widget.open) {
+      widget.onDismiss();
+    }
+  }
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    if (details.primaryDelta == null) {
+      return;
+    }
+    setState(() {
+      _dragDown = (_dragDown + details.primaryDelta!).clamp(
+        0.0,
+        _md1RefreshMaxPull.toDouble(),
+      );
+    });
+  }
+
+  void _onDragEnd(_) {
+    if (_dragDown >= _md1RefreshTrigger) {
+      _dragDown = 0;
+      widget.onDismiss();
+      return;
+    }
+    setState(() => _dragDown = 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.open && !_controller.isAnimating) {
+      return const SizedBox.shrink();
+    }
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (BuildContext context, Widget? child) {
+        final Curve curve = OgLAnim.largeCurve(context);
+        final double progress = curve.transform(_controller.value);
+        // 入场/退场时面板按屏幕高度滑入滑出；拖动关闭时叠加下拉位移。
+        final double slide = (1 - progress) * MediaQuery.sizeOf(context).height;
+        return Semantics(
+          container: true,
+          child: RawKeyboardListener(
+            focusNode: _keyboardNode,
+            onKey: _onKey,
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: widget.onDismiss,
+                    child: Semantics(
+                      button: true,
+                      label: 'Close sheet',
+                      child: CustomPaint(
+                        painter: _OgMd1SheetScrimPainter(progress: progress),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: -slide - _dragDown,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxHeight: _md1RefreshMaxPull * 4,
+                    ),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onVerticalDragUpdate: _onDragUpdate,
+                      onVerticalDragEnd: _onDragEnd,
+                      child: Semantics(
+                        container: true,
+                        child: CustomPaint(
+                          painter: _OgMd1BottomSheetPainter(
+                            color: palette.card,
+                          ),
+                          child: child,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 弹出菜单 + 遮罩：菜单项自绘、选中态高亮，键盘 / 语义完整。
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 菜单项数据：文案（本地化后传入）+ 可选回调。
+@immutable
+class OgMd1MenuItem {
+  /// 创建菜单项。
+  const OgMd1MenuItem({required this.label, this.onSelected});
+
+  /// 显示文案。
+  final String label;
+
+  /// 选中回调；null 表示禁用。
+  final ValueChanged<int>? onSelected;
+}
+
+/// 菜单面板外观：card 底 + 2dp 圆角 + elevation8 真投影（同心阶梯）。
+class _OgMd1MenuPainter extends CustomPainter {
+  const _OgMd1MenuPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect shape = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(OgMd1Size.radius),
+    );
+    _paintShadows(canvas, shape, OgMd1Elevation.dp8);
+    canvas.drawRRect(shape, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1MenuPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// 单个菜单项外观：48dp 触控高 + 按压 / 聚焦浅底。
+class _OgMd1MenuItemPainter extends CustomPainter {
+  const _OgMd1MenuItemPainter({required this.highlight, required this.enabled});
+
+  final bool highlight;
+  final bool enabled;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!highlight || !enabled) {
+      return;
+    }
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..color = const Color(0x14000000),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1MenuItemPainter oldDelegate) =>
+      oldDelegate.highlight != highlight || oldDelegate.enabled != enabled;
+}
+
+/// MD1 弹出菜单：贴在 [anchor] 下方的 card 面板 + 全屏透明遮罩。
+///
+/// [open] 控制显隐，点击遮罩 / 菜单项 / Escape 均关闭。菜单项逐行 48dp，
+/// 每项有 Semantics button 与 Focus 节点；上下键移动焦点、Enter 选中。
+/// 面板外观全部 CustomPainter 自绘。
+class OgMd1Menu extends StatefulWidget {
+  /// 创建弹出菜单。
+  const OgMd1Menu({
+    required this.anchor,
+    required this.items,
+    required this.open,
+    required this.onDismiss,
+    super.key,
+  });
+
+  /// 触发菜单的锚点控件。
+  final Widget anchor;
+
+  /// 菜单项。
+  final List<OgMd1MenuItem> items;
+
+  /// 是否展开。
+  final bool open;
+
+  /// 关闭回调（遮罩 / 选中 / Escape）。
+  final VoidCallback onDismiss;
+
+  @override
+  State<OgMd1Menu> createState() => _OgMd1MenuState();
+}
+
+class _OgMd1MenuState extends State<OgMd1Menu> {
+  final FocusNode _keyboardNode = FocusNode();
+  int _focused = -1;
+
+  @override
+  void dispose() {
+    _keyboardNode.dispose();
+    super.dispose();
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent || !widget.open) {
+      return;
+    }
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.escape) {
+      widget.onDismiss();
+    } else if (key == LogicalKeyboardKey.arrowDown) {
+      setState(() {
+        _focused = (_focused + 1) % widget.items.length;
+      });
+    } else if (key == LogicalKeyboardKey.arrowUp) {
+      setState(() {
+        _focused = (_focused - 1 + widget.items.length) % widget.items.length;
+      });
+    } else if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.select) {
+      _select(_focused);
+    }
+  }
+
+  void _select(int index) {
+    if (index < 0 || index >= widget.items.length) {
+      return;
+    }
+    final OgMd1MenuItem item = widget.items[index];
+    if (item.onSelected == null) {
+      return;
+    }
+    item.onSelected!(index);
+    widget.onDismiss();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    return Semantics(
+      container: true,
+      child: RawKeyboardListener(
+        focusNode: _keyboardNode,
+        onKey: _onKey,
+        child: Stack(
+          fit: StackFit.loose,
+          children: <Widget>[
+            widget.anchor,
+            if (widget.open)
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: widget.onDismiss,
+                  child: Semantics(
+                    button: true,
+                    label: 'Close menu',
+                    child: CustomPaint(painter: _OgMd1MenuScrimPainter()),
+                  ),
+                ),
+              ),
+            if (widget.open)
+              PositionedDirectional(
+                start: 0,
+                top: OgMd1Size.touchTarget,
+                child: Semantics(
+                  explicitChildNodes: true,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minWidth: OgMd1Size.dialogMinWidth / 2,
+                    ),
+                    child: CustomPaint(
+                      painter: _OgMd1MenuPainter(color: palette.card),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          for (int i = 0; i < widget.items.length; i++)
+                            Semantics(
+                              button: true,
+                              enabled: widget.items[i].onSelected != null,
+                              label: widget.items[i].label,
+                              child: Focus(
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => _select(i),
+                                  child: SizedBox(
+                                    height: OgMd1Size.touchTarget,
+                                    child: CustomPaint(
+                                      painter: _OgMd1MenuItemPainter(
+                                        highlight: _focused == i,
+                                        enabled:
+                                            widget.items[i].onSelected != null,
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: OgMd1Size.buttonPadding,
+                                        ),
+                                        child: Align(
+                                          alignment:
+                                              AlignmentDirectional.centerStart,
+                                          child: Text(
+                                            widget.items[i].label,
+                                            style: TextStyle(
+                                              fontSize: OgMd1Type.subhead,
+                                              fontWeight: OgMd1Type.bodyWeight,
+                                              color:
+                                                  widget.items[i].onSelected ==
+                                                          null
+                                                      ? palette.textSecondary
+                                                      : palette.textPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 菜单遮罩：全屏透明点击层（不用 ModalBarrier / Material）。
+class _OgMd1MenuScrimPainter extends CustomPainter {
+  const _OgMd1MenuScrimPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {}
+
+  @override
+  bool shouldRepaint(_OgMd1MenuScrimPainter oldDelegate) => false;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 下拉选择框：48dp 底线输入框 + 自绘下拉三角 + 选项面板（复用菜单外观）。
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 下拉选择框外观：48dp 高、底边 1px（focus 2px primary）+ 右侧三角。
+class _OgMd1DropdownFieldPainter extends CustomPainter {
+  const _OgMd1DropdownFieldPainter({
+    required this.lineColor,
+    required this.lineWidth,
+    required this.arrowColor,
+    required this.open,
+  });
+
+  final Color lineColor;
+  final double lineWidth;
+  final Color arrowColor;
+  final bool open;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double y = size.height - lineWidth / 2;
+    canvas.drawLine(
+      Offset(0, y),
+      Offset(size.width, y),
+      Paint()
+        ..color = lineColor
+        ..strokeWidth = lineWidth,
+    );
+    final double cx = size.width - OgMd1Type.body;
+    final double cy = size.height / 2 - OgMd1Type.body / 4;
+    final Paint arrow = Paint()
+      ..color = arrowColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _md1DividerPx;
+    final double half = OgMd1Type.body / 2;
+    final double dy = open ? -half : half;
+    canvas.drawLine(Offset(cx - half, cy), Offset(cx, cy + dy), arrow);
+    canvas.drawLine(Offset(cx, cy + dy), Offset(cx + half, cy), arrow);
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1DropdownFieldPainter oldDelegate) =>
+      oldDelegate.lineColor != lineColor ||
+      oldDelegate.lineWidth != lineWidth ||
+      oldDelegate.arrowColor != arrowColor ||
+      oldDelegate.open != open;
+}
+
+/// MD1 下拉选择框：48dp 底线输入框 + 右侧三角，点按展开选项面板。
+///
+/// 选项面板复用 [OgMd1Menu] 的自绘外观（card + elevation8 + 48dp 行），
+/// 焦点在字段上；上下键改变高亮项、Enter/Space 展开或确认，Escape 收起。
+/// 所有可见外观由 CustomPainter 绘制，零 Material 控件。
+class OgMd1Dropdown extends StatefulWidget {
+  /// 创建下拉选择框。
+  const OgMd1Dropdown({
+    required this.items,
+    required this.selectedIndex,
+    required this.onChanged,
+    this.label,
+    super.key,
+  });
+
+  /// 候选项文案（本地化后传入）。
+  final List<String> items;
+
+  /// 当前选中索引；-1 表示未选。
+  final int selectedIndex;
+
+  /// 选中项回调。
+  final ValueChanged<int> onChanged;
+
+  /// 无障碍标签（调用方本地化后传入）。
+  final String? label;
+
+  @override
+  State<OgMd1Dropdown> createState() => _OgMd1DropdownState();
+}
+
+class _OgMd1DropdownState extends State<OgMd1Dropdown> {
+  final FocusNode _focusNode = FocusNode();
+  final FocusNode _keyboardNode = FocusNode();
+  bool _open = false;
+  int _highlight = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus && _open) {
+      setState(() => _open = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    _keyboardNode.dispose();
+    super.dispose();
+  }
+
+  void _select(int index) {
+    if (index < 0 || index >= widget.items.length) {
+      return;
+    }
+    widget.onChanged(index);
+    setState(() => _open = false);
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent) {
+      return;
+    }
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.escape) {
+      setState(() => _open = false);
+    } else if (key == LogicalKeyboardKey.arrowDown) {
+      setState(() {
+        _open = true;
+        _highlight = (_highlight + 1) % widget.items.length;
+      });
+    } else if (key == LogicalKeyboardKey.arrowUp) {
+      setState(() {
+        _open = true;
+        _highlight =
+            (_highlight - 1 + widget.items.length) % widget.items.length;
+      });
+    } else if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
+      if (_open) {
+        _select(_highlight);
+      } else {
+        setState(() {
+          _open = true;
+          _highlight = widget.selectedIndex < 0 ? 0 : widget.selectedIndex;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool focused = _focusNode.hasFocus;
+    final String shown =
+        widget.selectedIndex >= 0 && widget.selectedIndex < widget.items.length
+            ? widget.items[widget.selectedIndex]
+            : '';
+    return Semantics(
+      container: true,
+      child: RawKeyboardListener(
+        focusNode: _keyboardNode,
+        onKey: _onKey,
+        child: Stack(
+          fit: StackFit.loose,
+          children: <Widget>[
+            Semantics(
+              button: true,
+              enabled: true,
+              label: widget.label,
+              value: shown,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  _focusNode.requestFocus();
+                  setState(() {
+                    _open = !_open;
+                    _highlight =
+                        widget.selectedIndex < 0 ? 0 : widget.selectedIndex;
+                  });
+                },
+                child: Focus(
+                  focusNode: _focusNode,
+                  child: SizedBox(
+                    height: OgMd1Size.field,
+                    child: CustomPaint(
+                      painter: _OgMd1DropdownFieldPainter(
+                        lineColor:
+                            focused ? palette.primary : palette.textSecondary,
+                        lineWidth:
+                            focused ? OgMd1Size.radius * 2 : _md1DividerPx,
+                        arrowColor:
+                            focused ? palette.primary : palette.textSecondary,
+                        open: _open,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          end: OgMd1Type.headline,
+                        ),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text(
+                            shown,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: OgMd1Type.subhead,
+                              fontWeight: OgMd1Type.bodyWeight,
+                              color: palette.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            if (_open)
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _open = false),
+                  child: Semantics(
+                    button: true,
+                    label: 'Close dropdown',
+                    child: CustomPaint(painter: _OgMd1MenuScrimPainter()),
+                  ),
+                ),
+              ),
+            if (_open)
+              PositionedDirectional(
+                start: 0,
+                top: OgMd1Size.field,
+                child: Semantics(
+                  explicitChildNodes: true,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minWidth: OgMd1Size.dialogMinWidth / 2,
+                    ),
+                    child: CustomPaint(
+                      painter: _OgMd1MenuPainter(color: palette.card),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          for (int i = 0; i < widget.items.length; i++)
+                            Semantics(
+                              button: true,
+                              label: widget.items[i],
+                              selected: i == widget.selectedIndex,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => _select(i),
+                                child: SizedBox(
+                                  height: OgMd1Size.touchTarget,
+                                  child: CustomPaint(
+                                    painter: _OgMd1MenuItemPainter(
+                                      highlight: _highlight == i,
+                                      enabled: true,
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: OgMd1Size.buttonPadding,
+                                      ),
+                                      child: Align(
+                                        alignment:
+                                            AlignmentDirectional.centerStart,
+                                        child: Text(
+                                          widget.items[i],
+                                          style: TextStyle(
+                                            fontSize: OgMd1Type.subhead,
+                                            fontWeight: OgMd1Type.bodyWeight,
+                                            color: i == widget.selectedIndex
+                                                ? palette.primary
+                                                : palette.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

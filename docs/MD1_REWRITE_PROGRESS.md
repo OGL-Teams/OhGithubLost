@@ -20,7 +20,10 @@
 - `md1_painters.dart` 扩至 3074 行：新增 `OgMd1BottomNav`（56dp 纯色底+primary 指示）、`OgMd1TabBar`（48dp+2px 下划线）、`OgMd1Drawer`（240dp+遮罩）、`OgMd1NavigationRail`（72dp 侧栏）、`OgMd1Toolbar`（56dp 操作条）——全 CustomPainter。
 - 全门禁绿（format/ui/perf/layer/contract/motion/facade/action_pin/ci_config/gate/i18n）。
 
+## 批 5（操作类 5 控件）✅
+- `md1_painters.dart` 扩至 4238 行：新增 `OgMd1Progress`（线性+环形）、`OgMd1RefreshIndicator`（下拉刷新）、`OgMd1BottomSheet`（2dp 圆角/elevation16）、`OgMd1Menu`、`OgMd1Dropdown`——全 CustomPainter。
+- 全门禁绿（format/ui/perf/layer/contract/gate/i18n）。
+
 ## 剩余批次（待执行）
-- 批 5：Progress / RefreshIndicator / BottomSheet / Menu / Dropdown（操作类 5 控件）
 - 批 6-9：剩余 16 控件 + 逐页迁移（设置→关于→仓库→议题→内容页→其他）
 - 批 10：删除全部 Material 可见控件引用，切换 WidgetsApp，截图矩阵按 MD1 重录
