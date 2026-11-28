@@ -22,6 +22,7 @@
   "branchRenameFailed": "Redenumirea a eșuat: {error}",
   "branchRenamed": "Redenumit",
   "branchSwitched": "Branch schimbat",
+  "backToRootBecausePathMissing": "Calea nu a fost găsită în această ramură: {path}",
   "branches": "Branchuri",
   "branchesFailed": "Citirea branchurilor a eșuat: {error}",
   "cancel": "Anulează",

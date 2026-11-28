@@ -22,6 +22,7 @@
   "branchRenameFailed": "重命名失败：{error}",
   "branchRenamed": "已重命名",
   "branchSwitched": "已切换分支",
+  "backToRootBecausePathMissing": "该分支下没有此路径，已回到根目录：{path}",
   "branches": "分支",
   "branchesFailed": "分支读取失败：{error}",
   "cancel": "取消",

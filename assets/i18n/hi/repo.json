@@ -22,6 +22,7 @@
   "branchRenameFailed": "नाम बदलने में विफल: {error}",
   "branchRenamed": "नाम बदल दिया गया",
   "branchSwitched": "शाखा बदल दी गई",
+  "backToRootBecausePathMissing": "इस ब्रांच में पथ नहीं मिला: {path}",
   "branches": "शाखाएँ",
   "branchesFailed": "शाखाएँ पढ़ने में विफल: {error}",
   "cancel": "रद्द करें",

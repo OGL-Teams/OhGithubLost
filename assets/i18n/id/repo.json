@@ -22,6 +22,7 @@
   "branchRenameFailed": "Gagal mengganti nama: {error}",
   "branchRenamed": "Diganti nama",
   "branchSwitched": "Cabang dipindah",
+  "backToRootBecausePathMissing": "Jalur tidak ditemukan di cabang ini: {path}",
   "branches": "Cabang",
   "branchesFailed": "Gagal membaca cabang: {error}",
   "cancel": "Batal",

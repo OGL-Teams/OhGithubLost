@@ -195,8 +195,13 @@ void main() async {
       warnings: warnings,
       policy: const BootTrustPolicy(),
       manifestPath: 'boot/manifest.json',
-      // 开发旁路**仅对调试构建开放**：发布构建缺清单 / 签名无效 = 拒绝启动。
+      // 开发旁路**仅对调试构建**开放：发布构建缺清单 / 签名无效 = 拒绝启动。
       developmentBypass: !hasSignedManifest && !kReleaseMode,
+      // ★ B2：官方模块完整性校验延后到首帧之后（冷启动关键路径上最重的
+      //   文件 I/O）。信任语义见 [BootLoader.verifyDeferredModules]：
+      //   延后 ≠ 跳过——校验失败时下面的 `OgLBootFailureApp` 会**替换**
+      //   正常界面（fail-closed），失败永远不会被跳过或静默。
+      deferModuleIntegrity: true,
     ),
   );
 
@@ -302,6 +307,12 @@ void main() async {
     notifications.addListener(forwardNotifications);
     runApp(OgLApp(surface: surfaceModule.bridge, report: report));
 
+    // ★ B2 延后完整性校验的收尾（组合根必须消费，否则"延后"就等于"跳过"）：
+    //   首帧之后异步跑逐文件指纹校验；不通过 → 用失败界面**替换**正常界面
+    //   （模块已装配，无法事后排除，故比安全模式更严格），并已由
+    //   BootLoader 写 diagnostics.error + 信任告警（OGL-BOOT-102）触达通知中心。
+    unawaited(_verifyDeferredIntegrityLater(kernel));
+
     // ★ 运行时门禁：首屏之后各采集层巡检一次。发现 degradation 时写
     //   diagnostics.warn → 既有 OgLDiagnosticsNoticeSink → 通知中心 + 磁盘日志，
     //   与 CI 离线门禁互补（用户设备上此刻的真实状态）。组合根允许直接取
@@ -373,6 +384,44 @@ void main() async {
     );
     runApp(OgLBootFailureApp(
       message: '启动流程出现未预期异常：$error\n\n$stackTrace',
+    ));
+  }
+}
+
+/// 首帧之后完成**延后的模块完整性校验**，不通过则用失败界面替换正常界面。
+///
+/// 信任语义（与 `BootLoader.deferModuleIntegrity` 的注释配套）：
+/// 延后只是把重 I/O 移出冷启动关键路径，**不是跳过**——校验照跑，
+/// 失败照旧 fail-closed（模块已装配，无法事后排除，只能替换界面）。
+Future<void> _verifyDeferredIntegrityLater(OgLKernel kernel) async {
+  try {
+    final IntegrityReport? report =
+        await kernel.bootLoader.verifyDeferredModules();
+    if (report == null) {
+      return;
+    }
+    if (report.allPassed) {
+      return;
+    }
+    OgLAppLog.instance.add(
+      '启动',
+      '延后完整性校验未通过（模块指纹不符，已阻断）',
+      severity: OgLNoticeSeverity.critical,
+    );
+    runApp(OgLBootFailureApp(
+      message: '模块完整性校验未通过，应用已停止加载以保护数据安全。\n'
+          '请重新安装官方发布的版本。',
+    ));
+  } catch (error) {
+    // 校验本身异常 = 无法证明完整 = 同样 fail-closed。
+    OgLAppLog.instance.add(
+      '启动',
+      '延后完整性校验异常（视为失败）：$error',
+      severity: OgLNoticeSeverity.critical,
+    );
+    runApp(OgLBootFailureApp(
+      message: '模块完整性校验未完成，应用已停止加载以保护数据安全。\n'
+          '请重新安装官方发布的版本。',
     ));
   }
 }

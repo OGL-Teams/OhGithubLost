@@ -22,6 +22,7 @@
   "branchRenameFailed": "Не вдалося перейменувати: {error}",
   "branchRenamed": "Перейменовано",
   "branchSwitched": "Гілку перемкнуто",
+  "backToRootBecausePathMissing": "Шлях не знайдено у цій гілці: {path}",
   "branches": "Гілки",
   "branchesFailed": "Не вдалося отримати гілки: {error}",
   "cancel": "Скасувати",

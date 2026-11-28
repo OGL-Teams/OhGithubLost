@@ -22,6 +22,7 @@
   "branchRenameFailed": "No se ha podido renombrar: {error}",
   "branchRenamed": "Renombrada",
   "branchSwitched": "Has cambiado a otra rama",
+  "backToRootBecausePathMissing": "Ruta no encontrada en esta rama: {path}",
   "branches": "Ramas",
   "branchesFailed": "No se han podido leer las ramas: {error}",
   "cancel": "Cancelar",

@@ -22,6 +22,7 @@
   "branchRenameFailed": "Omdøbning mislykkedes: {error}",
   "branchRenamed": "Omdøbt",
   "branchSwitched": "Branch skiftet",
+  "backToRootBecausePathMissing": "Stien findes ikke i denne gren: {path}",
   "branches": "Branches",
   "branchesFailed": "Kunne ikke hente branches: {error}",
   "cancel": "Annuller",

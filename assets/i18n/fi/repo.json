@@ -22,6 +22,7 @@
   "branchRenameFailed": "Uudelleennimeäminen epäonnistui: {error}",
   "branchRenamed": "Uudelleennimetty",
   "branchSwitched": "Haara vaihdettu",
+  "backToRootBecausePathMissing": "Polkua ei löytynyt tästä haarasta: {path}",
   "branches": "Haarat",
   "branchesFailed": "Haarojen lukeminen epäonnistui: {error}",
   "cancel": "Peruuta",

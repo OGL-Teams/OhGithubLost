@@ -22,6 +22,7 @@
   "branchRenameFailed": "Umbenennung fehlgeschlagen: {error}",
   "branchRenamed": "Umbenannt",
   "branchSwitched": "Zweig gewechselt",
+  "backToRootBecausePathMissing": "Pfad in diesem Zweig nicht gefunden: {path}",
   "branches": "Zweige",
   "branchesFailed": "Abrufen der Zweige fehlgeschlagen: {error}",
   "cancel": "Abbrechen",

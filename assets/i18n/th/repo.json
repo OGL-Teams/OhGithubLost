@@ -22,6 +22,7 @@
   "branchRenameFailed": "เปลี่ยนชื่อไม่สำเร็จ: {error}",
   "branchRenamed": "เปลี่ยนชื่อแล้ว",
   "branchSwitched": "สลับ branch แล้ว",
+  "backToRootBecausePathMissing": "ไม่พบเส้นทางในสาขานี้: {path}",
   "branches": "Branch",
   "branchesFailed": "อ่าน branch ไม่สำเร็จ: {error}",
   "cancel": "ยกเลิก",

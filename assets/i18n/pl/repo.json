@@ -22,6 +22,7 @@
   "branchRenameFailed": "Nie udało się zmienić nazwy: {error}",
   "branchRenamed": "Zmieniono nazwę",
   "branchSwitched": "Przełączono branch",
+  "backToRootBecausePathMissing": "Nie znaleziono ścieżki w tej gałęzi: {path}",
   "branches": "Branche",
   "branchesFailed": "Nie udało się odczytać branchy: {error}",
   "cancel": "Anuluj",

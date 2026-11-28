@@ -22,6 +22,7 @@
   "branchRenameFailed": "Η μετονομασία απέτυχε: {error}",
   "branchRenamed": "Μετονομάστηκε",
   "branchSwitched": "Έγινε αλλαγή branch",
+  "backToRootBecausePathMissing": "Η διαδρομή δεν βρέθηκε σε αυτόν τον κλάδο: {path}",
   "branches": "Branches",
   "branchesFailed": "Η ανάγνωση των branches απέτυχε: {error}",
   "cancel": "Ακύρωση",

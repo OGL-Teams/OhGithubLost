@@ -22,6 +22,7 @@
   "branchRenameFailed": "Átnevezés nem sikerült: {error}",
   "branchRenamed": "Átnevezve",
   "branchSwitched": "Branch átváltva",
+  "backToRootBecausePathMissing": "Az útvonal nem található ebben az ágban: {path}",
   "branches": "Branchok",
   "branchesFailed": "A branchok olvasása nem sikerült: {error}",
   "cancel": "Mégse",

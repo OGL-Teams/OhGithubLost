@@ -22,6 +22,7 @@
   "branchRenameFailed": "Gagal dinamakan semula: {error}",
   "branchRenamed": "Telah dinamakan semula",
   "branchSwitched": "Cawangan telah ditukar",
+  "backToRootBecausePathMissing": "Laluan tidak dijumpai dalam cawangan ini: {path}",
   "branches": "Cawangan",
   "branchesFailed": "Gagal membaca cawangan: {error}",
   "cancel": "Batal",

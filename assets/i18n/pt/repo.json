@@ -22,6 +22,7 @@
   "branchRenameFailed": "Falha ao renomear: {error}",
   "branchRenamed": "Renomeado",
   "branchSwitched": "Branch alterado",
+  "backToRootBecausePathMissing": "Caminho não encontrado nesta ramificação: {path}",
   "branches": "Branches",
   "branchesFailed": "Falha ao ler os branches: {error}",
   "cancel": "Cancelar",

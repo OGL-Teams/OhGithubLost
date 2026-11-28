@@ -450,6 +450,25 @@ class GhClient {
   /// 只读端点缓存（装配期由 `domain_bridge` 注入；未注入则不缓存）。
   GhReadCache? _readCache;
 
+  /// HTTP 读缓存（L1 网络层 `CacheTransport`，席 C 下沉）。
+  ///
+  /// `null` 表示装配侧未包缓存传输（测试桩常见）——所有读取直通网络。
+  HttpReadCache? _httpCache;
+
+  /// 绑定 HTTP 读缓存（装配期调用一次）。
+  void attachHttpReadCache(HttpReadCache cache) {
+    _httpCache = cache;
+  }
+
+  /// 表达「这次要回源」：清掉 HTTP 读缓存。
+  ///
+  /// 下拉刷新 / 写后重读 / 切换账号时调用；只表达意图，
+  /// 不再由逻辑层实现"先查缓存再解析"的重复逻辑。
+  Future<void> invalidateHttpReadCache() async {
+    _httpCache?.invalidate();
+    await _readCache?.clear();
+  }
+
   /// 绑定只读端点缓存。
   void attachReadCache(GhReadCache cache) {
     _readCache = cache;
@@ -457,7 +476,7 @@ class GhClient {
 
   /// 让只读缓存整体失效（切换账号 / 用户手动清缓存）。
   Future<void> invalidateReadCache() async {
-    await _readCache?.clear();
+    await invalidateHttpReadCache();
   }
 
   /// 按路径给出只读缓存 TTL；`null` 表示**不缓存**。
@@ -667,6 +686,8 @@ class GhClient {
       }
       if (request.method != NetMethod.get && response.isSuccess) {
         // 写操作让只读缓存整体失效：陈旧列表 = 错误信息。
+        // ★ 席 C：HTTP 读缓存（L1）一并失效——写之后绝不能读回旧文件。
+        _httpCache?.invalidate();
         await _readCache?.clear();
       }
       try {

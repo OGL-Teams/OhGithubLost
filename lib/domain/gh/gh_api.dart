@@ -119,7 +119,11 @@ class GhApi implements CacheRemote {
   }
 
   /// 让**只读端点缓存**整体失效（下拉刷新 / 写后重读 / 切换账号时调用）。
-  Future<void> invalidateReadCache() => client.invalidateReadCache();
+  ///
+  /// ★ 席 C：同时失效 L1 HTTP 读缓存——"用户要回源"只在这里表达一次。
+  Future<void> invalidateReadCache() async {
+    await client.invalidateHttpReadCache();
+  }
 
   // ───────────────────────── 认证 ─────────────────────────
 

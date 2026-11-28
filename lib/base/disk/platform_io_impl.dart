@@ -512,14 +512,26 @@ class PlatformStorage {
   /// 安全保险库。
   final DiskVault vault;
 
+  /// 进程内缓存：已装配的平台存储。
+  ///
+  /// 为什么要记：`open` 要走平台通道解析目录 + 建目录 + 3 次递归清扫，
+  /// 是启动关键路径上最重的一段文件 I/O；而存储根在进程生命周期内不变。
+  /// 同进程内的第二次装配（诊断 / 重入场景）直接复用，不再重复探测。
+  static PlatformStorage? _opened;
+
   /// 打开平台存储。
   ///
   /// [folder] 为应用私有根目录下的子目录名。
-  /// [rootOverride] 用于测试或让用户指定自定义数据目录。
+  /// [rootOverride] 用于测试或让用户指定自定义数据目录（**绕过缓存**，
+  /// 测试各自注入独立目录；缓存只对真机缺省路径生效）。
   static Future<PlatformStorage> open({
     String folder = 'ohgithublost',
     String? rootOverride,
   }) async {
+    final PlatformStorage? cached = _opened;
+    if (cached != null && rootOverride == null) {
+      return cached;
+    }
     final root = rootOverride ?? await _resolveDefaultRoot(folder);
     final normalized = IoDiskFileStore._normalizeRoot(root);
 
@@ -531,13 +543,17 @@ class PlatformStorage {
     await IoDiskFileStore(root: '$normalized/cache').sweepTemp();
     await IoDiskFileStore(root: '$normalized/kv').sweepTemp();
 
-    return PlatformStorage(
+    final result = PlatformStorage(
       root: normalized,
       paths: PlatformDiskPaths(root: normalized),
       files: files,
       kv: IoDiskKv(root: normalized),
       vault: SecureDiskVault(),
     );
+    if (rootOverride == null) {
+      _opened = result;
+    }
+    return result;
   }
 
   static Future<String> _resolveDefaultRoot(String folder) async {

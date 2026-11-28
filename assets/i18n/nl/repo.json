@@ -22,6 +22,7 @@
   "branchRenameFailed": "Hernoemen mislukt: {error}",
   "branchRenamed": "Hernoemd",
   "branchSwitched": "Van branch gewisseld",
+  "backToRootBecausePathMissing": "Pad niet gevonden in deze branch: {path}",
   "branches": "Branches",
   "branchesFailed": "Lezen van branches mislukt: {error}",
   "cancel": "Annuleren",

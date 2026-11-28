@@ -11,7 +11,16 @@ library;
 ///   现在逻辑层只依赖**本抽象**；`NetBridge` 在 L1 声明
 ///   `implements NetTransport` 并由装配根注入 —— 依赖方向回到
 ///   "上层依赖下层契约"，白名单随之摘除。
-abstract class NetTransport {
+/// HTTP 读缓存的**契约**（L0 内核层）。
+///
+/// L2 逻辑层只表达「这次要回源」的意图，不直接依赖 L1 的具体实现——
+/// 缓存装饰器落在 [NetTransport] 之上（见 base/net 的实现），但逻辑层
+/// 只需要知道「能让缓存失效」这件事，因此契约放在内核层供两侧引用。
+abstract class HttpReadCache {
+  /// 清空读缓存（回源 / 切号 / 写操作后调用）。
+  void invalidate();
+}
+
   /// 发送请求；传输层失败必须抛 [NetException]。
   Future<NetResponse> send(NetRequest request);
 }

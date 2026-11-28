@@ -22,6 +22,7 @@
   "branchRenameFailed": "Rename failed: {error}",
   "branchRenamed": "Renamed",
   "branchSwitched": "Branch switched",
+  "backToRootBecausePathMissing": "Path not found in this branch: {path}",
   "branches": "Branches",
   "branchesFailed": "Failed to fetch branches: {error}",
   "cancel": "Cancel",

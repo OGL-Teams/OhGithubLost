@@ -433,13 +433,8 @@ class _RepoPageState extends State<RepoPage> {
     if (next == _branch) {
       return;
     }
-    setState(() {
-      _branch = next;
-      // P3：不再预防性清空路径——目录在新分支不存在时 listDirectory
-      // 返回空/404，列表自然为空；此前"切回原分支也回根"是纯损失。
-      // （清空的动作只保留给"用户点面包屑回根"。）
-    });
-    OgLAppLog.instance.result('仓库', _t('branchSwitched'), next);
+    // 路径回退 / 恢复逻辑在 [_onBranchPicked]（含子目录 404 回根的决策）。
+    unawaited(_onBranchPicked(next));
   }
 
   @override
@@ -478,7 +473,9 @@ class _RepoPageState extends State<RepoPage> {
     ];
     final List<Widget> tabViews = <Widget>[
       _CodeTab(
-        key: ValueKey<String>('code-$branchKey'),
+        // 路径参与身份：切分支回根时路径从旧目录变空串，key 变化会重建
+        // `_CodeTab` 并加载根目录 —— 否则它带着旧 `path` 打 404。
+        key: ValueKey<String>('code-$_branch-$_codePath'),
         surface: widget.surface,
         fullName: _full,
         branch: _branch,
@@ -644,8 +641,7 @@ class _RepoPageState extends State<RepoPage> {
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelLarge,
             ),
-            contentPadding: const EdgeInsets.symmetric(
-                horizontal: OgLSpace.lg, vertical: OgLSpace.md),
+            contentPadding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -662,6 +658,49 @@ class _RepoPageState extends State<RepoPage> {
           ),
         ),
       );
+
+  /// 切换分支（surface 层决策；domain 的 404 语义不变）。
+  ///
+  /// 为什么在这里处理路径失效：用户在 A 分支进入子目录后切到 B 分支，
+  /// B 分支可能没有该子目录 —— `listDirectory` 抛 404 会顶出错误面板。
+  /// 404 在这里（且只在这里）是**预期内**的探测结果：旧目录在新分支不
+  /// 存在不是故障。做法：先把路径复位到根并加载根目录，再用单路径探测
+  /// （[GhApi.content]，404 返回 null 而不抛）尝试恢复原目录；探测失败
+  /// 就安静停在根目录，并给一次轻提示（复用既有 i18n 键，不新增）。
+  Future<void> _onBranchPicked(String next) async {
+    final String previousPath = _codePath;
+    // 先让新分支的根目录可用：不复位就请求，`_CodeTab` 会拿旧路径打 404。
+    setState(() {
+      _branch = next;
+      _codePath = '';
+      _codeInitialPath = null;
+    });
+    OgLAppLog.instance.result('仓库', _t('branchSwitched'), next);
+    if (previousPath.isEmpty) {
+      return;
+    }
+    // 原目录作为「若存在则进入」的意图：单路径探测（404 → null）。
+    final GhContent? probed;
+    try {
+      probed = await widget.surface.domain.api.content(
+        _full,
+        previousPath,
+        branch: next,
+      );
+    } catch (_) {
+      // 探测失败（网络 / 限流）：安静停在根目录，不打断用户。
+      return;
+    }
+    if (!mounted || probed == null || !probed.isDirectory) {
+      // 新分支没有这个子目录：轻提示一次，留在根目录（非错误语气）。
+      _notifier.info(_t('backToRootBecausePathMissing', <String, Object?>{
+        'path': previousPath,
+      }));
+      return;
+    }
+    // 目录在新分支存在：恢复原浏览位置。
+    setState(() => _codePath = probed.path);
+  }
 }
 
 /// 分支弹层的「默认分支」标记值。

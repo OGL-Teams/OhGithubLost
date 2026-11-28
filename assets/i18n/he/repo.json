@@ -22,6 +22,7 @@
   "branchRenameFailed": "השינוי השם נכשל: {error}",
   "branchRenamed": "שונה שמו",
   "branchSwitched": "הענף הוחלף",
+  "backToRootBecausePathMissing": "הנתיב לא נמצא בענף זה: {path}",
   "branches": "ענפים",
   "branchesFailed": "קריאת הענפים נכשלה: {error}",
   "cancel": "ביטול",

@@ -15,6 +15,7 @@ import 'dart:async';
 import '../base/base_bridge.dart';
 import '../base/disk/og_l_storage.dart';
 import '../base/net/net_bridge.dart';
+import '../base/net/net_read_cache.dart';
 import '../base/net/net_transport.dart';
 import '../base/net/range_download.dart';
 import '../kernel/bridge_registry.dart';
@@ -148,14 +149,31 @@ class GhModule extends OgLModule {
       store: base.disk.kv,
       diagnostics: context.diagnostics,
     );
+    // ★ 席 C（第三轮）：读缓存在**网络层**落地（L1 CacheTransport）。
+    //   包在 NetBridge（韧性传输）之外：命中时不发重试 / 不走镜像，
+    //   同一会话内预览页 ↔ 编辑器重复打开同一文件不再打网络。
+    //   键含 accept 头 → JSON 与 raw 变体不互相污染（避免跨端点）。
+    //   可缓存性放宽：GitHub API 的带认证 GET **允许**入缓存——响应体
+    //   只含资源内容，不含凭证；账号切换走 invalidateHttpReadCache()
+    //   全清。但认证 / OAuth 端点（/user、oauth 交换）的响应绝不入缓存：
+    //   那才是"Authorization 变更类"响应体回写的风险面。
+    final CacheTransport net = CacheTransport(
+      inner: base.net,
+      maxAge: const Duration(minutes: 2),
+      cacheable: (NetRequest request) =>
+          request.method == NetMethod.get &&
+          !request.url.contains('/user') &&
+          !request.url.contains('oauth'),
+    );
     client = GhClient(
-      net: base.net,
+      net: net,
       auth: auth,
       baseUrl: baseUrl,
       maxConcurrent: maxConcurrent,
       diagnostics: context.diagnostics,
     );
     api = GhApi(client: client);
+    client.attachHttpReadCache(net);
 
     // ── 关键接线：一致性引擎 ← 真实 API ──
     // 绑定之后，D1–D9 的每一次读写都会落到 GitHub 上。

@@ -22,6 +22,7 @@
   "branchRenameFailed": "Échec du renommage : {error}",
   "branchRenamed": "Renommé",
   "branchSwitched": "Branche changée",
+  "backToRootBecausePathMissing": "Chemin introuvable dans cette branche : {path}",
   "branches": "Branches",
   "branchesFailed": "Échec de la récupération des branches : {error}",
   "cancel": "Annuler",

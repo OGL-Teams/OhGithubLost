@@ -22,6 +22,7 @@
   "branchRenameFailed": "Kunne ikke gi nytt navn: {error}",
   "branchRenamed": "Har fått nytt navn",
   "branchSwitched": "Byttet gren",
+  "backToRootBecausePathMissing": "Finner ikke stien i denne grenen: {path}",
   "branches": "Greiner",
   "branchesFailed": "Kunne ikke lese grenene: {error}",
   "cancel": "Avbryt",

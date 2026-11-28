@@ -22,6 +22,7 @@
   "branchRenameFailed": "이름 변경 실패: {error}",
   "branchRenamed": "이름이 변경되었습니다",
   "branchSwitched": "브랜치를 전환했습니다",
+  "backToRootBecausePathMissing": "이 브랜치에 경로가 없습니다: {path}",
   "branches": "브랜치",
   "branchesFailed": "브랜치 읽기 실패: {error}",
   "cancel": "취소",

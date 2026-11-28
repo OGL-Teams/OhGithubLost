@@ -22,6 +22,7 @@
   "branchRenameFailed": "名前の変更に失敗しました：{error}",
   "branchRenamed": "名前を変更しました",
   "branchSwitched": "ブランチを切り替えました",
+  "backToRootBecausePathMissing": "このブランチにパスが見つかりません：{path}",
   "branches": "ブランチ",
   "branchesFailed": "ブランチの読み取りに失敗しました：{error}",
   "cancel": "キャンセル",

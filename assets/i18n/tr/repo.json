@@ -22,6 +22,7 @@
   "branchRenameFailed": "Yeniden adlandırılamadı: {error}",
   "branchRenamed": "Yeniden adlandırıldı",
   "branchSwitched": "Dal değiştirildi",
+  "backToRootBecausePathMissing": "Bu dalda yol bulunamadı: {path}",
   "branches": "Dallar",
   "branchesFailed": "Dallar okunamadı: {error}",
   "cancel": "İptal",

@@ -22,6 +22,7 @@
   "branchRenameFailed": "فشلت إعادة التسمية: {error}",
   "branchRenamed": "تمت إعادة التسمية",
   "branchSwitched": "تم تبديل الفرع",
+  "backToRootBecausePathMissing": "المسار غير موجود في هذا الفرع: {path}",
   "branches": "الفروع",
   "branchesFailed": "تعذّرت قراءة الفروع: {error}",
   "cancel": "إلغاء",

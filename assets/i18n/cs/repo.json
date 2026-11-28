@@ -22,6 +22,7 @@
   "branchRenameFailed": "Přejmenování selhalo: {error}",
   "branchRenamed": "Přejmenováno",
   "branchSwitched": "Větev byla přepnuta",
+  "backToRootBecausePathMissing": "Cesta v této větvi neexistuje: {path}",
   "branches": "Větve",
   "branchesFailed": "Načtení větví selhalo: {error}",
   "cancel": "Zrušit",

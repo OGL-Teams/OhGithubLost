@@ -22,6 +22,7 @@
   "branchRenameFailed": "Đổi tên thất bại: {error}",
   "branchRenamed": "Đã đổi tên",
   "branchSwitched": "Đã chuyển nhánh",
+  "backToRootBecausePathMissing": "Không tìm thấy đường dẫn trong nhánh này: {path}",
   "branches": "Các nhánh",
   "branchesFailed": "Đọc danh sách nhánh thất bại: {error}",
   "cancel": "Hủy",

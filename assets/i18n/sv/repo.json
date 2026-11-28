@@ -22,6 +22,7 @@
   "branchRenameFailed": "Det gick inte att byta namn: {error}",
   "branchRenamed": "Namnet har ändrats",
   "branchSwitched": "Branch har bytts",
+  "backToRootBecausePathMissing": "Sökvägen hittades inte i denna gren: {path}",
   "branches": "Branches",
   "branchesFailed": "Det gick inte att läsa branches: {error}",
   "cancel": "Avbryt",
