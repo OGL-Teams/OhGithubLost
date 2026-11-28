@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../app/animations.dart';
 import '../app/notifier.dart';
 import '../app/og_l_app.dart';
+import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
@@ -188,7 +189,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
     final ThemeData theme = Theme.of(context);
     final SurfaceBridge surface = widget.surface;
     return Scaffold(
-      appBar: AppBar(
+      appBar: OgLAppBar(
         title: Text(_t('title')),
         actions: <Widget>[
           // 失败/取消的任务逐个点「重试」太累：一键重来全部失败项。
@@ -472,7 +473,7 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                     task.status == IxDownloadStatus.canceled)
                   IconButton(
                     tooltip: _t('retry'),
-                    icon: const Icon(Icons.refresh),
+                    icon: const Icon(OgLIcons.refresh),
                     onPressed: () =>
                         unawaited(widget.surface.retryDownload(task.id)),
                   ),
@@ -486,18 +487,18 @@ class _DownloadManagerPageState extends State<DownloadManagerPage> {
                 if (done) ...<Widget>[
                   IconButton(
                     tooltip: _t('open'),
-                    icon: const Icon(Icons.open_in_new),
+                    icon: const Icon(OgLIcons.openExternal),
                     onPressed: () => unawaited(_openLocal(context, task)),
                   ),
                   IconButton(
                     tooltip: _t('copyPath'),
-                    icon: const Icon(Icons.content_copy),
+                    icon: const Icon(OgLIcons.copy),
                     onPressed: () => unawaited(_copyPath(context, task)),
                   ),
                 ],
                 IconButton(
                   tooltip: _t('remove'),
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const Icon(OgLIcons.delete),
                   onPressed: () async {
                     _noteRemoved(task);
                     await widget.surface.removeDownload(task.id);

@@ -9,7 +9,7 @@
 /// - [OgLNotifier.success]：操作**已生效**（复制 / 保存 / 提交 / 已加入下载…）；
 /// - [OgLNotifier.info]：普通说明（条数、草稿已恢复…）；
 /// - [OgLNotifier.warning]：失败与"被拦下"——权限不足、目标不存在 /
-///   不可操作、写回失败、参数校验不通过（error 配色）。
+///   不可操作、写回失败、参数校验不通过（warning 语义色）。
 ///
 /// 三者在视觉上**三重区分**（不是只改文字色）：`backgroundColor` /
 /// `content` 前置图标 / 文字色。下载页那套自建三色 SnackBar 已收编到
@@ -39,6 +39,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../theme.dart';
 import '../util/og_l_space.dart';
 import 'error_surface.dart';
 
@@ -77,7 +78,7 @@ class OgLNotifier {
   /// 成功提示。
   void success(String message) => notice(message, tone: OgLNoticeTone.success);
 
-  /// 失败 / 风险提示（error 配色）。
+  /// 失败 / 风险提示（warning 语义色）。
   void warning(String message) => notice(message, tone: OgLNoticeTone.warning);
 
   /// 带语气 / 动作 / 时长的统一出口。
@@ -108,21 +109,23 @@ class OgLNotifier {
       _messenger.clearSnackBars();
     }
     final ColorScheme scheme = Theme.of(_messenger.context).colorScheme;
+    // B-03：三态统一走明暗分档的 OgLSemanticColors；warning 不再错用 error。
+    final OgLSemanticColors sem =
+        Theme.of(_messenger.context).extension<OgLSemanticColors>() ??
+            (scheme.brightness == Brightness.dark
+                ? OgLSemanticColors.dark
+                : OgLSemanticColors.light);
     final (Color background, Color foreground, IconData icon) = switch (tone) {
       OgLNoticeTone.success => (
-          scheme.primary.withValues(alpha: 0.12),
-          scheme.primary,
+          sem.success,
+          sem.onSuccess,
           Icons.check_circle_outline
         ),
-      OgLNoticeTone.info => (
-          scheme.secondaryContainer,
-          scheme.onSecondaryContainer,
-          Icons.info_outline
-        ),
+      OgLNoticeTone.info => (sem.info, sem.onInfo, Icons.info_outline),
       OgLNoticeTone.warning => (
-          scheme.error,
-          scheme.onError,
-          Icons.error_outline
+          sem.warning,
+          sem.onWarning,
+          Icons.warning_amber_rounded
         ),
     };
     final bool hasAction = actionLabel != null && onAction != null;

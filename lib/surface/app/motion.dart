@@ -482,7 +482,7 @@ class _OgLSlideFadeTransitionsBuilder extends PageTransitionsBuilder {
     // + 淡出。push 时 secondary 0→1，旧页从 0 → -offset（向左被推走）；
     // pop 时 secondary 1→0，旧页从 -offset → 0（向右滑回）——与新页始终对向
     // 接力。退场窗口 `exitWindow` 由档位表 `fast / medium` 推得（退场比入场短），
-    // 曲线 easeIn（M3 emphasized accelerate），不写裸时长。
+    // 曲线 easeIn（退场加速），不写裸时长。
     if (offset > 0 && exitWindow > 0) {
       final Animation<double> secondaryMoved = CurveTween(
         curve: Interval(0.0, exitWindow, curve: Curves.easeIn),

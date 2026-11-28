@@ -48,6 +48,7 @@ import '../util/accel.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_code_palette.dart';
 import '../util/og_l_font.dart';
+import '../util/og_l_icons.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
@@ -777,7 +778,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onPressed: () =>
                   Navigator.of(dialogContext).pop('del:${font.id}'),
               child: ListTile(
-                leading: const Icon(Icons.delete_outline),
+                leading: const Icon(OgLIcons.delete),
                 title: Text(font.name),
                 subtitle: Text(
                   font.source,
@@ -1605,7 +1606,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       trailing: IconButton(
                         tooltip: _t('removeChannel'),
-                        icon: const Icon(Icons.delete_outline),
+                        icon: const Icon(OgLIcons.delete),
                         onPressed: () => unawaited(
                             widget.surface.removeAccelChannel(channel.id)),
                       ),
@@ -2301,8 +2302,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           right: OgLSpace.sm, bottom: OgLSpace.sm),
                       child: TextButton.icon(
                         onPressed: () => _copyLogs(allLines),
-                        icon: const Icon(Icons.content_copy,
-                            size: OgLIconSize.sm),
+                        icon: const Icon(OgLIcons.copy, size: OgLIconSize.sm),
                         label: Text(_t('copyAllLogs')),
                       ),
                     ),

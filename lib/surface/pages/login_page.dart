@@ -13,11 +13,13 @@ import 'package:flutter/material.dart';
 
 import '../app/animations.dart';
 import '../app/error_surface.dart';
+import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
 import '../types.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_icons.dart';
 import '../util/og_l_space.dart';
 import 'onboarding_page.dart';
 import 'repo_page.dart';
@@ -323,7 +325,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final Future<void> Function()? skip = widget.onSkip;
     return Scaffold(
-      appBar: AppBar(
+      appBar: OgLAppBar(
         title: Text(OgLI18n.instance.t('login', 'title')),
         // 左上角：**重新触发引导**（商业规范：引导只自动弹一次，
         // 之后由用户在这里主动唤起；设置页也有对应入口）。
@@ -467,7 +469,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: OgLSpace.lg),
                 OutlinedButton.icon(
                   onPressed: _busy ? null : _loginWithOAuth,
-                  icon: const Icon(Icons.open_in_new),
+                  icon: const Icon(OgLIcons.openExternal),
                   label: Text(OgLI18n.instance.t('login', 'oauthButton')),
                 ),
                 if (_oauthCode != null) ...<Widget>[

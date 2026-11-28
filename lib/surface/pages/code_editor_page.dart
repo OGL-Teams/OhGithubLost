@@ -17,6 +17,7 @@ import 'package:re_editor/re_editor.dart';
 import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
 import '../app/shortcuts.dart';
 import '../i18n/og_l_i18n.dart';
@@ -500,7 +501,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
             ),
             const SizedBox(width: OgLSpace.md),
             // ★ MT 式快捷跳转：点击行:列弹出行号输入，直达定位。
-            // M3 原生 TextButton 替代手写 InkWell 文本按钮壳（视觉多 pill hover，M3 正统）。
+            // 原生 TextButton 替代手写 InkWell 文本按钮壳（避免视觉上多余的胶囊 hover）。
             TextButton(
               onPressed: _showGoToLineDialog,
               child: Text(
@@ -582,13 +583,13 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
           }
         },
         child: Scaffold(
-          appBar: AppBar(
+          appBar: OgLAppBar(
             title: Text(
               widget.path,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleMedium,
             ),
+            titleStyle: theme.textTheme.titleMedium,
             actions: <Widget>[
               // 其余全部动作收进可横向滑动的工具栏：窄屏不挤压、不重叠。
               // 保存：FilledButton.tonalIcon —— 有未提交改动时用 primary 弱化底

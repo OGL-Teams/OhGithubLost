@@ -15,6 +15,7 @@ import 'package:yaml/yaml.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
@@ -410,7 +411,7 @@ class _WorkflowDispatchPageState extends State<WorkflowDispatchPage> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
+        appBar: OgLAppBar(
           title: Text(_t('manualTrigger')),
           actions: <Widget>[
             TextButton(

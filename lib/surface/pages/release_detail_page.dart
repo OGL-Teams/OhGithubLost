@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import '../app/animations.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
 // TOKEN-EXIT-01: 下载令牌出设备警告弹窗（不可关闭）。
 import '../app/token_exit_warning.dart';
@@ -455,7 +456,7 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
       if (_release.isPrerelease) _t('prerelease'),
     ];
     return Scaffold(
-      appBar: AppBar(
+      appBar: OgLAppBar(
         title: Text(
           _release.tagName,
           maxLines: 1,
@@ -468,12 +469,12 @@ class _ReleaseDetailPageState extends State<ReleaseDetailPage> {
             onPressed: _busy ? null : _edit,
           ),
           IconButton(
-            icon: const Icon(Icons.copy_all_outlined),
+            icon: const Icon(OgLIcons.copyAll),
             tooltip: _t('copyNotes'),
             onPressed: _copyNotes,
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(OgLIcons.delete),
             tooltip: _t('delete'),
             onPressed: _busy ? null : _delete,
           ),

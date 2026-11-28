@@ -29,9 +29,11 @@ import 'error_surface.dart';
 
 /// 取 `shell` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
-    'shell', key,
-    args:
-        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+      'shell',
+      key,
+      args:
+          args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')),
+    );
 
 /// 通用异步控制器：加载 / 刷新 / 重试，并发抑制、失败保留旧数据。
 class AsyncController<T> extends ChangeNotifier {
@@ -169,7 +171,10 @@ class AsyncController<T> extends ChangeNotifier {
         _empty = isEmpty(result);
         _error = null;
         OgLAppLog.instance.result(
-            _t('loading'), _t('done', {'label': label}), _summarize(result));
+          _t('loading'),
+          _t('done', {'label': label}),
+          _summarize(result),
+        );
       } else {
         _error = ogLDescribeError(label, loadError);
         OgLAppLog.instance.add(
@@ -324,9 +329,7 @@ class AsyncView<T> extends StatelessWidget {
             return _animatedState(
               context,
               'loading',
-              const Center(
-                child: OgLAsyncSkeleton(),
-              ),
+              const Center(child: OgLAsyncSkeleton()),
             );
           }
           if (controller.isEmptyResult) {
@@ -347,7 +350,9 @@ class AsyncView<T> extends StatelessWidget {
           return Column(
             children: <Widget>[
               OgLAsyncSoftErrorBar(
-                  message: soft, onDismiss: controller.dismissError),
+                message: soft,
+                onDismiss: controller.dismissError,
+              ),
               if (fill)
                 Expanded(child: _enterData(builder(context, data)))
               else
@@ -371,17 +376,28 @@ class AsyncView<T> extends StatelessWidget {
 ///
 /// 来自 `search_page.dart` 的 `_SkeletonBox`/`_SkeletonRow` 模式，提到统一出口，
 /// 供 [AsyncView]、[OgLAsyncSliver] 与页面共用（D-06）。色阶按第一批主题 token 取
-/// `surfaceContainerHighest` / `OgLSemanticColors.outlineVariantStrong`，
+/// `surfaceContainerHighest` / `OgLSemanticColors.outlineStrong`，
 /// 与列表底色同调、不发亮。
 class OgLAsyncSkeleton extends StatelessWidget {
   /// 创建。
   ///
   /// [rows] 控制骨架行数（默认 6 行，约一屏的量感）；
-  /// 行高固定 60dp，落在 56-64dp 的列表行密度区间。
-  const OgLAsyncSkeleton({super.key, this.rows = 6});
+  /// [rowHeight] / [leadingSize] 可覆盖默认 60 / 36，贴近真实行型。
+  const OgLAsyncSkeleton({
+    super.key,
+    this.rows = 6,
+    this.rowHeight = 60,
+    this.leadingSize = 36,
+  });
 
   /// 骨架行数（5-8 行最接近一屏列表）。
   final int rows;
+
+  /// 单行高度（默认 60dp；传入时按真实行型给值，如设置 56 / 通知 72）。
+  final double rowHeight;
+
+  /// leading 方块尺寸（默认 36dp）。
+  final double leadingSize;
 
   @override
   Widget build(BuildContext context) {
@@ -390,14 +406,17 @@ class OgLAsyncSkeleton extends StatelessWidget {
     // 生产主题（buildOgLTheme）始终注册该扩展。
     final OgLSemanticColors semantic =
         Theme.of(context).extension<OgLSemanticColors>() ??
-            OgLSemanticColors(
+            (scheme.brightness == Brightness.dark
+                    ? OgLSemanticColors.dark
+                    : OgLSemanticColors.light)
+                .copyWith(
               success: scheme.primary,
               onSuccess: scheme.onPrimary,
               warning: scheme.secondary,
               onWarning: scheme.onSecondary,
               info: scheme.primary,
               onInfo: scheme.onPrimary,
-              outlineVariantStrong: scheme.outlineVariant,
+              outlineStrong: scheme.outline,
             );
     // 矮窗（横屏）下 8 行固定高度会溢出：外包 SingleChildScrollView，
     // 高窗不滚动（内容小于约束），矮窗可滚（加载占位也应可看全）。
@@ -421,10 +440,16 @@ class OgLAsyncSkeleton extends StatelessWidget {
   /// 单行：左侧圆形块（leading）+ 右侧两行文字条（标题 / 副标题）。
   Widget _row(ColorScheme scheme, OgLSemanticColors semantic) {
     return SizedBox(
-      height: 60,
+      height: rowHeight,
       child: Row(
         children: <Widget>[
-          _block(scheme, semantic, width: 36, height: 36, circular: true),
+          _block(
+            scheme,
+            semantic,
+            width: leadingSize,
+            height: leadingSize,
+            circular: true,
+          ),
           const SizedBox(width: OgLSpace.lg),
           Expanded(
             child: Column(
@@ -451,19 +476,79 @@ class OgLAsyncSkeleton extends StatelessWidget {
   }
 
   /// 单个圆角骨架块（色阶来自主题 token）。
-  Widget _block(ColorScheme scheme, OgLSemanticColors semantic,
-      {required double height, double? width, bool circular = false}) {
+  Widget _block(
+    ColorScheme scheme,
+    OgLSemanticColors semantic, {
+    required double height,
+    double? width,
+    bool circular = false,
+  }) {
     return Container(
       height: height,
       width: width,
       decoration: BoxDecoration(
         // 底色用 surfaceContainerHighest（与列表底色同调），描边用
-        // outlineVariantStrong —— 骨架块既不发光也不糊成一片。
+        // outlineStrong —— 骨架块既不发光也不糊成一片。
         color: scheme.surfaceContainerHighest,
-        border: Border.all(color: semantic.outlineVariantStrong),
+        border: Border.all(color: semantic.outlineStrong),
         borderRadius:
             circular ? BorderRadius.circular(height / 2) : OgLRadius.cSm,
       ),
+    );
+  }
+}
+
+/// 顶部对齐的局部骨架：首屏加载时仍保留页头 / 锚点，骨架只替换内容区。
+///
+/// 批 1 · A 席：`Center` 骨架在 `Scaffold.body` 的无界高度里会塌成"整屏全白"，
+/// 这是 profile / network 首屏 0 条可见信息的根因。列表类页面统一用本件，
+/// 顶边距 AppBar 只有一档 `lg`，视觉上"内容正在这里出现"。
+class OgLAsyncTopSkeleton extends StatelessWidget {
+  /// 创建。
+  const OgLAsyncTopSkeleton({
+    required this.rows,
+    this.rowHeight = 60,
+    this.leadingSize = 36,
+    this.label,
+    super.key,
+  });
+
+  /// 骨架行数。
+  final int rows;
+
+  /// 单行高度。
+  final double rowHeight;
+
+  /// leading 尺寸。
+  final double leadingSize;
+
+  /// 可选分组标题（加载时仍给出"这里是什么"）。
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget skeleton = OgLAsyncSkeleton(
+      rows: rows,
+      rowHeight: rowHeight,
+      leadingSize: leadingSize,
+    );
+    return ListView(
+      physics: const NeverScrollableScrollPhysics(),
+      children: <Widget>[
+        Padding(
+          padding: OgLSpace.pageHorizontalTop,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              if (label != null) ...<Widget>[
+                Text(label!, style: Theme.of(context).textTheme.labelLarge),
+                const SizedBox(height: OgLSpace.sm),
+              ],
+              skeleton,
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -493,8 +578,11 @@ class OgLAsyncErrorPane extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Icon(Icons.error_outline,
-                  size: OgLIconSize.avatar, color: scheme.error),
+              Icon(
+                Icons.error_outline,
+                size: OgLIconSize.avatar,
+                color: scheme.error,
+              ),
               const SizedBox(height: OgLSpace.md),
               Text(
                 message,
@@ -502,10 +590,7 @@ class OgLAsyncErrorPane extends StatelessWidget {
                 style: TextStyle(color: scheme.error),
               ),
               const SizedBox(height: OgLSpace.lg),
-              FilledButton.tonal(
-                onPressed: onRetry,
-                child: Text(_t('retry')),
-              ),
+              FilledButton.tonal(onPressed: onRetry, child: Text(_t('retry'))),
             ],
           ),
         ),
@@ -522,6 +607,7 @@ class OgLAsyncEmptyPane extends StatelessWidget {
     required this.text,
     this.subtitle,
     this.action,
+    this.topAligned = false,
     super.key,
   });
 
@@ -534,36 +620,44 @@ class OgLAsyncEmptyPane extends StatelessWidget {
   /// 可选动作（保持可选，避免大面积调用方编译错）。
   final Widget? action;
 
+  /// 列表类页面置顶（默认居中，兼容既有页面；详见 P1-3）。
+  final bool topAligned;
+
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 320),
-        child: Padding(
-          padding: const EdgeInsets.all(OgLSpace.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Icon(icon, size: OgLIconSize.xl, color: scheme.outline),
-              const SizedBox(height: OgLSpace.md),
-              Text(text, textAlign: TextAlign.center),
-              if (subtitle != null) ...<Widget>[
-                const SizedBox(height: OgLSpace.sm),
-                Text(
-                  subtitle!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: scheme.onSurfaceVariant),
-                ),
-              ],
-              if (action != null) ...<Widget>[
-                const SizedBox(height: OgLSpace.lg),
-                action!,
-              ],
+    final Widget pane = ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 320),
+      child: Padding(
+        padding: const EdgeInsets.all(OgLSpace.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: OgLIconSize.xl, color: scheme.outline),
+            const SizedBox(height: OgLSpace.md),
+            Text(text, textAlign: TextAlign.center),
+            if (subtitle != null) ...<Widget>[
+              const SizedBox(height: OgLSpace.sm),
+              Text(
+                subtitle!,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
             ],
-          ),
+            if (action != null) ...<Widget>[
+              const SizedBox(height: OgLSpace.lg),
+              action!,
+            ],
+          ],
         ),
       ),
+    );
+    if (!topAligned) {
+      return Center(child: pane);
+    }
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SingleChildScrollView(child: pane),
     );
   }
 }
@@ -587,7 +681,11 @@ class OgLAsyncSoftErrorBar extends StatelessWidget {
       color: scheme.errorContainer,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-            OgLSpace.lg, OgLSpace.sm, OgLSpace.xxs, OgLSpace.sm),
+          OgLSpace.lg,
+          OgLSpace.sm,
+          OgLSpace.xxs,
+          OgLSpace.sm,
+        ),
         child: Row(
           children: <Widget>[
             Icon(Icons.warning_amber_rounded, color: scheme.onErrorContainer),
@@ -702,8 +800,10 @@ class OgLAsyncSliver<T> extends StatelessWidget {
             final String? failure = controller.error;
             if (failure != null && !controller.isLoading) {
               state = 'error';
-              stateChild =
-                  OgLAsyncErrorPane(message: failure, onRetry: controller.load);
+              stateChild = OgLAsyncErrorPane(
+                message: failure,
+                onRetry: controller.load,
+              );
             } else {
               state = 'loading';
               stateChild = const Center(child: OgLAsyncSkeleton());
@@ -711,10 +811,8 @@ class OgLAsyncSliver<T> extends StatelessWidget {
           }
           return SliverToBoxAdapter(
             child: OgLSurfaceSwitch(
-              child: KeyedSubtree(
-                key: ValueKey<String>(state),
-                child: stateChild,
-              ),
+              child:
+                  KeyedSubtree(key: ValueKey<String>(state), child: stateChild),
             ),
           );
         },

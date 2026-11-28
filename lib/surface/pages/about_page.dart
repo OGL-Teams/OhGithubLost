@@ -143,7 +143,7 @@ class AboutPage extends StatelessWidget {
                 // 整行可点：仓库地址是"想去看一眼"的东西，只能复制太别扭。
                 onTap: () => _openUrl(context, OgLProjectInfo.repositoryUrl),
                 trailing: IconButton(
-                  icon: const Icon(Icons.content_copy, size: OgLIconSize.md),
+                  icon: const Icon(OgLIcons.copy, size: OgLIconSize.md),
                   tooltip: _t('copyRepoUrl'),
                   onPressed: () => _copy(
                     context,
@@ -165,7 +165,7 @@ class AboutPage extends StatelessWidget {
                     : () => _openUrl(context, OgLProjectInfo.licenseUrl),
                 trailing: OgLProjectInfo.licenseUrl.isEmpty
                     ? null
-                    : const Icon(Icons.open_in_new, size: OgLIconSize.md),
+                    : const Icon(OgLIcons.openExternal, size: OgLIconSize.md),
               ),
             ],
           ),
@@ -181,7 +181,7 @@ class AboutPage extends StatelessWidget {
                 'repo': OgLProjectInfo.repoFullName,
               }),
             ),
-            trailing: const Icon(Icons.open_in_new, size: OgLIconSize.md),
+            trailing: const Icon(OgLIcons.openExternal, size: OgLIconSize.md),
             onTap: () => _openSponsor(context),
           ),
           const Divider(height: 1),
@@ -340,7 +340,7 @@ class AboutPage extends StatelessWidget {
           leading: const Icon(Icons.font_download_outlined),
           title: const Text('Ubuntu Mono · UFL 1.0'),
           subtitle: Text(_t('viewLicenses')),
-          trailing: const Icon(Icons.open_in_new, size: OgLIconSize.md),
+          trailing: const Icon(OgLIcons.openExternal, size: OgLIconSize.md),
           onTap: () =>
               unawaited(_openUrl(context, 'https://design.ubuntu.com/font/')),
         ),

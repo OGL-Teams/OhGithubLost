@@ -45,40 +45,40 @@ def contrast(fg_hex: str, bg_hex: str) -> float:
 
 
 def _extract_colors(source: str, dark: bool) -> dict[str, str]:
-    """从 buildOgLTheme 的 extensions 段提取语义色（当前为明暗共用值）。"""
+    """从 theme.dart 的 OgLSemanticColors.light/dark static const 提取语义色。
+
+    MD2 迁移后语义色明暗分档（B 席修复），不再是单一实例；按 dark 参数
+    取对应档位。Colors.white/black 映射为 0xFFFFFFFF/0xFF000000。
+    """
+    key = 'dark' if dark else 'light'
     m = re.search(
-        r'OgLSemanticColors\(\s*\n\s*success:\s*const\s+Color\((0x[0-9A-Fa-f]{8})\)'
-        r'.*?onSuccess:\s*const\s+Color\((0x[0-9A-Fa-f]{8})\)'
-        r'.*?warning:\s*const\s+Color\((0x[0-9A-Fa-f]{8})\)'
-        r'.*?onWarning:\s*const\s+Color\((0x[0-9A-Fa-f]{8})\)'
-        r'.*?info:\s*(?:const\s+Color\((0x[0-9A-Fa-f]{8})\)|scheme\.primary)'
-        r'.*?onInfo:\s*(?:const\s+Color\((0x[0-9A-Fa-f]{8})\)|scheme\.onPrimary)',
+        r'static const OgLSemanticColors ' + key + r' = OgLSemanticColors\((.*?)\n  \);',
         source, re.S)
     if not m:
         return {}
-    (success, on_success, warning, on_warning, info,
-     on_info) = m.groups()
-    colors: dict[str, str] = {
-        'success': success,
-        'onSuccess': on_success,
-        'warning': warning,
-        'onWarning': on_warning,
-    }
-    if info:
-        colors['info'] = info
-    else:
-        # info: scheme.primary（运行时）→ 以品牌种子色 #0969DA 近似评估。
-        colors['info'] = '0xFF0969DA'
-    if on_info:
-        colors['onInfo'] = on_info
-    else:
-        colors['onInfo'] = '0xFFFFFFFF'
-    return colors
+    body = m.group(1)
+
+    def token(name: str) -> str | None:
+        mm = re.search(name + r':\s*(?:const\s+)?Color\((0x[0-9A-Fa-f]{8})\)', body)
+        if mm:
+            return mm.group(1)
+        mm = re.search(name + r':\s*Colors\.(white|black)', body)
+        if mm:
+            return '0xFFFFFFFF' if mm.group(1) == 'white' else '0xFF000000'
+        return None
+
+    out: dict[str, str] = {}
+    for n in ('success', 'onSuccess', 'warning', 'onWarning', 'info', 'onInfo'):
+        v = token(n)
+        if v:
+            out[n] = v
+    return out
 
 
 def audit() -> list[str]:
     source = THEME.read_text(encoding='utf-8')
-    c = _extract_colors(source, dark=True)
+    dark = True  # MD2：暗色档为最不利场景，明色档另在下方核验
+    c = _extract_colors(source, dark=dark)
     problems: list[str] = []
     if not c:
         problems.append('未在 theme.dart 找到 OgLSemanticColors 定义')
@@ -87,29 +87,25 @@ def audit() -> list[str]:
     # M3 暗色容器底色近似值（ColorScheme.fromSeed GitHub 蓝 #0969DA 的
     # 暗色板实测区间；对比度按最不利容器取）。
     containers = {
-        'surface': '0xFF111318',
-        'surfaceContainerLow': '0xFF191C20',
-        'surfaceContainer': '0xFF1D2024',
-        'surfaceContainerHigh': '0xFF272A2F',
+        'surface': '0xFF121212' if dark else '0xFFFFFFFF',
+        'surfaceContainerHighest': '0xFF1C2128' if dark else '0xFFF6F8FA',
     }
-    pairs_text = [
-        ('onSuccess', 'success 容器内文字'),
-        ('onWarning', 'warning 容器内文字'),
-        ('onInfo', 'info 容器内文字'),
-    ]
-    # 语义色前景（on*）对各自容器底 ≥ 4.5
-    for fg_name, desc in pairs_text:
-        fg = c.get(fg_name)
-        bg_key = fg_name[2:].lower()
-        bg = containers.get(
-            'surfaceContainerHigh', containers['surfaceContainer'])
-        if fg is None:
-            problems.append(f'{fg_name} 未定义')
+    # 语义色前景（on*）对**各自色块底** ≥ 4.5（WCAG 正文级）。
+    # onSuccess 配 success、onWarning 配 warning、onInfo 配 info；
+    # 色块内文字的对比对象是色块本身，不是页面容器底。
+    for fg_name, bg_name, desc in (
+        ('onSuccess', 'success', 'success 色块内文字'),
+        ('onWarning', 'warning', 'warning 色块内文字'),
+        ('onInfo', 'info', 'info 色块内文字'),
+    ):
+        fg, bg = c.get(fg_name), c.get(bg_name)
+        if fg is None or bg is None:
+            problems.append(f'{fg_name}/{bg_name} 未定义')
             continue
         ratio = contrast(fg, bg)
         if ratio < 4.5:
             problems.append(
-                f'{fg_name} 对容器底 {ratio:.2f}:1 < 4.5:1（{desc}）')
+                f'{fg_name} 对 {bg_name} {ratio:.2f}:1 < 4.5:1（{desc}）')
     # 语义色本身对 surface ≥ 3.0（图标/强调）
     for name in ('success', 'warning', 'info'):
         v = c.get(name)

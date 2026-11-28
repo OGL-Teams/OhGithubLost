@@ -21,6 +21,7 @@ import 'package:flutter/services.dart';
 
 import '../app/async.dart';
 import '../app/error_surface.dart';
+import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/og_l_radius.dart';
@@ -97,7 +98,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(_t('legalText'))),
+      appBar: OgLAppBar(title: Text(_t('legalText'))),
       body: Column(
         children: <Widget>[
           // ── 权威声明：唯一具法律效力的是仓库根目录 LICENSE 全文 ──

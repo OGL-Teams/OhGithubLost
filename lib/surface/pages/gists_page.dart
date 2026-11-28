@@ -18,6 +18,7 @@ import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_icons.dart';
 import 'gist_detail_page.dart';
 import 'new_gist_page.dart';
 
@@ -178,7 +179,7 @@ class _GistsPageState extends State<GistsPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   trailing: IconButton(
-                    icon: const Icon(Icons.open_in_new),
+                    icon: const Icon(OgLIcons.openExternal),
                     tooltip: _t('openInBrowser'),
                     onPressed: () => unawaited(_openInBrowser(gist)),
                   ),

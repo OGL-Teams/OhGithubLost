@@ -20,6 +20,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../app/async.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 // TOKEN-EXIT-01: 下载令牌出设备警告弹窗（不可关闭）。
 import '../app/token_exit_warning.dart';
 import '../i18n/og_l_i18n.dart';
@@ -203,7 +204,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
+      appBar: OgLAppBar(
         title: Text(
           ghPathName(widget.path),
           maxLines: 1,
@@ -211,7 +212,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
         ),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.open_in_new),
+            icon: const Icon(OgLIcons.openExternal),
             tooltip: _t('openInBrowser'),
             onPressed: () =>
                 unawaited(openLinkOrCopy(context, _htmlUrl, tag: 'Preview')),

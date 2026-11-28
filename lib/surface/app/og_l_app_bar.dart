@@ -3,18 +3,18 @@
 /// ## 它解决什么（MD2 形态）
 /// MD2 下 AppBar 边界 = elevation 4 真投影 + surface→surfaceContainerHighest 的
 /// **连续色阶插值**：顶部与页面同色（完全融合），滚深渐变到可辨识的
-/// surfaceContainerHighest，全程无硬边。`scrolledUnderElevation`/`surfaceTint`
-/// 等 M3 语义已随迁移移除。
+/// surfaceContainerHighest，全程无硬边。全站页面统一消费本组件，不再有
+/// 原生 `appBar: AppBar(...)` 的旁路实现（MD2 单一事实源）。
 ///
 /// ## 与主题令牌的关系
 /// `theme.dart` 的 `appBarTheme.backgroundColor = surface`、
-/// `elevation = 4`（真投影）。本组件叠加的连续插值两端色
-/// （surface / surfaceContainerHighest）都来自 `ColorScheme`。
+/// `elevation = 4`（真投影）由本组件继承，不在组件内硬编码 elevation；
+/// 叠加的连续插值两端色（surface / surfaceContainerHighest）来自 `ColorScheme`。
 ///
 /// ## 滚动进度来源（G-02 / B-01：无 Primary 兜底）
 /// 本项目**没有任何地方**注入 `PrimaryScrollController`（Scaffold 只读不写），
 /// 该兜底分支是死代码——已删除。两条路径：
-/// 1. **默认**：M2 下 AppBar 的 elevation 阴影本身提供滚动边界，
+/// 1. **默认**：MD2 下 AppBar 的 elevation 阴影本身提供滚动边界，
 ///    未接控制器的页面也有稳定的顶栏分隔；
 /// 2. **显式直连**：body 自建 ScrollController 的页把它传给
 ///    `scrollController:`，获得连续色阶插值（dashboard 已如此）。
@@ -27,10 +27,16 @@ import 'package:flutter/material.dart';
 /// 与页面背景滚动融合的应用栏。
 class OgLAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// 创建应用栏。
+  ///
+  /// [title] 通常是 `Text(...)`；少数页面传 `ListenableBuilder` 等动态标题
+  /// 组件（通知页未读计数），故接受任意 [Widget] 而非仅 [String]。
   const OgLAppBar({
     required this.title,
     this.actions,
     this.bottom,
+    this.leading,
+    this.automaticallyImplyLeading = true,
+    this.titleStyle,
     this.scrollController,
     super.key,
   });
@@ -41,8 +47,8 @@ class OgLAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// 通知步进（1% = 颜色变化肉眼可辨的最小单位，避免逐帧重建）。
   static const double _kStep = 0.01;
 
-  /// 标题。
-  final String title;
+  /// 标题（通常是 `Text`，也可传动态标题 Widget）。
+  final Widget title;
 
   /// 右侧动作。
   final List<Widget>? actions;
@@ -50,10 +56,20 @@ class OgLAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// 底部（如 TabBar）。
   final PreferredSizeWidget? bottom;
 
+  /// 左侧前导（登录页用它主动触发引导，通过 tooltip 说明用途）。
+  final Widget? leading;
+
+  /// 是否自动推导前导（登录页显式关闭）。
+  final bool automaticallyImplyLeading;
+
+  /// 可选标题样式（代码编辑器用 titleMedium 容纳长路径）；
+  /// 不传时继承 `appBarTheme.titleTextStyle`（titleLarge）。
+  final TextStyle? titleStyle;
+
   /// 页面滚动控制器（可选，显式直连路径）。
   ///
   /// body 用自建 ScrollController 的页面把它传进来即可获得连续色阶插值；
-  /// 不传时由 M3 原生 `scrolledUnderElevation` 提供滚动态边界（所有页面）。
+  /// 不传时由主题的 elevation 4 真投影提供常态边界（所有页面）。
   /// 本项目**不存在** PrimaryScrollController 注入，不要依赖它。
   final ScrollController? scrollController;
 
@@ -137,16 +153,16 @@ class _OgLAppBarState extends State<OgLAppBar> {
           theme.colorScheme.surfaceContainerHighest,
           progress,
         )!;
+        // elevation / 染色色继承主题（theme.dart appBarTheme）：
+        // 主题说 elevation 4，组件就画 4，消除"两套事实"的自相矛盾。
         return AppBar(
-          title: Text(widget.title),
+          title: widget.title,
           actions: widget.actions,
           bottom: widget.bottom,
-          // ★ G-02 + MD2：elevation 4 真投影承担滚动/常态边界（M3 tonal
-          //   体系已移除）；surfaceTintColor 关闭避免滚动染色。
-          elevation: 4,
+          leading: widget.leading,
+          automaticallyImplyLeading: widget.automaticallyImplyLeading,
           backgroundColor: merged,
-          surfaceTintColor: Colors.transparent,
-          titleTextStyle: theme.appBarTheme.titleTextStyle,
+          titleTextStyle: widget.titleStyle ?? theme.appBarTheme.titleTextStyle,
         );
       },
     );

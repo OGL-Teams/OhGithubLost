@@ -22,6 +22,7 @@ import '../theme.dart';
 import '../types.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_font.dart';
+import '../util/og_l_icons.dart';
 import 'code_editor_page.dart';
 
 /// 取 `drafts_page` 分片文案。
@@ -232,7 +233,7 @@ class _DraftsPageState extends State<DraftsPage> {
                   ),
                   trailing: IconButton(
                     tooltip: _t('delete'),
-                    icon: const Icon(Icons.delete_outline),
+                    icon: const Icon(OgLIcons.delete),
                     onPressed: () => unawaited(_confirmDelete(draft)),
                   ),
                   onTap: () => _view(draft),

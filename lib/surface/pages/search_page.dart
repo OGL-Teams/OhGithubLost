@@ -955,7 +955,7 @@ class _DiscoverPageState extends State<DiscoverPage>
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             ListTile(
-              leading: const Icon(Icons.open_in_new),
+              leading: const Icon(OgLIcons.openExternal),
               title: Text(_t('actionOpenRepo')),
               onTap: () => Navigator.of(sheetContext).pop('open'),
             ),

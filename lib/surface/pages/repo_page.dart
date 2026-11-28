@@ -596,7 +596,7 @@ class _RepoPageState extends State<RepoPage> {
                   child: ListTile(
                     dense: true,
                     contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.open_in_new),
+                    leading: Icon(OgLIcons.openExternal),
                     title: Text(_t('openInBrowser')),
                   ),
                 ),
@@ -632,7 +632,7 @@ class _RepoPageState extends State<RepoPage> {
           button: true,
           label: _t('selectBranch'),
           child: ListTile(
-            // M3 原生 ListTile 替代手写 InkWell+Container 行壳（行高 ≥56 为 M3 标准）。
+            // 原生 ListTile 替代手写 InkWell+Container 行壳（行高 ≥56 为标准触控尺寸）。
             leading:
                 const Icon(Icons.account_tree_outlined, size: OgLIconSize.md),
             title: Text(
@@ -1327,7 +1327,7 @@ class _CodeTabState extends State<_CodeTab> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             ListTile(
-              leading: const Icon(Icons.open_in_new),
+              leading: const Icon(OgLIcons.openExternal),
               title: Text(OgLI18n.instance.t('common', 'openWith')),
               subtitle: Text(
                 ghPathName(entry.path),
@@ -2038,7 +2038,7 @@ class _CodeTabState extends State<_CodeTab> {
             const Divider(height: 1),
             if (!entry.isDirectory)
               ListTile(
-                leading: const Icon(Icons.open_in_new),
+                leading: const Icon(OgLIcons.openExternal),
                 title: Text(OgLI18n.instance.t('common', 'openWith')),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
@@ -2073,8 +2073,7 @@ class _CodeTabState extends State<_CodeTab> {
               ),
             if (widget.canWrite)
               ListTile(
-                leading:
-                    Icon(Icons.delete_outline, color: theme.colorScheme.error),
+                leading: Icon(OgLIcons.delete, color: theme.colorScheme.error),
                 title: Text(
                   entry.isDirectory
                       ? _t('deleteDirAction')
@@ -4617,8 +4616,7 @@ class _RepoSettingsTabState extends State<_RepoSettingsTab> {
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : const Icon(Icons.delete_outline,
-                                size: OgLIconSize.md),
+                            : const Icon(OgLIcons.delete, size: OgLIconSize.md),
                         label: Text(_t('deleteRepo')),
                       )
                     else

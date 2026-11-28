@@ -10,16 +10,17 @@
 /// 任何磁盘资源），随后真正的 [OgLApp] 会通过第二次 `runApp` 顶替它。
 ///
 /// ## 设计约束（务必遵守）
-/// 1. **零依赖**：只 import `flutter/material.dart`——不能碰 i18n、桥、磁盘；
+/// 1. **零依赖**：只 import `flutter/material.dart` 与 `theme.dart` 的顶层
+///    const 令牌——不触发 i18n / 桥 / 磁盘加载；
 /// 2. **零动效依赖**：不读档位质量表（那要内核），只用固定时长的
 ///    `CircularProgressIndicator`（框架自带）；
-/// 4. **启动锚定色**：不再用与主题脱节的纯黑/纯白——改用与 MD3 seed 色板同族的
-///    中性 Surface 色，冷启动首帧 → [OgLApp] 顶替时不闪白（G-06）。
-///    中性锚定色取 `ColorScheme.fromSeed` 的 surface（明/暗），与主题同源。
+/// 4. **启动锚定色**：从 `theme.dart` 顶层常量取 surface / onSurfaceVariant，
+///    与正式主题同源同值；用户强制亮/暗偏好在设置落盘后由正式主题接管。
 library;
 
 import 'package:flutter/material.dart';
 
+import '../theme.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 
@@ -31,13 +32,12 @@ class OgLBootSplash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Brightness brightness = MediaQuery.platformBrightnessOf(context);
-    // ★ G-06 + MD2：锚定色直接取 MD2 色板（与 theme.dart 同源同值），
-    //   冷启动首帧与 [OgLApp] 顶替帧不再"闪白/闪黑"。零依赖纯计算。
-    final Color bg =
-        brightness == Brightness.dark ? const Color(0xFF121212) : Colors.white;
-    final Color fg = brightness == Brightness.dark
-        ? const Color(0xFF8B949E)
-        : const Color(0xFF57606A);
+    // ★ B-08：锚定色常量在 theme.dart 定义，buildOgLTheme 与首帧共用同一
+    //   事实源；首帧按系统亮度，用户偏好落盘后由正式主题覆盖。
+    final bool dark = brightness == Brightness.dark;
+    final Color bg = dark ? kOgLSurfaceDark : kOgLSurfaceLight;
+    final Color fg =
+        dark ? kOgLOnSurfaceVariantDark : kOgLOnSurfaceVariantLight;
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,

@@ -13,6 +13,7 @@ import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../types.dart';
+import '../util/og_l_icons.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/flat_list.dart';
@@ -236,8 +237,7 @@ class _RepoTagsPageState extends State<RepoTagsPage> {
             trailing: widget.canWrite
                 ? IconButton(
                     tooltip: _t('delete'),
-                    icon:
-                        const Icon(Icons.delete_outline, size: OgLIconSize.md),
+                    icon: const Icon(OgLIcons.delete, size: OgLIconSize.md),
                     onPressed: _busy ? null : () => _delete(tag),
                   )
                 : null,

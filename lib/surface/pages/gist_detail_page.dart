@@ -14,6 +14,7 @@ import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
 import '../app/og_l_app.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
@@ -25,6 +26,7 @@ import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
 import '../util/og_l_font.dart';
+import '../util/og_l_icons.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/code_editor_field.dart';
@@ -337,11 +339,11 @@ class _GistDetailPageState extends State<GistDetailPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
+      appBar: OgLAppBar(
         title: Text(_t('title')),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(OgLIcons.delete),
             tooltip: _t('deleteTitle'),
             onPressed: _busy ? null : _deleteGist,
           ),
@@ -382,7 +384,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                       openLinkOrCopy(context, detail.htmlUrl, tag: 'Gist'),
                     );
                   },
-                  icon: const Icon(Icons.open_in_new),
+                  icon: const Icon(OgLIcons.openExternal),
                   label: Text(_t('openInBrowser')),
                 ),
               ),
@@ -450,7 +452,7 @@ class _GistDetailPageState extends State<GistDetailPage> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.copy_all_outlined),
+                            icon: const Icon(OgLIcons.copyAll),
                             tooltip: _t('copyContent'),
                             onPressed: () => unawaited(_copy(file)),
                           ),

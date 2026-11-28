@@ -17,6 +17,7 @@
 | `Colors.<名>` / `Color(0x…)` | 必须用 `colorScheme.*` 或 `OgLSemanticColors` |
 | `Duration(milliseconds: 数字)`（motion.dart 外） | 动效必须走档位表 |
 | `Curves.<名>`（允许清单外） | 曲线必须走档位表 |
+| 裸动作图标 `Icon(Icons.content_copy/copy_all_outlined/open_in_new/delete_outline/refresh/restart_alt)` | 复制/批量复制/外部打开/删除/刷新/重试全部必须经 `OgLIcons.*` 语义层 |
 
 例外一律登记在 [ALLOW]，并写明**为什么它是数据而不是设计漂移**。
 
@@ -78,7 +79,14 @@ RULES = [
     ('字面色', re.compile(r'(?:Colors\.[a-z]+|Color\(0x[0-9A-Fa-f]{6,8}\))')),
     ('裸动画时长', re.compile(r'Duration\(milliseconds: ' + NUM + r'\)')),
     ('裸曲线', re.compile(r'Curves\.([a-zA-Z]+)')),
+    # ★ C 席 P1-2：动作图标语义层单向收编；定义 og_l_icons.dart 自身豁免。
+    ('裸动作图标', re.compile(
+        r'Icon\(Icons\.(?:content_copy|copy_all_outlined|open_in_new|'
+        r'delete_outline|refresh|restart_alt)\b')),
 ]
+
+# 动作图标语义层本身允许用裸 Icons.* 定义常量（唯一事实源）。
+ICON_SEMANTIC_SOURCE = 'lib/surface/util/og_l_icons.dart'
 
 # 曲线允许清单 —— 与档位表（app/motion.dart 各档 curve/largeCurve/settleCurve）
 # 实际使用的曲线族严格一致：easeOut、easeOutCubic、easeOutQuart、easeOutQuint、
@@ -154,6 +162,11 @@ def scan() -> list[tuple[str, str, int, str]]:
                     continue
                 if tok == 'Colors.entries':
                     continue
+                # 「OgLSemanticColors.dark/light」是语义色令牌引用，含
+                # Colors. 子串但不是字面色——判定要求 Colors 前不是标识符字符。
+                if tok.startswith('Colors.') and m.start() > 0 and (
+                        line[m.start() - 1].isalnum() or line[m.start() - 1] == '_'):
+                    continue
                 hits.append(('字面色', r, i, stripped[:110]))
                 break
 
@@ -168,6 +181,10 @@ def scan() -> list[tuple[str, str, int, str]]:
             m = RULES[6][1].search(line)
             if m and m.group(1) not in CURVES_ALLOWED:
                 hits.append(('裸曲线', r, i, stripped[:110]))
+
+            # 8) 裸动作图标（OgLIcons 语义层定义自身豁免）
+            if r != ICON_SEMANTIC_SOURCE and RULES[7][1].search(line):
+                hits.append(('裸动作图标', r, i, stripped[:110]))
     return hits
 
 

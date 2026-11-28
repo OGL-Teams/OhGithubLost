@@ -23,6 +23,7 @@ import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
 import '../app/permissions.dart';
 import '../i18n/og_l_i18n.dart';
@@ -228,7 +229,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
-      appBar: widget.review ? AppBar(title: Text(_t('permissionGuide'))) : null,
+      appBar:
+          widget.review ? OgLAppBar(title: Text(_t('permissionGuide'))) : null,
       body: SafeArea(
         child: Column(
           children: <Widget>[

@@ -18,11 +18,13 @@ import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../theme.dart';
 import '../util/clipboard_x.dart';
 import '../util/og_l_font.dart';
+import '../util/og_l_icons.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/anim/anim_preload.dart';
@@ -156,7 +158,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
+      appBar: OgLAppBar(
         title: ListenableBuilder(
           listenable: OgLAppLog.instance,
           builder: (BuildContext context, Widget? _) {
@@ -387,7 +389,7 @@ class _NotificationTile extends StatelessWidget {
                                           );
                                         }
                                       },
-                                      icon: const Icon(Icons.content_copy,
+                                      icon: const Icon(OgLIcons.copy,
                                           size: OgLIconSize.sm),
                                       label: Text(_t('copy')),
                                     ),

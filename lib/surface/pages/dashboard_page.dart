@@ -30,9 +30,11 @@ import 'search_page.dart';
 
 /// 取 `dashboard_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
-    'dashboard_page', key,
-    args:
-        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+      'dashboard_page',
+      key,
+      args:
+          args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')),
+    );
 
 /// 每页条数。
 const int _kPageSize = 30;
@@ -101,8 +103,11 @@ class _DashboardPageState extends State<DashboardPage> {
   /// 列表滚动位置：交给 [ScrollAwareAction] 判定"下滑收边 / 上滑弹回 / 近底部收起"。
   final ScrollController _scroll = ScrollController();
   late final _RepoPaged _mine = _RepoPaged(
-    loader: (int page) => widget.surface.domain.api
-        .myRepos(perPage: _kPageSize, page: page, sort: 'updated'),
+    loader: (int page) => widget.surface.domain.api.myRepos(
+      perPage: _kPageSize,
+      page: page,
+      sort: 'updated',
+    ),
   );
   late final _RepoPaged _starred = _RepoPaged(
     loader: (int page) =>
@@ -116,8 +121,9 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     // ★ 自动加载：滚动到距底部 300px 时触发当前分页控制器的 loadMore。
     _scroll.addListener(_onScroll);
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => unawaited(_bootstrap()));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(_bootstrap()),
+    );
     unawaited(_resolveGuest());
     // 分级预加载：本页主视觉的图片资源 = 身份头像。
     // - 账号头像 → `currentPage`（档位 ≥1）；
@@ -200,11 +206,8 @@ class _DashboardPageState extends State<DashboardPage> {
   void _openRepoSearch() {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => SearchResultsPage(
-          surface: widget.surface,
-          query: '',
-          mode: 0,
-        ),
+        builder: (BuildContext context) =>
+            SearchResultsPage(surface: widget.surface, query: '', mode: 0),
       ),
     );
   }
@@ -389,9 +392,8 @@ class _DashboardPageState extends State<DashboardPage> {
       return;
     }
     OgLAppLog.instance.result(_t('home'), _t('repoCreated'), created.fullName);
-    OgLNotifier.of(context).success(
-      _t('repoCreatedName', {'name': created.fullName}),
-    );
+    OgLNotifier.of(context)
+        .success(_t('repoCreatedName', {'name': created.fullName}));
     await _mine.refresh();
     if (mounted) {
       setState(() => _segment = 0);
@@ -463,7 +465,11 @@ class _DashboardPageState extends State<DashboardPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-                OgLSpace.lg, OgLSpace.md, OgLSpace.lg, OgLSpace.xxs),
+              OgLSpace.lg,
+              OgLSpace.md,
+              OgLSpace.lg,
+              OgLSpace.xxs,
+            ),
             child: SegmentedButton<int>(
               segments: <ButtonSegment<int>>[
                 ButtonSegment<int>(value: 0, label: Text(_t('mine'))),
@@ -484,8 +490,12 @@ class _DashboardPageState extends State<DashboardPage> {
               builder: (BuildContext context, Widget? _) {
                 final _RepoPaged p = _active;
                 if (p.items.isEmpty && p.loading) {
-                  // 批 1b：首屏加载骨架化（与最终列表行同形）。
-                  return const Center(child: OgLAsyncSkeleton());
+                  // 批 1 · A 席：加载骨架顶部对齐，首屏不再"筛选条后 310dp 空白"。
+                  return const OgLAsyncTopSkeleton(
+                    rows: 4,
+                    rowHeight: 72,
+                    leadingSize: 40,
+                  );
                 }
                 if (p.items.isEmpty && p.error != null) {
                   return OgLAsyncErrorPane(
@@ -501,6 +511,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     child: ListView(
                       children: <Widget>[
                         OgLAsyncEmptyPane(
+                          topAligned: true,
                           icon: Icons.folder_outlined,
                           text: _segment == 0
                               ? _t('emptyMine')

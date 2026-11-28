@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import '../app/animations.dart';
 import '../app/async.dart';
+import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
@@ -90,7 +91,7 @@ class _CommitPageState extends State<CommitPage> {
     final ThemeData theme = Theme.of(context);
     final GhCommit commit = widget.commit;
     return Scaffold(
-      appBar: AppBar(
+      appBar: OgLAppBar(
         title: Text(
           ghShortSha(commit.sha),
           maxLines: 1,

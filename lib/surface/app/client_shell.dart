@@ -334,7 +334,7 @@ class _OgLClientShellState extends State<OgLClientShell> {
         key: _scaffoldKey,
         body: body,
         // ★ MD2（M-2）：BottomNavigationBar（固定 4 项、shift 动画是
-        //   MD2 底栏的标志性形态；无 M3 tonal 指示器）。
+        //   底栏的标志性形态；无染色（tonal）指示器）。
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: index,
           onTap: (int value) => _select(OgLShellTab.values[value]),

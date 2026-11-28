@@ -15,20 +15,24 @@ import '../app/animations.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_icons.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/readme_view.dart';
 
 /// 取 `issue_page` 分片文案。
 String _t(String key, [Map<String, Object?>? args]) => OgLI18n.instance.t(
-    'issue_page', key,
-    args:
-        args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')));
+      'issue_page',
+      key,
+      args:
+          args?.map((String k, Object? v) => MapEntry<String, String>(k, '$v')),
+    );
 
 /// 评论文本上限（字符数）。
 ///
@@ -176,9 +180,11 @@ class _IssuePageState extends State<IssuePage> {
     return raw
         .whereType<Map<Object?, Object?>>()
         .map(Map<String, dynamic>.from)
-        .map((Map<String, dynamic> item) => ghStr(item, 'name').isNotEmpty
-            ? ghStr(item, 'name')
-            : ghLogin(item))
+        .map(
+          (Map<String, dynamic> item) => ghStr(item, 'name').isNotEmpty
+              ? ghStr(item, 'name')
+              : ghLogin(item),
+        )
         .toList();
   }
 
@@ -229,8 +235,9 @@ class _IssuePageState extends State<IssuePage> {
       return;
     }
     final titleController = TextEditingController(text: _title);
-    final bodyController =
-        TextEditingController(text: ghStrOrNull(widget.issue, 'body') ?? '');
+    final bodyController = TextEditingController(
+      text: ghStrOrNull(widget.issue, 'body') ?? '',
+    );
 
     // 写在对话框内原地发起：保存后不立即 pop，_runWrite 期间 _dialogBusy
     // 驱动按钮内 spinner；成功才 pop(true)，失败则对话框留着让用户修改重试（F-01）。
@@ -429,11 +436,17 @@ class _IssuePageState extends State<IssuePage> {
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
-                      OgLSpace.lg, OgLSpace.sm, OgLSpace.lg, OgLSpace.sm),
+                    OgLSpace.lg,
+                    OgLSpace.sm,
+                    OgLSpace.lg,
+                    OgLSpace.sm,
+                  ),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(_t('commentMenu'),
-                        style: Theme.of(sheetContext).textTheme.titleMedium),
+                    child: Text(
+                      _t('commentMenu'),
+                      style: Theme.of(sheetContext).textTheme.titleMedium,
+                    ),
                   ),
                 ),
                 ListTile(
@@ -442,7 +455,7 @@ class _IssuePageState extends State<IssuePage> {
                   onTap: () => Navigator.of(sheetContext).pop('edit'),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.delete_outline),
+                  leading: const Icon(OgLIcons.delete),
                   title: Text(_t('delete')),
                   onTap: () => Navigator.of(sheetContext).pop('delete'),
                 ),
@@ -481,8 +494,10 @@ class _IssuePageState extends State<IssuePage> {
           return;
         }
         OgLNotifier.of(context).warning(
-          _t('commentTooLong',
-              {'length': body.length, 'max': _kMaxCommentChars}),
+          _t('commentTooLong', {
+            'length': body.length,
+            'max': _kMaxCommentChars,
+          }),
         );
         return;
       }
@@ -491,8 +506,11 @@ class _IssuePageState extends State<IssuePage> {
         '议题',
         _t('commentEdited'),
         '#$_number',
-        () => widget.surface.domain.api
-            .updateIssueComment(widget.fullName, commentId, body: body),
+        () => widget.surface.domain.api.updateIssueComment(
+          widget.fullName,
+          commentId,
+          body: body,
+        ),
         dialogBusy: _dialogBusy,
       );
       if (ok) {
@@ -531,8 +549,10 @@ class _IssuePageState extends State<IssuePage> {
       '议题',
       _t('commentDeleted'),
       '#$_number',
-      () => widget.surface.domain.api
-          .deleteIssueComment(widget.fullName, commentId),
+      () => widget.surface.domain.api.deleteIssueComment(
+        widget.fullName,
+        commentId,
+      ),
     );
     if (ok) {
       if (!mounted) return;
@@ -551,9 +571,11 @@ class _IssuePageState extends State<IssuePage> {
     final bool? confirmed = await ogLShowDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title: Text(closing
-            ? _t('closeIssue', {'number': _number})
-            : _t('reopenIssue', {'number': _number})),
+        title: Text(
+          closing
+              ? _t('closeIssue', {'number': _number})
+              : _t('reopenIssue', {'number': _number}),
+        ),
         content: Text(closing ? _t('closeHint') : _t('reopenHint')),
         actions: <Widget>[
           TextButton(
@@ -636,9 +658,7 @@ class _IssuePageState extends State<IssuePage> {
         severity: OgLNoticeSeverity.critical,
       );
       if (mounted) {
-        OgLNotifier.of(context).warning(
-          _t('commentFailed', {'error': error}),
-        );
+        OgLNotifier.of(context).warning(_t('commentFailed', {'error': error}));
       }
     } finally {
       if (mounted) {
@@ -656,6 +676,7 @@ class _IssuePageState extends State<IssuePage> {
 
   /// AppBar 的更多操作菜单（有权限才有可选项）。
   Future<void> _showOverflow() async {
+    final bool open = _state == 'open';
     final String action = await ogLShowSheet<String>(
           context: context,
           builder: (BuildContext sheetContext) => SafeArea(
@@ -665,11 +686,17 @@ class _IssuePageState extends State<IssuePage> {
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
-                      OgLSpace.lg, OgLSpace.sm, OgLSpace.lg, OgLSpace.sm),
+                    OgLSpace.lg,
+                    OgLSpace.sm,
+                    OgLSpace.lg,
+                    OgLSpace.sm,
+                  ),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(_t('menu'),
-                        style: Theme.of(sheetContext).textTheme.titleMedium),
+                    child: Text(
+                      _t('menu'),
+                      style: Theme.of(sheetContext).textTheme.titleMedium,
+                    ),
                   ),
                 ),
                 ListTile(
@@ -679,13 +706,24 @@ class _IssuePageState extends State<IssuePage> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.label_outline),
-                  title: Text('${_t('manage')} · ${_t('labels')}'),
+                  title: Text(
+                    '${_t('manage')} · ${_t('labels')}'
+                    '${_labels.isEmpty ? '' : ' (${_labels.length})'}',
+                  ),
                   onTap: () => Navigator.of(sheetContext).pop('labels'),
                 ),
                 ListTile(
                   leading: const Icon(Icons.person_outline),
-                  title: Text('${_t('manage')} · ${_t('assignees')}'),
+                  title: Text(
+                    '${_t('manage')} · ${_t('assignees')}'
+                    '${_assignees.isEmpty ? '' : ' (${_assignees.length})'}',
+                  ),
                   onTap: () => Navigator.of(sheetContext).pop('assignees'),
+                ),
+                ListTile(
+                  leading: Icon(open ? Icons.task_alt : Icons.undo),
+                  title: Text(open ? _t('closeIssueTitle') : _t('reopen')),
+                  onTap: () => Navigator.of(sheetContext).pop('toggle'),
                 ),
                 ListTile(
                   leading: Icon(_locked ? Icons.lock_open : Icons.lock_outline),
@@ -714,40 +752,29 @@ class _IssuePageState extends State<IssuePage> {
       case 'lock':
         await _toggleLock();
         break;
+      case 'toggle':
+        await _toggleState();
+        break;
     }
   }
 
-  /// 标签 chip 行（无标签时显示占位）。
-  Widget _labelsRow(ThemeData theme) {
-    if (_labels.isEmpty) {
-      return Text(_t('noLabels'), style: theme.textTheme.bodySmall);
-    }
-    return Wrap(
-      spacing: OgLSpace.sm,
-      runSpacing: OgLSpace.sm,
-      children: <Widget>[
-        for (final String label in _labels)
-          Chip(
-            label: Text(label, style: theme.textTheme.labelMedium),
-            visualDensity: VisualDensity.compact,
-          ),
-      ],
-    );
-  }
-
-  /// 指派人行。
-  Widget _assigneesRow(ThemeData theme) {
-    if (_assignees.isEmpty) {
-      return const SizedBox.shrink();
-    }
+  /// 标签 / 指派人一行摘要（详情见 AppBar 更多操作；首屏不再铺 chip 墙）。
+  Widget _metaSummaryRow(ThemeData theme, bool open) {
+    final List<String> parts = <String>[
+      '${_t('labels')} ${_labels.length}',
+      '${_t('assignees')} ${_assignees.length}',
+    ];
     return Row(
       children: <Widget>[
-        Icon(Icons.person_outline,
-            size: theme.textTheme.bodySmall?.fontSize, color: theme.hintColor),
+        Icon(
+          open ? Icons.task_alt : Icons.task_outlined,
+          size: theme.textTheme.bodySmall?.fontSize,
+          color: theme.hintColor,
+        ),
         const SizedBox(width: OgLSpace.sm),
         Expanded(
           child: Text(
-            '${_t('assignees')}: ${_assignees.join(', ')}',
+            parts.join(' · '),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall,
@@ -764,7 +791,7 @@ class _IssuePageState extends State<IssuePage> {
     final bool open = _state == 'open';
     final bool canWrite = _canWrite == true;
     return Scaffold(
-      appBar: AppBar(
+      appBar: OgLAppBar(
         title: Text('#$_number', maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: <Widget>[
           // 写操作异步期的页面级进度（锁/删评/开关等确认型写用；
@@ -787,191 +814,198 @@ class _IssuePageState extends State<IssuePage> {
         ],
       ),
       body: OgLReveal(
-          delay: Duration.zero,
-          child: CustomScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            slivers: <Widget>[
-              // 头部（常量级）：标题 / 状态 / 标签 / 指派人 / 正文 / 操作按钮。
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
-                    OgLSpace.lg, OgLSpace.lg, OgLSpace.lg, 0),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Text(_title, style: theme.textTheme.titleLarge),
-                      const SizedBox(height: OgLSpace.sm),
-                      Text(
-                        'by ${ghLogin(widget.issue)} · '
-                        '${ghDate(widget.issue, 'created_at')} · '
-                        '${open ? _t('openNow') : _t('closed')}'
-                        '${_locked ? ' · ${_t('locked')}' : ''}',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: OgLSpace.sm),
-                      _labelsRow(theme),
-                      const SizedBox(height: OgLSpace.sm),
-                      _assigneesRow(theme),
-                      const SizedBox(height: OgLSpace.md),
-                      if (body.trim().isNotEmpty)
-                        Card(
+        delay: Duration.zero,
+        child: CustomScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          slivers: <Widget>[
+            // 头部（常量级）：标题 / 状态 / 标签 / 指派人 / 正文 / 操作按钮。
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                OgLSpace.lg,
+                OgLSpace.lg,
+                OgLSpace.lg,
+                0,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Text(_title, style: theme.textTheme.titleLarge),
+                    const SizedBox(height: OgLSpace.sm),
+                    Text(
+                      'by ${ghLogin(widget.issue)} · '
+                      '${ghDate(widget.issue, 'created_at')} · '
+                      '${open ? _t('openNow') : _t('closed')}'
+                      '${_locked ? ' · ${_t('locked')}' : ''}',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: OgLSpace.sm),
+                    // 批 1 · A 席 P1-5：标签 / 指派 / 开关都已在 AppBar
+                    // 更多操作里，头部只留一行摘要，评论更早进入首屏。
+                    _metaSummaryRow(theme, open),
+                    const SizedBox(height: OgLSpace.md),
+                    if (body.trim().isNotEmpty)
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 160),
+                        child: Card(
                           child: Padding(
-                            padding: const EdgeInsets.all(OgLSpace.md),
-                            child: ReadmeView(
-                              markdown: body,
-                              onOpenLink: (Uri uri) {
-                                // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
-                                unawaited(openExternalLink(uri, tag: '议题'));
-                              },
+                            padding: const EdgeInsets.all(OgLSpace.sm),
+                            child: SingleChildScrollView(
+                              child: ReadmeView(
+                                markdown: body,
+                                onOpenLink: (Uri uri) {
+                                  // i18n-allow: 日志领域标签（开发者上下文，非界面文案）
+                                  unawaited(openExternalLink(uri, tag: '议题'));
+                                },
+                              ),
                             ),
                           ),
                         ),
-                      const SizedBox(height: OgLSpace.sm),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: OutlinedButton.icon(
-                          onPressed: _busy ? null : _toggleState,
-                          icon: Icon(open ? Icons.task_alt : Icons.undo),
-                          label:
-                              Text(open ? _t('closeIssueTitle') : _t('reopen')),
-                        ),
                       ),
-                      const SizedBox(height: OgLSpace.lg),
-                      const Divider(height: 1),
-                      Text(_t('comments'), style: theme.textTheme.titleMedium),
-                      const SizedBox(height: OgLSpace.sm)
-                    ],
-                  ),
+                    const SizedBox(height: OgLSpace.sm),
+                    const Divider(height: 1),
+                    Text(_t('comments'), style: theme.textTheme.titleMedium),
+                    const SizedBox(height: OgLSpace.sm),
+                  ],
                 ),
               ),
-              // 评论：按需构建（评论可以很多）。
-              OgLAsyncSliver<List<Map<String, dynamic>>>(
-                controller: _commentsC(),
-                padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
-                emptyIcon: Icons.chat_bubble_outline,
-                emptyText: _t('noComments'),
-                // 批 1a：接真——滚动到评论输入区并聚焦。评论列表很长时
-                // 输入框在视口外，需先确保可见再请求焦点。
-                emptyAction: FilledButton.tonal(
-                  onPressed: () {
-                    Scrollable.ensureVisible(
-                      _commentFocus.context ?? context,
-                      duration: OgLAnim.fast(context),
-                      curve: Curves.easeOutCubic,
-                    );
-                    _commentFocus.requestFocus();
-                  },
-                  child: Text(
-                    OgLI18n.instance.t('common', 'emptyActionWriteComment'),
-                  ),
-                ),
-                itemCountOf: (List<Map<String, dynamic>> comments) =>
-                    comments.length,
-                itemBuilder: (
-                  BuildContext context,
-                  List<Map<String, dynamic>> comments,
-                  int index,
-                ) {
-                  final Map<String, dynamic> comment = comments[index];
-                  return Card(
-                    key: ValueKey<String>('comment-${ghInt(comment, 'id')}'),
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        Container(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          padding: const EdgeInsets.fromLTRB(OgLSpace.md,
-                              OgLSpace.sm, OgLSpace.md, OgLSpace.sm),
-                          child: Row(
-                            children: <Widget>[
-                              CircleAvatar(
-                                radius: 13,
-                                child: Text(
-                                  _initialOf(ghLogin(comment)),
-                                  style: theme.textTheme.labelSmall,
-                                ),
-                              ),
-                              const SizedBox(width: OgLSpace.sm),
-                              Expanded(
-                                child: Text(
-                                  '${ghLogin(comment).isEmpty ? OgLI18n.instance.t('common', 'unknown') : ghLogin(comment)} · '
-                                  '${ghDate(comment, 'created_at')}',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.bodySmall,
-                                ),
-                              ),
-                              // 评论操作入口：仅登录用户长按 / 点击图标出现，
-                              // 服务端决定能不能改删（客户端不猜权限，
-                              // 失败如实提示——这是 GitHub 语义的最小可行）。
-                              if (canWrite || ghLogin(comment) == _viewerLogin)
-                                IconButton(
-                                  icon: const Icon(Icons.more_horiz,
-                                      size: OgLIconSize.md),
-                                  tooltip: _t('commentMenu'),
-                                  onPressed: () =>
-                                      unawaited(_showCommentActions(comment)),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const Divider(height: 1),
-                        Padding(
-                          padding: const EdgeInsets.all(OgLSpace.md),
-                          child: ReadmeView(
-                            markdown: ghStr(comment, 'body'),
-                            onOpenLink: (Uri uri) {
-                              unawaited(
-                                  openExternalLink(uri, tag: _t('comments')));
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+            ),
+            // 评论：按需构建（评论可以很多）。
+            OgLAsyncSliver<List<Map<String, dynamic>>>(
+              controller: _commentsC(),
+              padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
+              emptyIcon: Icons.chat_bubble_outline,
+              emptyText: _t('noComments'),
+              // 批 1a：接真——滚动到评论输入区并聚焦。评论列表很长时
+              // 输入框在视口外，需先确保可见再请求焦点。
+              emptyAction: FilledButton.tonal(
+                onPressed: () {
+                  Scrollable.ensureVisible(
+                    _commentFocus.context ?? context,
+                    duration: OgLAnim.fast(context),
+                    curve: Curves.easeOutCubic,
                   );
+                  _commentFocus.requestFocus();
                 },
+                child: Text(
+                  OgLI18n.instance.t('common', 'emptyActionWriteComment'),
+                ),
               ),
-              // 发表评论（尾部）：输入框 + 提交按钮。
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
-                sliver: SliverToBoxAdapter(
+              itemCountOf: (List<Map<String, dynamic>> comments) =>
+                  comments.length,
+              itemBuilder: (
+                BuildContext context,
+                List<Map<String, dynamic>> comments,
+                int index,
+              ) {
+                final Map<String, dynamic> comment = comments[index];
+                return Card(
+                  key: ValueKey<String>('comment-${ghInt(comment, 'id')}'),
+                  clipBehavior: Clip.antiAlias,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      const SizedBox(height: OgLSpace.lg),
-                      const Divider(height: 1),
-                      Text(_t('postComment'),
-                          style: theme.textTheme.titleMedium),
-                      const SizedBox(height: OgLSpace.sm),
-                      TextField(
-                        controller: _comment,
-                        focusNode: _commentFocus,
-                        minLines: 3,
-                        maxLines: 8,
-                        enabled: !_posting,
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          hintText: _t('commentHint'),
+                      Container(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        padding: const EdgeInsets.fromLTRB(
+                          OgLSpace.md,
+                          OgLSpace.sm,
+                          OgLSpace.md,
+                          OgLSpace.sm,
+                        ),
+                        child: Row(
+                          children: <Widget>[
+                            CircleAvatar(
+                              radius: 13,
+                              child: Text(
+                                _initialOf(ghLogin(comment)),
+                                style: theme.textTheme.labelSmall,
+                              ),
+                            ),
+                            const SizedBox(width: OgLSpace.sm),
+                            Expanded(
+                              child: Text(
+                                '${ghLogin(comment).isEmpty ? OgLI18n.instance.t('common', 'unknown') : ghLogin(comment)} · '
+                                '${ghDate(comment, 'created_at')}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ),
+                            // 评论操作入口：仅登录用户长按 / 点击图标出现，
+                            // 服务端决定能不能改删（客户端不猜权限，
+                            // 失败如实提示——这是 GitHub 语义的最小可行）。
+                            if (canWrite || ghLogin(comment) == _viewerLogin)
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.more_horiz,
+                                  size: OgLIconSize.md,
+                                ),
+                                tooltip: _t('commentMenu'),
+                                onPressed: () =>
+                                    unawaited(_showCommentActions(comment)),
+                              ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: OgLSpace.sm),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: FilledButton.icon(
-                          onPressed: _posting ? null : _postComment,
-                          icon: const Icon(Icons.send),
-                          label: Text(
-                              _posting ? _t('posting') : _t('postComment')),
+                      const Divider(height: 1),
+                      Padding(
+                        padding: const EdgeInsets.all(OgLSpace.md),
+                        child: ReadmeView(
+                          markdown: ghStr(comment, 'body'),
+                          onOpenLink: (Uri uri) {
+                            unawaited(
+                              openExternalLink(uri, tag: _t('comments')),
+                            );
+                          },
                         ),
                       ),
                     ],
                   ),
+                );
+              },
+            ),
+            // 发表评论（尾部）：输入框 + 提交按钮。
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: OgLSpace.lg),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    const SizedBox(height: OgLSpace.lg),
+                    const Divider(height: 1),
+                    Text(_t('postComment'), style: theme.textTheme.titleMedium),
+                    const SizedBox(height: OgLSpace.sm),
+                    TextField(
+                      controller: _comment,
+                      focusNode: _commentFocus,
+                      minLines: 3,
+                      maxLines: 8,
+                      enabled: !_posting,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        hintText: _t('commentHint'),
+                      ),
+                    ),
+                    const SizedBox(height: OgLSpace.sm),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: FilledButton.icon(
+                        onPressed: _posting ? null : _postComment,
+                        icon: const Icon(Icons.send),
+                        label: Text(
+                          _posting ? _t('posting') : _t('postComment'),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: OgLSpace.xl)),
-            ],
-          )),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: OgLSpace.xl)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1116,8 +1150,10 @@ class _LabelsDialogState extends State<_LabelsDialog> {
                             }
                           });
                         },
-                        title: Text(name,
-                            style: Theme.of(context).textTheme.bodyMedium),
+                        title: Text(
+                          name,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
                       ),
                   ],
                 ),

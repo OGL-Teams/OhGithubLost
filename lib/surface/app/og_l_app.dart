@@ -62,7 +62,7 @@ class OgLApp extends StatelessWidget {
         ]),
         builder: (BuildContext context, Widget? _) {
           final OgLSettings current = surface.settings.settings;
-          // MD2 迁移：删 dynamic_color / DynamicColorBuilder（MD3 Material You）。
+          // 已移除 dynamic_color 动态取色依赖，配色统一由 ColorScheme 管理。
           // 主题固定由 buildOgLTheme 传统 ColorScheme 编译，不再有系统动态取色。
           return MaterialApp(
             title: 'OhGithubLost',

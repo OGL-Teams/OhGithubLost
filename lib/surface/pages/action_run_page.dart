@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../app/overlays.dart';
 import '../app/refresh_indicator.dart';
 // TOKEN-EXIT-01: 下载令牌出设备警告弹窗（不可关闭）。
@@ -23,6 +24,7 @@ import '../util/accel.dart';
 import '../util/download_proxy.dart';
 import '../util/gh_format.dart';
 import '../util/link_opener.dart';
+import '../util/og_l_icons.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import 'action_log_page.dart';
@@ -523,7 +525,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
+      appBar: OgLAppBar(
         title: Text(
           _t('runNumber', {'number': '${ghInt(widget.run, 'run_number')}'}),
           maxLines: 1,
@@ -623,7 +625,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
                             if (!running) ...<Widget>[
                               FilledButton.tonalIcon(
                                 onPressed: _busy ? null : _rerun,
-                                icon: const Icon(Icons.refresh),
+                                icon: const Icon(OgLIcons.refresh),
                                 label: Text(_t('rerun')),
                               ),
                               // 只重跑失败的 job：有失败 job 才显示（有权限判定
@@ -632,7 +634,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
                               if (_hasFailedJobs(detail))
                                 FilledButton.tonalIcon(
                                   onPressed: _busy ? null : _rerunFailed,
-                                  icon: const Icon(Icons.restart_alt),
+                                  icon: const Icon(OgLIcons.retryAll),
                                   label: Text(_t('rerunFailedJobs')),
                                 ),
                             ],
@@ -653,7 +655,7 @@ class _ActionRunPageState extends State<ActionRunPage> {
                                     ),
                                   );
                                 },
-                                icon: const Icon(Icons.open_in_new),
+                                icon: const Icon(OgLIcons.openExternal),
                                 label: Text(_t('openInBrowser')),
                               ),
                           ],

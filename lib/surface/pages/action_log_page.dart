@@ -22,11 +22,13 @@ import 'package:flutter/material.dart';
 import '../app/async.dart';
 import '../app/error_surface.dart';
 import '../app/notifier.dart';
+import '../app/og_l_app_bar.dart';
 import '../i18n/og_l_i18n.dart';
 import '../surface_bridge.dart';
 import '../theme.dart';
 import '../util/clipboard_x.dart';
 import '../util/gh_format.dart';
+import '../util/og_l_icons.dart';
 import '../util/og_l_radius.dart';
 import '../util/og_l_space.dart';
 import '../widgets/log_body.dart';
@@ -287,7 +289,7 @@ class _ActionLogPageState extends State<ActionLogPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: OgLAppBar(
         title: Text(_t('title')),
         actions: <Widget>[
           // 日志内查找：开关查找条（计数与命中行高亮在组内生效）。
@@ -304,7 +306,7 @@ class _ActionLogPageState extends State<ActionLogPage> {
           ),
           // 复制整份日志：排查问题要把它贴给别人，逐块手选太笨。
           IconButton(
-            icon: const Icon(Icons.copy_all_outlined),
+            icon: const Icon(OgLIcons.copyAll),
             tooltip: _t('copyAll'),
             onPressed: () => unawaited(_copyAll()),
           ),
@@ -315,7 +317,7 @@ class _ActionLogPageState extends State<ActionLogPage> {
             onPressed: () => unawaited(_download()),
           ),
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(OgLIcons.refresh),
             tooltip: _t('reload'),
             onPressed: () => _logsC().load(),
           ),

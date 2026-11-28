@@ -9,7 +9,7 @@
 /// - `sm`(8)  ：小控件 —— 输入框、次级按钮、缩略图；
 /// - `md`(12) ：默认 —— 卡片、列表项、对话框内块；
 /// - `lg`(16) ：大块 —— 主卡片、底部弹层上沿；
-/// - `xl`(28) ：浮层 —— 对话框、大圆角面板（对齐 M3 extra-large 28dp）；
+/// - `xl`(12) ：浮层 —— snackbar、中等体量面板；
 /// - `pill`   ：胶囊 —— 全圆按钮、标签、头像。
 ///
 /// ## 替换原则
@@ -33,9 +33,8 @@ abstract final class OgLRadius {
   /// 大（主卡片 / 底部弹层上沿）。
   static const double lg = 16;
 
-  /// 浮层（对话框 / 大圆角面板，对齐 M3 extra-large 28dp）。
-  /// MD2 无 extra-large 28 档；xl 收敛为 12（对话框级别由 cMd=8 覆盖，
-  /// 12 留给 snackbar 等中等体量）。
+  /// 浮层（snackbar / 中等体量面板）。
+  /// 对话框级别的圆角由 cMd(12) 覆盖；xl 与 md 同值，保留语义档位名。
   static const double xl = 12;
 
   /// 胶囊（全圆）。
@@ -46,8 +45,6 @@ abstract final class OgLRadius {
   static const BorderRadius cSm = BorderRadius.all(Radius.circular(sm));
   static const BorderRadius cMd = BorderRadius.all(Radius.circular(md));
   static const BorderRadius cLg = BorderRadius.all(Radius.circular(lg));
-  @Deprecated('MD2 has no extra-large tier; use cMd')
-  static const BorderRadius cXl = BorderRadius.all(Radius.circular(xl));
   static const BorderRadius cPill = BorderRadius.all(Radius.circular(pill));
 
   /// 仅上沿圆角（底部弹层最常用）。
