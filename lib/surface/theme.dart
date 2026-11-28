@@ -40,14 +40,17 @@ const Color kOgLOnSurfaceVariantDark = Color(0xFF8B949E);
 /// 用固定映射而不是 `estimateBrightnessForColor` 运行时猜测：主题色只有
 /// 七枚，逐枚复算后可审计；sunset 的深橙用近黑前景，避免白字 3.33:1。
 const Color kOgLSeedColor = Color(0xFF0969DA);
-const Map<Color, Color> kOgLSeedOnPrimary = <Color, Color>{
-  kOgLSeedColor: Colors.white,
-  Color(0xFF0B6E99): Colors.white,
-  Color(0xFF2E7D32): Colors.white,
-  Color(0xFF7B3FE4): Colors.white,
-  Color(0xFFE06C00): Color(0xFF1F2328),
-  Color(0xFFC2185B): Colors.white,
-  Color(0xFF546E7A): Colors.white,
+
+/// 以 `toARGB32()` 为键：`Color` 在 Flutter 3.47 无 primitive equality，
+/// 不能作 const Map 的键（编译期常量求值失败）；int 键合法且比较稳定。
+const Map<int, Color> kOgLSeedOnPrimary = <int, Color>{
+  0xFF0969DA: Colors.white,
+  0xFF0B6E99: Colors.white,
+  0xFF2E7D32: Colors.white,
+  0xFF7B3FE4: Colors.white,
+  0xFFE06C00: Color(0xFF1F2328),
+  0xFFC2185B: Colors.white,
+  0xFF546E7A: Colors.white,
 };
 
 /// 启动失败兜底主题的种子色（明确的"出错了"信号色）。
@@ -217,8 +220,11 @@ ThemeData buildOgLTheme(
   //   种子色经 kOgLSeedOnPrimary 决策表端到端生效，onPrimary 逐枚 ≥4.5:1。
   final bool dark = brightness == Brightness.dark;
   final Color effectiveSeed =
-      kOgLSeedOnPrimary.containsKey(seedColor) ? seedColor : kOgLSeedColor;
-  final Color primaryOn = kOgLSeedOnPrimary[effectiveSeed] ?? Colors.white;
+      kOgLSeedOnPrimary.containsKey(seedColor.toARGB32())
+          ? seedColor
+          : kOgLSeedColor;
+  final Color primaryOn =
+      kOgLSeedOnPrimary[effectiveSeed.toARGB32()] ?? Colors.white;
   // 统一投影：ColorScheme.shadow 与 ThemeData.shadowColor 同源，无双轨黑度。
   final Color md2Shadow = Colors.black.withValues(alpha: 0.26);
   final ColorScheme scheme = ColorScheme(
