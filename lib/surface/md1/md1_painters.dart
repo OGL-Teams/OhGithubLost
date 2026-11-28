@@ -217,6 +217,7 @@ class _OgMd1ButtonPainter extends CustomPainter {
 }
 
 /// MD1 flat / raised 按钮：36dp 高、2dp 圆角、按压 ripple。
+// ── 基础控件 · 按钮 / 卡片 / 列表 / 波纹 / 应用栏 ──
 class OgMd1Button extends StatefulWidget {
   /// 创建按钮。
   const OgMd1Button({
@@ -712,6 +713,7 @@ class _OgMd1TextFieldPainter extends CustomPainter {
 ///
 /// 键盘走 [RawKeyboardListener] + [Focus]：可打印字符追加、Backspace 删除、
 /// 方向键移动插入点；[Semantics] 暴露 textField / value。
+// ── 表单控件 · 输入框 / 开关 / 复选 / 单选 / 滑杆 ──
 class OgMd1TextField extends StatefulWidget {
   /// 创建输入框。
   const OgMd1TextField({
@@ -1542,6 +1544,7 @@ class _OgMd1ActionPainter extends CustomPainter {
 ///
 /// 本控件是**内容外壳**（不含模态遮罩与路由），调用方把它放进
 /// `PopupRoute`/`Navigator` 即可；内部所有可见外观均由 CustomPainter 绘制。
+// ── 反馈控件 · 对话框 / 提示条 / 徽章 / 分割线 ──
 class OgMd1Dialog extends StatelessWidget {
   /// 创建对话框。
   const OgMd1Dialog({
@@ -2218,6 +2221,7 @@ class _OgMd1BottomNavPainter extends CustomPainter {
 ///
 /// 每项是一个 56dp 高、宽度均分的触控目标，图标 24dp + 12sp 文字；
 /// 键盘左右方向键在项间循环，Enter/Space 触发选择。
+// ── 导航控件 · 底栏 / 标签 / 抽屉 / 侧栏 / 工具栏 ──
 class OgMd1BottomNav extends StatefulWidget {
   /// 创建底部导航（约束 3–5 项）。
   const OgMd1BottomNav({
@@ -3176,6 +3180,7 @@ class _OgMd1CircularProgressPainter extends CustomPainter {
 ///
 /// 不确定态用 [AnimationController] 经 [OgLAnim] 档位时长驱动；档位 0
 /// 静默停在起始角。Semantics 暴露 progressbar 与数值/标签。
+// ── 操作控件 · 进度 / 下拉刷新 / 弹层 / 菜单 / 下拉框 ──
 class OgMd1Progress extends StatefulWidget {
   /// 创建进度指示器。
   const OgMd1Progress({
@@ -4335,6 +4340,7 @@ class _OgMd1AvatarPainter extends CustomPainter {
 }
 
 /// MD1 头像：40dp 圆/圆角方底 + 1px 描边，优先绘制 [image]，否则画占位人形。
+// ── 扩展控件 · 头像 / 气泡 / 滚动条 / 图标按钮 ──
 class OgMd1Avatar extends StatelessWidget {
   /// 创建头像。
   const OgMd1Avatar({this.image, this.label, this.circle = true, super.key});
