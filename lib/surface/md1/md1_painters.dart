@@ -1,4 +1,4 @@
-/// L3 展示级 · MD1 经典（2014）五控件自绘外观（CustomPainter 层）。
+/// L3 展示级 · MD1 经典（2014）导航类五控件自绘外观（CustomPainter 层）。
 ///
 /// ## 纪律
 /// 本文件里的每个可见外观都由 [CustomPainter] 绘制；不使用任何 Material
@@ -6,8 +6,9 @@
 /// 布局只用 Row / Column / Stack / Padding / SizedBox / GestureDetector / Text。
 /// 色值 / 尺寸 / 字阶 / 阴影全部取 [md1_tokens.dart] 的令牌，零裸值。
 ///
-/// ## 控件清单（第一批）
-/// `OgMd1Button` / `OgMd1Card` / `OgMd1ListRow` / `OgMd1Ripple` / `OgMd1AppBar`。
+/// ## 控件清单
+/// 批 4（导航）：`OgMd1BottomNav` / `OgMd1TabBar` / `OgMd1Drawer` /
+/// `OgMd1NavigationRail` / `OgMd1Toolbar`。
 library;
 
 import 'dart:async' show Timer;
@@ -24,48 +25,77 @@ import 'package:flutter/services.dart'
         TextSelection;
 import 'package:flutter/widgets.dart'
     show
+        Align,
+        Alignment,
         AnimatedBuilder,
+        Animation,
         AnimationController,
+        AnimationStatus,
+        BlendMode,
         BuildContext,
+        Center,
+        Clip,
         ClipRect,
         Colors,
+        BoxConstraints,
+        Canvas,
         Column,
         ConstrainedBox,
         CrossAxisAlignment,
         CustomPaint,
+        CustomPainter,
+        DragUpdateDetails,
         Duration,
         EdgeInsets,
         EdgeInsetsDirectional,
         Expanded,
+        FlutterError,
         Focus,
         FocusNode,
         GestureDetector,
         GlobalKey,
         HitTestBehavior,
+        Icon,
         IgnorePointer,
         Key,
-        MainAxisSize,
         MainAxisAlignment,
+        MainAxisSize,
+        MediaQuery,
+        Navigator,
+        NotificationListener,
+        Offset,
         Padding,
+        Paint,
+        PaintingStyle,
+        PopupRoute,
         Positioned,
+        PositionedDirectional,
+        Radius,
         RawKeyboardListener,
+        Rect,
+        RRect,
+        RouteSettings,
         Row,
+        ScrollNotification,
         Semantics,
         SingleTickerProviderStateMixin,
+        Size,
         SizedBox,
         Stack,
         State,
         StatefulWidget,
         StatelessWidget,
         TapDownDetails,
-        DragUpdateDetails,
         Text,
         TextAlign,
         TextDirection,
         TextEditingController,
         TextOverflow,
+        TextPainter,
+        TextPosition,
         TextSpan,
         TextStyle,
+        TickerProvider,
         ValueChanged,
         VoidCallback,
         Widget,
@@ -2092,6 +2122,950 @@ class OgMd1Divider extends StatelessWidget {
           painter: _OgMd1DividerPainter(
             color: OgMd1Colors.of(context).divider,
             indent: indent,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// BottomNav 选中项 primary 指示条高度（MD1 2014 顶部 3dp）。
+const double _md1NavIndicator = 3;
+
+/// TabBar 2px 下划线（MD1 2014 写死规格）。
+const double _md1TabUnderline = 2;
+
+/// Drawer 面板宽度（MD1 2014 标准 240dp）。
+const double _md1DrawerWidth = 240;
+
+/// NavigationRail 选中项的 primary 竖条宽度（MD1 侧栏标识）。
+const double _md1RailIndicator = 3;
+
+/// ─────────────────────────────────────────────────────────────────────────
+/// 批 4：导航类 5 控件（BottomNav / TabBar / Drawer / NavigationRail / Toolbar）
+/// ─────────────────────────────────────────────────────────────────────────
+
+/// BottomNav 项目描述（MD1 经典 3–5 tab；每项 ≥48dp 触控目标）。
+@immutable
+class OgMd1BottomNavItem {
+  /// 创建导航项。
+  const OgMd1BottomNavItem({
+    required this.label,
+    required this.icon,
+    this.activeIcon,
+    this.badge,
+  });
+
+  /// 文字标签（12sp caption，大写由调用方决定）。
+  final String label;
+
+  /// 图标数据（使用项目图标令牌，不直接写裸 Icons.*）。
+  final IconData icon;
+
+  /// 选中态图标（可选；不传则用 [icon]）。
+  final IconData? activeIcon;
+
+  /// 角标数字（可选；>0 时画红色小圆点）。
+  final int? badge;
+}
+
+/// BottomNav 外观 painter：56dp 纯色底（card）+ 选中项 primary 指示条 + 1px 顶分割线。
+class _OgMd1BottomNavPainter extends CustomPainter {
+  const _OgMd1BottomNavPainter({
+    required this.color,
+    required this.dividerColor,
+    required this.primary,
+    required this.selected,
+    required this.count,
+  });
+
+  final Color color;
+  final Color dividerColor;
+  final Color primary;
+  final int selected;
+  final int count;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = color);
+    final double indicatorWidth = size.width / count;
+    final double indicatorHeight = _md1NavIndicator;
+    canvas.drawRect(
+      Rect.fromLTWH(
+        selected * indicatorWidth,
+        0,
+        indicatorWidth,
+        indicatorHeight,
+      ),
+      Paint()..color = primary,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(
+        0,
+        _md1DividerPx,
+        size.width,
+        _md1DividerPx,
+      ),
+      Paint()..color = dividerColor,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1BottomNavPainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.dividerColor != dividerColor ||
+      oldDelegate.primary != primary ||
+      oldDelegate.selected != selected ||
+      oldDelegate.count != count;
+}
+
+/// MD1 BottomNav：56dp 纯色底 + 选中项 primary 指示条（3–5 tab）。
+///
+/// 每项是一个 56dp 高、宽度均分的触控目标，图标 24dp + 12sp 文字；
+/// 键盘左右方向键在项间循环，Enter/Space 触发选择。
+class OgMd1BottomNav extends StatefulWidget {
+  /// 创建底部导航（约束 3–5 项）。
+  const OgMd1BottomNav({
+    required this.items,
+    required this.selectedIndex,
+    required this.onTap,
+    super.key,
+  }) : assert(
+          items.length >= 3 && items.length <= 5,
+          'MD1 BottomNav 经典规格为 3–5 个 tab',
+        );
+
+  /// 导航项列表。
+  final List<OgMd1BottomNavItem> items;
+
+  /// 当前选中序号。
+  final int selectedIndex;
+
+  /// 选择回调。
+  final ValueChanged<int> onTap;
+
+  @override
+  State<OgMd1BottomNav> createState() => _OgMd1BottomNavState();
+}
+
+class _OgMd1BottomNavState extends State<OgMd1BottomNav> {
+  late final FocusNode _keyboardNode = FocusNode();
+  int? _highlight;
+
+  @override
+  void dispose() {
+    _keyboardNode.dispose();
+    super.dispose();
+  }
+
+  void _select(int index) {
+    if (index < 0 || index >= widget.items.length) {
+      return;
+    }
+    widget.onTap(index);
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent) {
+      return;
+    }
+    final int count = widget.items.length;
+    final int current = _highlight ?? widget.selectedIndex;
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      setState(() => _highlight = (current - 1 + count) % count);
+    } else if (key == LogicalKeyboardKey.arrowRight) {
+      setState(() => _highlight = (current + 1) % count);
+    } else if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
+      _select(current);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final List<Widget> tabs = <Widget>[];
+    for (int i = 0; i < widget.items.length; i++) {
+      final OgMd1BottomNavItem item = widget.items[i];
+      final bool selected = i == widget.selectedIndex;
+      final Widget content = Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(
+            selected ? (item.activeIcon ?? item.icon) : item.icon,
+            size: OgMd1Type.title,
+            color: selected ? palette.primary : palette.textSecondary,
+          ),
+          Text(
+            item.label,
+            style: TextStyle(
+              fontSize: OgMd1Type.caption,
+              fontWeight:
+                  selected ? OgMd1Type.buttonWeight : OgMd1Type.bodyWeight,
+              color: selected ? palette.primary : palette.textSecondary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      );
+      tabs.add(
+        Semantics(
+          button: true,
+          selected: selected,
+          label: item.label,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _select(i),
+            child: SizedBox(
+              height: OgMd1Size.appBar,
+              child: content,
+            ),
+          ),
+        ),
+      );
+    }
+    return Semantics(
+      container: true,
+      child: RawKeyboardListener(
+        focusNode: _keyboardNode,
+        onKey: _onKey,
+        child: Focus(
+          onFocusChange: (bool focused) {
+            if (!focused && mounted) {
+              setState(() => _highlight = null);
+            }
+          },
+          child: SizedBox(
+            height: OgMd1Size.appBar,
+            child: CustomPaint(
+              painter: _OgMd1BottomNavPainter(
+                color: palette.card,
+                dividerColor: palette.divider,
+                primary: palette.primary,
+                selected: widget.selectedIndex,
+                count: widget.items.length,
+              ),
+              child: Row(
+                children: <Widget>[
+                  for (int i = 0; i < tabs.length; i++)
+                    Expanded(child: tabs[i]),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 导航项描述：TabBar / NavigationRail 共用（图标 + 文字）。
+@immutable
+class OgMd1NavDestination {
+  /// 创建导航目标。
+  const OgMd1NavDestination({
+    required this.label,
+    required this.icon,
+    this.activeIcon,
+    this.badge,
+  });
+
+  /// 标签。
+  final String label;
+
+  /// 常态图标。
+  final IconData icon;
+
+  /// 选中态图标（可选）。
+  final IconData? activeIcon;
+
+  /// 角标数字（可选；>0 时画小红点）。
+  final int? badge;
+}
+
+/// TabBar 外观 painter：48dp 底 + 2px primary 下划线。
+class _OgMd1TabBarPainter extends CustomPainter {
+  const _OgMd1TabBarPainter({
+    required this.color,
+    required this.dividerColor,
+    required this.primary,
+    required this.selected,
+    required this.count,
+    required this.offset,
+  });
+
+  final Color color;
+  final Color dividerColor;
+  final Color primary;
+  final int selected;
+  final int count;
+  final double offset;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = color);
+    final double tabWidth = size.width / count;
+    final double left = selected * tabWidth - offset;
+    canvas.drawRect(
+      Rect.fromLTWH(
+        left,
+        size.height - _md1TabUnderline,
+        tabWidth,
+        _md1TabUnderline,
+      ),
+      Paint()..color = primary,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(
+        0,
+        _md1DividerPx,
+        size.width,
+        _md1DividerPx,
+      ),
+      Paint()..color = dividerColor,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1TabBarPainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.dividerColor != dividerColor ||
+      oldDelegate.primary != primary ||
+      oldDelegate.selected != selected ||
+      oldDelegate.count != count ||
+      oldDelegate.offset != offset;
+}
+
+/// MD1 TabBar：48dp 高、2px primary 下划线、选中项 primary 文字。
+///
+/// [scrollController] 可选：传入时按滚动像素移动下划线，实现跟手滑动。
+class OgMd1TabBar extends StatefulWidget {
+  /// 创建 TabBar。
+  const OgMd1TabBar({
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onTap,
+    this.scrollController,
+    super.key,
+  });
+
+  /// Tab 列表。
+  final List<OgMd1NavDestination> destinations;
+
+  /// 当前选中序号。
+  final int selectedIndex;
+
+  /// 选择回调。
+  final ValueChanged<int> onTap;
+
+  /// 可选滚动控制器（用于下划线跟随）。
+  final ScrollController? scrollController;
+
+  @override
+  State<OgMd1TabBar> createState() => _OgMd1TabBarState();
+}
+
+class _OgMd1TabBarState extends State<OgMd1TabBar> {
+  late final FocusNode _keyboardNode = FocusNode();
+  double _offset = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.scrollController?.addListener(_onScroll);
+  }
+
+  @override
+  void didUpdateWidget(covariant OgMd1TabBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.scrollController != widget.scrollController) {
+      oldWidget.scrollController?.removeListener(_onScroll);
+      widget.scrollController?.addListener(_onScroll);
+      _offset = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.scrollController?.removeListener(_onScroll);
+    _keyboardNode.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final ScrollController? controller = widget.scrollController;
+    if (controller == null || !controller.hasClients || !mounted) {
+      return;
+    }
+    setState(() => _offset = controller.offset);
+  }
+
+  void _select(int index) {
+    if (index < 0 || index >= widget.destinations.length) {
+      return;
+    }
+    widget.onTap(index);
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent) {
+      return;
+    }
+    final int count = widget.destinations.length;
+    final int current = widget.selectedIndex;
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      _select((current - 1 + count) % count);
+    } else if (key == LogicalKeyboardKey.arrowRight) {
+      _select((current + 1) % count);
+    } else if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
+      _select(current);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final List<Widget> tabs = <Widget>[];
+    for (int i = 0; i < widget.destinations.length; i++) {
+      final OgMd1NavDestination destination = widget.destinations[i];
+      final bool selected = i == widget.selectedIndex;
+      tabs.add(
+        Semantics(
+          selected: selected,
+          label: destination.label,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _select(i),
+            child: Center(
+              child: Text(
+                destination.label,
+                style: TextStyle(
+                  fontSize: OgMd1Type.body,
+                  fontWeight:
+                      selected ? OgMd1Type.buttonWeight : OgMd1Type.bodyWeight,
+                  color: selected ? palette.primary : palette.textSecondary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Semantics(
+      container: true,
+      child: RawKeyboardListener(
+        focusNode: _keyboardNode,
+        onKey: _onKey,
+        child: Focus(
+          child: SizedBox(
+            height: OgMd1Size.tab,
+            child: CustomPaint(
+              painter: _OgMd1TabBarPainter(
+                color: palette.card,
+                dividerColor: palette.divider,
+                primary: palette.primary,
+                selected: widget.selectedIndex,
+                count: widget.destinations.length,
+                offset: _offset,
+              ),
+              child: Row(
+                children: <Widget>[
+                  for (final Widget tab in tabs) Expanded(child: tab),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 抽屉面板外观 painter：240dp 纯色 card + elevation 8 真投影（同心阶梯）。
+class _OgMd1DrawerPanelPainter extends CustomPainter {
+  const _OgMd1DrawerPanelPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect rect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.zero,
+    );
+    _paintShadows(canvas, rect, OgMd1Elevation.dp8);
+    canvas.drawRRect(rect, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1DrawerPanelPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// 抽屉遮罩外观 painter：半透明黑（MD1 scrim），点按关闭。
+class _OgMd1DrawerScrimPainter extends CustomPainter {
+  const _OgMd1DrawerScrimPainter({required this.progress});
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..color = Color.fromRGBO(0, 0, 0, 0.32 * progress),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1DrawerScrimPainter oldDelegate) =>
+      oldDelegate.progress != progress;
+}
+
+/// MD1 Drawer：240dp 宽抽屉 + 半透明遮罩；内容由 [child] 提供。
+///
+/// 用 [AnimationController] 按 [OgLAnim] 档位驱动划入滑出；[onDismiss] 在
+/// 点遮罩 / Escape 键时触发。Semantics 暴露 drawer 容器与关闭按钮。
+class OgMd1Drawer extends StatefulWidget {
+  /// 创建抽屉。
+  const OgMd1Drawer({
+    required this.child,
+    required this.open,
+    required this.onDismiss,
+    super.key,
+  });
+
+  /// 抽屉内容。
+  final Widget child;
+
+  /// 是否展开。
+  final bool open;
+
+  /// 关闭回调（点遮罩 / Escape）。
+  final VoidCallback onDismiss;
+
+  @override
+  State<OgMd1Drawer> createState() => _OgMd1DrawerState();
+}
+
+class _OgMd1DrawerState extends State<OgMd1Drawer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final FocusNode _keyboardNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: OgLAnim.shellDuration(context),
+    );
+    _controller.value = widget.open ? 1 : 0;
+  }
+
+  @override
+  void didUpdateWidget(covariant OgMd1Drawer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.open == oldWidget.open) {
+      return;
+    }
+    if (widget.open) {
+      _controller.forward();
+    } else {
+      _controller.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _keyboardNode.dispose();
+    super.dispose();
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is RawKeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.escape &&
+        widget.open) {
+      widget.onDismiss();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (BuildContext context, Widget? child) {
+        final double progress = Curves.easeOut.transform(_controller.value);
+        if (progress <= 0) {
+          return const SizedBox.shrink();
+        }
+        return Semantics(
+          container: true,
+          child: RawKeyboardListener(
+            focusNode: _keyboardNode,
+            onKey: _onKey,
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: widget.onDismiss,
+                    child: Semantics(
+                      button: true,
+                      label: 'Close drawer',
+                      child: CustomPaint(
+                        painter: _OgMd1DrawerScrimPainter(
+                          progress: progress,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                PositionedDirectional(
+                  start: -_md1DrawerWidth * (1 - progress),
+                  top: 0,
+                  bottom: 0,
+                  width: _md1DrawerWidth,
+                  child: Semantics(
+                    container: true,
+                    child: CustomPaint(
+                      painter: _OgMd1DrawerPanelPainter(color: palette.card),
+                      child: child,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+/// NavigationRail 外观 painter：72dp 宽侧栏 + 选中项 primary 竖条（3dp）。
+class _OgMd1NavigationRailPainter extends CustomPainter {
+  const _OgMd1NavigationRailPainter({
+    required this.color,
+    required this.selectedColor,
+    required this.selected,
+    required this.count,
+  });
+
+  final Color color;
+  final Color selectedColor;
+  final int selected;
+  final int count;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = color);
+    final double itemHeight = size.height / count;
+    canvas.drawRect(
+      Rect.fromLTWH(
+        0,
+        selected * itemHeight,
+        _md1RailIndicator,
+        itemHeight,
+      ),
+      Paint()..color = selectedColor,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1NavigationRailPainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.selectedColor != selectedColor ||
+      oldDelegate.selected != selected ||
+      oldDelegate.count != count;
+}
+
+/// MD1 NavigationRail：72dp 宽侧栏、选中项 primary 竖条、图标 + 12sp 标签。
+class OgMd1NavigationRail extends StatefulWidget {
+  /// 创建侧栏。
+  const OgMd1NavigationRail({
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onTap,
+    super.key,
+  });
+
+  /// 目标列表。
+  final List<OgMd1NavDestination> destinations;
+
+  /// 当前选中序号。
+  final int selectedIndex;
+
+  /// 选择回调。
+  final ValueChanged<int> onTap;
+
+  @override
+  State<OgMd1NavigationRail> createState() => _OgMd1NavigationRailState();
+}
+
+class _OgMd1NavigationRailState extends State<OgMd1NavigationRail> {
+  late final FocusNode _keyboardNode = FocusNode();
+
+  @override
+  void dispose() {
+    _keyboardNode.dispose();
+    super.dispose();
+  }
+
+  void _select(int index) {
+    if (index < 0 || index >= widget.destinations.length) {
+      return;
+    }
+    widget.onTap(index);
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent) {
+      return;
+    }
+    final int count = widget.destinations.length;
+    final int current = widget.selectedIndex;
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowUp) {
+      _select((current - 1 + count) % count);
+    } else if (key == LogicalKeyboardKey.arrowDown) {
+      _select((current + 1) % count);
+    } else if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
+      _select(current);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final List<Widget> items = <Widget>[];
+    for (int i = 0; i < widget.destinations.length; i++) {
+      final OgMd1NavDestination destination = widget.destinations[i];
+      final bool selected = i == widget.selectedIndex;
+      items.add(
+        Semantics(
+          button: true,
+          selected: selected,
+          label: destination.label,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _select(i),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(
+                  selected
+                      ? (destination.activeIcon ?? destination.icon)
+                      : destination.icon,
+                  size: OgMd1Type.title,
+                  color: selected ? palette.primary : palette.textSecondary,
+                ),
+                Text(
+                  destination.label,
+                  style: TextStyle(
+                    fontSize: OgMd1Type.caption,
+                    fontWeight: selected
+                        ? OgMd1Type.buttonWeight
+                        : OgMd1Type.bodyWeight,
+                    color: selected ? palette.primary : palette.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return Semantics(
+      container: true,
+      child: RawKeyboardListener(
+        focusNode: _keyboardNode,
+        onKey: _onKey,
+        child: Focus(
+          child: SizedBox(
+            width: _md1RailWidth,
+            child: CustomPaint(
+              painter: _OgMd1NavigationRailPainter(
+                color: palette.card,
+                selectedColor: palette.primary,
+                selected: widget.selectedIndex,
+                count: widget.destinations.length,
+              ),
+              child: Column(
+                children: <Widget>[
+                  for (final Widget item in items) Expanded(child: item),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Toolbar 操作项描述。
+@immutable
+class OgMd1ToolbarAction {
+  /// 创建操作项。
+  const OgMd1ToolbarAction({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  /// 无障碍标签。
+  final String label;
+
+  /// 图标。
+  final IconData icon;
+
+  /// 点按回调。
+  final VoidCallback onPressed;
+}
+
+/// Toolbar 外观 painter：56dp 纯 primary 底 + elevation 4 真投影。
+class _OgMd1ToolbarPainter extends CustomPainter {
+  const _OgMd1ToolbarPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect rect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.zero,
+    );
+    _paintShadows(canvas, rect, OgMd1Elevation.dp4);
+    canvas.drawRRect(rect, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1ToolbarPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// MD1 Toolbar：56dp 操作条（primary 底 + 标题 + 操作图标按钮）。
+///
+/// 每个操作为 48dp 触控目标；键盘 Enter/Space 触发首项，方向键切换焦点。
+class OgMd1Toolbar extends StatefulWidget {
+  /// 创建 Toolbar。
+  const OgMd1Toolbar({
+    required this.title,
+    this.actions = const <OgMd1ToolbarAction>[],
+    super.key,
+  });
+
+  /// 标题文字（20sp / onPrimary）。
+  final String title;
+
+  /// 操作项列表。
+  final List<OgMd1ToolbarAction> actions;
+
+  @override
+  State<OgMd1Toolbar> createState() => _OgMd1ToolbarState();
+}
+
+class _OgMd1ToolbarState extends State<OgMd1Toolbar> {
+  late final FocusNode _keyboardNode = FocusNode();
+  int _activeAction = 0;
+
+  @override
+  void dispose() {
+    _keyboardNode.dispose();
+    super.dispose();
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent || widget.actions.isEmpty) {
+      return;
+    }
+    final int count = widget.actions.length;
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      setState(() => _activeAction = (_activeAction - 1 + count) % count);
+    } else if (key == LogicalKeyboardKey.arrowRight) {
+      setState(() => _activeAction = (_activeAction + 1) % count);
+    } else if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
+      widget.actions[_activeAction].onPressed();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final List<Widget> actionWidgets = <Widget>[];
+    for (int i = 0; i < widget.actions.length; i++) {
+      final OgMd1ToolbarAction action = widget.actions[i];
+      actionWidgets.add(
+        Semantics(
+          button: true,
+          label: action.label,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: action.onPressed,
+            child: SizedBox(
+              width: OgMd1Size.touchTarget,
+              height: OgMd1Size.touchTarget,
+              child: Icon(
+                action.icon,
+                size: OgMd1Type.title,
+                color: i == _activeAction
+                    ? palette.onPrimary
+                    : palette.onPrimary.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Semantics(
+      container: true,
+      child: RawKeyboardListener(
+        focusNode: _keyboardNode,
+        onKey: _onKey,
+        child: Focus(
+          child: SizedBox(
+            height: OgMd1Size.appBar,
+            child: CustomPaint(
+              painter: _OgMd1ToolbarPainter(color: palette.primary),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  start: OgMd1Size.buttonPadding,
+                  end: OgMd1Size.radius,
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: TextStyle(
+                          fontSize: OgMd1Type.title,
+                          fontWeight: OgMd1Type.titleWeight,
+                          color: palette.onPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    ...actionWidgets,
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
