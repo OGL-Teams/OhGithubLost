@@ -585,7 +585,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
             ),
             actions: <Widget>[
               // 其余全部动作收进可横向滑动的工具栏：窄屏不挤压、不重叠。
-              // 保存：FilledButton.tonalIcon —— 有未提交改动时用 primaryContainer
+              // 保存：FilledButton.tonalIcon —— 有未提交改动时用 primary 弱化底
               // 高亮（tonal 底色在 AppBar 上明显区别于 IconButton），干净时淡显。
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -605,10 +605,10 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
                   style: FilledButton.styleFrom(
                     visualDensity: VisualDensity.compact,
                     backgroundColor: _saveHighlighted
-                        ? theme.colorScheme.primaryContainer
+                        ? theme.colorScheme.primary.withValues(alpha: 0.12)
                         : theme.colorScheme.surfaceVariant,
                     foregroundColor: _saveHighlighted
-                        ? theme.colorScheme.onPrimaryContainer
+                        ? theme.colorScheme.primary
                         : theme.colorScheme.onSurfaceVariant,
                   ),
                 ),

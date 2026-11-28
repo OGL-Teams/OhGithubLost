@@ -110,8 +110,8 @@ class OgLCodeTheme {
         background: scheme.surfaceVariant,
         foreground: scheme.onSurface,
         keyword: scheme.primary,
-        typeName: scheme.tertiary,
-        string: scheme.tertiary,
+        typeName: scheme.secondary,
+        string: scheme.secondary,
         comment: scheme.outline,
         number: scheme.secondary,
       );

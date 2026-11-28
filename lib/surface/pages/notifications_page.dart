@@ -268,7 +268,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
   static Color _colorOf(ThemeData theme, OgLNoticeSeverity severity) =>
       switch (severity) {
         OgLNoticeSeverity.critical => theme.colorScheme.error,
-        OgLNoticeSeverity.warning => theme.colorScheme.tertiary,
+        OgLNoticeSeverity.warning =>
+          theme.colorScheme.error, // MD2 无 tertiary：警示走 error 系
         OgLNoticeSeverity.info => theme.colorScheme.primary,
       };
 }

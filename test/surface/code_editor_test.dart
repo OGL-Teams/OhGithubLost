@@ -149,7 +149,7 @@ void main() {
     });
 
     test('未知预设回落主题派生', () {
-      expect(resolve('bogus').background, scheme.surfaceContainerHighest);
+      expect(resolve('bogus').background, scheme.surfaceVariant);
     });
 
     test('预设清单与标签一一对应', () {

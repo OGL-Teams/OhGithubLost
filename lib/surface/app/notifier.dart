@@ -110,8 +110,8 @@ class OgLNotifier {
     final ColorScheme scheme = Theme.of(_messenger.context).colorScheme;
     final (Color background, Color foreground, IconData icon) = switch (tone) {
       OgLNoticeTone.success => (
-          scheme.primaryContainer,
-          scheme.onPrimaryContainer,
+          scheme.primary.withValues(alpha: 0.12),
+          scheme.primary,
           Icons.check_circle_outline
         ),
       OgLNoticeTone.info => (
