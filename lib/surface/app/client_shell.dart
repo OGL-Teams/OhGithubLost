@@ -333,30 +333,35 @@ class _OgLClientShellState extends State<OgLClientShell> {
       return Scaffold(
         key: _scaffoldKey,
         body: body,
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: index,
-          onDestinationSelected: (int value) =>
-              _select(OgLShellTab.values[value]),
-          destinations: <NavigationDestination>[
-            NavigationDestination(
+        // ★ MD2（M-2）：BottomNavigationBar（固定 4 项、shift 动画是
+        //   MD2 底栏的标志性形态；无 M3 tonal 指示器）。
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: index,
+          onTap: (int value) => _select(OgLShellTab.values[value]),
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          selectedFontSize: 14,
+          unselectedFontSize: 12,
+          items: <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
               icon: const Icon(Icons.folder_outlined),
-              selectedIcon: const Icon(Icons.folder),
+              activeIcon: const Icon(Icons.folder),
               label: OgLI18n.instance.t('shell', 'home'),
             ),
-            NavigationDestination(
+            BottomNavigationBarItem(
               icon: const Icon(Icons.search),
               label: OgLI18n.instance.t('shell', 'discover'),
             ),
-            NavigationDestination(
+            BottomNavigationBarItem(
               icon: const Icon(Icons.person_outline),
-              selectedIcon: const Icon(Icons.person),
+              activeIcon: const Icon(Icons.person),
               label: OgLI18n.instance.t('shell', 'profile'),
             ),
-            // U1：设置升为一级入口（icons.settings_outlined 是 5 tab 里最
-            // 不抢眼的，符合"功能而非主操作"的产品意图）。
-            NavigationDestination(
+            // U1：设置升为一级入口（最不抢眼，符合"功能而非主操作"）。
+            BottomNavigationBarItem(
               icon: const Icon(Icons.settings_outlined),
-              selectedIcon: const Icon(Icons.settings),
+              activeIcon: const Icon(Icons.settings),
               label: OgLI18n.instance.t('shell', 'settings'),
             ),
           ],

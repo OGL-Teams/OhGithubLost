@@ -328,49 +328,16 @@ ThemeData buildOgLTheme(
       ),
     ),
 
-    // ── 导航栏 ──────────────────────────────────────────────────────────
-    navigationBarTheme: NavigationBarThemeData(
-      height: 80,
-      elevation: 0,
-      backgroundColor: scheme.surface,
-      surfaceTintColor: Colors.transparent,
-      // 选中态用品牌色（primaryContainer 药丸 + onPrimaryContainer 图标）：
-      // 此前走默认 secondaryContainer 且底色同阶，选中项几乎看不出来。
-      indicatorColor: scheme.primaryContainer,
-      iconTheme: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
-        return IconThemeData(
-          color: states.contains(WidgetState.selected)
-              ? scheme.onPrimaryContainer
-              : scheme.onSurfaceVariant,
-        );
-      }),
-      labelTextStyle:
-          WidgetStateProperty.resolveWith((Set<WidgetState> states) {
-        return TextStyle(
-          // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
-          fontSize: (tt.labelMedium?.fontSize ?? 12),
-          fontWeight: states.contains(WidgetState.selected)
-              ? FontWeight.w600
-              : FontWeight.w500,
-          color: states.contains(WidgetState.selected)
-              ? scheme.onPrimaryContainer
-              : scheme.onSurfaceVariant,
-        );
-      }),
-      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-    ),
-
-    // ── 导航栏（宽屏 Rail）───────────────────────────────────────────────
-    // 与 navigationBarTheme 同语言：轨面用 surface 与页面分层，
-    // 选中态 primaryContainer 药丸 + onPrimaryContainer 图标/标签。
+    // ── 导航轨（宽屏 Rail，MD2 形态）─────────────────────────────────
+    // 无 tonal 轨道底色/药丸指示器：选中 = primary 图标/标签，
+    // 分层靠 elevation 真投影（与 AppBar 同语言）。
     navigationRailTheme: NavigationRailThemeData(
       backgroundColor: scheme.surface,
-      indicatorColor: scheme.primaryContainer,
-      elevation: 0,
+      elevation: 4,
       labelType: NavigationRailLabelType.all,
-      selectedIconTheme: IconThemeData(color: scheme.onPrimaryContainer),
+      selectedIconTheme: const IconThemeData(color: Color(0xFF0969DA)),
       unselectedIconTheme: IconThemeData(color: scheme.onSurfaceVariant),
-      selectedLabelTextStyle: TextStyle(color: scheme.onPrimaryContainer),
+      selectedLabelTextStyle: const TextStyle(color: Color(0xFF0969DA)),
       unselectedLabelTextStyle: TextStyle(color: scheme.onSurfaceVariant),
     ),
 
@@ -386,7 +353,7 @@ ThemeData buildOgLTheme(
       iconColor: scheme.onSurfaceVariant,
       // 选中行给主题色反馈（此前 selected 无任何视觉差异）。
       selectedColor: scheme.primary,
-      selectedTileColor: scheme.primaryContainer,
+      selectedTileColor: scheme.primary.withValues(alpha: 0.12),
     ),
 
     // ── 分割线 ──────────────────────────────────────────────────────────
