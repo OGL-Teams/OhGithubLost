@@ -10,8 +10,10 @@
 /// `OgMd1Button` / `OgMd1Card` / `OgMd1ListRow` / `OgMd1Ripple` / `OgMd1AppBar`。
 library;
 
+import 'dart:async' show Timer;
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart'
     show
@@ -28,8 +30,10 @@ import 'package:flutter/widgets.dart'
         ClipRect,
         Colors,
         Column,
+        ConstrainedBox,
         CrossAxisAlignment,
         CustomPaint,
+        Duration,
         EdgeInsets,
         EdgeInsetsDirectional,
         Expanded,
@@ -38,15 +42,18 @@ import 'package:flutter/widgets.dart'
         GestureDetector,
         GlobalKey,
         HitTestBehavior,
+        IgnorePointer,
         Key,
         MainAxisSize,
         MainAxisAlignment,
         Padding,
+        Positioned,
         RawKeyboardListener,
         Row,
         Semantics,
         SingleTickerProviderStateMixin,
         SizedBox,
+        Stack,
         State,
         StatefulWidget,
         StatelessWidget,
@@ -54,8 +61,10 @@ import 'package:flutter/widgets.dart'
         DragUpdateDetails,
         Text,
         TextAlign,
+        TextDirection,
         TextEditingController,
         TextOverflow,
+        TextSpan,
         TextStyle,
         ValueChanged,
         VoidCallback,
@@ -63,7 +72,25 @@ import 'package:flutter/widgets.dart'
         withValues;
 
 import '../app/animations.dart' show OgLAnim;
-import 'md1_tokens.dart' show OgMd1Colors, OgMd1Elevation, OgMd1Size, OgMd1Type;
+import 'md1_tokens.dart'
+    show
+        OgMd1Colors,
+        OgMd1Elevation,
+        OgMd1Size,
+        OgMd1Type,
+        _md1BadgeDot,
+        _md1BadgeSize,
+        _md1ChipHeightMax,
+        _md1ChipHeightMin,
+        _md1ChipPadding,
+        _md1ChipVisual,
+        _md1DialogActionGap,
+        _md1DialogGap,
+        _md1DialogPadding,
+        _md1DividerPx,
+        _md1SnackbarGap,
+        _md1SnackbarHeight,
+        _md1SnackbarPadding;
 
 /// 按钮样式：flat（透明底）与 raised（primary 底 + 投影）。
 enum OgMd1ButtonStyle {
@@ -347,9 +374,8 @@ class OgMd1ListRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final OgMd1Colors palette = OgMd1Colors.of(context);
     final bool twoLines = subtitle != null;
-    final double height = twoLines
-        ? OgMd1Size.listRowDouble
-        : OgMd1Size.listRowSingle;
+    final double height =
+        twoLines ? OgMd1Size.listRowDouble : OgMd1Size.listRowSingle;
     final Widget row = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
@@ -729,9 +755,8 @@ class _OgMd1TextFieldState extends State<OgMd1TextField> {
     super.dispose();
   }
 
-  String get _visibleText => widget.obscureText
-      ? '•' * _controller.text.length
-      : _controller.text;
+  String get _visibleText =>
+      widget.obscureText ? '•' * _controller.text.length : _controller.text;
 
   void _emit() {
     if (widget.onChanged != null) {
@@ -878,7 +903,8 @@ class _OgMd1SwitchPainter extends CustomPainter {
     final double trackHeight = size.height / 2;
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, (size.height - trackHeight) / 2, size.width, trackHeight),
+        Rect.fromLTWH(
+            0, (size.height - trackHeight) / 2, size.width, trackHeight),
         Radius.circular(trackHeight / 2),
       ),
       Paint()..color = trackColor,
@@ -924,9 +950,8 @@ class OgMd1Switch extends StatelessWidget {
     final Color track = value
         ? palette.accent.withValues(alpha: 0.5)
         : palette.divider.withValues(alpha: enabled ? 1 : 0.5);
-    final Color thumb = value
-        ? palette.accent
-        : (enabled ? palette.card : palette.divider);
+    final Color thumb =
+        value ? palette.accent : (enabled ? palette.card : palette.divider);
     return Semantics(
       switch_: true,
       checked: value,
@@ -1190,7 +1215,8 @@ class _OgMd1SliderPainter extends CustomPainter {
     final Paint track = Paint()
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset(0, y), Offset(size.width, y), track..color = inactive);
+    canvas.drawLine(
+        Offset(0, y), Offset(size.width, y), track..color = inactive);
     if (progress > 0) {
       canvas.drawLine(Offset(0, y), Offset(end, y), track..color = active);
     }
@@ -1255,7 +1281,8 @@ class _OgMd1SliderState extends State<OgMd1Slider> {
   }
 
   double _localDx(double globalDx) {
-    final RenderBox? box = _boxKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? box =
+        _boxKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) {
       return 0;
     }
@@ -1266,7 +1293,8 @@ class _OgMd1SliderState extends State<OgMd1Slider> {
     if (widget.onChanged == null) {
       return;
     }
-    final RenderBox? box = _boxKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? box =
+        _boxKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null || box.size.width <= 0) {
       return;
     }
@@ -1277,7 +1305,8 @@ class _OgMd1SliderState extends State<OgMd1Slider> {
     if (widget.onChanged == null) {
       return;
     }
-    final RenderBox? box = _boxKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? box =
+        _boxKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null || box.size.width <= 0) {
       return;
     }
@@ -1349,6 +1378,720 @@ class _OgMd1SliderState extends State<OgMd1Slider> {
                 ),
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 批 3：反馈类五控件（Dialog / Snackbar / Chip / Badge / Divider）
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 单个对话框动作：文案 + 回调（文案由调用方本地化后传入）。
+@immutable
+class OgMd1DialogAction {
+  /// 创建动作。
+  const OgMd1DialogAction({required this.label, this.onPressed});
+
+  /// 按钮文案。
+  final String label;
+
+  /// 点击回调；null 时按钮禁用。
+  final VoidCallback? onPressed;
+}
+
+/// 对话框外观 painter：card 底 + 2dp 圆角 + elevation24 真投影。
+class _OgMd1DialogPainter extends CustomPainter {
+  const _OgMd1DialogPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect shape = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(OgMd1Size.radius),
+    );
+    _paintShadows(canvas, shape, OgMd1Elevation.dp24);
+    canvas.drawRRect(shape, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1DialogPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// 对话框内的自绘 flat 按钮：36dp 高、2dp 圆角、primary 大写文字。
+class _OgMd1DialogActionButton extends StatelessWidget {
+  const _OgMd1DialogActionButton({required this.action, required this.palette});
+
+  final OgMd1DialogAction action;
+  final OgMd1Colors palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool enabled = action.onPressed != null;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: action.label,
+      child: GestureDetector(
+        onTap: action.onPressed,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          height: OgMd1Size.buttonHeight,
+          child: CustomPaint(
+            painter: _OgMd1ActionPainter(
+              pressed: enabled,
+              color: enabled ? palette.primary : palette.divider,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: OgMd1Size.buttonPadding,
+              ),
+              child: Text(
+                action.label,
+                style: TextStyle(
+                  fontSize: OgMd1Type.button,
+                  fontWeight: OgMd1Type.buttonWeight,
+                  color: enabled ? palette.primary : palette.textSecondary,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 动作按钮的极简底（透明；仅按压态给一层 2dp 圆角提示）。
+class _OgMd1ActionPainter extends CustomPainter {
+  const _OgMd1ActionPainter({required this.pressed, required this.color});
+
+  final bool pressed;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!pressed) {
+      return;
+    }
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Offset.zero & size,
+        const Radius.circular(OgMd1Size.radius),
+      ),
+      Paint()..color = color.withValues(alpha: 0.12),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1ActionPainter oldDelegate) =>
+      oldDelegate.pressed != pressed || oldDelegate.color != color;
+}
+
+/// MD1 经典对话框：2dp 圆角、elevation24、宽 ≥280dp、标题 + 内容 + 动作区。
+///
+/// 本控件是**内容外壳**（不含模态遮罩与路由），调用方把它放进
+/// `PopupRoute`/`Navigator` 即可；内部所有可见外观均由 CustomPainter 绘制。
+class OgMd1Dialog extends StatelessWidget {
+  /// 创建对话框。
+  const OgMd1Dialog({
+    this.title,
+    required this.content,
+    this.actions = const <OgMd1DialogAction>[],
+    super.key,
+  });
+
+  /// 标题（20sp，可选）。
+  final String? title;
+
+  /// 正文内容（14sp）。
+  final String content;
+
+  /// 动作按钮（最多通常 2–3 个；末尾按钮靠右排列）。
+  final List<OgMd1DialogAction> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    return Semantics(
+      explicitChildNodes: true,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: OgMd1Size.dialogMinWidth),
+        child: CustomPaint(
+          painter: _OgMd1DialogPainter(color: palette.card),
+          child: Padding(
+            padding: const EdgeInsets.all(_md1DialogPadding),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                if (title != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: _md1DialogGap),
+                    child: Text(
+                      title!,
+                      style: TextStyle(
+                        fontSize: OgMd1Type.title,
+                        fontWeight: OgMd1Type.titleWeight,
+                        color: palette.textPrimary,
+                      ),
+                    ),
+                  ),
+                Text(
+                  content,
+                  style: TextStyle(
+                    fontSize: OgMd1Type.body,
+                    fontWeight: OgMd1Type.bodyWeight,
+                    color: palette.textSecondary,
+                  ),
+                ),
+                if (actions.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: _md1DialogGap),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        for (int i = 0; i < actions.length; i++) ...<Widget>[
+                          if (i > 0) const SizedBox(width: _md1DialogActionGap),
+                          _OgMd1DialogActionButton(
+                            action: actions[i],
+                            palette: palette,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Snackbar 外观 painter：深色底 + 2dp 圆角 + elevation6 + 1px 描边。
+class _OgMd1SnackbarPainter extends CustomPainter {
+  const _OgMd1SnackbarPainter({
+    required this.color,
+    required this.border,
+  });
+
+  final Color color;
+  final Color border;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect shape = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(OgMd1Size.radius),
+    );
+    _paintShadows(canvas, shape, OgMd1Elevation.dp6);
+    canvas.drawRRect(shape, Paint()..color = color);
+    canvas.drawRRect(
+      shape.deflate(_md1DividerPx / 2),
+      Paint()
+        ..color = border
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _md1DividerPx,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1SnackbarPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.border != border;
+}
+
+/// Snackbar 动作按钮（自绘透明底 + primary/accent 文字，≥48dp 触控）。
+class _OgMd1SnackbarActionButton extends StatelessWidget {
+  const _OgMd1SnackbarActionButton({
+    required this.label,
+    required this.onPressed,
+    required this.color,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onPressed,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: OgMd1Size.buttonPadding,
+          ),
+          child: SizedBox(
+            height: OgMd1Size.touchTarget,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: OgMd1Type.button,
+                fontWeight: OgMd1Type.buttonWeight,
+                color: color,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// MD1 底部 Snackbar：深色条 + 动作按钮 + 时长。
+///
+/// [duration] 到点触发 [onDismissed]（外部据此移除本控件）；
+/// [actionLabel] / [onAction] 同时给出时显示动作按钮，点击后先执行动作再Dismiss。
+class OgMd1Snackbar extends StatefulWidget {
+  /// 创建 Snackbar。
+  const OgMd1Snackbar({
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+    this.onDismissed,
+    this.duration = const Duration(seconds: 4), // Timer( 展示时长（等待非动画）
+
+    super.key,
+  });
+
+  /// 消息文本。
+  final String message;
+
+  /// 动作文案（可选）。
+  final String? actionLabel;
+
+  /// 动作回调（与 [actionLabel] 配套）。
+  final VoidCallback? onAction;
+
+  /// 显示时长到点 / 动作点击后的回收回调。
+  final VoidCallback? onDismissed;
+
+  /// 显示时长（默认 4s，MD1 常规提示时长）。
+  final Duration duration;
+
+  @override
+  State<OgMd1Snackbar> createState() => _OgMd1SnackbarState();
+}
+
+class _OgMd1SnackbarState extends State<OgMd1Snackbar> {
+  Timer? _timer;
+
+  void _dismiss() {
+    _timer?.cancel();
+    _timer = null;
+    widget.onDismissed?.call();
+  }
+
+  void _onActionTap() {
+    widget.onAction?.call();
+    _dismiss();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(widget.duration, _dismiss);
+  }
+
+  @override
+  void didUpdateWidget(OgMd1Snackbar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.duration != widget.duration) {
+      _timer?.cancel();
+      _timer = Timer(widget.duration, _dismiss);
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool hasAction =
+        widget.actionLabel != null && widget.onAction != null;
+    return Semantics(
+      liveRegion: true,
+      label: widget.message,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: _md1SnackbarPadding,
+          vertical: _md1SnackbarPadding / OgMd1Size.radius,
+        ),
+        child: CustomPaint(
+          painter: _OgMd1SnackbarPainter(
+            color: palette.primaryDark,
+            border: palette.divider.withValues(alpha: 0.35),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: _md1SnackbarHeight),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: _md1SnackbarPadding,
+              ),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      widget.message,
+                      style: TextStyle(
+                        fontSize: OgMd1Type.body,
+                        fontWeight: OgMd1Type.bodyWeight,
+                        color: palette.onPrimary,
+                      ),
+                    ),
+                  ),
+                  if (hasAction)
+                    _OgMd1SnackbarActionButton(
+                      label: widget.actionLabel!,
+                      onPressed: _onActionTap,
+                      color: palette.accent,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Chip 外观 painter：2dp 圆角、填充底 + 1px 描边、可选删除叉自绘。
+class _OgMd1ChipPainter extends CustomPainter {
+  const _OgMd1ChipPainter({
+    required this.fill,
+    required this.border,
+    required this.deleteColor,
+    required this.deletable,
+  });
+
+  final Color fill;
+  final Color border;
+  final Color deleteColor;
+  final bool deletable;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect shape = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(OgMd1Size.radius),
+    );
+    canvas.drawRRect(shape, Paint()..color = fill);
+    canvas.drawRRect(
+      shape.deflate(_md1DividerPx / 2),
+      Paint()
+        ..color = border
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _md1DividerPx,
+    );
+    if (deletable) {
+      final Offset center =
+          Offset(size.width - OgMd1Size.buttonPadding, size.height / 2);
+      final double arm = _md1BadgeDot / OgMd1Size.radius;
+      final Paint cross = Paint()
+        ..color = deleteColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _md1DividerPx
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        center + Offset(-arm, -arm),
+        center + Offset(arm, arm),
+        cross,
+      );
+      canvas.drawLine(
+        center + Offset(arm, -arm),
+        center + Offset(-arm, arm),
+        cross,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1ChipPainter oldDelegate) =>
+      oldDelegate.fill != fill ||
+      oldDelegate.border != border ||
+      oldDelegate.deleteColor != deleteColor ||
+      oldDelegate.deletable != deletable;
+}
+
+/// MD1 Chip：18–32dp 高、2dp 圆角、可选删除按钮。
+///
+/// [label] 由调用方本地化；[onDeleted] 非空时右侧显示自绘删除叉，
+/// 点按删除区触发 [onDeleted]，点按其它区域触发 [onTap]。
+class OgMd1Chip extends StatelessWidget {
+  /// 创建 Chip。
+  const OgMd1Chip({
+    required this.label,
+    this.onTap,
+    this.onDeleted,
+    super.key,
+  });
+
+  /// 文案。
+  final String label;
+
+  /// 主体点按回调（可选）。
+  final VoidCallback? onTap;
+
+  /// 删除回调；非空时显示删除叉。
+  final VoidCallback? onDeleted;
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool deletable = onDeleted != null;
+    // 删除叉中心距右边缘 16dp（与 painter 的 center 计算一致）。
+    final Widget label = Text(
+      label,
+      style: TextStyle(
+        fontSize: OgMd1Type.body,
+        fontWeight: OgMd1Type.bodyWeight,
+        color: palette.textPrimary,
+      ),
+    );
+    final Widget inner = Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        label,
+        if (deletable) const SizedBox(width: OgMd1Size.buttonPadding),
+      ],
+    );
+    return Semantics(
+      chip: true,
+      enabled: onTap != null || deletable,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: _md1ChipHeightMin,
+            maxHeight: _md1ChipHeightMax,
+          ),
+          child: CustomPaint(
+            painter: _OgMd1ChipPainter(
+              fill: palette.divider.withValues(alpha: 0.22),
+              border: palette.divider,
+              deleteColor: palette.textSecondary,
+              deletable: deletable,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: _md1ChipPadding,
+                vertical: _md1ChipPadding / OgMd1Size.radius,
+              ),
+              child: Stack(
+                alignment: Alignment.centerLeft,
+                children: <Widget>[
+                  inner,
+                  if (deletable)
+                    Positioned(
+                      right: -_md1ChipPadding,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: onDeleted,
+                          behavior: HitTestBehavior.opaque,
+                          child: const SizedBox(
+                            width: OgMd1Size.touchTarget / 2,
+                            height: OgMd1Size.touchTarget,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Badge 外观 painter：红点 / 数字角标（accent 色，优先于主题 primary）。
+class _OgMd1BadgePainter extends CustomPainter {
+  const _OgMd1BadgePainter({
+    required this.color,
+    required this.textColor,
+    required this.isDot,
+    required this.count,
+  });
+
+  final Color color;
+  final Color textColor;
+  final bool isDot;
+  final int count;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint fill = Paint()..color = color;
+    if (isDot) {
+      // 红点：正圆，直径取短边。
+      final double radius =
+          math.min(size.width, size.height) / OgMd1Size.radius;
+      canvas.drawCircle(
+        Offset(size.width / OgMd1Size.radius, size.height / OgMd1Size.radius),
+        radius,
+        fill,
+      );
+      return;
+    }
+    final RRect shape = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(OgMd1Size.radius),
+    );
+    canvas.drawRRect(shape, fill);
+    final String text = count > 99 ? '99+' : count.toString();
+    final TextPainter label = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontSize: OgMd1Type.caption,
+          fontWeight: OgMd1Type.buttonWeight,
+          color: textColor,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    label.paint(
+      canvas,
+      Offset(
+        (size.width - label.width) / OgMd1Size.radius,
+        (size.height - label.height) / OgMd1Size.radius,
+      ),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1BadgePainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.textColor != textColor ||
+      oldDelegate.isDot != isDot ||
+      oldDelegate.count != count;
+}
+
+/// MD1 Badge：红点 / 数字角标，可叠在任意 [child] 右上角。
+///
+/// [count] 为 null 表示红点；0 不绘制；≥1 显示数字（>99 显示 99+）。
+class OgMd1Badge extends StatelessWidget {
+  /// 创建角标。
+  const OgMd1Badge({
+    required this.child,
+    this.count,
+    this.label,
+    super.key,
+  });
+
+  /// 被角标覆盖的控件。
+  final Widget child;
+
+  /// 数字；null = 红点，0 = 不显示。
+  final int? count;
+
+  /// 无障碍标签（可选，例如「3 条未读」）。
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool dot = count == null;
+    final bool visible = dot || count! > 0;
+    final double width = dot ? _md1BadgeDot : _md1BadgeSize;
+    return Semantics(
+      label: label ?? (dot ? null : count.toString()),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: <Widget>[
+          child,
+          if (visible)
+            Positioned(
+              right: -_md1BadgeDot / 2,
+              top: -_md1BadgeDot / 2,
+              child: IgnorePointer(
+                child: CustomPaint(
+                  size: Size(width, _md1BadgeSize),
+                  painter: _OgMd1BadgePainter(
+                    color: palette.accent,
+                    textColor: palette.onPrimary,
+                    isDot: dot,
+                    count: count ?? 0,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Divider 外观 painter：1px 分割线（MD1 2014 #E0E0E0 / 暗色 #555555）。
+class _OgMd1DividerPainter extends CustomPainter {
+  const _OgMd1DividerPainter({required this.color, required this.indent});
+
+  final Color color;
+  final double indent;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(
+      Rect.fromLTWH(
+        indent,
+        size.height - _md1DividerPx,
+        size.width - indent,
+        _md1DividerPx,
+      ),
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1DividerPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.indent != indent;
+}
+
+/// MD1 1px 分割线：[height] 为占位高度（默认 1px），[indent] 为左缩进。
+class OgMd1Divider extends StatelessWidget {
+  /// 创建分割线。
+  const OgMd1Divider({
+    this.indent = 0,
+    this.height = _md1DividerPx,
+    super.key,
+  });
+
+  /// 左侧缩进（dp）。
+  final double indent;
+
+  /// 占位高度（dp），默认 1px。
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      divider: true,
+      child: SizedBox(
+        height: height,
+        child: CustomPaint(
+          painter: _OgMd1DividerPainter(
+            color: OgMd1Colors.of(context).divider,
+            indent: indent,
           ),
         ),
       ),

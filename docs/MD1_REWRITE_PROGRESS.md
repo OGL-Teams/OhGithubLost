@@ -12,8 +12,11 @@
 - `md1_painters.dart` 扩至 1357 行：新增 `OgMd1TextField`（48dp 底边 1px/focus 2px、浮动 label）、`OgMd1Switch`（MD1 轨道+圆钮）、`OgMd1Checkbox`（18dp 方框+勾路径）、`OgMd1Radio`（圆环+实心点）、`OgMd1Slider`（轨道+拇指）——全 CustomPainter，含焦点/键盘/手势/Semantics。
 - 全门禁绿（ui/perf/layer/contract/gate/i18n/format）。
 
+## 批 3（反馈类 5 控件）✅
+- `md1_painters.dart` 扩至 2100 行：新增 `OgMd1Dialog`（2dp 圆角/elevation24/动作区）、`OgMd1Snackbar`（底部条+动作+时长）、`OgMd1Chip`、`OgMd1Badge`、`OgMd1Divider`（1px #E0E0E0）——全 CustomPainter。
+- 全门禁绿（ui/perf/layer/contract/gate/i18n/format 0 changed）。
+
 ## 剩余批次（待执行）
-- 批 3：Dialog / Snackbar / Chip / Badge / Divider（反馈类 5 控件）
 - 批 4：BottomNav / TabBar / Drawer / NavigationRail / Toolbar（导航类 5 控件）
 - 批 5：Progress / RefreshIndicator / BottomSheet / Menu / Dropdown（操作类 5 控件）
 - 批 6-9：剩余 16 控件 + 逐页迁移（设置→关于→仓库→议题→内容页→其他）
