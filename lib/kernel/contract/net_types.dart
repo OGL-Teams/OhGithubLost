@@ -18,7 +18,9 @@ library;
 /// 只需要知道「能让缓存失效」这件事，因此契约放在内核层供两侧引用。
 abstract class HttpReadCache {
   /// 清空读缓存（回源 / 切号 / 写操作后调用）。
-  void invalidate();
+  ///
+  /// [urlPrefix] 按响应 URL 前缀定向清除；`null` 表示全清。
+  int invalidate({String? urlPrefix});
 }
 
 abstract class NetTransport {

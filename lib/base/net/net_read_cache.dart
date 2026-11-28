@@ -97,6 +97,7 @@ class CacheTransport implements NetTransport, HttpReadCache {
   /// 主动失效：按 URL 前缀清（写操作后由上层调用）。
   ///
   /// `null` 表示全清。返回清除条数（诊断用）。
+  @override
   int invalidate({String? urlPrefix}) {
     if (urlPrefix == null) {
       final int n = _entries.length;
