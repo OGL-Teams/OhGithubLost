@@ -120,12 +120,14 @@ void main() {
       final OgLOAnimQuality q3 = OgLOAnimQuality.of(3);
       expect(q1.medium < q2.medium, isTrue);
       expect(q2.medium < q3.medium, isTrue);
-      expect(q1.staggerMaxIndex < q2.staggerMaxIndex, isTrue);
-      expect(q2.staggerMaxIndex < q3.staggerMaxIndex, isTrue);
-      // ★ 整页转场位移：档位 1 → 2 递增；档位 2 与 3 **相同**（0.03）——
-      //   3-2 取消整页缩放后转场位移收敛，不再逐档增大（只保证不更小）。
-      expect(q1.transitionOffset < q2.transitionOffset, isTrue);
-      expect(q2.transitionOffset <= q3.transitionOffset, isTrue);
+      // ★ MD2（M-3）：无错峰——staggerMaxIndex 全档为 0。
+      expect(q1.staggerMaxIndex, 0);
+      expect(q2.staggerMaxIndex, 0);
+      expect(q3.staggerMaxIndex, 0);
+      // ★ MD2：无转场位移（纯淡入/平台默认转场）。
+      expect(q1.transitionOffset, 0);
+      expect(q2.transitionOffset, 0);
+      expect(q3.transitionOffset, 0);
     });
 
     test('大体积动画：时长逐档增加，但都**比 5.2 更快**', () {
@@ -157,14 +159,13 @@ void main() {
       expect(q0.transitionWindow, 0);
     });
 
-    test('曲线一律是自然减速（ease-out 阶梯），绝不匀速', () {
-      // 用户要求：动画不能"死板 / 僵硬"，所以任何档位都不许出现匀速。
+    test('MD2 曲线：标准档 easeOut、拉满档 fastOutSlowIn，绝不匀速', () {
       expect(OgLOAnimQuality.of(1).curve, Curves.easeOut);
-      expect(OgLOAnimQuality.of(2).curve, Curves.easeOutCubic);
-      expect(OgLOAnimQuality.of(3).curve, Curves.easeOutQuart);
-      expect(OgLOAnimQuality.of(1).largeCurve, Curves.easeOutCubic);
-      expect(OgLOAnimQuality.of(2).largeCurve, Curves.easeOutQuart);
-      expect(OgLOAnimQuality.of(3).largeCurve, Curves.easeOutQuint);
+      expect(OgLOAnimQuality.of(2).curve, Curves.easeOut);
+      expect(OgLOAnimQuality.of(3).curve, Curves.fastOutSlowIn);
+      expect(OgLOAnimQuality.of(1).largeCurve, Curves.easeOut);
+      expect(OgLOAnimQuality.of(2).largeCurve, Curves.easeOut);
+      expect(OgLOAnimQuality.of(3).largeCurve, Curves.fastOutSlowIn);
       for (int level = 1; level <= 3; level++) {
         expect(OgLOAnimQuality.of(level).curve, isNot(Curves.linear),
             reason: '档位 $level 的通用曲线不能是匀速（机械 / 死板）');
@@ -175,58 +176,39 @@ void main() {
       expect(OgLOAnimQuality.of(0).curve, Curves.linear);
     });
 
-    test('覆盖面：档位 1 只覆盖前几项，档位 2 / 3 覆盖每个控件', () {
+    test('MD2 覆盖面：无错峰、无 reveal 位移/缩放（纯淡入可选）', () {
       expect(OgLOAnimQuality.of(1).revealAll, isFalse);
-      expect(OgLOAnimQuality.of(2).revealAll, isTrue);
       expect(OgLOAnimQuality.of(3).revealAll, isTrue);
-      // 倒数第二档（2）= **最简全覆盖**：只淡入，不带位移 / 缩放。
-      expect(OgLOAnimQuality.of(2).revealOffset, 0);
-      expect(OgLOAnimQuality.of(2).revealScaleFrom, 1);
-      // 拉满档（3）才叠加位移 / 缩放。
-      expect(OgLOAnimQuality.of(3).revealOffset, greaterThan(0));
-      expect(OgLOAnimQuality.of(3).revealScaleFrom, lessThan(1));
-    });
-
-    test('物理弹簧按档位分级：1 不振荡、越高越"弹"', () {
-      expect(OgLOAnimQuality.of(0).spring, isNull, reason: '静默档没有弹簧');
-
-      double zeta(int level) {
-        final OgLOAnimQuality q = OgLOAnimQuality.of(level);
-        return q.springDamping / (2 * math.sqrt(q.springStiffness));
-      }
-
-      // 刚度逐档递减：越高档越"从容"（收尾更软）。
-      expect(
-        OgLOAnimQuality.of(1).springStiffness >
-            OgLOAnimQuality.of(2).springStiffness,
-        isTrue,
-      );
-      expect(
-        OgLOAnimQuality.of(2).springStiffness >
-            OgLOAnimQuality.of(3).springStiffness,
-        isTrue,
-      );
-      // 阻尼比逐档递减 = 回弹越来越明显。
-      expect(zeta(1) > zeta(2), isTrue);
-      expect(zeta(2) > zeta(3), isTrue);
-      expect(zeta(1) >= 1.0, isTrue, reason: '最保守档临界阻尼，不振荡 / 不回弹');
-      expect(zeta(3) < 1.0, isTrue, reason: '拉满档欠阻尼，轻微回弹');
+      // MD2 全档：无位移 / 缩放（reveal 系列全归零）。
       for (int level = 1; level <= 3; level++) {
-        expect(OgLOAnimQuality.of(level).spring, isNotNull);
+        expect(OgLOAnimQuality.of(level).revealOffset, 0,
+            reason: '档位 $level 仍有 reveal 位移');
+        expect(OgLOAnimQuality.of(level).revealScaleFrom, 1,
+            reason: '档位 $level 仍有 reveal 缩放');
       }
     });
 
-    test('收尾曲线：只有拉满档回弹（过冲），其余纯减速', () {
+    test('MD2 无弹簧物理：全档 spring 为 null（stiffness 0）', () {
+      // MD2（M-3）：弹簧/过冲是 Expressive 体系，全面移除。
+      // 收尾一律用 ease-out 曲线（见"收尾曲线"测试）。
+      for (int level = 0; level <= 3; level++) {
+        expect(OgLOAnimQuality.of(level).springStiffness, 0,
+            reason: '档位 $level 仍有弹簧刚度');
+        expect(OgLOAnimQuality.of(level).spring, isNull,
+            reason: '档位 $level 仍有弹簧');
+      }
+    });
+
+    test('MD2 收尾曲线：全档纯减速（ease-out），无过冲', () {
       expect(OgLOAnimQuality.of(1).settleCurve, Curves.easeOut);
-      expect(OgLOAnimQuality.of(2).settleCurve, Curves.easeOutCubic);
-      expect(OgLOAnimQuality.of(3).settleCurve, Curves.easeOutBack);
-      // 回弹 = 中途取值超过 1（过冲）；纯减速曲线永远 ≤ 1。
-      expect(
-          OgLOAnimQuality.of(3).settleCurve.transform(0.8), greaterThan(1.0));
-      expect(OgLOAnimQuality.of(1).settleCurve.transform(0.8),
-          lessThanOrEqualTo(1.0));
-      expect(OgLOAnimQuality.of(2).settleCurve.transform(0.8),
-          lessThanOrEqualTo(1.0));
+      expect(OgLOAnimQuality.of(2).settleCurve, Curves.easeOut);
+      expect(OgLOAnimQuality.of(3).settleCurve, Curves.easeOut);
+      // MD2 无回弹：纯减速曲线永远 ≤ 1。
+      for (int level = 1; level <= 3; level++) {
+        expect(OgLOAnimQuality.of(level).settleCurve.transform(0.8),
+            lessThanOrEqualTo(1.0),
+            reason: '档位 $level 收尾曲线有过冲（MD2 不允许）');
+      }
     });
 
     testWidgets('共享元素（容器变换）只在标准档及以上启用', (WidgetTester tester) async {
@@ -271,24 +253,19 @@ void main() {
       expect(q0.transitionOffset, 0);
     });
 
-    testWidgets('入场错峰按档位限项：超出上限返回 null（该项不参与动画）', (WidgetTester tester) async {
+    testWidgets('MD2 错峰全档归零：staggerOf 恒为零延迟或 null（无错峰）', (WidgetTester tester) async {
       Future<BuildContext> pump(int level) => _pumpAt(tester, level);
 
-      // 档位 1：只让前 3 项动（覆盖面前 3 项 + 主要区域）。
-      final BuildContext c1 = await pump(1);
-      expect(OgLAnim.staggerOf(c1, 0), Duration.zero);
-      expect(OgLAnim.staggerOf(c1, 3), isNotNull);
-      expect(OgLAnim.staggerOf(c1, 4), isNull);
-
-      // 档位 2 / 3：**全覆盖**——超出错峰范围仍然参与动画（只是不再错峰）。
-      final BuildContext c2 = await pump(2);
-      expect(OgLAnim.staggerOf(c2, 8), isNotNull);
-      expect(OgLAnim.staggerOf(c2, 200), Duration.zero,
-          reason: '全覆盖档位：再靠后的项也有动画（不带错峰）');
-
-      final BuildContext c3 = await pump(3);
-      expect(OgLAnim.staggerOf(c3, 16), isNotNull);
-      expect(OgLAnim.staggerOf(c3, 99), Duration.zero);
+      // MD2（M-3）：错峰是 Expressive 体系，全档移除——
+      // staggerStep = 0 且 staggerMaxIndex = 0。
+      for (int level = 1; level <= 3; level++) {
+        final BuildContext ctx = await pump(level);
+        expect(OgLAnim.staggerOf(ctx, 0), Duration.zero,
+            reason: '档位 $level 首项应零延迟（无错峰）');
+        expect(OgLAnim.staggerOf(ctx, 200), Duration.zero,
+            reason: '档位 $level 覆盖档位（revealAll=true 时零延迟；档位 1 覆盖前 0 项）'
+                .replaceFirst('档位 1 覆盖前 0 项', level == 1 ? '档位 1 尾部静态' : '全覆盖档位：再靠后的项也有动画'));
+      }
 
       final BuildContext c0 = await pump(0);
       expect(OgLAnim.staggerOf(c0, 0), isNull, reason: '静默档不参与任何入场动画');

@@ -33,9 +33,8 @@ class OgLBootSplash extends StatelessWidget {
     final Brightness brightness = MediaQuery.platformBrightnessOf(context);
     // ★ G-06 + MD2：锚定色直接取 MD2 色板（与 theme.dart 同源同值），
     //   冷启动首帧与 [OgLApp] 顶替帧不再"闪白/闪黑"。零依赖纯计算。
-    final Color bg = brightness == Brightness.dark
-        ? const Color(0xFF121212)
-        : Colors.white;
+    final Color bg =
+        brightness == Brightness.dark ? const Color(0xFF121212) : Colors.white;
     final Color fg = brightness == Brightness.dark
         ? const Color(0xFF8B949E)
         : const Color(0xFF57606A);

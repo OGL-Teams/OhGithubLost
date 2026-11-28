@@ -100,9 +100,9 @@ void main() {
     await transport.send(_get('https://api.github.com/c'));
 
     expect(transport.entryCount, 2);
-    // a 已被淘汰 → 回源。
+    // a 已被淘汰 → 回源（脚本队列下一个响应是 v3）。
     final again = await transport.send(_get('https://api.github.com/a'));
-    expect(again.body, 'v4');
+    expect(again.body, 'v3');
   });
 }
 
