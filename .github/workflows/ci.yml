@@ -179,6 +179,7 @@ jobs:
         #   不进参数、不落产物）；Secret 缺失/失效时测试自动回落脚本化假件。
         env:
           OGL_SCREENSHOT_TOKEN: ${{ secrets.OGL_SCREENSHOT_TOKEN }}
+          OGL_SCREENSHOTS: '1'
         run: >-
           flutter test --reporter expanded || echo "FAIL: flutter test" >> /tmp/strict_failures.txt
         if: always()
