@@ -233,11 +233,12 @@ void main() {
         expect(OgLOAnimQuality.of(level).transitionScaleFrom, 1,
             reason: '档位 $level 仍带整页缩放');
       }
-      // 内容级缩放只有**拉满档**才有（档位 1 / 2 一律不缩放）。
+      // 内容级缩放 MD2 全档移除（revealScaleFrom 恒 1）。
       expect(OgLOAnimQuality.of(1).hasScale, isFalse, reason: '档位 1 不缩放');
       expect(OgLOAnimQuality.of(2).hasScale, isFalse,
-          reason: '档位 2 也不缩放（整页缩放取消后只留淡入）');
-      expect(OgLOAnimQuality.of(3).hasScale, isTrue, reason: '拉满档保留极轻的内容级缩放');
+          reason: '档位 2 不缩放');
+      expect(OgLOAnimQuality.of(3).hasScale, isFalse,
+          reason: 'MD2 无内容级缩放（拉满档也只有淡入）');
       // MD2：blur 是 Expressive 体系，全档移除。
       for (int level = 0; level <= 3; level++) {
         expect(OgLOAnimQuality.of(level).hasBlur, isFalse,
@@ -264,13 +265,14 @@ void main() {
         final BuildContext ctx = await pump(level);
         expect(OgLAnim.staggerOf(ctx, 0), Duration.zero,
             reason: '档位 $level 首项应零延迟（无错峰）');
-        if (level == 1) {
-          // 档位 1 保守覆盖（revealAll=false）：尾部直接静态渲染。
-          expect(OgLAnim.staggerOf(ctx, 200), isNull,
-              reason: '档位 1 尾部不参与动画（保守覆盖）');
-        } else {
+        // 按档位表实际语义断言：MD2 全档保守（revealAll 只有档位 3 为 true）。
+        final bool revealAll = OgLOAnimQuality.of(level).revealAll;
+        if (revealAll) {
           expect(OgLAnim.staggerOf(ctx, 200), Duration.zero,
-              reason: '全覆盖档位：再靠后的项也有动画（无错峰）');
+              reason: '档位 $level 全覆盖：尾部也有动画（零延迟无错峰）');
+        } else {
+          expect(OgLAnim.staggerOf(ctx, 200), isNull,
+              reason: '档位 $level 保守覆盖：尾部直接静态渲染');
         }
       }
 
