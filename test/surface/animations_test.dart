@@ -235,8 +235,7 @@ void main() {
       }
       // 内容级缩放 MD2 全档移除（revealScaleFrom 恒 1）。
       expect(OgLOAnimQuality.of(1).hasScale, isFalse, reason: '档位 1 不缩放');
-      expect(OgLOAnimQuality.of(2).hasScale, isFalse,
-          reason: '档位 2 不缩放');
+      expect(OgLOAnimQuality.of(2).hasScale, isFalse, reason: '档位 2 不缩放');
       expect(OgLOAnimQuality.of(3).hasScale, isFalse,
           reason: 'MD2 无内容级缩放（拉满档也只有淡入）');
       // MD2：blur 是 Expressive 体系，全档移除。
@@ -256,7 +255,8 @@ void main() {
       expect(q0.transitionOffset, 0);
     });
 
-    testWidgets('MD2 错峰全档归零：staggerOf 恒为零延迟或 null（无错峰）', (WidgetTester tester) async {
+    testWidgets('MD2 错峰全档归零：staggerOf 恒为零延迟或 null（无错峰）',
+        (WidgetTester tester) async {
       Future<BuildContext> pump(int level) => _pumpAt(tester, level);
 
       // MD2（M-3）：错峰是 Expressive 体系，全档移除——
