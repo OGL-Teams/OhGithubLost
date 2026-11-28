@@ -698,8 +698,10 @@ class _RepoPageState extends State<RepoPage> {
       }));
       return;
     }
-    // 目录在新分支存在（上方已守卫 probed 非空且是目录）：恢复原浏览位置。
-    setState(() => _codePath = probed.path);
+    // 目录在新分支存在（上方已守卫）：恢复原浏览位置。
+    // 局部非空化：流分析跨 notice 调用不传播提升，显式收窄。
+    final GhContent dir = probed;
+    setState(() => _codePath = dir.path);
   }
 }
 
