@@ -94,11 +94,11 @@ void main() {
     expect(find.byType(AnimatedSlide), findsNothing);
     expect(find.byType(AnimatedScale), findsNothing);
 
-    // 档位 3：淡入 + 位移 + 缩放（拉满）。
+    // 档位 3：MD2 全档无位移/缩放（revealOffset=0 / revealScaleFrom=1），
+    // 拉满档也只有淡入；绘制边界仍然保留（不牵连整列表重绘）。
     await pumpAt(3);
-    expect(find.byType(AnimatedSlide), findsOneWidget);
-    expect(find.byType(AnimatedScale), findsOneWidget);
-    // 动画期间必须各自带绘制边界（不牵连整列表重绘）。
+    expect(find.byType(AnimatedSlide), findsNothing);
+    expect(find.byType(AnimatedScale), findsNothing);
     expect(find.byType(RepaintBoundary), findsWidgets);
   });
 
@@ -238,9 +238,11 @@ void main() {
       expect(OgLOAnimQuality.of(2).hasScale, isFalse,
           reason: '档位 2 也不缩放（整页缩放取消后只留淡入）');
       expect(OgLOAnimQuality.of(3).hasScale, isTrue, reason: '拉满档保留极轻的内容级缩放');
-      expect(OgLOAnimQuality.of(1).hasBlur, isFalse);
-      expect(OgLOAnimQuality.of(2).hasBlur, isFalse);
-      expect(OgLOAnimQuality.of(3).hasBlur, isTrue);
+      // MD2：blur 是 Expressive 体系，全档移除。
+      for (int level = 0; level <= 3; level++) {
+        expect(OgLOAnimQuality.of(level).hasBlur, isFalse,
+            reason: '档位 $level 仍有 blur');
+      }
     });
 
     test('档位 0：全静默（时长零、无位移、无缩放）', () {
@@ -262,9 +264,14 @@ void main() {
         final BuildContext ctx = await pump(level);
         expect(OgLAnim.staggerOf(ctx, 0), Duration.zero,
             reason: '档位 $level 首项应零延迟（无错峰）');
-        expect(OgLAnim.staggerOf(ctx, 200), Duration.zero,
-            reason: '档位 $level 覆盖档位（revealAll=true 时零延迟；档位 1 覆盖前 0 项）'
-                .replaceFirst('档位 1 覆盖前 0 项', level == 1 ? '档位 1 尾部静态' : '全覆盖档位：再靠后的项也有动画'));
+        if (level == 1) {
+          // 档位 1 保守覆盖（revealAll=false）：尾部直接静态渲染。
+          expect(OgLAnim.staggerOf(ctx, 200), isNull,
+              reason: '档位 1 尾部不参与动画（保守覆盖）');
+        } else {
+          expect(OgLAnim.staggerOf(ctx, 200), Duration.zero,
+              reason: '全覆盖档位：再靠后的项也有动画（无错峰）');
+        }
       }
 
       final BuildContext c0 = await pump(0);
