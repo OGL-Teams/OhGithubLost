@@ -156,14 +156,13 @@ class OgLBootFailureApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        // MD2：传统 ColorScheme 构造（错误兜底主题，固定暗色）。
+        // MD2：错误兜底主题固定暗色，色值统一走 kOgLErrorSeedColor 令牌。
         theme: ThemeData(
-          useMaterial3: false,
           colorScheme: const ColorScheme.dark(
             primary: kOgLErrorSeedColor,
-            secondary: Color(0xFF57606A),
-            surface: Color(0xFF121212),
-            background: Color(0xFF121212),
+            secondary: kOgLErrorSecondary,
+            surface: kOgLErrorSurface,
+            background: kOgLErrorSurface,
             error: kOgLErrorSeedColor,
           ),
         ),

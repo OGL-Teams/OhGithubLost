@@ -32,6 +32,9 @@ const Color kOgLSeedColor = Color(0xFF0969DA);
 
 /// 启动失败兜底主题的种子色（明确的"出错了"信号色）。
 const Color kOgLErrorSeedColor = Color(0xFFB3261E);
+/// 错误兜底主题的次级色/底色（og_l_app.dart 的 OgLBootFailureApp 专用）。
+const Color kOgLErrorSecondary = Color(0xFF57606A);
+const Color kOgLErrorSurface = Color(0xFF121212);
 
 /// 可选主题色（id → 颜色 + 展示名）。
 ///
