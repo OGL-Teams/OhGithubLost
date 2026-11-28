@@ -399,17 +399,21 @@ class OgLAsyncSkeleton extends StatelessWidget {
               onInfo: scheme.onPrimary,
               outlineVariantStrong: scheme.outlineVariant,
             );
-    return Padding(
-      padding: const EdgeInsets.all(OgLSpace.lg),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          for (int i = 0; i < rows.clamp(1, 8); i++) ...<Widget>[
-            if (i > 0) const SizedBox(height: OgLSpace.md),
-            _row(scheme, semantic),
+    // 矮窗（横屏）下 8 行固定高度会溢出：外包 SingleChildScrollView，
+    // 高窗不滚动（内容小于约束），矮窗可滚（加载占位也应可看全）。
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(OgLSpace.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            for (int i = 0; i < rows.clamp(1, 8); i++) ...<Widget>[
+              if (i > 0) const SizedBox(height: OgLSpace.md),
+              _row(scheme, semantic),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
