@@ -111,7 +111,7 @@ class OgLSemanticColors extends ThemeExtension<OgLSemanticColors> {
     required this.onWarning,
     required this.info,
     required this.onInfo,
-    required this.outlineVariantStrong,
+    required this.outlineStrong,
   });
 
   /// 成功。
@@ -137,8 +137,8 @@ class OgLSemanticColors extends ThemeExtension<OgLSemanticColors> {
   /// [ColorScheme.outline] 对各级 surface 仅 1.3–2.0:1，形同虚设；
   /// 本色按 WCAG 2.1 校准，对 surface → surfaceContainerHighest 明暗各级
   /// 均 ≥3:1；页面取用走
-  /// `Theme.of(context).extension<OgLSemanticColors>()!.outlineVariantStrong`。
-  final Color outlineVariantStrong;
+  /// `Theme.of(context).extension<OgLSemanticColors>()!.outlineStrong`。
+  final Color outlineStrong;
 
   static const Color lightOutlineStrong = Color(0xFF6B6A71);
   static const Color darkOutlineStrong = Color(0xFF7F7E85);
@@ -151,7 +151,7 @@ class OgLSemanticColors extends ThemeExtension<OgLSemanticColors> {
     onWarning: Color(0xFF1F2328),
     info: Color(0xFF0969DA),
     onInfo: Colors.white,
-    outlineVariantStrong: lightOutlineStrong,
+    outlineStrong: lightOutlineStrong,
   );
 
   /// 暗色语义色：底色提亮到与 #121212 / #1C2128 有 ≥3:1 的档位，
@@ -163,7 +163,7 @@ class OgLSemanticColors extends ThemeExtension<OgLSemanticColors> {
     onWarning: Color(0xFF121212),
     info: Color(0xFF58A6FF),
     onInfo: Color(0xFF121212),
-    outlineVariantStrong: darkOutlineStrong,
+    outlineStrong: darkOutlineStrong,
   );
 
   @override
@@ -174,7 +174,7 @@ class OgLSemanticColors extends ThemeExtension<OgLSemanticColors> {
     Color? onWarning,
     Color? info,
     Color? onInfo,
-    Color? outlineVariantStrong,
+    Color? outlineStrong,
   }) =>
       OgLSemanticColors(
         success: success ?? this.success,
@@ -183,7 +183,7 @@ class OgLSemanticColors extends ThemeExtension<OgLSemanticColors> {
         onWarning: onWarning ?? this.onWarning,
         info: info ?? this.info,
         onInfo: onInfo ?? this.onInfo,
-        outlineVariantStrong: outlineVariantStrong ?? this.outlineVariantStrong,
+        outlineStrong: outlineStrong ?? this.outlineStrong,
       );
 
   @override
@@ -198,8 +198,7 @@ class OgLSemanticColors extends ThemeExtension<OgLSemanticColors> {
       onWarning: Color.lerp(onWarning, other.onWarning, t)!,
       info: Color.lerp(info, other.info, t)!,
       onInfo: Color.lerp(onInfo, other.onInfo, t)!,
-      outlineVariantStrong:
-          Color.lerp(outlineVariantStrong, other.outlineVariantStrong, t)!,
+      outlineStrong: Color.lerp(outlineStrong, other.outlineStrong, t)!,
     );
   }
 }
@@ -268,7 +267,7 @@ ThemeData buildOgLTheme(
   const Size minButton = Size(64, 48);
 
   // 强描边：scheme.outline 对任意底色仅 1.3–2.0:1，按 WCAG 校准的
-  // outlineVariantStrong（明/暗分档）承担所有边界角色；页面取用同一 token。
+  // outlineStrong（明/暗分档）承担所有边界角色；页面取用同一 token。
   final OgLSemanticColors sem =
       dark ? OgLSemanticColors.dark : OgLSemanticColors.light;
   // MD2 投影：elevation 档位（卡2/AppBar4/菜单4/弹层16）由 shadowColor 同源表达。
@@ -285,7 +284,7 @@ ThemeData buildOgLTheme(
     cardTheme: CardThemeData(
       color: scheme.surface,
       shape: shapeLg.copyWith(
-        side: BorderSide(color: outlineVariantStrong),
+        side: BorderSide(color: outlineStrong),
       ),
       elevation: 2,
       margin: const EdgeInsets.symmetric(
@@ -324,7 +323,7 @@ ThemeData buildOgLTheme(
       elevation: 8,
       backgroundColor: scheme.surfaceContainerHighest,
       showDragHandle: true,
-      dragHandleColor: outlineVariantStrong,
+      dragHandleColor: outlineStrong,
       clipBehavior: Clip.antiAlias,
     ),
 
@@ -399,7 +398,7 @@ ThemeData buildOgLTheme(
     dividerTheme: DividerThemeData(
       thickness: 1,
       space: 1,
-      color: outlineVariantStrong,
+      color: outlineStrong,
     ),
 
     // ── Chip ────────────────────────────────────────────────────────────
@@ -408,7 +407,7 @@ ThemeData buildOgLTheme(
       backgroundColor: scheme.surfaceContainerHighest,
       selectedColor: scheme.primary.withValues(alpha: 0.12),
       showCheckmark: false,
-      side: BorderSide(color: outlineVariantStrong),
+      side: BorderSide(color: outlineStrong),
       padding: const EdgeInsets.symmetric(
         horizontal: OgLSpace.sm,
         vertical: OgLSpace.xxs,
@@ -431,7 +430,7 @@ ThemeData buildOgLTheme(
           RoundedRectangleBorder(borderRadius: OgLRadius.cSm),
         ),
         side: WidgetStatePropertyAll<BorderSide>(
-          BorderSide(color: outlineVariantStrong),
+          BorderSide(color: outlineStrong),
         ),
       ),
     ),
@@ -447,11 +446,11 @@ ThemeData buildOgLTheme(
       ),
       border: OutlineInputBorder(
         borderRadius: OgLRadius.cSm,
-        borderSide: BorderSide(color: outlineVariantStrong),
+        borderSide: BorderSide(color: outlineStrong),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: OgLRadius.cSm,
-        borderSide: BorderSide(color: outlineVariantStrong),
+        borderSide: BorderSide(color: outlineStrong),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: OgLRadius.cSm,
@@ -500,7 +499,7 @@ ThemeData buildOgLTheme(
         shape: shapePill,
         minimumSize: minButton,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
-        side: BorderSide(color: outlineVariantStrong),
+        side: BorderSide(color: outlineStrong),
         disabledForegroundColor: scheme.onSurface.withValues(alpha: 0.60),
         textStyle: tt.labelLarge?.copyWith(
           // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
