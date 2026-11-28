@@ -46,7 +46,7 @@ abstract final class OgLRadius {
   static const BorderRadius cSm = BorderRadius.all(Radius.circular(sm));
   static const BorderRadius cMd = BorderRadius.all(Radius.circular(md));
   static const BorderRadius cLg = BorderRadius.all(Radius.circular(lg));
-  @Deprecated('MD2 无 extra-large；用 cMd')
+  @Deprecated('MD2 has no extra-large tier; use cMd')
   static const BorderRadius cXl = BorderRadius.all(Radius.circular(xl));
   static const BorderRadius cPill = BorderRadius.all(Radius.circular(pill));
 
