@@ -136,7 +136,7 @@ class _NewRepoPageState extends State<NewRepoPage> {
         }
       },
       child: Scaffold(
-        appBar: OgLAppBar(title: _t('title')),
+        appBar: OgLAppBar(title: Text(_t('title'))),
         body: OgLReveal(
             delay: Duration.zero,
             child: ListView(

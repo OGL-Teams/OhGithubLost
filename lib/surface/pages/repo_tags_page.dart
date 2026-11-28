@@ -164,7 +164,7 @@ class _RepoTagsPageState extends State<RepoTagsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: OgLAppBar(
-        title: _t('title'),
+        title: Text(_t('title')),
         actions: <Widget>[
           if (widget.canWrite)
             IconButton(

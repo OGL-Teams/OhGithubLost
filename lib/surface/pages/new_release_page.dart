@@ -159,7 +159,7 @@ class _NewReleasePageState extends State<NewReleasePage> {
         }
       },
       child: Scaffold(
-        appBar: OgLAppBar(title: _t('title')),
+        appBar: OgLAppBar(title: Text(_t('title'))),
         body: OgLReveal(
             delay: Duration.zero,
             child: ListView(

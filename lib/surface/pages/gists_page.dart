@@ -134,7 +134,7 @@ class _GistsPageState extends State<GistsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: OgLAppBar(title: _t('title')),
+      appBar: OgLAppBar(title: Text(_t('title'))),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _create,
         icon: const Icon(Icons.add),

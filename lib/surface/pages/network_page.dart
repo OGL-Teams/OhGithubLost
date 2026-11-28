@@ -48,7 +48,7 @@ class NetworkSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: OgLAppBar(title: _t('network')),
+      appBar: OgLAppBar(title: Text(_t('network'))),
       body: OgLReveal(
         delay: Duration.zero,
         child: ListenableBuilder(

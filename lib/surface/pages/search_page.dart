@@ -728,7 +728,7 @@ class _DiscoverPageState extends State<DiscoverPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: OgLAppBar(
-        title: _t('discover'),
+        title: Text(_t('discover')),
         bottom: TabBar(
           controller: _tab,
           isScrollable: true,
@@ -1340,7 +1340,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   Widget build(BuildContext context) {
     final AsyncController<List<_SearchHit>>? controller = _results;
     return Scaffold(
-      appBar: OgLAppBar(title: _t('searchResults')),
+      appBar: OgLAppBar(title: Text(_t('searchResults'))),
       body: Column(
         children: <Widget>[
           Padding(

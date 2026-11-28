@@ -28,7 +28,7 @@ class SettingsSectionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: OgLAppBar(title: title),
+        appBar: OgLAppBar(title: Text(title)),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(
             OgLSpace.lg,

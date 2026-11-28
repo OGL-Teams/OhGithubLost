@@ -410,7 +410,7 @@ class _SettingsPageState extends State<SettingsPage> {
         final OgLSettings value = _settings.settings;
         final String? saveError = _settings.lastError;
         return Scaffold(
-          appBar: OgLAppBar(title: _t('title')),
+          appBar: OgLAppBar(title: Text(_t('title'))),
           body: Column(
             children: <Widget>[
               if (saveError != null)

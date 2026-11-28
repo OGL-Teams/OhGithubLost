@@ -404,7 +404,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: OgLAppBar(
-        title: _t('home'),
+        title: Text(_t('home')),
         scrollController: _scroll,
         actions: <Widget>[
           // ★ 搜索入口（全局可发现性）： AppBar 图标一步直达仓库搜索结果页。

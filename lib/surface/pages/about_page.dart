@@ -108,7 +108,7 @@ class AboutPage extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final KernelReport? snapshot = report;
     return Scaffold(
-      appBar: OgLAppBar(title: _t('title')),
+      appBar: OgLAppBar(title: Text(_t('title'))),
       // 根级子项逐个挂入场动画（[OgLRevealList] 自动错峰）；不再用整页
       // `OgLReveal` 包住整个列表 —— 那会与路由过渡叠加成双重动画。
       body: ListView(

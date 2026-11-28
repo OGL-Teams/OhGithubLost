@@ -224,7 +224,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
       appBar: OgLAppBar(
-        title: _t('mine'),
+        title: Text(_t('mine')),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.person_add_alt),

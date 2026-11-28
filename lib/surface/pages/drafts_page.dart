@@ -195,7 +195,7 @@ class _DraftsPageState extends State<DraftsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: OgLAppBar(title: _t('title')),
+      appBar: OgLAppBar(title: Text(_t('title'))),
       body: AsyncView<List<GhDraft>>(
         controller: _controller(),
         emptyIcon: Icons.edit_note,
