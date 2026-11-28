@@ -13,6 +13,7 @@ library;
 
 import 'dart:async' show Timer;
 import 'dart:math' as math;
+import 'dart:ui' show Image, Path;
 
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter/rendering.dart';
@@ -59,6 +60,7 @@ import 'package:flutter/widgets.dart'
         GlobalKey,
         HitTestBehavior,
         Icon,
+        IconData,
         IgnorePointer,
         Key,
         MainAxisAlignment,
@@ -79,6 +81,7 @@ import 'package:flutter/widgets.dart'
         RRect,
         RouteSettings,
         Row,
+        ScrollController,
         ScrollNotification,
         Semantics,
         SingleTickerProviderStateMixin,
@@ -4232,6 +4235,617 @@ class _OgMd1DropdownState extends State<OgMd1Dropdown> {
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 批 6A：4 个 CustomPainter 控件（Avatar / Tooltip / Scrollbar / IconButton）。
+// 全部可见外观由 CustomPainter 自绘，零 Material 可见控件。
+
+const double _md1AvatarDiameter = OgMd1Size.listLeading;
+
+/// Avatar 外观 painter：圆形/圆角方形底 + 1px 描边；有图时画出图、否则画占位。
+class _OgMd1AvatarPainter extends CustomPainter {
+  const _OgMd1AvatarPainter({
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.placeholderColor,
+    required this.circle,
+    required this.image,
+  });
+
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color placeholderColor;
+  final bool circle;
+  final Image? image;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Rect rect = Offset.zero & size;
+    final RRect shape = RRect.fromRectAndRadius(
+      rect,
+      circle
+          ? Radius.circular(size.shortestSide / 2)
+          : const Radius.circular(OgMd1Size.radius),
+    );
+    canvas.drawRRect(shape, Paint()..color = backgroundColor);
+    final Image? avatar = image;
+    if (avatar != null) {
+      final double scale = math.max(
+        size.width / avatar.width,
+        size.height / avatar.height,
+      );
+      final double dw = avatar.width * scale;
+      final double dh = avatar.height * scale;
+      final Rect src = Rect.fromLTWH(
+        0,
+        0,
+        avatar.width.toDouble(),
+        avatar.height.toDouble(),
+      );
+      final Rect dst = Rect.fromLTWH(
+        (size.width - dw) / 2,
+        (size.height - dh) / 2,
+        dw,
+        dh,
+      );
+      canvas.save();
+      canvas.clipRRect(shape);
+      canvas.drawImageRect(avatar, src, dst, Paint());
+      canvas.restore();
+    } else {
+      final double centerX = size.width / 2;
+      final double centerY = size.height / 2;
+      final double headR = size.shortestSide / 5;
+      final Paint placeholder = Paint()..color = placeholderColor;
+      canvas.drawCircle(Offset(centerX, centerY - headR), headR, placeholder);
+      canvas.drawArc(
+        Rect.fromLTWH(
+          centerX - headR * 2,
+          centerY + headR,
+          headR * 4,
+          headR * 4,
+        ),
+        0,
+        math.pi,
+        true,
+        placeholder,
+      );
+    }
+    canvas.drawRRect(
+      shape,
+      Paint()
+        ..color = borderColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _md1DividerPx,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1AvatarPainter oldDelegate) =>
+      oldDelegate.backgroundColor != backgroundColor ||
+      oldDelegate.borderColor != borderColor ||
+      oldDelegate.placeholderColor != placeholderColor ||
+      oldDelegate.circle != circle ||
+      oldDelegate.image != image;
+}
+
+/// MD1 头像：40dp 圆/圆角方底 + 1px 描边，优先绘制 [image]，否则画占位人形。
+class OgMd1Avatar extends StatelessWidget {
+  /// 创建头像。
+  const OgMd1Avatar({this.image, this.label, this.circle = true, super.key});
+
+  /// 已解码的头像位图；为 null 时画占位。
+  final Image? image;
+
+  /// 无障碍标签（调用方本地化后传入）。
+  final String? label;
+
+  /// true 圆形（默认），false 为 2dp 圆角方形。
+  final bool circle;
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    return Semantics(
+      image: true,
+      label: label,
+      container: true,
+      child: SizedBox(
+        width: _md1AvatarDiameter,
+        height: _md1AvatarDiameter,
+        child: CustomPaint(
+          painter: _OgMd1AvatarPainter(
+            backgroundColor: palette.divider,
+            borderColor: palette.divider,
+            placeholderColor: palette.textSecondary,
+            circle: circle,
+            image: image,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tooltip 外观 painter：MD1 暗色气泡 + 三角指针 + elevation2 真投影。
+class _OgMd1TooltipPainter extends CustomPainter {
+  const _OgMd1TooltipPainter({
+    required this.color,
+    required this.pointerColor,
+    required this.radius,
+    required this.pointerX,
+    required this.below,
+  });
+
+  final Color color;
+  final Color pointerColor;
+  final double radius;
+  final double pointerX;
+  final bool below;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double arrow = OgMd1Type.body;
+    final Rect body = below
+        ? Rect.fromLTWH(0, arrow, size.width, size.height - arrow)
+        : Rect.fromLTWH(0, 0, size.width, size.height - arrow);
+    final RRect bubble = RRect.fromRectAndRadius(body, Radius.circular(radius));
+    _paintShadows(canvas, bubble, OgMd1Elevation.dp2);
+    canvas.drawRRect(bubble, Paint()..color = color);
+    final Path pointer = Path();
+    if (below) {
+      pointer
+        ..moveTo(pointerX - arrow, arrow)
+        ..lineTo(pointerX + arrow, arrow)
+        ..lineTo(pointerX, 0)
+        ..close();
+    } else {
+      pointer
+        ..moveTo(pointerX - arrow, size.height - arrow - 1)
+        ..lineTo(pointerX + arrow, size.height - arrow - 1)
+        ..lineTo(pointerX, size.height - 1)
+        ..close();
+    }
+    canvas.drawPath(pointer, Paint()..color = pointerColor);
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1TooltipPainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.pointerColor != pointerColor ||
+      oldDelegate.radius != radius ||
+      oldDelegate.pointerX != pointerX ||
+      oldDelegate.below != below;
+}
+
+/// MD1 Tooltip：暗色气泡 + 三角指针，长按/点击显示、再次点击或移出隐藏。
+///
+/// [below] 为 true 时指针朝上（气泡在锚点下方），否则指针朝下。
+/// 文案由调用方本地化后传入；Semantics 的 tooltip 走同一份文案。
+class OgMd1Tooltip extends StatefulWidget {
+  /// 创建气泡提示。
+  const OgMd1Tooltip({
+    required this.message,
+    required this.child,
+    this.below = false,
+    super.key,
+  });
+
+  /// 提示文案（本地化后传入）。
+  final String message;
+
+  /// 锚点控件。
+  final Widget child;
+
+  /// 气泡是否位于锚点下方（指针朝上）。
+  final bool below;
+
+  @override
+  State<OgMd1Tooltip> createState() => _OgMd1TooltipState();
+}
+
+class _OgMd1TooltipState extends State<OgMd1Tooltip> {
+  bool _visible = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final double pointerX = OgMd1Size.listLeading / 2;
+    final Widget bubble = Semantics(
+      tooltip: widget.message,
+      child: CustomPaint(
+        painter: _OgMd1TooltipPainter(
+          color: palette.background,
+          pointerColor: palette.background,
+          radius: OgMd1Size.radius,
+          pointerX: pointerX,
+          below: widget.below,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: OgMd1Size.buttonPadding,
+            vertical: OgMd1Size.radius,
+          ),
+          child: Text(
+            widget.message,
+            style: TextStyle(
+              fontSize: OgMd1Type.caption,
+              fontWeight: OgMd1Type.bodyWeight,
+              color: palette.card,
+            ),
+          ),
+        ),
+      ),
+    );
+    return Semantics(
+      container: true,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: <Widget>[
+          Semantics(
+            tooltip: widget.message,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => setState(() => _visible = !_visible),
+              onLongPress: () => setState(() => _visible = true),
+              onTapUp: (_) {},
+              child: widget.child,
+            ),
+          ),
+          if (_visible)
+            PositionedDirectional(
+              top: widget.below ? OgMd1Size.touchTarget : null,
+              bottom: widget.below ? null : OgMd1Size.touchTarget,
+              child: IgnorePointer(child: bubble),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Scrollbar 外观 painter：MD1 细滚动条（默认轨透明、拇指 4dp 圆角）。
+class _OgMd1ScrollbarPainter extends CustomPainter {
+  const _OgMd1ScrollbarPainter({
+    required this.thumbColor,
+    required this.trackColor,
+    required this.fraction,
+    required this.offset,
+    required this.vertical,
+  });
+
+  final Color thumbColor;
+  final Color trackColor;
+  final double fraction;
+  final double offset;
+  final bool vertical;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (trackColor.a > 0) {
+      canvas.drawRect(Offset.zero & size, Paint()..color = trackColor);
+    }
+    final double extent = vertical ? size.height : size.width;
+    final double cross = vertical ? size.width : size.height;
+    final double thumbExtent = math.max(
+      extent * fraction.clamp(0.0, 1.0),
+      OgMd1Type.caption,
+    );
+    final double t = offset.clamp(0.0, 1.0);
+    final double start = (extent - thumbExtent) * t;
+    final Rect rect = vertical
+        ? Rect.fromLTWH(0, start, cross, thumbExtent)
+        : Rect.fromLTWH(start, 0, thumbExtent, cross);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(OgMd1Size.radius)),
+      Paint()..color = thumbColor,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1ScrollbarPainter oldDelegate) =>
+      oldDelegate.thumbColor != thumbColor ||
+      oldDelegate.trackColor != trackColor ||
+      oldDelegate.fraction != fraction ||
+      oldDelegate.offset != offset ||
+      oldDelegate.vertical != vertical;
+}
+
+/// MD1 细滚动条：自绘拇指 + 拖拽跳转。
+///
+/// 随 [controller] 的滚动通知更新拇指位置与长度（[fraction] 为可见比例）；
+/// 拖拽拇指直接跳转滚动位置。触摸目标不小于 48dp（[OgMd1Size.touchTarget]）。
+class OgMd1Scrollbar extends StatefulWidget {
+  /// 创建滚动条。
+  const OgMd1Scrollbar({
+    required this.child,
+    required this.controller,
+    this.fraction = 0.5,
+    this.vertical = true,
+    this.label = 'Scrollbar',
+    super.key,
+  });
+
+  /// 被滚动的内容。
+  final Widget child;
+
+  /// 内容滚动控制器。
+  final ScrollController controller;
+
+  /// 可见区占总内容比例（0–1）。
+  final double fraction;
+
+  /// true 竖向（默认），false 横向。
+  final bool vertical;
+
+  /// 无障碍标签（调用方本地化后传入）。
+  final String label;
+
+  @override
+  State<OgMd1Scrollbar> createState() => _OgMd1ScrollbarState();
+}
+
+class _OgMd1ScrollbarState extends State<OgMd1Scrollbar> {
+  double _progress = 0;
+  bool _dragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onScroll);
+  }
+
+  @override
+  void didUpdateWidget(covariant OgMd1Scrollbar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_onScroll);
+      widget.controller.addListener(_onScroll);
+      _progress = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onScroll);
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final ScrollController controller = widget.controller;
+    if (!controller.hasClients) {
+      return;
+    }
+    final double pixels = controller.position.pixels;
+    final double range = controller.position.maxScrollExtent;
+    final double next = range > 0 ? (pixels / range).clamp(0.0, 1.0) : 0;
+    if (next != _progress) {
+      setState(() => _progress = next);
+    }
+  }
+
+  void _jump(DragUpdateDetails details, double extent) {
+    if (!widget.controller.hasClients || extent <= 0) {
+      return;
+    }
+    final double position =
+        widget.vertical ? details.localPosition.dy : details.localPosition.dx;
+    final double thumbExtent = math.max(
+      extent * widget.fraction.clamp(0.0, 1.0),
+      OgMd1Type.caption,
+    );
+    final double usable = extent - thumbExtent;
+    final double t = usable > 0 ? (position - thumbExtent / 2) / usable : 0;
+    widget.controller.jumpTo(
+      t.clamp(0.0, 1.0) * widget.controller.position.maxScrollExtent,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final Widget bar = Semantics(
+      label: widget.label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onDragStart: (_) => setState(() => _dragging = true),
+        onDragUpdate: (DragUpdateDetails details) {
+          final RenderBox? box = context.findRenderObject() as RenderBox?;
+          if (box == null) {
+            return;
+          }
+          _jump(details, widget.vertical ? box.size.height : box.size.width);
+        },
+        onDragEnd: (_) => setState(() => _dragging = false),
+        child: CustomPaint(
+          painter: _OgMd1ScrollbarPainter(
+            thumbColor: palette.textSecondary.withValues(
+              alpha: _dragging ? 0.7 : 0.4,
+            ),
+            trackColor: Colors.transparent,
+            fraction: widget.fraction,
+            offset: _progress,
+            vertical: widget.vertical,
+          ),
+        ),
+      ),
+    );
+    return Stack(
+      children: <Widget>[
+        NotificationListener<ScrollNotification>(
+          onNotification: (_) {
+            _onScroll();
+            return false;
+          },
+          child: widget.child,
+        ),
+        PositionedDirectional(
+          end: 0,
+          top: 0,
+          bottom: 0,
+          child: SizedBox(
+            width:
+                widget.vertical ? OgMd1Size.touchTarget / 4 : double.infinity,
+            height:
+                widget.vertical ? double.infinity : OgMd1Size.touchTarget / 4,
+            child: bar,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// IconButton 外观 painter：按下 ripple 圆 + 可选 1px 外框（MD1 触控反馈）。
+class _OgMd1IconButtonPainter extends CustomPainter {
+  const _OgMd1IconButtonPainter({
+    required this.rippleColor,
+    required this.progress,
+    required this.center,
+  });
+
+  final Color rippleColor;
+  final double progress;
+  final Offset center;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0) {
+      return;
+    }
+    final double maxRadius = math.max(
+      math.max(center.dx, size.width - center.dx),
+      math.max(center.dy, size.height - center.dy),
+    );
+    canvas.drawCircle(
+      center,
+      maxRadius * progress,
+      Paint()..color = rippleColor.withValues(alpha: 0.22 * (1 - progress)),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1IconButtonPainter oldDelegate) =>
+      oldDelegate.rippleColor != rippleColor ||
+      oldDelegate.progress != progress ||
+      oldDelegate.center != center;
+}
+
+/// MD1 IconButton：48dp 触控目标，居中图标 + 自绘 ripple。
+///
+/// 焦点/键盘（Enter/Space）与 Semantics button 齐备；[onPressed] 为 null 时
+/// 显示为 [palette.textSecondary] 并不响应手势。
+class OgMd1IconButton extends StatefulWidget {
+  /// 创建图标按钮。
+  const OgMd1IconButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    super.key,
+  });
+
+  /// 图标（由调用方经语义图标层传入）。
+  final IconData icon;
+
+  /// 无障碍标签（调用方本地化后传入）。
+  final String label;
+
+  /// 点击回调；为 null 时禁用。
+  final VoidCallback? onPressed;
+
+  @override
+  State<OgMd1IconButton> createState() => _OgMd1IconButtonState();
+}
+
+class _OgMd1IconButtonState extends State<OgMd1IconButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: OgLAnim.fast(context),
+  );
+  late final FocusNode _focusNode = FocusNode();
+  Offset _center = Offset.zero;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent || widget.onPressed == null) {
+      return;
+    }
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.space) {
+      _center = const Offset(
+        OgMd1Size.touchTarget / 2,
+        OgMd1Size.touchTarget / 2,
+      );
+      _controller
+        ..reset()
+        ..forward();
+      widget.onPressed!();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final bool enabled = widget.onPressed != null;
+    final Color iconColor =
+        enabled ? palette.textPrimary : palette.textSecondary;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: widget.label,
+      child: RawKeyboardListener(
+        focusNode: _focusNode,
+        onKey: _onKey,
+        child: Focus(
+          focusNode: _focusNode,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: (TapDownDetails details) {
+              if (!enabled) {
+                return;
+              }
+              _center = details.localPosition;
+              _controller
+                ..reset()
+                ..forward();
+            },
+            onTap: enabled ? widget.onPressed : null,
+            child: SizedBox(
+              width: OgMd1Size.touchTarget,
+              height: OgMd1Size.touchTarget,
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (BuildContext context, Widget? child) => CustomPaint(
+                  painter: _OgMd1IconButtonPainter(
+                    rippleColor:
+                        enabled ? palette.primary : palette.textSecondary,
+                    progress: _controller.value,
+                    center: _center,
+                  ),
+                  child: child,
+                ),
+                child: Center(
+                  child: Icon(
+                    widget.icon,
+                    size: OgMd1Type.title,
+                    color: iconColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

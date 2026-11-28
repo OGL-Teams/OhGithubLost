@@ -24,6 +24,11 @@
 - `md1_painters.dart` 扩至 4238 行：新增 `OgMd1Progress`（线性+环形）、`OgMd1RefreshIndicator`（下拉刷新）、`OgMd1BottomSheet`（2dp 圆角/elevation16）、`OgMd1Menu`、`OgMd1Dropdown`——全 CustomPainter。
 - 全门禁绿（format/ui/perf/layer/contract/gate/i18n）。
 
+## 批 6A（4 个 CustomPainter 控件）✅
+- `md1_painters.dart` 扩至 4870 行：新增 `OgMd1Avatar`（40dp 圆/2dp 圆角方头像 + 占位人形 + 1px 描边）、`OgMd1Tooltip`（MD1 暗色气泡 + 三角指针 + elevation2 真投影，长按/点击显隐）、`OgMd1Scrollbar`（细滚动条自绘 + 拖拽跳转 + ScrollController 联动 + ScrollNotification）、`OgMd1IconButton`（48dp 触控 + MD1 ripple + 键盘 Enter/Space + Semantics）——全 CustomPainter 自绘，零 Material 可见控件。
+- 仅扩展文件头 `show` 列表（`dart:ui` 的 `Image`/`Path`、`IconData`、`ScrollController`），未改既有代码。
+- 全门禁绿：`dart format` 0 changed + ui/perf/layer/contract/gate（12 支）/i18n 全过。
+
 ## 剩余批次（待执行）
 - 批 6-9：剩余 16 控件 + 逐页迁移（设置→关于→仓库→议题→内容页→其他）
 - 批 10：删除全部 Material 可见控件引用，切换 WidgetsApp，截图矩阵按 MD1 重录
