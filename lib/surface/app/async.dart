@@ -485,26 +485,29 @@ class OgLAsyncErrorPane extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
+    // 矮窗（横屏）下图标+文案+按钮竖排会溢出：外包可滚（与骨架同手法）。
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(OgLSpace.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(Icons.error_outline,
-                size: OgLIconSize.avatar, color: scheme.error),
-            const SizedBox(height: OgLSpace.md),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: scheme.error),
-            ),
-            const SizedBox(height: OgLSpace.lg),
-            FilledButton.tonal(
-              onPressed: onRetry,
-              child: Text(_t('retry')),
-            ),
-          ],
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(OgLSpace.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(Icons.error_outline,
+                  size: OgLIconSize.avatar, color: scheme.error),
+              const SizedBox(height: OgLSpace.md),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: scheme.error),
+              ),
+              const SizedBox(height: OgLSpace.lg),
+              FilledButton.tonal(
+                onPressed: onRetry,
+                child: Text(_t('retry')),
+              ),
+            ],
+          ),
         ),
       ),
     );
