@@ -625,7 +625,7 @@ class _RepoPageState extends State<RepoPage> {
   }
 
   Widget _branchBar(ThemeData theme) => Material(
-        color: theme.colorScheme.surfaceVariant,
+        color: theme.colorScheme.surfaceContainerHighest,
         child: Semantics(
           // 分支选择条是「打开选择器」的按钮：屏幕阅读器需要可读标签，
           // 否则用户只看到一行分支名，不知道可以点。
@@ -698,10 +698,8 @@ class _RepoPageState extends State<RepoPage> {
       }));
       return;
     }
-    // 目录在新分支存在（probed 非空且是目录）：恢复原浏览位置。
-    final String? restored =
-        (probed?.isDirectory ?? false) ? probed!.path : null;
-    setState(() => _codePath = restored ?? '');
+    // 目录在新分支存在（上方已守卫 probed 非空且是目录）：恢复原浏览位置。
+    setState(() => _codePath = probed.path);
   }
 }
 
@@ -2305,7 +2303,7 @@ class _CodeTabState extends State<_CodeTab> {
   Widget _buildFileHeader(GhContent file) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return Material(
-      color: scheme.surfaceVariant,
+      color: scheme.surfaceContainerHighest,
       child: Row(
         children: <Widget>[
           IconButton(

@@ -114,7 +114,7 @@ class OgLSemanticColors extends ThemeExtension<OgLSemanticColors> {
   /// 强描边色：分割线 / 卡片 / Chip / 输入框 / 分段控件的可见边界。
   ///
   /// [ColorScheme.outlineVariant] 对各级 surface 仅 1.3–2.0:1，形同虚设；
-  /// 本色按 WCAG 2.1 校准，对 surface → surfaceVariant 明暗各级
+  /// 本色按 WCAG 2.1 校准，对 surface → surfaceContainerHighest 明暗各级
   /// 均 ≥3:1；页面取用走
   /// `Theme.of(context).extension<OgLSemanticColors>()!.outlineVariantStrong`。
   final Color outlineVariantStrong;
@@ -185,11 +185,10 @@ ThemeData buildOgLTheme(
     onSecondary: Colors.white,
     error: dark ? const Color(0xFFF85149) : const Color(0xFFCF222E),
     onError: Colors.white,
-    background: dark ? const Color(0xFF121212) : Colors.white,
-    onBackground: dark ? const Color(0xFFE6EDF3) : const Color(0xFF1F2328),
     surface: dark ? const Color(0xFF121212) : Colors.white,
     onSurface: dark ? const Color(0xFFE6EDF3) : const Color(0xFF1F2328),
-    surfaceVariant: dark ? const Color(0xFF1C2128) : const Color(0xFFF6F8FA),
+    surfaceContainerHighest:
+        dark ? const Color(0xFF1C2128) : const Color(0xFFF6F8FA),
     onSurfaceVariant: dark ? const Color(0xFF8B949E) : const Color(0xFF57606A),
     outline: dark ? const Color(0xFF30363D) : const Color(0xFFD0D7DE),
     shadow: Colors.black,
@@ -264,7 +263,7 @@ ThemeData buildOgLTheme(
     dialogTheme: DialogThemeData(
       shape: shapeMd,
       elevation: 3,
-      backgroundColor: scheme.surfaceVariant,
+      backgroundColor: scheme.surfaceContainerHighest,
       insetPadding: const EdgeInsets.symmetric(
         horizontal: OgLSpace.xl,
         vertical: OgLSpace.xl,
@@ -287,7 +286,7 @@ ThemeData buildOgLTheme(
       shape:
           const RoundedRectangleBorder(borderRadius: OgLRadius.verticalTopXl),
       elevation: 1,
-      backgroundColor: scheme.surfaceVariant,
+      backgroundColor: scheme.surfaceContainerHighest,
       showDragHandle: true,
       dragHandleColor: outlineStrong,
       clipBehavior: Clip.antiAlias,
@@ -299,7 +298,7 @@ ThemeData buildOgLTheme(
       shape: shapeMd,
       elevation: 3,
       backgroundColor: brightness == Brightness.dark
-          ? scheme.surfaceVariant
+          ? scheme.surfaceContainerHighest
           : scheme.inverseSurface,
       contentTextStyle: tt.bodyMedium?.copyWith(
         // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
@@ -309,7 +308,7 @@ ThemeData buildOgLTheme(
         height: 1.4,
       ),
       insetPadding: const EdgeInsets.all(OgLSpace.md),
-      // 暗色底色为 surfaceVariant（亮档），inversePrimary 仅 1.9:1；
+      // 暗色底色为 surfaceContainerHighest（亮档），inversePrimary 仅 1.9:1；
       // 用 onSurface 达 9.5:1。浅色底色 inverseSurface 则沿用 inversePrimary。
       actionTextColor: brightness == Brightness.dark
           ? scheme.onSurface
@@ -370,7 +369,7 @@ ThemeData buildOgLTheme(
     // ── Chip ────────────────────────────────────────────────────────────
     chipTheme: ChipThemeData(
       shape: shapeSm,
-      backgroundColor: scheme.surfaceVariant,
+      backgroundColor: scheme.surfaceContainerHighest,
       selectedColor: scheme.secondaryContainer,
       showCheckmark: false,
       side: BorderSide(color: outlineStrong),
@@ -404,7 +403,7 @@ ThemeData buildOgLTheme(
     // ── 输入框 ──────────────────────────────────────────────────────────
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: scheme.surfaceVariant,
+      fillColor: scheme.surfaceContainerHighest,
       isDense: true,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: OgLSpace.md,
@@ -440,7 +439,7 @@ ThemeData buildOgLTheme(
         minimumSize: minButton,
         padding: const EdgeInsets.symmetric(horizontal: OgLSpace.xl),
         disabledForegroundColor: scheme.onSurface.withValues(alpha: 0.60),
-        disabledBackgroundColor: scheme.surfaceVariant,
+        disabledBackgroundColor: scheme.surfaceContainerHighest,
         textStyle: tt.labelLarge?.copyWith(
           // fontFamily 不覆写：UI 控件保持平台字体（外观字体只管正文阅读）。
           fontWeight: FontWeight.w600,

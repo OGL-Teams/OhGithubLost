@@ -880,7 +880,7 @@ class _IssuePageState extends State<IssuePage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         Container(
-                          color: theme.colorScheme.surfaceVariant,
+                          color: theme.colorScheme.surfaceContainerHighest,
                           padding: const EdgeInsets.fromLTRB(OgLSpace.md,
                               OgLSpace.sm, OgLSpace.md, OgLSpace.sm),
                           child: Row(

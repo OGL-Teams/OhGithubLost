@@ -192,7 +192,7 @@ class _CommitPageState extends State<CommitPage> {
           width: double.infinity,
           padding: const EdgeInsets.all(OgLSpace.md),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(OgLRadius.sm),
           ),
           child: _PatchView(patch: patch),

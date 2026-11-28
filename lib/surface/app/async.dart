@@ -371,7 +371,7 @@ class AsyncView<T> extends StatelessWidget {
 ///
 /// 来自 `search_page.dart` 的 `_SkeletonBox`/`_SkeletonRow` 模式，提到统一出口，
 /// 供 [AsyncView]、[OgLAsyncSliver] 与页面共用（D-06）。色阶按第一批主题 token 取
-/// `surfaceVariant` / `OgLSemanticColors.outlineVariantStrong`，
+/// `surfaceContainerHighest` / `OgLSemanticColors.outlineVariantStrong`，
 /// 与列表底色同调、不发亮。
 class OgLAsyncSkeleton extends StatelessWidget {
   /// 创建。
@@ -453,9 +453,9 @@ class OgLAsyncSkeleton extends StatelessWidget {
       height: height,
       width: width,
       decoration: BoxDecoration(
-        // 底色用 surfaceVariant（与列表底色同调），描边用
+        // 底色用 surfaceContainerHighest（与列表底色同调），描边用
         // outlineVariantStrong —— 骨架块既不发光也不糊成一片。
-        color: scheme.surfaceVariant,
+        color: scheme.surfaceContainerHighest,
         border: Border.all(color: semantic.outlineVariantStrong),
         borderRadius:
             circular ? BorderRadius.circular(height / 2) : OgLRadius.cSm,

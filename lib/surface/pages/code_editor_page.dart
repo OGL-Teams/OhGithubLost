@@ -386,7 +386,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
 
   Widget _buildToolbar(BuildContext context) {
     // ★ 修复「顶栏漏缝」：工具栏背景与代码区背景同色，视觉连成一体
-    //   （此前用 surfaceVariant，与代码配色主题之间出现色带）。
+    //   （此前用 surfaceContainerHighest，与代码配色主题之间出现色带）。
     //   ★ 但**同色不等于对齐**：横向 SingleChildScrollView 的内容
     //   `Row(mainAxisSize: min)` 只有图标那么宽，Material 于是按内容
     //   收缩——真机实测灰带只覆盖 x=43..978，两端各露 43/71px 的
@@ -478,7 +478,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
     final int line = selection.extentIndex + 1;
     final int column = selection.extentOffset + 1;
     return Material(
-      color: theme.colorScheme.surfaceVariant,
+      color: theme.colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
             OgLSpace.md, OgLSpace.xxs, OgLSpace.md, OgLSpace.xxs),
@@ -606,7 +606,7 @@ class _CodeEditorPageState extends State<CodeEditorPage> {
                     visualDensity: VisualDensity.compact,
                     backgroundColor: _saveHighlighted
                         ? theme.colorScheme.primary.withValues(alpha: 0.12)
-                        : theme.colorScheme.surfaceVariant,
+                        : theme.colorScheme.surfaceContainerHighest,
                     foregroundColor: _saveHighlighted
                         ? theme.colorScheme.primary
                         : theme.colorScheme.onSurfaceVariant,

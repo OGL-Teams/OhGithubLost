@@ -135,7 +135,7 @@ class _OgLTitleBarState extends State<OgLTitleBar> with WindowListener {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Material(
-      color: theme.colorScheme.surfaceVariant,
+      color: theme.colorScheme.surfaceContainerHighest,
       child: SizedBox(
         height: kOgLTitleBarHeight,
         child: Row(

@@ -668,7 +668,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
 
   Widget _banner(ThemeData theme, IconData icon, String message) => Container(
         width: double.infinity,
-        color: theme.colorScheme.surfaceVariant,
+        color: theme.colorScheme.surfaceContainerHighest,
         padding: const EdgeInsets.symmetric(
           horizontal: OgLSpace.md,
           vertical: OgLSpace.sm,

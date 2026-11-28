@@ -5,7 +5,6 @@
 /// 2. 降到 `0` 时动画完全关闭（时长为零、`OgLReveal` 直接显示）。
 library;
 
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ohgithublost/surface/app/animations.dart';

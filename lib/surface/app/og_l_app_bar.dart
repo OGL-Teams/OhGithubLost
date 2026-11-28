@@ -1,15 +1,15 @@
 /// L3 展示级 · **滚动渐变融合 AppBar**（统一应用栏，走设计令牌）。
 ///
 /// ## 它解决什么（MD2 形态）
-/// MD2 下 AppBar 边界 = elevation 4 真投影 + surface→surfaceVariant 的
+/// MD2 下 AppBar 边界 = elevation 4 真投影 + surface→surfaceContainerHighest 的
 /// **连续色阶插值**：顶部与页面同色（完全融合），滚深渐变到可辨识的
-/// surfaceVariant，全程无硬边。`scrolledUnderElevation`/`surfaceTint`
+/// surfaceContainerHighest，全程无硬边。`scrolledUnderElevation`/`surfaceTint`
 /// 等 M3 语义已随迁移移除。
 ///
 /// ## 与主题令牌的关系
 /// `theme.dart` 的 `appBarTheme.backgroundColor = surface`、
 /// `elevation = 4`（真投影）。本组件叠加的连续插值两端色
-/// （surface / surfaceVariant）都来自 `ColorScheme`。
+/// （surface / surfaceContainerHighest）都来自 `ColorScheme`。
 ///
 /// ## 滚动进度来源（G-02 / B-01：无 Primary 兜底）
 /// 本项目**没有任何地方**注入 `PrimaryScrollController`（Scaffold 只读不写），
@@ -134,7 +134,7 @@ class _OgLAppBarState extends State<OgLAppBar> {
         final double progress = t.clamp(0.0, 1.0);
         final Color merged = Color.lerp(
           theme.colorScheme.surface,
-          theme.colorScheme.surfaceVariant,
+          theme.colorScheme.surfaceContainerHighest,
           progress,
         )!;
         return AppBar(

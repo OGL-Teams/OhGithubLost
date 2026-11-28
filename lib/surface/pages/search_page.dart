@@ -79,7 +79,7 @@ class _SkeletonBox extends StatelessWidget {
         height: height,
         width: width,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceVariant,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: OgLRadius.cSm,
         ),
       );

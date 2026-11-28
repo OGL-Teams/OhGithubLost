@@ -359,7 +359,8 @@ class _NotificationTile extends StatelessWidget {
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(OgLSpace.md),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.surfaceVariant,
+                                    color: theme
+                                        .colorScheme.surfaceContainerHighest,
                                     borderRadius:
                                         BorderRadius.circular(OgLRadius.sm),
                                   ),

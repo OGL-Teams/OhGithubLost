@@ -159,7 +159,6 @@ class OgLBootFailureApp extends StatelessWidget {
             primary: kOgLErrorSeedColor,
             secondary: kOgLErrorSecondary,
             surface: kOgLErrorSurface,
-            background: kOgLErrorSurface,
             error: kOgLErrorSeedColor,
           ),
         ),

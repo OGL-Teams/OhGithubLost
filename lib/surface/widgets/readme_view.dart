@@ -387,10 +387,10 @@ class ReadmeView extends StatelessWidget {
         h2: theme.textTheme.titleLarge,
         h3: theme.textTheme.titleMedium,
         code: mono.copyWith(
-          backgroundColor: scheme.surfaceVariant,
+          backgroundColor: scheme.surfaceContainerHighest,
         ),
         codeblockDecoration: BoxDecoration(
-          color: scheme.surfaceVariant,
+          color: scheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(OgLRadius.sm),
         ),
         blockquoteDecoration: BoxDecoration(
