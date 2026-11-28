@@ -29,6 +29,12 @@
 - 仅扩展文件头 `show` 列表（`dart:ui` 的 `Image`/`Path`、`IconData`、`ScrollController`），未改既有代码。
 - 全门禁绿：`dart format` 0 changed + ui/perf/layer/contract/gate（12 支）/i18n 全过。
 
+## 批 6B（最后 4 控件）✅
+- `md1_painters.dart` 扩至 6202 行：新增 `OgMd1ExpansionTile`（自绘 chevron 旋转+高度展开）、`OgMd1Stepper`（步骤点/连线自绘）、`OgMd1SearchBar`（56dp 搜索条+清除）、`OgMd1LoadingIndicator`（线性/环形自绘）。
+- 额外修掉两处编译级隐患：`md1_tokens.dart` 的 library/import 位置、跨库 `show` 私有名（改公开令牌+私有别名）。
+- **MD1 控件层 41 个全部就位**，进入页面迁移阶段。
+- 全门禁绿（format/ui/perf/layer/contract/motion/gate/i18n）。
+
 ## 剩余批次（待执行）
 - 批 6-9：剩余 16 控件 + 逐页迁移（设置→关于→仓库→议题→内容页→其他）
 - 批 10：删除全部 Material 可见控件引用，切换 WidgetsApp，截图矩阵按 MD1 重录

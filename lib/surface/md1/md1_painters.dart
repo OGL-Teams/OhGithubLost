@@ -116,19 +116,37 @@ import 'md1_tokens.dart'
         OgMd1Elevation,
         OgMd1Size,
         OgMd1Type,
-        _md1BadgeDot,
-        _md1BadgeSize,
-        _md1ChipHeightMax,
-        _md1ChipHeightMin,
-        _md1ChipPadding,
-        _md1ChipVisual,
-        _md1DialogActionGap,
-        _md1DialogGap,
-        _md1DialogPadding,
-        _md1DividerPx,
-        _md1SnackbarGap,
-        _md1SnackbarHeight,
-        _md1SnackbarPadding;
+        md1BadgeDot,
+        md1BadgeSize,
+        md1ChipHeightMax,
+        md1ChipHeightMin,
+        md1ChipPadding,
+        md1ChipVisual,
+        md1DialogActionGap,
+        md1DialogGap,
+        md1DialogPadding,
+        md1DividerPx,
+        md1SnackbarGap,
+        md1SnackbarHeight,
+        md1SnackbarPadding;
+
+/// 库内别名：MD1 版式常量（唯一值源仍在 `md1_tokens.dart`）。
+///
+/// 令牌层的版式常量是**公开**的（Dart 的私有名不能跨库 import），
+/// 本文件用同名私有别名接住，既有控件代码里的名字因此保持不变。
+const double _md1BadgeDot = md1BadgeDot;
+const double _md1BadgeSize = md1BadgeSize;
+const double _md1ChipHeightMax = md1ChipHeightMax;
+const double _md1ChipHeightMin = md1ChipHeightMin;
+const double _md1ChipPadding = md1ChipPadding;
+const double _md1ChipVisual = md1ChipVisual;
+const double _md1DialogActionGap = md1DialogActionGap;
+const double _md1DialogGap = md1DialogGap;
+const double _md1DialogPadding = md1DialogPadding;
+const double _md1DividerPx = md1DividerPx;
+const double _md1SnackbarGap = md1SnackbarGap;
+const double _md1SnackbarHeight = md1SnackbarHeight;
+const double _md1SnackbarPadding = md1SnackbarPadding;
 
 /// 按钮样式：flat（透明底）与 raised（primary 底 + 投影）。
 enum OgMd1ButtonStyle {
@@ -4853,6 +4871,1331 @@ class _OgMd1IconButtonState extends State<OgMd1IconButton>
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 批 6B · 展开行 / 步骤条 / 搜索条 / 加载指示器
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 焦点描边 painter：键盘聚焦时 1px primary 描边（MD1 焦点反馈）。
+class _OgMd1FocusOutlinePainter extends CustomPainter {
+  const _OgMd1FocusOutlinePainter({
+    required this.color,
+    required this.focused,
+    this.radius = OgMd1Size.radius,
+  });
+
+  final Color color;
+  final bool focused;
+  final double radius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!focused) {
+      return;
+    }
+    final RRect rect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(radius),
+    );
+    canvas.drawRRect(
+      rect.deflate(0.5),
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1FocusOutlinePainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.focused != focused ||
+      oldDelegate.radius != radius;
+}
+
+/// 展开箭头 painter：MD1 chevron 随展开进度旋转（0 = 指向下，1 = 指向上）。
+class _OgMd1ExpansionArrowPainter extends CustomPainter {
+  const _OgMd1ExpansionArrowPainter({
+    required this.color,
+    required this.progress,
+  });
+
+  final Color color;
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double arm = size.width * 0.3;
+    canvas.save();
+    canvas.translate(size.width / 2, size.height / 2);
+    canvas.rotate(math.pi * progress);
+    final Path chevron = Path()
+      ..moveTo(-arm, -arm * 0.55)
+      ..lineTo(0, arm * 0.55)
+      ..lineTo(arm, -arm * 0.55);
+    canvas.drawPath(
+      chevron,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1ExpansionArrowPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.progress != progress;
+}
+
+/// MD1 可折叠行：标题 + 可选副标题 + 自绘 chevron 箭头 + 展开内容。
+///
+/// 箭头为自绘路径，随展开进度在 0 → π 之间旋转（MD1 的 180° 翻转）；
+/// 展开内容用 [Align] 的 `heightFactor` 做高度展开（自绘 + 自控曲线），
+/// 不使用 Material 的 ExpansionTile / AnimatedSize。
+class OgMd1ExpansionTile extends StatefulWidget {
+  /// 创建可折叠行。
+  const OgMd1ExpansionTile({
+    required this.title,
+    this.subtitle,
+    this.children = const <Widget>[],
+    this.initiallyExpanded = false,
+    this.onExpansionChanged,
+    super.key,
+  });
+
+  /// 主标题。
+  final String title;
+
+  /// 副标题（可选；存在时行高 72dp）。
+  final String? subtitle;
+
+  /// 展开后显示的内容。
+  final List<Widget> children;
+
+  /// 初始是否展开。
+  final bool initiallyExpanded;
+
+  /// 展开/收起回调（参数为当前展开态）。
+  final ValueChanged<bool>? onExpansionChanged;
+
+  @override
+  State<OgMd1ExpansionTile> createState() => _OgMd1ExpansionTileState();
+}
+
+class _OgMd1ExpansionTileState extends State<OgMd1ExpansionTile>
+    with SingleTickerProviderStateMixin {
+  AnimationController? _controller;
+  late final FocusNode _focusNode = FocusNode();
+  late final FocusNode _keyNode = FocusNode();
+  late bool _expanded = widget.initiallyExpanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_onFocus);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 动画控制器在 didChangeDependencies 建：档位表要读继承型作用域，
+    // 不能在 initState 里查（那会抛 dependOnInheritedWidgetOfExactType）。
+    if (_controller == null) {
+      _controller = AnimationController(
+        vsync: this,
+        duration: OgLAnim.medium(context),
+      );
+      if (_expanded) {
+        _controller!.value = 1;
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant OgMd1ExpansionTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initiallyExpanded != oldWidget.initiallyExpanded &&
+        widget.initiallyExpanded != _expanded) {
+      _setExpanded(widget.initiallyExpanded);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocus);
+    _focusNode.dispose();
+    _keyNode.dispose();
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _onFocus() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _setExpanded(bool value) {
+    setState(() => _expanded = value);
+    final AnimationController? controller = _controller;
+    if (controller == null) {
+      return;
+    }
+    if (value) {
+      controller.forward();
+    } else {
+      controller.reverse();
+    }
+    widget.onExpansionChanged?.call(value);
+  }
+
+  void _toggle() => _setExpanded(!_expanded);
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent) {
+      return;
+    }
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.space) {
+      _toggle();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final AnimationController controller = _controller!;
+    final double rowHeight = widget.subtitle == null
+        ? OgMd1Size.listRowSingle
+        : OgMd1Size.listRowDouble;
+    final Widget header = Semantics(
+      container: true,
+      button: true,
+      label: widget.title,
+      hint: widget.subtitle,
+      onTap: _toggle,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          _focusNode.requestFocus();
+          _keyNode.requestFocus();
+          _toggle();
+        },
+        child: Focus(
+          focusNode: _focusNode,
+          child: RawKeyboardListener(
+            focusNode: _keyNode,
+            onKey: _onKey,
+            child: CustomPaint(
+              foregroundPainter: _OgMd1FocusOutlinePainter(
+                color: palette.primary,
+                focused: _focusNode.hasFocus,
+              ),
+              child: SizedBox(
+                height: rowHeight,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          start: OgMd1Size.buttonPadding,
+                          end: OgMd1Size.buttonPadding,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              widget.title,
+                              style: TextStyle(
+                                fontSize: OgMd1Type.subhead,
+                                fontWeight: OgMd1Type.bodyWeight,
+                                color: palette.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (widget.subtitle != null)
+                              Text(
+                                widget.subtitle!,
+                                style: TextStyle(
+                                  fontSize: OgMd1Type.caption,
+                                  fontWeight: OgMd1Type.bodyWeight,
+                                  color: palette.textSecondary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: OgMd1Size.touchTarget,
+                      child: AnimatedBuilder(
+                        animation: controller,
+                        builder: (BuildContext context, Widget? child) =>
+                            CustomPaint(
+                          painter: _OgMd1ExpansionArrowPainter(
+                            color: palette.textSecondary,
+                            progress: controller.value,
+                          ),
+                          child: child,
+                        ),
+                        child: const Center(
+                          child: SizedBox(
+                            width: OgMd1Type.title,
+                            height: OgMd1Type.title,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    final Widget body = ClipRect(
+      child: Align(
+        alignment: Alignment.topCenter,
+        heightFactor: controller.value,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[const OgMd1Divider(), ...widget.children],
+        ),
+      ),
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[header, body],
+    );
+  }
+}
+
+/// 步骤条目：标题 + 可选说明。
+class OgMd1StepperStep {
+  /// 创建步骤。
+  const OgMd1StepperStep({required this.label, this.description});
+
+  /// 步骤标题。
+  final String label;
+
+  /// 步骤说明（可选）。
+  final String? description;
+}
+
+/// 步骤条 painter：步骤点（完成 / 当前 / 未到达）+ 步骤之间的连接线。
+class _OgMd1StepperPainter extends CustomPainter {
+  const _OgMd1StepperPainter({
+    required this.count,
+    required this.current,
+    required this.previous,
+    required this.progress,
+    required this.primary,
+    required this.accent,
+    required this.divider,
+    required this.onPrimary,
+    required this.textSecondary,
+    required this.textDirection,
+  });
+
+  final int count;
+  final int current;
+  final int previous;
+  final double progress;
+  final Color primary;
+  final Color accent;
+  final Color divider;
+  final Color onPrimary;
+  final Color textSecondary;
+  final TextDirection textDirection;
+
+  double _segmentFill(int index) {
+    // index = 连接线左侧的步骤序号（连接 index 与 index+1）。
+    if (index + 1 <= previous) {
+      return 1;
+    }
+    if (index + 1 > current) {
+      return 0;
+    }
+    final double delta = current - previous;
+    final double raw = progress * delta - (index - previous);
+    return raw.clamp(0.0, 1.0);
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (count <= 0) {
+      return;
+    }
+    final double cell = size.width / count;
+    final double radius = size.height / 2;
+    final double cy = size.height / 2;
+    for (int i = 0; i < count; i++) {
+      final double cx = cell * (i + 0.5);
+      if (i < count - 1) {
+        final double x0 = cx + radius;
+        final double x1 = cell * (i + 1.5) - radius;
+        canvas.drawLine(
+          Offset(x0, cy),
+          Offset(x1, cy),
+          Paint()
+            ..color = divider
+            ..strokeWidth = 2
+            ..strokeCap = StrokeCap.round,
+        );
+        final double fill = _segmentFill(i);
+        if (fill > 0) {
+          canvas.drawLine(
+            Offset(x0, cy),
+            Offset(x0 + (x1 - x0) * fill, cy),
+            Paint()
+              ..color = primary
+              ..strokeWidth = 2
+              ..strokeCap = StrokeCap.round,
+          );
+        }
+      }
+      final bool done = i < current;
+      final bool active = i == current;
+      if (done || active) {
+        canvas.drawCircle(
+          Offset(cx, cy),
+          radius,
+          Paint()..color = done ? primary : accent,
+        );
+      } else {
+        canvas.drawCircle(
+          Offset(cx, cy),
+          radius,
+          Paint()
+            ..color = divider
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
+        );
+      }
+      if (done) {
+        final Path check = Path()
+          ..moveTo(cx - radius * 0.45, cy)
+          ..lineTo(cx - radius * 0.1, cy + radius * 0.35)
+          ..lineTo(cx + radius * 0.5, cy - radius * 0.4);
+        canvas.drawPath(
+          check,
+          Paint()
+            ..color = onPrimary
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2
+            ..strokeCap = StrokeCap.round,
+        );
+      } else {
+        final TextPainter number = TextPainter(
+          text: TextSpan(
+            text: '${i + 1}',
+            style: TextStyle(
+              fontSize: OgMd1Type.caption,
+              fontWeight: OgMd1Type.buttonWeight,
+              color: active ? onPrimary : textSecondary,
+            ),
+          ),
+          textDirection: textDirection,
+        )..layout();
+        number.paint(
+          canvas,
+          Offset(cx - number.width / 2, cy - number.height / 2),
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1StepperPainter oldDelegate) =>
+      oldDelegate.count != count ||
+      oldDelegate.current != current ||
+      oldDelegate.previous != previous ||
+      oldDelegate.progress != progress ||
+      oldDelegate.primary != primary ||
+      oldDelegate.accent != accent ||
+      oldDelegate.divider != divider ||
+      oldDelegate.onPrimary != onPrimary ||
+      oldDelegate.textSecondary != textSecondary ||
+      oldDelegate.textDirection != textDirection;
+}
+
+/// MD1 步骤条：步骤点 + 连接线，全部自绘。
+///
+/// 完成步骤为 primary 实心点 + 对勾，当前步骤为 accent 实心点 + 序号，
+/// 未到达步骤为 divider 描边空心点；连接线随当前步推进自绘填充。
+/// 点击步骤点或用方向键可切换当前步（由 [onStepSelected] 回调）。
+class OgMd1Stepper extends StatefulWidget {
+  /// 创建步骤条。
+  const OgMd1Stepper({
+    required this.steps,
+    this.current = 0,
+    this.onStepSelected,
+    super.key,
+  });
+
+  /// 步骤列表。
+  final List<OgMd1StepperStep> steps;
+
+  /// 当前步骤序号（0 起）。
+  final int current;
+
+  /// 步骤切换回调（参数为新的步骤序号）。
+  final ValueChanged<int>? onStepSelected;
+
+  @override
+  State<OgMd1Stepper> createState() => _OgMd1StepperState();
+}
+
+class _OgMd1StepperState extends State<OgMd1Stepper>
+    with SingleTickerProviderStateMixin {
+  AnimationController? _controller;
+  late final FocusNode _focusNode = FocusNode();
+  late final FocusNode _keyNode = FocusNode();
+  final GlobalKey _dotsKey = GlobalKey();
+  int _previous = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _previous = widget.current;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 控制器建在 didChangeDependencies：档位表读继承型作用域，
+    // 不能在 initState 里查（会抛 dependOnInheritedWidgetOfExactType）。
+    if (_controller == null) {
+      final AnimationController controller = AnimationController(
+        vsync: this,
+        duration: OgLAnim.medium(context),
+      );
+      controller.addStatusListener(_onAnimationStatus);
+      _controller = controller;
+    }
+  }
+
+  void _onAnimationStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed && mounted) {
+      setState(() => _previous = widget.current);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant OgMd1Stepper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.current == oldWidget.current) {
+      return;
+    }
+    final AnimationController? controller = _controller;
+    if (controller == null) {
+      return;
+    }
+    if (widget.current > _previous) {
+      controller
+        ..reset()
+        ..forward();
+    } else {
+      _previous = widget.current;
+      controller.value = 1;
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _keyNode.dispose();
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _select(int index) {
+    final int count = widget.steps.length;
+    if (count == 0) {
+      return;
+    }
+    widget.onStepSelected?.call(index.clamp(0, count - 1).toInt());
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    _focusNode.requestFocus();
+    _keyNode.requestFocus();
+    final RenderBox? box =
+        _dotsKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null || widget.steps.isEmpty) {
+      return;
+    }
+    final double cell = box.size.width / widget.steps.length;
+    if (cell <= 0) {
+      return;
+    }
+    _select((details.localPosition.dx / cell).floor());
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent) {
+      return;
+    }
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowRight) {
+      _select(widget.current + 1);
+    } else if (key == LogicalKeyboardKey.arrowLeft) {
+      _select(widget.current - 1);
+    } else if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
+      _select(widget.current);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final TextDirection direction = Directionality.of(context);
+    final AnimationController controller = _controller!;
+    final int count = widget.steps.length;
+    final Widget dots = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapUp: count == 0 ? null : _onTapUp,
+      child: SizedBox(
+        key: _dotsKey,
+        height: OgMd1Type.title,
+        child: AnimatedBuilder(
+          animation: controller,
+          builder: (BuildContext context, Widget? child) => CustomPaint(
+            painter: _OgMd1StepperPainter(
+              count: count,
+              current: widget.current,
+              previous: _previous,
+              progress: controller.value,
+              primary: palette.primary,
+              accent: palette.accent,
+              divider: palette.divider,
+              onPrimary: palette.onPrimary,
+              textSecondary: palette.textSecondary,
+              textDirection: direction,
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    );
+    final Widget labels = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List<Widget>.generate(count, (int i) {
+        final OgMd1StepperStep step = widget.steps[i];
+        final bool active = i == widget.current;
+        return Expanded(
+          child: Semantics(
+            label: step.label,
+            selected: active,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  step.label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: OgMd1Type.body,
+                    fontWeight:
+                        active ? OgMd1Type.buttonWeight : OgMd1Type.bodyWeight,
+                    color: active ? palette.primary : palette.textSecondary,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (step.description != null)
+                  Text(
+                    step.description!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: OgMd1Type.overline,
+                      fontWeight: OgMd1Type.bodyWeight,
+                      color: palette.textSecondary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+    return Semantics(
+      container: true,
+      child: Focus(
+        focusNode: _focusNode,
+        child: RawKeyboardListener(
+          focusNode: _keyNode,
+          onKey: _onKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              dots,
+              const SizedBox(height: OgMd1Type.overline),
+              labels,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 搜索条 painter：MD1 56dp 搜索条 —— 放大镜、提示文字、输入文字、插入光标。
+class _OgMd1SearchBarPainter extends CustomPainter {
+  const _OgMd1SearchBarPainter({
+    required this.background,
+    required this.divider,
+    required this.primary,
+    required this.focused,
+    required this.iconColor,
+    required this.hint,
+    required this.hintColor,
+    required this.value,
+    required this.valueColor,
+    required this.caret,
+    required this.textDirection,
+  });
+
+  final Color background;
+  final Color divider;
+  final Color primary;
+  final bool focused;
+  final Color iconColor;
+  final String hint;
+  final Color hintColor;
+  final String value;
+  final Color valueColor;
+  final int caret;
+  final TextDirection textDirection;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect bar = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(OgMd1Size.radius),
+    );
+    canvas.drawRRect(bar, Paint()..color = background);
+    canvas.drawLine(
+      Offset(0, size.height - 1),
+      Offset(size.width, size.height - 1),
+      Paint()
+        ..color = divider
+        ..strokeWidth = 1,
+    );
+    if (focused) {
+      canvas.drawRRect(
+        bar.deflate(0.5),
+        Paint()
+          ..color = primary
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1,
+      );
+    }
+
+    // 放大镜（自绘：圆 + 手柄）。
+    final double glassX = OgMd1Size.buttonPadding + OgMd1Type.caption;
+    final double glassY = size.height / 2 - OgMd1Type.overline;
+    final Paint stroke = Paint()
+      ..color = iconColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(Offset(glassX, glassY), OgMd1Type.caption, stroke);
+    canvas.drawLine(
+      Offset(glassX + 4.2, glassY + 4.2),
+      Offset(glassX + 7.4, glassY + 7.4),
+      stroke,
+    );
+
+    final double textLeft = OgMd1Size.buttonPadding + OgMd1Type.title + 4;
+    final double textWidth = math.max(0, size.width - textLeft - 8);
+    if (value.isEmpty) {
+      final TextPainter hintPainter = TextPainter(
+        text: TextSpan(
+          text: hint,
+          style: TextStyle(
+            fontSize: OgMd1Type.body,
+            fontWeight: OgMd1Type.bodyWeight,
+            color: hintColor,
+          ),
+        ),
+        textDirection: textDirection,
+      )..layout(maxWidth: textWidth);
+      hintPainter.paint(
+        canvas,
+        Offset(textLeft, (size.height - hintPainter.height) / 2),
+      );
+      return;
+    }
+    final TextPainter valuePainter = TextPainter(
+      text: TextSpan(
+        text: value,
+        style: TextStyle(
+          fontSize: OgMd1Type.body,
+          fontWeight: OgMd1Type.bodyWeight,
+          color: valueColor,
+        ),
+      ),
+      textDirection: textDirection,
+    )..layout(maxWidth: textWidth);
+    final double top = (size.height - valuePainter.height) / 2;
+    valuePainter.paint(canvas, Offset(textLeft, top));
+    if (focused) {
+      final int caretIndex = caret.clamp(0, value.length).toInt();
+      final TextPainter head = TextPainter(
+        text: TextSpan(
+          text: value.substring(0, caretIndex),
+          style: TextStyle(
+            fontSize: OgMd1Type.body,
+            fontWeight: OgMd1Type.bodyWeight,
+            color: valueColor,
+          ),
+        ),
+        textDirection: textDirection,
+      )..layout(maxWidth: textWidth);
+      canvas.drawLine(
+        Offset(textLeft + math.min(head.width, textWidth), top),
+        Offset(
+          textLeft + math.min(head.width, textWidth),
+          top + valuePainter.height,
+        ),
+        Paint()
+          ..color = primary
+          ..strokeWidth = 1,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1SearchBarPainter oldDelegate) =>
+      oldDelegate.background != background ||
+      oldDelegate.divider != divider ||
+      oldDelegate.primary != primary ||
+      oldDelegate.focused != focused ||
+      oldDelegate.iconColor != iconColor ||
+      oldDelegate.hint != hint ||
+      oldDelegate.hintColor != hintColor ||
+      oldDelegate.value != value ||
+      oldDelegate.valueColor != valueColor ||
+      oldDelegate.caret != caret ||
+      oldDelegate.textDirection != textDirection;
+}
+
+/// 清除按钮 painter：自绘叉号（两条 45° 直线）。
+class _OgMd1ClearButtonPainter extends CustomPainter {
+  const _OgMd1ClearButtonPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double centerX = size.width / 2;
+    final double centerY = size.height / 2;
+    final double arm = size.width * 0.16;
+    final Paint stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(centerX - arm, centerY - arm),
+      Offset(centerX + arm, centerY + arm),
+      stroke,
+    );
+    canvas.drawLine(
+      Offset(centerX + arm, centerY - arm),
+      Offset(centerX - arm, centerY + arm),
+      stroke,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1ClearButtonPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// MD1 搜索条：56dp 高，自绘放大镜、提示文字、输入文字与清除按钮。
+///
+/// 键盘走 [RawKeyboardListener]（可打印字符插入、Backspace 删除、方向键移动
+/// 插入点、回车提交），焦点时显示 primary 描边与插入光标；
+/// 有输入内容时右侧出现自绘叉号清除按钮。
+class OgMd1SearchBar extends StatefulWidget {
+  /// 创建搜索条。
+  const OgMd1SearchBar({
+    required this.hint,
+    this.controller,
+    this.onChanged,
+    this.onSubmitted,
+    this.clearLabel = 'Clear',
+    super.key,
+  });
+
+  /// 占位提示（调用方本地化后传入）。
+  final String hint;
+
+  /// 可选的文本控制器。
+  final TextEditingController? controller;
+
+  /// 文本变化回调。
+  final ValueChanged<String>? onChanged;
+
+  /// 提交回调（回车）。
+  final ValueChanged<String>? onSubmitted;
+
+  /// 清除按钮的无障碍标签（调用方本地化后传入）。
+  final String clearLabel;
+
+  @override
+  State<OgMd1SearchBar> createState() => _OgMd1SearchBarState();
+}
+
+class _OgMd1SearchBarState extends State<OgMd1SearchBar> {
+  late final FocusNode _focusNode = FocusNode();
+  late final FocusNode _keyNode = FocusNode();
+  late TextEditingController _controller;
+  bool _ownsController = false;
+  bool _focused = false;
+  int _caret = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = widget.controller ?? TextEditingController();
+    _ownsController = widget.controller == null;
+    _caret = _controller.text.length;
+    _focusNode.addListener(_onFocus);
+  }
+
+  @override
+  void didUpdateWidget(covariant OgMd1SearchBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller == oldWidget.controller) {
+      return;
+    }
+    _focusNode.removeListener(_onFocus);
+    if (_ownsController) {
+      _controller.dispose();
+    }
+    _controller = widget.controller ?? TextEditingController();
+    _ownsController = widget.controller == null;
+    _caret = _controller.text.length;
+    _focusNode.addListener(_onFocus);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocus);
+    _focusNode.dispose();
+    _keyNode.dispose();
+    if (_ownsController) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void _onFocus() {
+    if (!mounted || _focused == _focusNode.hasFocus) {
+      return;
+    }
+    setState(() => _focused = _focusNode.hasFocus);
+  }
+
+  void _replaceText(String text, int caret) {
+    _controller.value = _controller.value.copyWith(
+      text: text,
+      selection: TextSelection.collapsed(offset: caret),
+    );
+    setState(() => _caret = caret);
+    widget.onChanged?.call(text);
+  }
+
+  void _clear() {
+    _replaceText('', 0);
+    _focusNode.requestFocus();
+    _keyNode.requestFocus();
+  }
+
+  void _onKey(RawKeyEvent event) {
+    if (event is! RawKeyDownEvent) {
+      return;
+    }
+    final String text = _controller.text;
+    final LogicalKeyboardKey key = event.logicalKey;
+    if (key == LogicalKeyboardKey.enter) {
+      widget.onSubmitted?.call(text);
+      return;
+    }
+    if (key == LogicalKeyboardKey.backspace) {
+      if (_caret > 0) {
+        _replaceText(
+          text.substring(0, _caret - 1) + text.substring(_caret),
+          _caret - 1,
+        );
+      }
+      return;
+    }
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      setState(() => _caret = _caret > 0 ? _caret - 1 : 0);
+      return;
+    }
+    if (key == LogicalKeyboardKey.arrowRight) {
+      setState(() => _caret = _caret < text.length ? _caret + 1 : text.length);
+      return;
+    }
+    if (key == LogicalKeyboardKey.home) {
+      setState(() => _caret = 0);
+      return;
+    }
+    if (key == LogicalKeyboardKey.end) {
+      setState(() => _caret = text.length);
+      return;
+    }
+    final String character = event.character ?? '';
+    if (character.isNotEmpty &&
+        !event.isControlKey &&
+        !event.isMetaKey &&
+        !event.isAltKey) {
+      _replaceText(
+        text.substring(0, _caret) + character + text.substring(_caret),
+        _caret + character.length,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final String value = _controller.text;
+    final bool showClear = value.isNotEmpty;
+    final Widget field = Semantics(
+      textField: true,
+      label: widget.hint,
+      value: value,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          _focusNode.requestFocus();
+          _keyNode.requestFocus();
+        },
+        child: Focus(
+          focusNode: _focusNode,
+          child: RawKeyboardListener(
+            focusNode: _keyNode,
+            onKey: _onKey,
+            child: SizedBox(
+              height: OgMd1Size.appBar,
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: SizedBox(
+                      height: OgMd1Size.appBar,
+                      child: CustomPaint(
+                        painter: _OgMd1SearchBarPainter(
+                          background: palette.background,
+                          divider: palette.divider,
+                          primary: palette.primary,
+                          focused: _focused,
+                          iconColor: palette.textSecondary,
+                          hint: widget.hint,
+                          hintColor: palette.textSecondary,
+                          value: value,
+                          valueColor: palette.textPrimary,
+                          caret: _caret,
+                          textDirection: Directionality.of(context),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (showClear)
+                    Semantics(
+                      button: true,
+                      label: widget.clearLabel,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _clear,
+                        child: SizedBox(
+                          width: OgMd1Size.touchTarget,
+                          height: OgMd1Size.appBar,
+                          child: CustomPaint(
+                            painter: _OgMd1ClearButtonPainter(
+                              color: palette.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    return field;
+  }
+}
+
+/// 加载指示器形态：线性条或环形。
+enum OgMd1LoadingVariant {
+  /// 线性不定进度条。
+  linear,
+
+  /// 环形不定进度圈。
+  circular,
+}
+
+/// 环形加载 painter：轨道圆环 + 旋转弧（accent）。
+class _OgMd1CircularLoadingPainter extends CustomPainter {
+  const _OgMd1CircularLoadingPainter({
+    required this.track,
+    required this.color,
+    required this.progress,
+    required this.thickness,
+    required this.value,
+  });
+
+  final Color track;
+  final Color color;
+  final double progress;
+  final double thickness;
+  final double? value;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double radius = (math.min(size.width, size.height) - thickness) / 2;
+    if (radius <= 0) {
+      return;
+    }
+    final Offset center = Offset(size.width / 2, size.height / 2);
+    final Rect rect = Rect.fromCircle(center: center, radius: radius);
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = track
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = thickness,
+    );
+    final double sweep = value != null
+        ? (value!.clamp(0.0, 1.0) * 2 * math.pi)
+        : (2 * math.pi / 3);
+    final double start =
+        value != null ? -math.pi / 2 : (progress * 2 * math.pi);
+    canvas.drawArc(
+      rect,
+      start,
+      sweep,
+      false,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = thickness
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1CircularLoadingPainter oldDelegate) =>
+      oldDelegate.track != track ||
+      oldDelegate.color != color ||
+      oldDelegate.progress != progress ||
+      oldDelegate.thickness != thickness ||
+      oldDelegate.value != value;
+}
+
+/// 线性加载 painter：轨道 + 往返滑动的进度段（accent）。
+class _OgMd1LinearLoadingPainter extends CustomPainter {
+  const _OgMd1LinearLoadingPainter({
+    required this.track,
+    required this.color,
+    required this.progress,
+    required this.thickness,
+    required this.value,
+  });
+
+  final Color track;
+  final Color color;
+  final double progress;
+  final double thickness;
+  final double? value;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double top = (size.height - thickness) / 2;
+    final Rect line = Rect.fromLTWH(0, top, size.width, thickness);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(line, Radius.circular(thickness / 2)),
+      Paint()..color = track,
+    );
+    final double filled = value != null ? value!.clamp(0.0, 1.0) : 0;
+    if (value != null) {
+      if (filled <= 0) {
+        return;
+      }
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, top, size.width * filled, thickness),
+          Radius.circular(thickness / 2),
+        ),
+        Paint()..color = color,
+      );
+      return;
+    }
+    // 不定进度：进度段在轨道内往返滑动（三角波，首尾衔接不跳变）。
+    final double segment = size.width / 3;
+    final double wave = progress <= 0.5 ? progress * 2 : (1 - progress) * 2;
+    final double x = wave * (size.width - segment);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x, top, segment, thickness),
+        Radius.circular(thickness / 2),
+      ),
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OgMd1LinearLoadingPainter oldDelegate) =>
+      oldDelegate.track != track ||
+      oldDelegate.color != color ||
+      oldDelegate.progress != progress ||
+      oldDelegate.thickness != thickness ||
+      oldDelegate.value != value;
+}
+
+/// MD1 加载指示器：线性条 / 环形圈，全部自绘。
+///
+/// [value] 为 null 时为不定进度（环形弧自转、线性段往返滑动）；给定 0–1 时
+/// 切换为确定进度。旋转与滑动为机械匀速运动，直接由 [AnimationController]
+/// 的线性推进驱动（不套缓动曲线），时长取自动效档位表。
+/// 线性形态按可用宽度铺满（父级需给出有限宽度），环形形态按 [size] 定直径。
+class OgMd1LoadingIndicator extends StatefulWidget {
+  /// 创建加载指示器。
+  const OgMd1LoadingIndicator({
+    this.variant = OgMd1LoadingVariant.circular,
+    this.size = OgMd1Type.title * 2,
+    this.thickness = 2,
+    this.value,
+    this.label,
+    super.key,
+  });
+
+  /// 形态。
+  final OgMd1LoadingVariant variant;
+
+  /// 环形直径（线性形态忽略）。
+  final double size;
+
+  /// 线宽 / 环宽。
+  final double thickness;
+
+  /// 确定进度（0–1）；null 表示不定进度。
+  final double? value;
+
+  /// 无障碍标签（调用方本地化后传入）。
+  final String? label;
+
+  @override
+  State<OgMd1LoadingIndicator> createState() => _OgMd1LoadingIndicatorState();
+}
+
+class _OgMd1LoadingIndicatorState extends State<OgMd1LoadingIndicator>
+    with SingleTickerProviderStateMixin {
+  AnimationController? _controller;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 控制器建在 didChangeDependencies：档位表读继承型作用域，
+    // 不能在 initState 里查（会抛 dependOnInheritedWidgetOfExactType）。
+    if (_controller == null) {
+      final AnimationController controller = AnimationController(
+        vsync: this,
+        duration: OgLAnim.slow(context),
+      );
+      if (widget.value == null) {
+        controller.repeat();
+      }
+      _controller = controller;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant OgMd1LoadingIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final AnimationController? controller = _controller;
+    if (controller == null) {
+      return;
+    }
+    if (widget.value == null && oldWidget.value != null) {
+      controller.repeat();
+    } else if (widget.value != null && oldWidget.value == null) {
+      controller.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final OgMd1Colors palette = OgMd1Colors.of(context);
+    final AnimationController controller = _controller!;
+    final Widget indicator = AnimatedBuilder(
+      animation: controller,
+      builder: (BuildContext context, Widget? child) {
+        if (widget.variant == OgMd1LoadingVariant.circular) {
+          return CustomPaint(
+            size: Size.square(widget.size),
+            painter: _OgMd1CircularLoadingPainter(
+              track: palette.divider,
+              color: palette.accent,
+              progress: controller.value,
+              thickness: widget.thickness,
+              value: widget.value,
+            ),
+          );
+        }
+        return CustomPaint(
+          size: Size(double.infinity, widget.thickness),
+          painter: _OgMd1LinearLoadingPainter(
+            track: palette.divider,
+            color: palette.accent,
+            progress: controller.value,
+            thickness: widget.thickness,
+            value: widget.value,
+          ),
+        );
+      },
+    );
+    return Semantics(
+      label: widget.label,
+      liveRegion: widget.value == null,
+      child: Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        child: widget.variant == OgMd1LoadingVariant.circular
+            ? indicator
+            : indicator,
       ),
     );
   }

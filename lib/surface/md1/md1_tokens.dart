@@ -8,32 +8,32 @@
 /// ## 明暗双主题
 /// [OgMd1Colors.of] 按 `context` 的 `ThemeData.brightness` 取同一套角色的
 /// 明/暗值；primary / accent 在双主题下保持不变（MD1 原规范）。
-
-/// 对话框最小内边距 / 标题与内容间距 / 动作区间距（MD1 2014 对话框版式）。
-const double _md1DialogPadding = OgMd1Size.buttonPadding;
-const double _md1DialogGap = OgMd1Type.body;
-const double _md1DialogActionGap = OgMd1Type.body;
-
-/// Snackbar 左右/上下内边距、文字与动作间距、最小高度（MD1 底部条）。
-const double _md1SnackbarPadding = OgMd1Size.buttonPadding;
-const double _md1SnackbarGap = OgMd1Type.body;
-const double _md1SnackbarHeight = OgMd1Size.field;
-
-/// Chip 内边距 / 图形直径 / 高度上下界（MD1 18–32dp）。
-const double _md1ChipPadding = OgMd1Type.body;
-const double _md1ChipVisual = OgMd1Type.subhead;
-const double _md1ChipHeightMin = OgMd1Type.overline + OgMd1Type.body;
-const double _md1ChipHeightMax = OgMd1Size.buttonHeight - OgMd1Size.radius;
-
-/// Badge 角标直径；文本以 12sp caption 作基线。
-const double _md1BadgeSize = OgMd1Type.caption + OgMd1Type.overline;
-const double _md1BadgeDot = OgMd1Type.overline;
-
-/// 1px 逻辑像素分割线。
-const double _md1DividerPx = 1;
 library;
 
 import 'package:flutter/material.dart';
+
+/// 对话框最小内边距 / 标题与内容间距 / 动作区间距（MD1 2014 对话框版式）。
+const double md1DialogPadding = OgMd1Size.buttonPadding;
+const double md1DialogGap = OgMd1Type.body;
+const double md1DialogActionGap = OgMd1Type.body;
+
+/// Snackbar 左右/上下内边距、文字与动作间距、最小高度（MD1 底部条）。
+const double md1SnackbarPadding = OgMd1Size.buttonPadding;
+const double md1SnackbarGap = OgMd1Type.body;
+const double md1SnackbarHeight = OgMd1Size.field;
+
+/// Chip 内边距 / 图形直径 / 高度上下界（MD1 18–32dp）。
+const double md1ChipPadding = OgMd1Type.body;
+const double md1ChipVisual = OgMd1Type.subhead;
+const double md1ChipHeightMin = OgMd1Type.overline + OgMd1Type.body;
+const double md1ChipHeightMax = OgMd1Size.buttonHeight - OgMd1Size.radius;
+
+/// Badge 角标直径；文本以 12sp caption 作基线。
+const double md1BadgeSize = OgMd1Type.caption + OgMd1Type.overline;
+const double md1BadgeDot = OgMd1Type.overline;
+
+/// 1px 逻辑像素分割线。
+const double md1DividerPx = 1;
 
 /// MD1 原始色板（明 / 暗双主题的角色值）。
 @immutable
