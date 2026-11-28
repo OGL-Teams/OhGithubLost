@@ -128,8 +128,6 @@ class OgLApp extends StatelessWidget {
                   child: OgLClientShell(surface: surface, report: report),
                 ),
               ); // MaterialApp
-            }, // DynamicColorBuilder.builder
-          ); // DynamicColorBuilder
         },
       );
 }
