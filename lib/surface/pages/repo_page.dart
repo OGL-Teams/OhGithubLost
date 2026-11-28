@@ -698,8 +698,9 @@ class _RepoPageState extends State<RepoPage> {
       }));
       return;
     }
-    // 目录在新分支存在：恢复原浏览位置。
-    setState(() => _codePath = probed.path);
+    // 目录在新分支存在（probed 非空且是目录）：恢复原浏览位置。
+    final String? restored = probed?.type == 'dir' ? probed!.path : null;
+    setState(() => _codePath = restored ?? '');
   }
 }
 

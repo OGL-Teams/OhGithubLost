@@ -635,13 +635,6 @@ class _SettingsPageState extends State<SettingsPage> {
           onSelected: (int level) => unawaited(_settings.setMotionLevel(level)),
         ),
         const Divider(height: 1),
-        // ★ MD3 dynamic color：跟随系统动态配色（Android 12+ Material You）。
-        //   仅在支持的平台生效；不支持时开关保留但无视觉变化（回落种子色）。
-        OgLSettingsSwitchRow(
-          title: _t('dynamicColor'),
-          value: value.dynamicColor,
-          onChanged: (bool on) => unawaited(_settings.setDynamicColor(on)),
-        ),
         const Divider(height: 1),
         OgLSettingsSwitchRow(
           title: _t('reduceMotionA11y'),

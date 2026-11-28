@@ -21,6 +21,7 @@ abstract class HttpReadCache {
   void invalidate();
 }
 
+abstract class NetTransport {
   /// 发送请求；传输层失败必须抛 [NetException]。
   Future<NetResponse> send(NetRequest request);
 }

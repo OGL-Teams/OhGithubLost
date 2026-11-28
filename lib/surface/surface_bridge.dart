@@ -511,8 +511,6 @@ class SurfaceBridge {
   int? _themeCacheMotion;
   String? _themeCacheUiFont;
 
-  /// 动态配色是否参与上次编译（参与缓存键）。
-  bool _themeCacheDynamic = false;
   ThemeData? _themeCache;
 
   /// 当前主题（**带缓存**）。
@@ -580,7 +578,6 @@ class SurfaceBridge {
     _themeCacheDensity = density;
     _themeCacheMotion = motionLevel;
     _themeCacheUiFont = uiFontId;
-    _themeCacheDynamic = useDynamic;
     return built;
   }
 
